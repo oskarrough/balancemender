@@ -304,9 +304,6 @@ export class DevConsole extends HTMLElement {
 		}
 	}
 
-	/**
-	 * Log a message to the console
-	 */
 	logToConsole(message: string) {
 		const output = this.shadowRoot?.querySelector('.DevConsole-output')
 		if (!output) return
@@ -321,9 +318,6 @@ export class DevConsole extends HTMLElement {
 		output.scrollTop = output.scrollHeight
 	}
 
-	/**
-	 * Handle input keydown events
-	 */
 	private handleInputKeydown = (e: KeyboardEvent) => {
 		const input = e.target as HTMLInputElement
 
@@ -343,7 +337,8 @@ export class DevConsole extends HTMLElement {
 	 * Handle global keydown for showing/hiding the console
 	 */
 	private handleKeydown(e: KeyboardEvent) {
-		if (e.key === '`' || e.key === 'Escape') {
+		console.log(e.key)
+		if (e.key === '`' || e.key === '``' || e.key === 'Escape') {
 			this.toggleConsole()
 		}
 	}

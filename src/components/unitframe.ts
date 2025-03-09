@@ -17,7 +17,6 @@ export function UnitFrame(
 	const maxHealth = character.health.max
 	const isCurrentTarget = player.currentTarget === character
 
-	// Get effects directly from the character
 	const effects: HOT[] = character.effects ? Array.from(character.effects) : []
 
 	const displayName = character.name || character.constructor.name
@@ -35,7 +34,6 @@ export function UnitFrame(
 				type: 'health',
 				value: health,
 				max: maxHealth,
-				// Only show potential healing on the current target for party members
 				potentialValue: isCurrentTarget && !isEnemy && spell ? spell.heal : 0,
 				spell: !isEnemy ? spell : undefined,
 			})}

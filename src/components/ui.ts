@@ -18,9 +18,7 @@ export function UI(game: GameLoop) {
 		if (key === '2') player.castSpell('Flash Heal')
 		if (key === '3') player.castSpell('Greater Heal')
 		if (key === '4') player.castSpell('Renew')
-		if (key === 'a' || key === 's' || key === 'd' || key === 'w' || key === 'Escape') {
-			actions.interrupt(game)
-		}
+		if (['a', 's', 'd', 'w', 'Escape'].includes(key)) actions.interrupt(game)
 	}
 
 	const spell = player.spell

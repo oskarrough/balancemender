@@ -1,6 +1,5 @@
 import {Spell} from '../nodes/spell'
-import {html} from '../utils'
-import {toPercent} from '../utils'
+import {html, toPercent} from '../utils'
 
 interface BarProps {
 	value: number

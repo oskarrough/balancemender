@@ -2,6 +2,18 @@
 - Only add comments when the code isn't obvious
 - Types: While we do use typescript sparingly. Rely on infered types where possible. Do not obsess over linting. Do not use TS enums.
 
+## Code Optimization
+
+1. Remove unnecessary comments - if code is self-explanatory, no comment needed
+2. Delete commented-out code completely - don't leave dead code in the repo
+3. Remove all console.log statements in production code
+4. Group imports from the same module - `import {a, b} from 'module'` not separate lines
+5. Remove redundant JSDoc comments that add no value beyond the code itself
+6. Simplify conditionals using array methods where appropriate - `if (['a', 'b'].includes(x))` over multiple conditions
+7. Keep HTML templates clean with minimal whitespace and tight formatting
+8. Keep functions focused and minimal - prefer shorter, cleaner functions over verbose ones
+9. Delete obvious explanatory comments - e.g., `// Initialize variable` before `let x = 0`
+
 ## Method Naming and API Design
 
 1. Aim for self-documenting method names - `prefers()` over `getPreferredTarget()`

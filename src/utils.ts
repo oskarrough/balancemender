@@ -2,7 +2,6 @@ import {createLogger} from './combatlog'
 export {html, render} from 'uhtml'
 import {Xid} from 'xid-ts'
 
-// min and max is inclusive
 export function randomIntFromInterval(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1) + min)
 }

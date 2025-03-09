@@ -2,10 +2,7 @@ import Pino from 'pino'
 import {html} from './utils'
 
 interface LogEvent {
-	level: {
-		label: string
-		value: number
-	}
+	level: {label: string, value: number}
 	messages: (string | number | object)[]
 	ts: number
 }
@@ -13,9 +10,6 @@ interface LogEvent {
 const logs: LogEvent[] = []
 
 const formatter = new Intl.DateTimeFormat('de', {
-	// day: '2-digit',
-	// month: '2-digit',
-	// year: 'numeric',
 	hour: '2-digit',
 	minute: '2-digit',
 	second: '2-digit',
@@ -26,16 +20,6 @@ function formatTimestamp(timestamp: number) {
 	return formatter.format(new Date(timestamp))
 }
 
-/**
- * Example usage
-	import {createLogger} from 'combatlog'
-	const logger = createLogger('info') // only logs from info lvl and up
-	logger.{debug/info/warn/error}('hello world')
- *
- * @param logLevel - sets the Pino log level, e.g. 'debug', 'info', 'warn', 'error'
- * @param renderToDom - if true, the log will be rendered to the DOM
- * @returns
- */
 export function createLogger(logLevel?: string, renderToDom = true) {
 	const logger = Pino({
 		browser: {
@@ -51,7 +35,6 @@ export function createLogger(logLevel?: string, renderToDom = true) {
 	return logger
 }
 
-// Hardcoded function to render a log event into the DOM
 function afterLog(log: LogEvent) {
 	const el = document.querySelector('.Combatlog ul')
 	if (!el) {

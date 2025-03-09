@@ -7,8 +7,10 @@
 
 :root {
 	--theme: hsl(120, 57.1%, 16%);
-	--background: hsl(47deg 100% 3%);
-	--black: var(--background);
+	/* --background: var(--black); */
+	/* --background: hsl(10deg 10% 95%); */
+	--background: hsl(28, 100%, 2.9%);
+	--black: hsl(47deg 100% 3%);
 	--white: hsl(20deg 50% 91%);
 	--yellow: hsl(41.8, 79.8%, 39%);
 	--paleyellow: hsl(40deg 87% 82%);
@@ -21,7 +23,7 @@
 }
 
 html {
-	background: var(--black) !important;
+	background: var(--background);
 	color: var(--white);
 	/* background-image: url(/assets/bg.jpg); */
 	/* background-image: url(/assets/bg2.png); */

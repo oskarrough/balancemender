@@ -8,20 +8,13 @@ export function SpellIcon(game: GameLoop, spellName: string, shortcut: string | 
 
 	if (!SpellClass) throw new Error('no spell' + spellName)
 
-	// console.log('here', Spell.constructor.delay)
-
-	// Readable cast time
-	/* const beingCast = player.lastCastSpell instanceof spells.Spell */
 	const realCastTime = (game?.elapsedTime || 0) - player.lastCastTime
 	/* const castTime = beingCast */
 	/* 	? roundOne(realCastTime / 1000) */
 	/* 	: roundOne(spell.delay / 1000) */
 
-	// Circular-progress UI
 	const gcdPercentage = realCastTime / game.gcd
 	const angle = gcdPercentage ? (1 - gcdPercentage) * 360 : 0
-
-	// console.log(Spell)
 
 	return html`
 		<button
