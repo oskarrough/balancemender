@@ -14,6 +14,7 @@
 - [ ] Implement event-driven architecture for game events
 - [ ] Reduce complexity in audio.ts
 - [ ] Refactor hot + dots
+- Future idea: show combat stats once combat ends: Amount healed, Overhealing, Mana spent
 
 ## LATER
 
@@ -103,3 +104,11 @@
    - [ ] Optimize rendering for better performance
    - [ ] Implement proper garbage collection for removed effects
    - [ ] Add frame rate limiter for consistent experience
+
+5. Enhanced Combat Logging System
+   - [x] Implement structured combat log format (see plan-advanced-logs.md for details)
+   - [ ] Create local storage solution using IndexedDB
+   - [ ] Develop in-game log viewer with filtering capabilities
+   - [ ] Add opt-in system for players to contribute logs
+   - [ ] Set up cloud storage with privacy considerations
+   - [ ] Build analysis tools for gameplay metrics and statistics
