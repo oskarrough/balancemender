@@ -120,7 +120,8 @@ body {
 
 .Combatlog {
 	margin-left: auto;
-	width: 320px;
+	width: 30rem;
+	max-width: 95%;
 	height: 240px;
 	position: fixed;
 	right: 0;
