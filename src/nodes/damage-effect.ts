@@ -281,3 +281,65 @@ export class RogueAttack extends DamageEffect {
 	static sound = 'combat.sword_hit'
 	static name = 'Quick Slash'
 }
+
+/**
+ * Base class for periodic damage effects (DoTs)
+ */
+export class PeriodicDamageEffect extends DamageEffect {
+	tick() {
+		const damage = this.damage()
+		const actualDamage = this.target.health.damage(damage)
+
+		log(
+			`${this.attacker.name}: ${this.name} dealt ${actualDamage} periodic damage to ${this.target.constructor.name}`,
+		)
+
+		// Log damage to combat log with periodic event type
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'SPELL_PERIODIC_DAMAGE',
+			sourceId: this.attacker.id,
+			sourceName: this.attacker.name,
+			targetId: this.target.id,
+			targetName: this.target.name || this.target.constructor.name,
+			spellId: this.name,
+			spellName: this.name,
+			value: actualDamage,
+		})
+
+		this.playSound()
+		this.createVisualEffects(actualDamage)
+
+		// Emit event for other systems to use
+		this.emit(DAMAGE_EFFECT_EVENTS.DAMAGE_APPLIED, {
+			attacker: this.attacker,
+			target: this.target,
+			damage: actualDamage,
+			attackName: this.name,
+		})
+
+		// Check if target died
+		if (this.target.health.current <= 0) {
+			// Log unit death to combat log
+			logCombat({
+				timestamp: Date.now(),
+				eventType: 'UNIT_DIED',
+				targetId: this.target.id,
+				targetName: this.target.name || this.target.constructor.name,
+			})
+
+			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
+				target: this.target,
+			})
+		}
+	}
+}
+
+// Example of a periodic damage effect like a poison
+export class PoisonEffect extends PeriodicDamageEffect {
+	static interval = 2000 // tick every 2 seconds
+	static minDamage = 30
+	static maxDamage = 45
+	static sound = 'combat.poison'
+	static name = 'Poison'
+}

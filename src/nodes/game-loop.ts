@@ -35,8 +35,7 @@ export class GameLoop extends Loop {
 	// Developer mode properties
 	godMode = false
 	infiniteMana = false
-	speed = 1.0
-	developerConsole!: DevConsole
+	console!: DevConsole
 
 	constructor() {
 		super()
@@ -121,5 +120,23 @@ export class GameLoop extends Loop {
 		log('game:over, pausing game loop')
 		this.audio.stop()
 		this.pause()
+
+		// Add GSAP animations for game over effect
+		import('gsap').then(({default: gsap}) => {
+			// Scale down and fade enemies and party
+			gsap.to('.Enemies, .PartyGroup', {
+				scale: 0.95,
+				opacity: 0.7,
+				duration: 0.8,
+				ease: 'power2.out',
+			})
+
+			// Make game over screen more visible with animation
+			gsap.fromTo(
+				'.GameOver',
+				{opacity: 0, scale: 0.9, y: -20},
+				{opacity: 1, scale: 1, y: 0, duration: 1, delay: 0.3, ease: 'back.out(1.4)'},
+			)
+		})
 	}
 }

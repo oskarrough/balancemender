@@ -1,0 +1,72 @@
+dev-console {
+	--console-bg: rgba(0, 0, 0, 0.95);
+	--console-text: #eee;
+	--console-input-bg: rgba(0, 0, 0, 0.5);
+	--console-height: 300px;
+
+	display: flex;
+	flex-direction: column;
+	/* height: var(--console-height); */
+	/* background-color: var(--console-bg); */
+	/* color: var(--console-text); */
+	font-family: monospace;
+}
+
+dev-console[minimized] {
+	/* background: yellow; */
+}
+
+.DevConsole-output {
+	flex: 1;
+	overflow-y: auto;
+	line-height: 1.4;
+	display: flex;
+	flex-direction: column;
+	max-height: 15rem;
+	font-size: 13px;
+	scrollbar-width: thin;
+}
+
+.DevConsole-output div {
+	margin-bottom: 4px;
+	word-wrap: break-word;
+	opacity: 0.9;
+	padding-left: 4px;
+	border-left: 2px solid transparent;
+}
+
+.DevConsole-output div:first-child {
+	margin-top: auto;
+}
+
+.DevConsole-output div:has(+ div) {
+	/* border-bottom: 1px solid rgba(255, 255, 255, 0.1); */
+	/* padding-bottom: 4px; */
+}
+
+/* Style for command entries */
+.DevConsole-output div:first-line {
+	color: var(--green);
+}
+
+.DevConsole-inputWrapper {
+	display: flex;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.2);
+	padding: 0.2rem;
+}
+
+.DevConsole-inputWrapper span {
+	margin-right: 5px;
+	color: var(--green);
+}
+
+.DevConsole-input {
+	flex-grow: 1;
+	background: transparent;
+	border: none;
+	color: #fff;
+	font-family: monospace;
+	font-size: 13px;
+	outline: none;
+}

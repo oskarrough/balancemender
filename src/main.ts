@@ -40,14 +40,6 @@ function main() {
 	// } else {
 	gsap.to('.Frame', {opacity: 1, duration: 2})
 	// }
-
-	// Add a global function to toggle the console (for testing)
-	// @ts-ignore
-	window.toggleDevConsole = () => {
-		if (game.developerConsole) {
-			game.developerConsole.toggleConsole()
-		}
-	}
 }
 
 /**
@@ -56,19 +48,14 @@ function main() {
 function setupDevTools(game: GameLoop) {
 	console.log('Setting up dev tools...')
 
-	// Get the dev console element that's already in the HTML
 	const devConsole = document.querySelector('dev-console') as DevConsole
 	if (!devConsole) {
 		console.error('Dev console element not found in the DOM')
 		return
 	}
 
-	// Initialize the console with the game instance
-	console.log('Initializing dev console...')
 	devConsole.init(game)
-
-	// Assign dev console to game instance
-	game.developerConsole = devConsole
+	game.console = devConsole
 	console.log('Dev console initialized and assigned to game')
 }
 

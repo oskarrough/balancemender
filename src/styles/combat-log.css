@@ -1,0 +1,98 @@
+/* Combat Log Viewer */
+.CombatLogViewer {
+	--clv-bg: rgba(0, 0, 0, 0.85);
+	--clv-border: var(--gray);
+	--clv-text: var(--white);
+	--clv-header-bg: rgba(0, 0, 0, 0.7);
+	--clv-item-bg: rgba(40, 40, 40, 0.1);
+	--clv-filter-bg: rgba(30, 30, 30, 0.7);
+	--clv-timestamp: #888;
+
+	max-height: 15rem;
+	/* background-color: var(--clv-bg); */
+	color: var(--clv-text);
+	font-size: 13px;
+	transition: max-height 0.3s ease-in-out;
+	display: flex;
+	flex-direction: column;
+}
+
+.CombatLogViewer.is-expanded {
+	max-height: 80vh;
+}
+
+.CombatLogViewer-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.375rem;
+	padding: 0.5rem;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.CombatLogViewer-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+}
+
+.CombatLogViewer .Button.clear {
+	background: rgba(80, 0, 0, 0.7);
+	border: 1px solid #700;
+}
+
+.CombatLogViewer .Button.clear:hover {
+	background: rgba(120, 0, 0, 0.7);
+}
+
+floating-view input[type='text'] {
+	color-scheme: dark;
+	border: 1px solid hsla(0deg 0% 100% / 0.1);
+	border-radius: 0.1875rem;
+	font-size: 1em;
+}
+
+.CombatLogViewer-content {
+	overflow-y: auto;
+	max-height: calc(100% - 5.625rem);
+	padding: 0.5rem;
+}
+
+.CombatLogViewer-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.CombatLogViewer-item {
+	padding: 0.25rem 0;
+	border-bottom: 1px solid rgba(50, 50, 50, 0.5);
+	display: grid;
+	grid-template-columns: auto auto 1fr;
+	gap: 0.5rem;
+	align-items: baseline;
+}
+
+.CombatLogViewer-item:nth-child(even) {
+	background-color: var(--clv-item-bg);
+}
+
+.CombatLogViewer-timestamp {
+	color: var(--clv-timestamp);
+	font-size: 0.625rem;
+	font-family: monospace;
+}
+
+.CombatLogViewer-eventType {
+	font-weight: bold;
+}
+
+.CombatLogViewer-message {
+	overflow-wrap: break-word;
+}
+
+.CombatLogViewer-empty {
+	padding: 1.25rem;
+	text-align: center;
+	color: #666;
+	font-style: italic;
+}

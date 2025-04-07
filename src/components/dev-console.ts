@@ -36,7 +36,7 @@ export class DevConsole extends HTMLElement {
 	}
 
 	connectedCallback() {
-		if (this.shadowRoot && !this.shadowRoot.firstChild) {
+		if (!this.firstChild) {
 			this.render()
 		}
 	}
@@ -46,102 +46,9 @@ export class DevConsole extends HTMLElement {
 	}
 
 	render() {
-		if (!this.shadowRoot) return
-
 		render(
-			this.shadowRoot,
+			this,
 			() => html`
-				<style>
-					.DevConsole-output {
-						flex: 1;
-						overflow-y: auto;
-						padding: 0.5em;
-						line-height: 1.4;
-						display: flex;
-						flex-direction: column;
-					}
-
-					.DevConsole-inputWrapper {
-						display: flex;
-						align-items: center;
-						background-color: var(--console-input-bg);
-						border-top: 1px solid #444;
-						padding: 0 8px;
-					}
-
-					.DevConsole-prefix {
-						color: var(--console-text);
-						padding-right: 4px;
-					}
-
-					.DevConsole-input {
-						flex: 1;
-						padding: 8px;
-						background-color: transparent;
-						color: var(--console-text);
-						border: none;
-						font-family: monospace;
-						outline: none;
-					}
-
-					.DevConsole-output {
-						flex-grow: 1;
-						overflow-y: auto;
-						padding: 10px;
-						font-size: 14px;
-						line-height: 1.4;
-						display: flex;
-						flex-direction: column;
-						justify-content: flex-end;
-						min-height: 0;
-					}
-
-					.DevConsole-output div {
-						margin-bottom: 4px;
-						word-wrap: break-word;
-						opacity: 0.9;
-						padding-left: 4px;
-						border-left: 2px solid transparent;
-					}
-
-					.DevConsole-output div:first-child {
-						margin-top: auto;
-						/* Push content to the bottom */
-					}
-
-					.DevConsole-output div:has(+ div) {
-						border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-						padding-bottom: 4px;
-					}
-
-					/* Style for command entries */
-					.DevConsole-output div:first-line {
-						color: #0f0;
-					}
-
-					.DevConsole-inputWrapper {
-						display: flex;
-						align-items: center;
-						background-color: rgba(0, 0, 0, 0.6);
-						border-top: 1px solid #555;
-						padding: 8px 10px;
-					}
-
-					.DevConsole-inputWrapper span {
-						margin-right: 5px;
-						color: #0f0;
-					}
-
-					.DevConsole-input {
-						flex-grow: 1;
-						background: transparent;
-						border: none;
-						color: #fff;
-						font-family: monospace;
-						font-size: 14px;
-						outline: none;
-					}
-				</style>
 				<div class="DevConsole-output">
 					<div style="flex-grow: 1; min-height: 0;"></div>
 				</div>
@@ -233,44 +140,6 @@ export class DevConsole extends HTMLElement {
 				location.reload()
 			},
 		})
-
-		// Speed command
-		this.commands.set('speed', {
-			name: 'speed',
-			description: 'Set game speed (0.5-2)',
-			execute: (game, args) => {
-				if (!args || args.length === 0) {
-					this.logToConsole('Usage: /speed [0.5-2]')
-					return
-				}
-
-				const speed = parseFloat(args[0])
-				if (isNaN(speed) || speed < 0.1 || speed > 5) {
-					this.logToConsole('Speed must be between 0.1 and 5')
-					return
-				}
-
-				game.speed = speed
-				this.logToConsole(`Game speed set to ${speed}`)
-			},
-		})
-	}
-
-	toggleConsole() {
-		this.toggleAttribute('hidden')
-
-		// Focus input when showing
-		if (!this.hasAttribute('hidden')) {
-			setTimeout(() => {
-				const input = this.shadowRoot?.querySelector(
-					'.DevConsole-input',
-				) as HTMLInputElement
-				if (input) {
-					input.focus()
-					input.value = ''
-				}
-			}, 50)
-		}
 	}
 
 	executeCommand(commandStr: string) {
@@ -282,7 +151,7 @@ export class DevConsole extends HTMLElement {
 		this.logToConsole(`> ${commandStr}`)
 
 		// Log to combat log
-		this.logger.info(`[DevConsole] Command executed: ${commandStr}`)
+		this.logger.info(`[console] Command executed: ${commandStr}`)
 
 		// Process the command
 		const cmdStr = commandStr.startsWith('/') ? commandStr.substring(1) : commandStr
@@ -296,10 +165,10 @@ export class DevConsole extends HTMLElement {
 			cmd.execute(this.game, args)
 
 			// Log the result to combat log
-			this.logger.info(`[DevConsole] ${command} command executed successfully`)
+			this.logger.info(`[console] ${command} command executed successfully`)
 		} else {
 			this.logToConsole(`Unknown command: ${command}. Type /help for available commands.`)
-			this.logger.warn(`[DevConsole] Unknown command attempted: ${command}`)
+			this.logger.warn(`[console] Unknown command attempted: ${command}`)
 		}
 	}
 
@@ -307,7 +176,7 @@ export class DevConsole extends HTMLElement {
 	 * Log a message to the console
 	 */
 	logToConsole(message: string) {
-		const output = this.shadowRoot?.querySelector('.DevConsole-output')
+		const output = this.querySelector('.DevConsole-output')
 		if (!output) return
 
 		message.split('\n').forEach((line) => {
@@ -335,15 +204,6 @@ export class DevConsole extends HTMLElement {
 		} else if (e.key === 'ArrowDown') {
 			this.navigateHistory(1, input)
 			e.preventDefault()
-		}
-	}
-
-	/**
-	 * Handle global keydown for showing/hiding the console
-	 */
-	private handleKeydown(e: KeyboardEvent) {
-		if (e.key === '`' || e.key === 'Escape') {
-			this.toggleConsole()
 		}
 	}
 

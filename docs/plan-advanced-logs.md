@@ -17,40 +17,21 @@ Based on WoW's proven format:
 [TIMESTAMP] EVENT_TYPE,SourceID,"SourceName",TargetID,"TargetName",SpellID,"SpellName",Value,ExtraInfo,IsAOE,GroupID
 ```
 
-## Event Types to Track
-- `SPELL_CAST_START` - Player begins casting a spell
-- `SPELL_CAST_SUCCESS` - Spell was successfully cast
-- `SPELL_CAST_FAILED` - Spell casting failed or was interrupted
-- `SPELL_CAST_INTERRUPTED` - Spell was interrupted by an external effect
-- `SPELL_HEAL` - Healing applied to target
-- `SPELL_DAMAGE` - Damage applied to target
-- `SPELL_AURA_APPLIED` - Buff/debuff applied
-- `SPELL_AURA_REMOVED` - Buff/debuff removed
-- `SPELL_AURA_REFRESH` - Buff/debuff duration refreshed
-- `RESOURCE_CHANGE` - Mana/health resource change
-- `UNIT_DIED` - Character or enemy death
-- `ENCOUNTER_START` - Boss fight begins
-- `ENCOUNTER_END` - Boss fight ends (with success/fail status)
-- `SWEET_SPOT_HIT` - Player hits sweet spot timing (game-specific)
-- `SWEET_SPOT_MISS` - Player misses sweet spot timing
-
 ## Implementation Plan
 
 ### Phase 1: Local Logging Infrastructure
-- [ ] Enhance existing `combatlog.ts` to use structured format
-- [ ] Create proper `LogEvent` interface with all required fields
-- [ ] Implement log buffering for high-frequency events
-- [ ] Add timestamp precision to milliseconds
-- [ ] Store logs in browser's IndexedDB
-- [ ] Create developer console commands to manipulate logs
+- [x] Enhance existing `combatlog.ts` to use structured format
+- [x] Create proper `LogEvent` interface with all required fields
+- [x] Add timestamp precision to milliseconds
+- [ ] Persist logs somewhere?
+- [x] Create developer console commands to manipulate logs
 - [ ] Implement log rotation to prevent storage overflow
 
 ### Phase 2: In-Game Log Viewer
-- [ ] Create basic log viewer accessible in dev mode
-- [ ] Add filtering capabilities (by event type, source, target)
-- [ ] Implement color coding for different event types
-- [ ] Add search functionality
-- [ ] Create log export feature (JSON/CSV)
+- [x] Create basic log viewer accessible in dev mode
+- [x] Add filtering capabilities (by event type, source, target)
+- [x] Implement color coding for different event types
+- [x] Add search functionality
 - [ ] Add session overview with key metrics
 
 ### Phase 3: Cloud Storage & Opt-In System

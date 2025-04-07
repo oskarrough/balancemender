@@ -1,0 +1,53 @@
+floating-view {
+	display: block;
+	position: absolute;
+	background: hsla(0deg 0% 7% / 0.97);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	overflow: hidden;
+	transition: height 0.3s ease;
+	min-width: 250px;
+	max-width: 95vw;
+	pointer-events: auto;
+
+	/* Set initial position - will be converted to transforms */
+	top: 0;
+	left: 0;
+
+	header {
+		padding: 6px 10px;
+		background: rgba(0, 0, 0, 0.2);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		cursor: grab;
+		user-select: none;
+		display: flex;
+		align-items: center;
+	}
+
+	header:active {
+		cursor: grabbing;
+	}
+
+	main {
+		max-height: calc(100vh - 100px);
+		overflow-y: auto;
+	}
+
+	footer {
+		padding: 6px 8px;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		font-size: 0.8em;
+	}
+}
+
+floating-view[minimized] :is(main, footer) {
+	display: none;
+}
+
+floating-view:has(.CombatLogViewer) {
+	max-width: 800px;
+}
+
+/* floating-view:has(dev-console) { */
+/* 	top: calc(100vh - 9rem); */
+/* } */

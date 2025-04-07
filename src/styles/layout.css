@@ -160,4 +160,42 @@ body {
 .GameOver {
 	text-align: center;
 	margin: 3rem 0;
+	position: fixed;
+	top: 30%;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	background-color: rgba(0, 0, 0, 0.7);
+	padding: 2rem;
+	border-radius: 8px;
+	max-width: 500px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.GameOver h2 {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+	color: #ff3333;
+}
+
+.GameOver p {
+	font-size: 1.3rem;
+	margin-bottom: 2rem;
+	color: #fff;
+}
+
+.GameOver button {
+	background-color: #ff3333;
+	color: white;
+	border: none;
+	padding: 0.8rem 2rem;
+	font-size: 1.2rem;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.GameOver button:hover {
+	background-color: #ff5555;
 }
