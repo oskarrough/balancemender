@@ -38,6 +38,7 @@ html {
 
 body {
 	margin: 0;
+	color-scheme: dark;
 }
 
 html,
@@ -47,6 +48,21 @@ input {
 	font-family:
 		Proza Libre,
 		serif;
+}
+
+/* Global input styles */
+input[type='text'],
+input[type='search'],
+textarea,
+select {
+	background: transparent;
+	border: 1px solid hsla(0deg 0% 100% / 0.1);
+	border-radius: 0.1875rem;
+	color: var(--white);
+	font-size: 1em;
+	padding: 0.2rem 0.4rem;
+	outline: none;
+	font-size: 14px;
 }
 
 @media (min-height: 1300px) {

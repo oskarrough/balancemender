@@ -44,13 +44,6 @@
 	background: rgba(120, 0, 0, 0.7);
 }
 
-floating-view input[type='text'] {
-	color-scheme: dark;
-	border: 1px solid hsla(0deg 0% 100% / 0.1);
-	border-radius: 0.1875rem;
-	font-size: 1em;
-}
-
 .CombatLogViewer-content {
 	overflow-y: auto;
 	max-height: calc(100% - 5.625rem);

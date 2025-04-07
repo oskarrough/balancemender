@@ -63,10 +63,5 @@ dev-console[minimized] {
 
 .DevConsole-input {
 	flex-grow: 1;
-	background: transparent;
 	border: none;
-	color: #fff;
-	font-family: monospace;
-	font-size: 13px;
-	outline: none;
 }
