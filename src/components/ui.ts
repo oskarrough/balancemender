@@ -6,6 +6,7 @@ import {SpellIcon} from './spell-icon'
 import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
 import {UnitFrame} from './unitframe'
+import {CombatLogViewer} from './combat-log-viewer'
 
 register()
 
@@ -66,13 +67,7 @@ export function UI(game: GameLoop) {
 
 			${Monitor(game)}
 
-			<div
-				class="Combatlog"
-				onclick=${(event: Event) =>
-					(event.currentTarget as Element).classList.toggle('sticky')}
-			>
-				<ul class="Log Log--scroller"></ul>
-			</div>
+			${CombatLogViewer()}
 		</div>
 	`
 }

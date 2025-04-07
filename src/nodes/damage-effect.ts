@@ -2,6 +2,7 @@ import {Task} from 'vroum'
 import {html, log, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
 import {Character} from './character'
+import { logCombat } from '../combatlog'
 
 // Event names for damage effects
 export const DAMAGE_EFFECT_EVENTS = {
@@ -114,6 +115,19 @@ export class DamageEffect extends Task {
 			`${this.attacker.name}: ${this.name} dealt ${actualDamage} damage to ${this.target.constructor.name}`,
 		)
 
+		// Log damage to combat log
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'SPELL_DAMAGE',
+			sourceId: this.attacker.id,
+			sourceName: this.attacker.name,
+			targetId: this.target.id,
+			targetName: this.target.name || this.target.constructor.name,
+			spellId: this.name,
+			spellName: this.name,
+			value: actualDamage
+		})
+
 		this.playSound()
 		this.createVisualEffects(actualDamage)
 
@@ -127,6 +141,14 @@ export class DamageEffect extends Task {
 
 		// Check if target died
 		if (this.target.health.current <= 0) {
+			// Log unit death to combat log
+			logCombat({
+				timestamp: Date.now(),
+				eventType: 'UNIT_DIED',
+				targetId: this.target.id,
+				targetName: this.target.name || this.target.constructor.name
+			})
+
 			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
 				target: this.target,
 			})

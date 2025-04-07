@@ -44,3 +44,10 @@ export const log = (...args) => logger.info(...args)
 export function createId() {
 	return new Xid().toString()
 }
+
+/**
+ * Format a timestamp for display
+ */
+export function formatTimestamp(timestamp: number): string {
+	return new Date(timestamp).toISOString().substring(11, 23) // HH:MM:SS.sss
+}
