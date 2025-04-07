@@ -30,8 +30,14 @@
 			<div class="Frame-game" id="webhealer"></div>
 		</div>
 
-		<!-- Dev tools -->
-		<dev-console hidden></dev-console>
+		<floating-view>
+			<header>console</header>
+			<main>
+				<dev-console></dev-console>
+			</main>
+		</floating-view>
+
+		<combat-log-viewer></combat-log-viewer>
 
 		<p style="position: fixed; right: 1em; bottom: 0.5em">
 			<a href="https://github.com/oskarrough/webhealer" rel="noreferrer" target="_blank"
@@ -42,11 +48,11 @@
 		<!-- <div class="Menu">
 			<h1>Web Healer</h1>
 			<p style="font-size: 2vw">How long can you keep the tank alive?</p>
-			<nav>
+			<menu>
 				<button class="Spell Button" type="button" onclick=${() => start()}>
 					New Game
 				</button>
-			</nav>
+			</menu>
 		</div> -->
 
 		<script type="module" src="/src/main.ts"></script>

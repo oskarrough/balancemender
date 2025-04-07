@@ -2,7 +2,7 @@ import {Task} from 'vroum'
 import {html, log, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
 import {Character} from './character'
-import { logCombat } from '../combatlog'
+import {logCombat, CombatEventType} from '../combatlog'
 
 // Event names for damage effects
 export const DAMAGE_EFFECT_EVENTS = {
@@ -20,6 +20,20 @@ export interface DamageEffectConfig {
 	interval: number
 	delay: number
 	sound?: string
+}
+
+// In your damage effect class or wherever you define these
+enum DamageType {
+	SPELL = 'SPELL',
+	SWING = 'SWING', // Melee
+	RANGE = 'RANGE', // Ranged attacks
+}
+
+// Map damage types to event types with proper typing
+const damageTypeToEventType: Record<DamageType, CombatEventType> = {
+	[DamageType.SPELL]: 'SPELL_DAMAGE',
+	[DamageType.SWING]: 'SWING_DAMAGE',
+	[DamageType.RANGE]: 'RANGE_DAMAGE',
 }
 
 /**
@@ -47,6 +61,9 @@ export class DamageEffect extends Task {
 	static name = 'Generic Attack'
 	static minDamage = 0
 	static maxDamage = 0
+
+	// Add this to your damage effect properties
+	damageType: DamageType = DamageType.SPELL // Default
 
 	/**
 	 * Create a damage effect that will attack the attacker's current target
@@ -118,14 +135,14 @@ export class DamageEffect extends Task {
 		// Log damage to combat log
 		logCombat({
 			timestamp: Date.now(),
-			eventType: 'SPELL_DAMAGE',
+			eventType: damageTypeToEventType[this.damageType] || 'SPELL_DAMAGE',
 			sourceId: this.attacker.id,
 			sourceName: this.attacker.name,
 			targetId: this.target.id,
 			targetName: this.target.name || this.target.constructor.name,
 			spellId: this.name,
 			spellName: this.name,
-			value: actualDamage
+			value: actualDamage,
 		})
 
 		this.playSound()
@@ -146,7 +163,7 @@ export class DamageEffect extends Task {
 				timestamp: Date.now(),
 				eventType: 'UNIT_DIED',
 				targetId: this.target.id,
-				targetName: this.target.name || this.target.constructor.name
+				targetName: this.target.name || this.target.constructor.name,
 			})
 
 			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
@@ -179,7 +196,7 @@ export class DamageEffect extends Task {
 			? `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
 			: 'damage'
 
-		const fct = html`<floating-combat-text class="${cssClass}"
+		const fct = html`<floating-combat-text class=${cssClass}
 			>-${damageAmount}</floating-combat-text
 		>`.toDOM()
 

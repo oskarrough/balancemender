@@ -6,7 +6,6 @@ import {SpellIcon} from './spell-icon'
 import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
 import {UnitFrame} from './unitframe'
-import {CombatLogViewer} from './combat-log-viewer'
 
 register()
 
@@ -65,9 +64,7 @@ export function UI(game: GameLoop) {
 					: ''}
 			</div>
 
-			${Monitor(game)}
-
-			${CombatLogViewer()}
+			${Monitor(game)} 
 		</div>
 	`
 }

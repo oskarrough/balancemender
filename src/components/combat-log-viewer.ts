@@ -1,4 +1,4 @@
-import {html, formatTimestamp} from '../utils'
+import {html, formatTimestamp, render} from '../utils'
 import {
 	CombatLogEvent,
 	combatLogs,
@@ -8,47 +8,123 @@ import {
 	EVENT_TYPE_COLORS,
 	EVENT_TYPE_FILTERS,
 } from '../combatlog'
-
-// Current state
-let currentFilter: CombatEventType | null = null
-let searchTerm = ''
-let isExpanded = false
+import '../components/floating-view.js'
 
 /**
  * Format a combat log event for display
  */
 function formatLogEntry(event: CombatLogEvent): string {
-	const parts: string[] = []
+	// Get the appropriate formatter for this event type or use the default
+	const formatter = EVENT_FORMATTERS.get(event.eventType) || defaultFormatter
+	return formatter(event)
+}
 
-	if (event.sourceName) {
-		parts.push(event.sourceName)
+// Helper for safe string access
+const safe = (value: string | undefined): string => value || ''
 
-		if (event.spellName) {
-			parts.push(`cast ${event.spellName}`)
-		}
+// Map of event type to formatter function
+const EVENT_FORMATTERS = new Map<CombatEventType, (event: CombatLogEvent) => string>([
+	[
+		'SPELL_HEAL',
+		(event) => {
+			if (!event.sourceName && !event.targetName) {
+				return `Healing for ${event.value || 0}${event.extraInfo ? ` (${event.extraInfo})` : ''}`
+			}
 
-		if (event.targetName && event.targetName !== event.sourceName) {
-			parts.push(`on ${event.targetName}`)
-		}
-	} else if (event.targetName) {
-		parts.push(event.targetName)
-	}
+			const source = safe(event.sourceName)
+			const spell = event.spellName ? ` cast ${event.spellName}` : ''
+			const target =
+				event.targetName && event.targetName !== event.sourceName
+					? ` on ${event.targetName}`
+					: event.sourceName
+						? ' on self'
+						: ''
+			const amount = event.value !== undefined ? ` healed for ${event.value}` : ''
+			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
 
-	if (event.value !== undefined) {
-		if (event.eventType === 'SPELL_HEAL') {
-			parts.push(`healed for ${event.value}`)
-		} else if (event.eventType === 'SPELL_DAMAGE') {
-			parts.push(`damaged for ${event.value}`)
-		} else {
-			parts.push(event.value.toString())
-		}
-	}
+			return `${source}${spell}${target}${amount}${extra}`
+		},
+	],
 
-	if (event.extraInfo) {
-		parts.push(`(${event.extraInfo})`)
-	}
+	[
+		'SPELL_DAMAGE',
+		(event) => {
+			const source = safe(event.sourceName)
+			const spell = event.spellName ? ` cast ${event.spellName}` : ''
+			const target = event.targetName ? ` on ${event.targetName}` : ''
+			const amount = event.value !== undefined ? ` damaged for ${event.value}` : ''
+			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
+			const aoe = event.isAOE ? ' [AOE]' : ''
 
-	return parts.join(' ')
+			return `${source}${spell}${target}${amount}${extra}${aoe}`
+		},
+	],
+
+	[
+		'SPELL_CAST_SUCCESS',
+		(event) => {
+			const source = safe(event.sourceName)
+			const spell = event.spellName ? ` cast ${event.spellName}` : ' cast unknown spell'
+			const target =
+				event.targetName && event.targetName !== event.sourceName
+					? ` on ${event.targetName}`
+					: ''
+			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
+
+			return `${source}${spell}${target}${extra}`
+		},
+	],
+
+	[
+		'SPELL_CAST_START',
+		(event) => {
+			const source = safe(event.sourceName)
+			const spell = event.spellName
+				? ` begins casting ${event.spellName}`
+				: ' begins casting'
+			const target =
+				event.targetName && event.targetName !== event.sourceName
+					? ` on ${event.targetName}`
+					: ''
+			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
+
+			return `${source}${spell}${target}${extra}`
+		},
+	],
+
+	[
+		'SPELL_CAST_FAILED',
+		(event) => {
+			const source = safe(event.sourceName)
+			const spell = event.spellName
+				? ` failed to cast ${event.spellName}`
+				: ' failed to cast'
+			const reason = event.extraInfo ? ` (${event.extraInfo})` : ''
+
+			return `${source}${spell}${reason}`
+		},
+	],
+
+	[
+		'UNIT_DIED',
+		(event) => {
+			return `${event.targetName || 'Unknown entity'} died${event.extraInfo ? ` (${event.extraInfo})` : ''}`
+		},
+	],
+])
+
+// Default formatter for any event type not explicitly handled
+const defaultFormatter = (event: CombatLogEvent): string => {
+	const source = safe(event.sourceName)
+	const action = event.spellName ? ` used ${event.spellName}` : ''
+	const target =
+		event.targetName && event.targetName !== event.sourceName
+			? ` on ${event.targetName}`
+			: ''
+	const value = event.value !== undefined ? ` ${event.value}` : ''
+	const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
+
+	return `${source}${action}${target}${value}${extra}`
 }
 
 function getEventColor(eventType: CombatEventType): string {
@@ -56,130 +132,152 @@ function getEventColor(eventType: CombatEventType): string {
 }
 
 /**
- * Filter logs based on current filter and search term
+ * CombatLogViewer component as a custom element
  */
-function getFilteredLogs(): CombatLogEvent[] {
-	let filtered = currentFilter ? getCombatLogs(currentFilter) : [...combatLogs]
+export class CombatLogViewer extends HTMLElement {
+	private currentFilter: CombatEventType | null = null
+	private searchTerm = ''
 
-	if (searchTerm) {
-		const term = searchTerm.toLowerCase()
-		filtered = filtered.filter(
-			(log) =>
-				log.sourceName?.toLowerCase().includes(term) ||
-				log.targetName?.toLowerCase().includes(term) ||
-				log.spellName?.toLowerCase().includes(term) ||
-				log.extraInfo?.toLowerCase().includes(term),
-		)
+	// Store event handler as a bound method to use same reference for add/remove
+	private handleLogUpdate = () => this.render()
+
+	constructor() {
+		super()
 	}
 
-	// Return most recent logs first
-	return filtered.sort((a, b) => b.timestamp - a.timestamp)
-}
-
-/**
- * CombatLogViewer component renders a filterable view of combat logs
- */
-export function CombatLogViewer() {
-	const filteredLogs = getFilteredLogs()
-
-	function toggleExpand() {
-		isExpanded = !isExpanded
+	connectedCallback() {
+		// Add event listener for log updates
+		document.addEventListener('combatlog-update', this.handleLogUpdate)
+		this.render()
 	}
 
-	function setFilter(filter: CombatEventType | null) {
-		currentFilter = filter
+	disconnectedCallback() {
+		// Remove event listener properly with the same function reference
+		document.removeEventListener('combatlog-update', this.handleLogUpdate)
 	}
 
-	function handleSearch(e: Event) {
+	/**
+	 * Filter logs based on current filter and search term
+	 */
+	private getFilteredLogs(): CombatLogEvent[] {
+		let filtered = this.currentFilter
+			? getCombatLogs(this.currentFilter)
+			: [...combatLogs]
+
+		if (this.searchTerm) {
+			const term = this.searchTerm.toLowerCase()
+			filtered = filtered.filter(
+				(log) =>
+					log.sourceName?.toLowerCase().includes(term) ||
+					log.targetName?.toLowerCase().includes(term) ||
+					log.spellName?.toLowerCase().includes(term) ||
+					log.extraInfo?.toLowerCase().includes(term),
+			)
+		}
+
+		// Return most recent logs first
+		return filtered.sort((a, b) => b.timestamp - a.timestamp)
+	}
+
+	private setFilter = (filter: CombatEventType | null) => {
+		this.currentFilter = filter
+		this.render()
+	}
+
+	private handleSearch = (e: Event) => {
 		const input = e.target as HTMLInputElement
-		searchTerm = input.value
+		this.searchTerm = input.value
+		this.render()
 	}
 
-	function handleClear() {
+	private handleClear = () => {
 		clearLogs()
-		currentFilter = null
-		searchTerm = ''
+		this.currentFilter = null
+		this.searchTerm = ''
+		this.render()
 	}
 
-	return html`
-		<div class=${`CombatLogViewer${isExpanded ? ' is-expanded' : ''}`}>
-			<header class="CombatLogViewer-header">
-				<h3 class="CombatLogViewer-title" onclick=${toggleExpand}>
-					Combat Log (${filteredLogs.length})
-					<button class="CombatLogViewer-expandBtn">${isExpanded ? '▼' : '▲'}</button>
-				</h3>
+	render() {
+		const filteredLogs = this.getFilteredLogs()
 
-				<div class="CombatLogViewer-controls">
-					<div class="CombatLogViewer-filters">
-						<button
-							class=${!currentFilter ? 'Button active' : 'Button'}
-							onclick=${() => setFilter(null)}
-						>
-							All
-						</button>
-						${EVENT_TYPE_FILTERS.map(
-							(type) => html`
-								<button
-									class=${currentFilter === type ? 'Button active' : 'Button'}
-									onclick=${() => setFilter(type)}
-									style=${`color: ${getEventColor(type)}`}
-								>
-									${type.replace('SPELL_', '')}
-								</button>
-							`,
-						)}
-					</div>
+		// Controls that will go in the main content area
+		const controlsSection = html`
+			<div class="CombatLogViewer-controls">
+				<menu class="CombatLogViewer-filters">
+					<button
+						class=${!this.currentFilter ? 'Button active' : 'Button'}
+						onclick=${() => this.setFilter(null)}
+					>
+						All
+					</button>
+					${EVENT_TYPE_FILTERS.map(
+						(type) => html`
+							<button
+								class=${this.currentFilter === type ? 'Button active' : 'Button'}
+								onclick=${() => this.setFilter(type)}
+								style=${`color: ${getEventColor(type)}`}
+							>
+								${type.replace('SPELL_', '')}
+							</button>
+						`,
+					)}
+				</menu>
 
-					<div class="CombatLogViewer-search">
-						<input
-							type="text"
-							placeholder="Search logs..."
-							value=${searchTerm}
-							oninput=${handleSearch}
-						/>
-					</div>
+				<input
+					class="CombatLogViewer-search"
+					type="text"
+					placeholder="Search logs..."
+					value=${this.searchTerm}
+					oninput=${this.handleSearch}
+				/>
 
-					<button class="Button clear" onclick=${handleClear}>Clear</button>
-				</div>
-			</header>
-
-			<div class="CombatLogViewer-content">
-				${filteredLogs.length > 0
-					? html`
-							<ul class="CombatLogViewer-list">
-								${filteredLogs.map(
-									(log) => html`
-										<li class="CombatLogViewer-item" data-event-type=${log.eventType}>
-											<small class="CombatLogViewer-timestamp"
-												>${formatTimestamp(log.timestamp)}</small
-											>
-											<strong
-												class="CombatLogViewer-eventType"
-												style=${`color: ${getEventColor(log.eventType)}`}
-											>
-												${log.eventType.replace('SPELL_', '')}
-											</strong>
-											<span class="CombatLogViewer-message">
-												${formatLogEntry(log)}
-											</span>
-										</li>
-									`,
-								)}
-							</ul>
-						`
-					: html`<div class="CombatLogViewer-empty">No logs to display</div>`}
+				<button class="Button clear" onclick=${this.handleClear}>Clear</button>
 			</div>
-		</div>
-	`
+		`
+
+		// Main content for the logs
+		const mainContent = html`
+			<div class="CombatLogViewer">
+				${controlsSection}
+				<div class="CombatLogViewer-content">
+					${filteredLogs.length > 0
+						? html`
+								<ul class="CombatLogViewer-list">
+									${filteredLogs.map(
+										(log) => html`
+											<li class="CombatLogViewer-item" data-event-type=${log.eventType}>
+												<small class="CombatLogViewer-timestamp"
+													>${formatTimestamp(log.timestamp)}</small
+												>
+												<strong
+													class="CombatLogViewer-eventType"
+													style=${`color: ${getEventColor(log.eventType)}`}
+												>
+													${log.eventType.replace('SPELL_', '')}
+												</strong>
+												<span class="CombatLogViewer-message">
+													${formatLogEntry(log)}
+												</span>
+											</li>
+										`,
+									)}
+								</ul>
+							`
+						: html`<div class="CombatLogViewer-empty">No logs to display</div>`}
+				</div>
+			</div>
+		`
+
+		const content = html`
+			<floating-view data-view-id="combat-log">
+				<header>Combat log ${filteredLogs.length}</header>
+				<main>${mainContent}</main>
+			</floating-view>
+		`
+
+		render(this, () => content)
+	}
 }
 
-// Function to add a new log entry to the viewer
-export function addLogToViewer(event: CombatLogEvent) {
-	// Re-render triggered by the event listener in logCombat function
-	// No implementation needed here as it's handled via state management
-}
-
-// Register the component with our custom element registry
-export function registerCombatLogViewer() {
-	// Placeholder for future web component registration
-}
+// Register the web component
+customElements.define('combat-log-viewer', CombatLogViewer)

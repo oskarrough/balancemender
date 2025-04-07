@@ -24,7 +24,7 @@ export function Menu(game: GameLoop) {
 
 	return html`
 		<div class="IngameMenu">
-			<nav>
+			<menu>
 				<a class="Spell Button" type="button" href="/">Reset</a>
 				<button class="Spell Button" type="button" onclick=${() => game.play()}>
 					Play</button
@@ -33,17 +33,17 @@ export function Menu(game: GameLoop) {
 				><label class="Spell Button SoundToggle"
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
 				</label>
-			</nav>
+			</menu>
 			<!-- Hidden developer menu - commented out for now -->
 			<!-- 
-			<nav hidden>
+			<menu hidden>
 				<button class="Spell Button" type="button">
 					Add tank
 				</button>
 				<button class="Spell Button" type="button">
 					Add boss
 				</button>
-			</nav>
+			</menu>
 			-->
 		</div>
 	`

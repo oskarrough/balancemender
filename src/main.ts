@@ -1,10 +1,12 @@
 import {render} from './utils'
 import {GameLoop} from './nodes/game-loop'
 import {Menu} from './components/menu'
-import './style.css'
 import gsap from 'gsap'
-import './components/dev-console' // Import our web component
-import {DevConsole} from './components/dev-console' // Import the DevConsole type
+import {DevConsole} from './components/dev-console'
+import './components/dev-console'
+import './components/floating-view.js'
+import './components/combat-log-viewer.js'
+import './style.css'
 
 /**
  * Main entry point for the game.

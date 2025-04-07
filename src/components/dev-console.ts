@@ -23,7 +23,6 @@ export class DevConsole extends HTMLElement {
 
 	constructor() {
 		super()
-		this.attachShadow({mode: 'open'})
 		document.addEventListener('keydown', this.handleKeydown.bind(this))
 	}
 
