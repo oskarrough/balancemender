@@ -18,13 +18,7 @@ See the /docs folder for more.
 
 - `bun run dev` 
 
-### Structure
-
-index.html -> src/main.ts
-
-The game uses the `vroum` (https://gitlab.com/jfalxa/vroum library). Vroum helps organize everything in a structure of `Nodes` and `Tasks` that run on a (Game)`Loop`.
-
-To make it easier to create HTML elements, we use https://github.com/WebReflection/uhtml.
+See `DOCS.md` for more.
 
 ## References
 
