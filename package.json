@@ -11,9 +11,9 @@
     "format": "prettier --write src"
   },
   "devDependencies": {
-    "prettier": "^3.5.2",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.0"
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.5"
   },
   "dependencies": {
     "gsap": "^3.12.7",
