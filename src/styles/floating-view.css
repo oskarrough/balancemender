@@ -1,13 +1,15 @@
 floating-view {
-	display: block;
+	display: flex;
+	flex-flow: column nowrap;
 	position: absolute;
 	background: hsla(0deg 0% 7% / 0.97);
+	color: var(--white);
 	border-radius: 6px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 	overflow: hidden;
-	transition: height 0.3s ease;
-	min-width: 250px;
-	max-width: 95vw;
+	min-width: 200px;
+	min-height: 150px;
+	max-width: 100vw;
 	pointer-events: auto;
 
 	/* Set initial position - will be converted to transforms */
@@ -45,9 +47,23 @@ floating-view[minimized] :is(main, footer) {
 }
 
 floating-view:has(.CombatLogViewer) {
-	max-width: 800px;
+	/* max-width: 800px; */
 }
 
 /* floating-view:has(dev-console) { */
 /* 	top: calc(100vh - 9rem); */
 /* } */
+
+.resize-handle {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 16px;
+	height: 16px;
+	cursor: nwse-resize;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	user-select: none;
+}

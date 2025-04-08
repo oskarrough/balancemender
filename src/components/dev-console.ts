@@ -45,6 +45,17 @@ export class DevConsole extends HTMLElement {
 		document.removeEventListener('keydown', this.handleKeydown.bind(this))
 	}
 
+	handleKeydown(e: KeyboardEvent) {
+		// make sure we are not in an input field
+		if (document.activeElement instanceof HTMLInputElement) return
+		if (e.key === 'Escape') {
+			console.log('Escape')
+		}
+		if (e.key === '`') {
+			console.log('tilde')
+		}
+	}
+
 	render() {
 		render(
 			this,

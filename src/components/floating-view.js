@@ -12,7 +12,9 @@ class FloatingView extends HTMLElement {
 	static get config() {
 		return {
 			visibleEdge: 100,
-			visibleTop: 40
+			visibleTop: 40,
+			minWidth: 200,
+			minHeight: 150,
 		}
 	}
 
@@ -44,9 +46,13 @@ class FloatingView extends HTMLElement {
 			if (viewData?.x && viewData?.y) {
 				gsap.set(this, {x: viewData.x, y: viewData.y})
 			}
+			if (viewData?.width && viewData?.height) {
+				gsap.set(this, {width: viewData.width, height: viewData.height})
+			}
 		}
 
 		this.setupDraggable()
+		this.setupResizable()
 
 		this.addEventListener('dblclick', (e) => {
 			if (e.target.closest('header')) {
@@ -65,27 +71,69 @@ class FloatingView extends HTMLElement {
 			type: 'x,y',
 			inertia: true,
 			onDragEnd: () => this.savePosition(),
-			onPress: function() {
+			onPress: function () {
 				this.applyBounds(self.calculateBounds())
 			},
-			onDrag: function() {
+			onDrag: function () {
 				self.enforceBounds(this, self.calculateBounds())
-			}
+			},
 		})
 	}
 
-	handleResize() {
-		const draggable = Draggable.get(this)
-		if (draggable) {
-			const bounds = this.calculateBounds()
-			draggable.applyBounds(bounds)
-			this.enforceBounds(draggable, bounds)
+	setupResizable() {
+		// Create and append the resize handle
+		const resizeHandle = document.createElement('div')
+		resizeHandle.className = 'resize-handle'
+		resizeHandle.innerHTML = '⟋'
+		this.appendChild(resizeHandle)
+
+		let startWidth, startHeight, startX, startY
+		const {minWidth, minHeight} = FloatingView.config
+
+		const startResize = (e) => {
+			e.preventDefault()
+			startWidth = this.offsetWidth
+			startHeight = this.offsetHeight
+			startX = e.clientX
+			startY = e.clientY
+			document.addEventListener('mousemove', resize)
+			document.addEventListener('mouseup', stopResize)
+		}
+
+		const resize = (e) => {
+			const width = Math.max(minWidth, startWidth + (e.clientX - startX))
+			const height = Math.max(minHeight, startHeight + (e.clientY - startY))
+			this.style.width = `${width}px`
+			this.style.height = `${height}px`
+		}
+
+		const stopResize = () => {
+			document.removeEventListener('mousemove', resize)
+			document.removeEventListener('mouseup', stopResize)
+			this.saveSize()
+		}
+
+		resizeHandle.addEventListener('mousedown', startResize)
+	}
+
+	saveSize() {
+		const viewId = this.id || this.getAttribute('data-view-id')
+		if (!viewId) return
+
+		const width = this.offsetWidth
+		const height = this.offsetHeight
+
+		const existingRow = store.getRow('floating-views', viewId)
+		if (existingRow) {
+			store.setPartialRow('floating-views', viewId, {width, height})
+		} else {
+			store.setRow('floating-views', viewId, {width, height, type: 'view'})
 		}
 	}
 
 	savePosition() {
 		const viewId = this.id || this.getAttribute('data-view-id')
-        console.log('saving', viewId)
+		console.log('saving', viewId)
 		if (!viewId) return
 
 		const matrix = new DOMMatrixReadOnly(this.style.transform)
@@ -97,6 +145,15 @@ class FloatingView extends HTMLElement {
 			store.setPartialRow('floating-views', viewId, {x, y})
 		} else {
 			store.setRow('floating-views', viewId, {x, y, type: 'view'})
+		}
+	}
+
+	handleResize() {
+		const draggable = Draggable.get(this)
+		if (draggable) {
+			const bounds = this.calculateBounds()
+			draggable.applyBounds(bounds)
+			this.enforceBounds(draggable, bounds)
 		}
 	}
 }

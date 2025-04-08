@@ -1,19 +1,7 @@
 dev-console {
-	--console-bg: rgba(0, 0, 0, 0.95);
-	--console-text: #eee;
-	--console-input-bg: rgba(0, 0, 0, 0.5);
-	--console-height: 300px;
-
 	display: flex;
 	flex-direction: column;
-	/* height: var(--console-height); */
-	/* background-color: var(--console-bg); */
-	/* color: var(--console-text); */
 	font-family: monospace;
-}
-
-dev-console[minimized] {
-	/* background: yellow; */
 }
 
 .DevConsole-output {
@@ -28,10 +16,11 @@ dev-console[minimized] {
 }
 
 .DevConsole-output div {
-	margin-bottom: 4px;
+	margin-bottom: 0.2rem;
 	word-wrap: break-word;
 	opacity: 0.9;
-	padding-left: 4px;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
 	border-left: 2px solid transparent;
 }
 
@@ -39,12 +28,6 @@ dev-console[minimized] {
 	margin-top: auto;
 }
 
-.DevConsole-output div:has(+ div) {
-	/* border-bottom: 1px solid rgba(255, 255, 255, 0.1); */
-	/* padding-bottom: 4px; */
-}
-
-/* Style for command entries */
 .DevConsole-output div:first-line {
 	color: var(--green);
 }

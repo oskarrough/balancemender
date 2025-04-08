@@ -231,7 +231,7 @@ export class CombatLogViewer extends HTMLElement {
 					oninput=${this.handleSearch}
 				/>
 
-				<button class="Button clear" onclick=${this.handleClear}>Clear</button>
+				<button class="Button" onclick=${this.handleClear}>Clear</button>
 			</div>
 		`
 

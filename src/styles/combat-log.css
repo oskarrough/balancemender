@@ -8,17 +8,15 @@
 	--clv-filter-bg: rgba(30, 30, 30, 0.7);
 	--clv-timestamp: #888;
 
-	max-height: 15rem;
-	/* background-color: var(--clv-bg); */
+	/* max-height: 15rem; */
 	color: var(--clv-text);
 	font-size: 13px;
-	transition: max-height 0.3s ease-in-out;
 	display: flex;
 	flex-direction: column;
 }
 
 .CombatLogViewer.is-expanded {
-	max-height: 80vh;
+	/* max-height: 80vh; */
 }
 
 .CombatLogViewer-controls {
@@ -35,20 +33,7 @@
 	gap: 0.25rem;
 }
 
-.CombatLogViewer .Button.clear {
-	background: rgba(80, 0, 0, 0.7);
-	border: 1px solid #700;
-}
-
-.CombatLogViewer .Button.clear:hover {
-	background: rgba(120, 0, 0, 0.7);
-}
-
-.CombatLogViewer-content {
-	overflow-y: auto;
-	max-height: calc(100% - 5.625rem);
-	padding: 0.5rem;
-}
+.CombatLogViewer-content { }
 
 .CombatLogViewer-list {
 	list-style: none;
