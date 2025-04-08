@@ -46,6 +46,7 @@ class FloatingView extends HTMLElement {
 		this.addEventListener('dblclick', (e) => {
 			if (e.target.closest('header')) {
 				e.currentTarget.toggleAttribute('minimized')
+				e.currentTarget.style.height = 'auto'
 			}
 		})
 
@@ -61,7 +62,9 @@ class FloatingView extends HTMLElement {
 			gsap.set(this, {x: viewData.x, y: viewData.y})
 		}
 		if (viewData?.width && viewData?.height) {
-			gsap.set(this, {width: viewData.width, height: viewData.height})
+			const minimized = this.hasAttribute('minimized')
+			const height = minimized ? 'auto' : viewData.height
+			gsap.set(this, {width: viewData.width, height})
 		}
 	}
 

@@ -27,24 +27,13 @@ export function Menu(game: GameLoop) {
 			<menu>
 				<a class="Button" type="button" href="/">Reset</a>
 				<button class="Button" type="button" onclick=${() => game.play()}>
-					Play</button
-				><button class="Button" type="button" onclick=${() => game.pause()}>
-					Pause</button
-				><label class="Button SoundToggle"
+					Play</button >
+				<button class="Button" type="button" onclick=${() => game.pause()}>
+					Pause</button >
+				<label class="Button SoundToggle"
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
 				</label>
 			</menu>
-			<!-- Hidden developer menu - commented out for now -->
-			<!--
-			<menu hidden>
-				<button class="Button" type="button">
-					Add tank
-				</button>
-				<button class="Button" type="button">
-					Add boss
-				</button>
-			</menu>
-			-->
 		</div>
 	`
 }

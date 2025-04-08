@@ -20,16 +20,15 @@ export class DevConsole extends HTMLElement {
 	private history: string[] = []
 	private historyIndex = 0
 	private logger = createLogger('info')
-
-	constructor() {
-		super()
-		document.addEventListener('keydown', this.handleKeydown.bind(this))
-	}
+	private floatingView: HTMLElement | null = null
 
 	init(game: GameLoop) {
 		this.game = game
 		this.setupCommands()
 		this.render()
+
+		// Find the floating view container
+		this.floatingView = this.closest('floating-view')
 
 		// Add welcome messages
 		this.logToConsole('WebHealer Developer Console. Blip blop')
@@ -41,18 +40,22 @@ export class DevConsole extends HTMLElement {
 		}
 	}
 
-	disconnectedCallback() {
-		document.removeEventListener('keydown', this.handleKeydown.bind(this))
-	}
+	toggleConsole() {
+		const view = this.floatingView ?? this.closest('floating-view')
+		if (!view) return
 
-	handleKeydown(e: KeyboardEvent) {
-		// make sure we are not in an input field
-		if (document.activeElement instanceof HTMLInputElement) return
-		if (e.key === 'Escape') {
-			console.log('Escape')
+		// If minimized, restore it
+		if (view.hasAttribute('minimized')) {
+			view.removeAttribute('minimized')
+			view.style.height = 'auto'
+			setTimeout(() => {
+				const input = this.querySelector('.DevConsole-input') as HTMLInputElement
+				input?.focus()
+			}, 50)
 		}
-		if (e.key === '`') {
-			console.log('tilde')
+		// If already visible, minimize it
+		else {
+			view.setAttribute('minimized', '')
 		}
 	}
 
@@ -64,11 +67,11 @@ export class DevConsole extends HTMLElement {
 					<div style="flex-grow: 1; min-height: 0;"></div>
 				</div>
 				<div class="DevConsole-inputWrapper">
-					<span class="DevConsole-prefix">/</span>
+					<span class="DevConsole-prefix">~</span>
 					<input
 						type="text"
 						class="DevConsole-input"
-						placeholder="Type a command (e.g., /help)"
+						placeholder="Type a command (e.g., help)"
 						onkeydown=${this.handleInputKeydown}
 					/>
 				</div>
