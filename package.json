@@ -5,18 +5,21 @@
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "vite dev",
+    "build": "vite build",
     "preview": "vite preview",
     "format": "prettier --write src",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "deploy": "bun run build && wrangler deploy"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.0.2",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "vite": "^6.2.5",
-    "vitest": "^3.1.1"
+    "vitest": "^3.1.1",
+    "wrangler": "^4.9.0"
   },
   "dependencies": {
     "gsap": "^3.12.7",
