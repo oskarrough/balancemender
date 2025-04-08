@@ -10,6 +10,8 @@ export function Monitor(loop: GameLoop) {
 		<li><em>FPS</em> ${fps}</li>
 		<li><em>GCD</em> ${player.gcd ? 'on' : 'off'}</li>
 		${loop.godMode ? html`<li class="Monitor-godMode"><em>God mode ON</li>` : ''}
-		${loop.infiniteMana ? html`<li class="Monitor-infiniteMana"><em>Inf. mana</em> ON</li>` : ''}
+		${loop.infiniteMana
+			? html`<li class="Monitor-infiniteMana"><em>Inf. mana</em> ON</li>`
+			: ''}
 	</ul>`
 }

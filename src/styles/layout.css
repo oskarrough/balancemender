@@ -83,7 +83,8 @@ body {
 	margin-right: auto;
 }
 
-.Enemies {}
+.Enemies {
+}
 
 .PartyGroup {
 	display: flex;

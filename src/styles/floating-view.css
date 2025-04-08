@@ -15,7 +15,6 @@ floating-view {
 	overflow: hidden;
 	pointer-events: auto;
 
-
 	header {
 		display: flex;
 		align-items: center;

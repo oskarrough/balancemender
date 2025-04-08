@@ -5,7 +5,7 @@ import {fct} from '../components/floating-combat-text'
 import {log, naturalizeNumber} from '../utils'
 import {Player} from './player'
 import {GameLoop} from './game-loop'
-import { logCombat } from '../combatlog'
+import {logCombat} from '../combatlog'
 
 export class Spell extends Task {
 	repeat = 1
@@ -48,7 +48,7 @@ export class Spell extends Task {
 			sourceName: this.parent.name,
 			spellId: this.name,
 			spellName: this.name,
-			value: this.delay // Cast time
+			value: this.delay, // Cast time
 		})
 
 		// Only play for spells with a cast time
@@ -75,7 +75,7 @@ export class Spell extends Task {
 			sourceId: this.parent.id,
 			sourceName: this.parent.name,
 			spellId: this.name,
-			spellName: this.name
+			spellName: this.name,
 		})
 
 		if (this.heal) this.applyHeal()
@@ -133,7 +133,7 @@ export class Spell extends Task {
 				sourceId: this.parent.id,
 				sourceName: this.parent.name,
 				spellId: this.name,
-				spellName: this.name
+				spellName: this.name,
 			})
 		}
 
@@ -146,7 +146,7 @@ export class Spell extends Task {
 		// If the spell finished at least once, consume mana
 		if (this.cycles > 0 && player.mana) {
 			player.mana.spend(this.cost)
-			
+
 			// Log mana consumption
 			logCombat({
 				timestamp: Date.now(),
@@ -154,7 +154,7 @@ export class Spell extends Task {
 				sourceId: this.parent.id,
 				sourceName: this.parent.name,
 				value: -this.cost,
-				extraInfo: 'MANA'
+				extraInfo: 'MANA',
 			})
 		}
 	}
@@ -175,7 +175,7 @@ export class Spell extends Task {
 		// Display and log the healing
 		fct(`+${actualHeal}`)
 		log(`spell:${this.name}:applyHeal`, actualHeal)
-		
+
 		// Log healing to combat log
 		logCombat({
 			timestamp: Date.now(),
@@ -186,7 +186,7 @@ export class Spell extends Task {
 			targetName: target.name || 'Unknown',
 			spellId: this.name,
 			spellName: this.name,
-			value: actualHeal
+			value: actualHeal,
 		})
 	}
 }

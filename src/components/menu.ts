@@ -38,7 +38,15 @@ export function Menu(game: GameLoop) {
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
 				</label>
 				<label>
-					<input type="range" min="0" max="100" value="50" onchange=${setVolume} oninput=${setVolume} /> Volume
+					<input
+						type="range"
+						min="0"
+						max="100"
+						value="50"
+						onchange=${setVolume}
+						oninput=${setVolume}
+					/>
+					Volume
 				</label>
 			</menu>
 		</div>

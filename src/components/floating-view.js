@@ -36,14 +36,14 @@ class FloatingView extends HTMLElement {
 			type: 'x,y',
 			trigger: this.querySelector('header'),
 			bounds: this.calculateBounds(),
-			inertia: true
+			inertia: true,
 		})
-		
+
 		// Setup resize handle
 		this.setupResizable()
 
 		// Setup event handlers
-		this.addEventListener('dblclick', e => {
+		this.addEventListener('dblclick', (e) => {
 			if (e.target.closest('header')) {
 				e.currentTarget.toggleAttribute('minimized')
 				e.currentTarget.style.height = 'auto'
