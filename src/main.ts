@@ -1,4 +1,4 @@
-import {render} from './utils'
+import {render, log} from './utils'
 import {GameLoop} from './nodes/game-loop'
 import {Menu} from './components/menu'
 import gsap from 'gsap'

@@ -22,20 +22,6 @@ export interface DamageEffectConfig {
 	sound?: string
 }
 
-// In your damage effect class or wherever you define these
-enum DamageType {
-	SPELL = 'SPELL',
-	SWING = 'SWING', // Melee
-	RANGE = 'RANGE', // Ranged attacks
-}
-
-// Map damage types to event types with proper typing
-const damageTypeToEventType: Record<DamageType, CombatEventType> = {
-	[DamageType.SPELL]: 'SPELL_DAMAGE',
-	[DamageType.SWING]: 'SWING_DAMAGE',
-	[DamageType.RANGE]: 'RANGE_DAMAGE',
-}
-
 /**
  * Base class for all damage effects (attacks from any character to any character)
  */
@@ -61,9 +47,10 @@ export class DamageEffect extends Task {
 	static name = 'Generic Attack'
 	static minDamage = 0
 	static maxDamage = 0
+	static eventType: CombatEventType = 'SPELL_DAMAGE' // Default event type
 
-	// Add this to your damage effect properties
-	damageType: DamageType = DamageType.SPELL // Default
+	// Instance event type
+	eventType: CombatEventType = 'SPELL_DAMAGE' // Default
 
 	/**
 	 * Create a damage effect that will attack the attacker's current target
@@ -84,6 +71,7 @@ export class DamageEffect extends Task {
 		this.name = constructor.name
 		this.minDamage = constructor.minDamage
 		this.maxDamage = constructor.maxDamage
+		this.eventType = constructor.eventType 
 
 		// Store target ID and attacker name for targeting and logs
 		// If initialTarget is provided, use that, otherwise set to attacker
@@ -135,7 +123,7 @@ export class DamageEffect extends Task {
 		// Log damage to combat log
 		logCombat({
 			timestamp: Date.now(),
-			eventType: damageTypeToEventType[this.damageType] || 'SPELL_DAMAGE',
+			eventType: this.eventType,
 			sourceId: this.attacker.id,
 			sourceName: this.attacker.name,
 			targetId: this.target.id,
@@ -158,12 +146,15 @@ export class DamageEffect extends Task {
 
 		// Check if target died
 		if (this.target.health.current <= 0) {
-			// Log unit death to combat log
 			logCombat({
 				timestamp: Date.now(),
 				eventType: 'UNIT_DIED',
+				sourceId: this.attacker.id,
+				sourceName: this.attacker.name,
 				targetId: this.target.id,
 				targetName: this.target.name || this.target.constructor.name,
+				spellId: this.name,
+				spellName: this.name,
 			})
 
 			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
@@ -232,7 +223,8 @@ export class SmallAttack extends DamageEffect {
 	static minDamage = 21
 	static maxDamage = 30
 	static sound = 'combat.air_hit'
-	static name = 'Quick Strike'
+	static name = 'Quick Stab'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 
 /** Medium attack with moderate damage and frequency */
@@ -243,6 +235,7 @@ export class MediumAttack extends DamageEffect {
 	static maxDamage = 550
 	static sound = 'combat.strong_punch'
 	static name = 'Heavy Blow'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 
 /** Heavy attack with high damage but infrequent */
@@ -252,7 +245,8 @@ export class HugeAttack extends DamageEffect {
 	static minDamage = 500
 	static maxDamage = 700
 	static sound = 'combat.fast_punch'
-	static name = 'Devastating Slam'
+	static name = 'Devastating ranged'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 
 /** Tank attack - lower damage but consistent */
@@ -262,6 +256,7 @@ export class TankAttack extends DamageEffect {
 	static maxDamage = 90
 	static sound = 'combat.sword_hit'
 	static name = 'Shield Bash'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 
 /** Warrior attack - high damage, slower attack speed */
@@ -271,6 +266,7 @@ export class WarriorAttack extends DamageEffect {
 	static maxDamage = 220
 	static sound = 'combat.sword_hit'
 	static name = 'Mighty Swing'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 
 /** Rogue attack - lower damage but fast attack speed */
@@ -280,12 +276,15 @@ export class RogueAttack extends DamageEffect {
 	static maxDamage = 95
 	static sound = 'combat.sword_hit'
 	static name = 'Quick Slash'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 
 /**
  * Base class for periodic damage effects (DoTs)
  */
-export class PeriodicDamageEffect extends DamageEffect {
+export class WIP_PeriodicDamageEffect extends DamageEffect {
+	static eventType: CombatEventType = 'SPELL_PERIODIC_DAMAGE' // Use periodic damage by default
+
 	tick() {
 		const damage = this.damage()
 		const actualDamage = this.target.health.damage(damage)
@@ -297,7 +296,7 @@ export class PeriodicDamageEffect extends DamageEffect {
 		// Log damage to combat log with periodic event type
 		logCombat({
 			timestamp: Date.now(),
-			eventType: 'SPELL_PERIODIC_DAMAGE',
+			eventType: this.eventType,
 			sourceId: this.attacker.id,
 			sourceName: this.attacker.name,
 			targetId: this.target.id,
@@ -333,13 +332,4 @@ export class PeriodicDamageEffect extends DamageEffect {
 			})
 		}
 	}
-}
-
-// Example of a periodic damage effect like a poison
-export class PoisonEffect extends PeriodicDamageEffect {
-	static interval = 2000 // tick every 2 seconds
-	static minDamage = 30
-	static maxDamage = 45
-	static sound = 'combat.poison'
-	static name = 'Poison'
 }

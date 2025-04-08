@@ -7,6 +7,7 @@ import {AudioPlayer} from './audio'
 import {UI} from '../components/ui'
 import {DevConsole} from '../components/dev-console'
 import gsap from 'gsap'
+import {logCombat} from '../combatlog'
 
 /**
  * Types of characters in the game
@@ -84,6 +85,11 @@ export class GameLoop extends Loop {
 		log('game:mount')
 		this.on(GameLoop.PLAY, this.handlePlay)
 		this.on(GameLoop.PAUSE, this.handlePause)
+
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'ENCOUNTER_START',
+		})
 	}
 
 	handlePlay() {

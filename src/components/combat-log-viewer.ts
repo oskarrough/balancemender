@@ -253,7 +253,7 @@ export class CombatLogViewer extends HTMLElement {
 													class="CombatLogViewer-eventType"
 													style=${`color: ${getEventColor(log.eventType)}`}
 												>
-													${log.eventType.replace('SPELL_', '')}
+													${log.eventType}
 												</strong>
 												<span class="CombatLogViewer-message">
 													${formatLogEntry(log)}

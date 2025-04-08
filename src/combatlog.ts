@@ -195,13 +195,11 @@ export function createLogger(logLevel = 'info') {
 }
 
 /**
- * Log a combat event using Pino
+ * Log a CombatLogEvent using Pino
  */
 export function logCombat(event: CombatLogEvent) {
-	// Set timestamp if not provided
 	if (!event.timestamp) event.timestamp = Date.now()
-
-	// Log using Pino with the combat serializer
+	// "combat" is our pino serializer
 	logger.info({combat: event})
 }
 
