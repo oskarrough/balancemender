@@ -25,7 +25,7 @@ floating-view {
 		font-size: 13px;
 		padding: 0 0.3em;
 		min-height: 2em;
-		background: var(--c-blue-celeste);
+		background: var(--c-linden-green);
 		border: 1px solid rgba(0, 0, 0, 0.3);
 		cursor: grab;
 		user-select: none;
@@ -36,6 +36,7 @@ floating-view {
 	}
 
 	main {
+		display: grid;
 		flex: 1;
 		overflow-y: auto;
 		scrollbar-width: thin;

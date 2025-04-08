@@ -17,11 +17,9 @@
 
 html {
 	color-scheme: light;
-	background: var(--gray);
+	background: var(--c-french-grey);
 	color: var(--c-black);
-	background-repeat: no-repeat;
 	line-height: 1.5;
-	text-rendering: optimizeLegibility;
 }
 
 html,

@@ -71,7 +71,7 @@ export class DamageEffect extends Task {
 		this.name = constructor.name
 		this.minDamage = constructor.minDamage
 		this.maxDamage = constructor.maxDamage
-		this.eventType = constructor.eventType 
+		this.eventType = constructor.eventType
 
 		// Store target ID and attacker name for targeting and logs
 		// If initialTarget is provided, use that, otherwise set to attacker

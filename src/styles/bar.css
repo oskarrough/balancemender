@@ -3,6 +3,7 @@
 	--health-bg: pink;
 	--mana: var(--c-blue-celeste);
 	--mana-bg: lightblue;
+	--cast: var(--c-linden-green);
 	--radius: 4px;
 
 	display: flex;
@@ -16,7 +17,7 @@
 .Bar div {
 	min-height: 1.5em;
 	border-radius: var(--radius);
-	background: var(--accent);
+	background: var(--bg);
 	border-top: 1px solid hsla(0 0% 90% / 0 4);
 	border-right: 1px solid hsla(0 0% 10% / 0.6);
 	/* transition: width 600ms; */
@@ -54,20 +55,19 @@ div.Bar-potentialValue {
 }
 
 [data-type='health'] {
-	--accent: var(--health);
+	--bg: var(--health);
 }
 
 [data-type='mana'] {
-	--accent: var(--mana);
+	--bg: var(--mana);
 }
 
 [data-type='cd'] {
-	--accent: rgb(from var(--yellow) r g b / 0.8);
+	--bg: rgb(from var(--cast) r g b / 0.8);
 }
 
 [data-type='cast'] {
-	--accent: var(--yellow);
-	max-width: 15rem;
+	--bg: var(--cast);
 	/* because of the label */
 	margin-bottom: 0.7rem;
 }

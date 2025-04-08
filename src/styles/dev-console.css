@@ -1,7 +1,6 @@
 dev-console {
 	display: flex;
 	flex-direction: column;
-	font-family: monospace;
 }
 
 .DevConsole-output {
@@ -10,7 +9,6 @@ dev-console {
 	line-height: 1.4;
 	display: flex;
 	flex-direction: column;
-	max-height: 15rem;
 	font-size: 13px;
 	scrollbar-width: thin;
 }
@@ -33,6 +31,9 @@ dev-console {
 }
 
 .DevConsole-inputWrapper {
+	position: sticky;
+	bottom: 0;
+	z-index: 1;
 	display: flex;
 	align-items: center;
 	background-color: rgba(0, 0, 0, 0.2);
@@ -41,7 +42,6 @@ dev-console {
 
 .DevConsole-inputWrapper span {
 	margin-right: 5px;
-	color: var(--green);
 }
 
 .DevConsole-input {

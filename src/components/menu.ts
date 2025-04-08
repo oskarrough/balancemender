@@ -26,10 +26,8 @@ export function Menu(game: GameLoop) {
 		<div class="IngameMenu">
 			<menu>
 				<a class="Button" type="button" href="/">Reset</a>
-				<button class="Button" type="button" onclick=${() => game.play()}>
-					Play</button >
-				<button class="Button" type="button" onclick=${() => game.pause()}>
-					Pause</button >
+				<button class="Button" type="button" onclick=${() => game.play()}>Play</button>
+				<button class="Button" type="button" onclick=${() => game.pause()}>Pause</button>
 				<label class="Button SoundToggle"
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
 				</label>

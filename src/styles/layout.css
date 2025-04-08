@@ -54,9 +54,9 @@ body {
 }
 
 .Game {
-	/* display: grid; */
-	/* grid-template-columns: repeat(5, 1fr); */
-	/* grid-template-rows: 7rem 1fr 7rem; */
+	display: flex;
+	flex-flow: column;
+	place-items: center;
 	padding-top: 7rem;
 }
 
@@ -148,7 +148,7 @@ body {
 }
 
 .CastBar {
-	min-width: 10rem;
+	min-width: 12rem;
 }
 
 .GameOver {
