@@ -201,7 +201,7 @@ export class CombatLogViewer extends HTMLElement {
 		const filteredLogs = this.getFilteredLogs()
 
 		// Controls that will go in the main content area
-		const controlsSection = html`
+		const controlsTemplate = html`
 			<div class="CombatLogViewer-controls">
 				<menu class="CombatLogViewer-filters">
 					<button
@@ -231,14 +231,13 @@ export class CombatLogViewer extends HTMLElement {
 					oninput=${this.handleSearch}
 				/>
 
-				<button class="Button" onclick=${this.handleClear}>Clear</button>
+				<button hidden class="Button" onclick=${this.handleClear}>Clear</button>
 			</div>
 		`
 
-		// Main content for the logs
-		const mainContent = html`
+		const tpl = html`
 			<div class="CombatLogViewer">
-				${controlsSection}
+				${controlsTemplate}
 				<div class="CombatLogViewer-content">
 					${filteredLogs.length > 0
 						? html`
@@ -267,15 +266,7 @@ export class CombatLogViewer extends HTMLElement {
 				</div>
 			</div>
 		`
-
-		const content = html`
-			<floating-view data-view-id="combat-log">
-				<header>Combat log ${filteredLogs.length}</header>
-				<main>${mainContent}</main>
-			</floating-view>
-		`
-
-		render(this, () => content)
+		render(this, () => tpl)
 	}
 }
 

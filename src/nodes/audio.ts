@@ -12,17 +12,12 @@ type SoundLibrary = Record<string, SoundCategory>
  * - Call AudioPlayer.play('spell.cast') from anywhere
  */
 export class AudioPlayer extends Node {
-	// Reference to global instance (automatically set when created on GameLoop)
 	static global: AudioPlayer | null = null
-
-	// Fix: With Vite, public folder contents are served at root path
 	folder = '/assets/sounds/'
 	disabled = false
-
-	// Use private muted field with proper getter/setter
-	private _muted = false
 	paused = false
-	volume = 0.8 // Increased default volume
+	volume = 0.8 
+	private _muted = false
 
 	// Sounds by category
 	sounds: SoundLibrary = {

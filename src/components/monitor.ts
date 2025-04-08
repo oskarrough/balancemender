@@ -6,10 +6,10 @@ export function Monitor(loop: GameLoop) {
 	const fps = loop.deltaTime > 0 ? Math.round(1000 / loop.deltaTime) : 0
 
 	return html` <ul class="Log Monitor">
-		<li>Time: ${roundOne(loop.elapsedTime / 1000)}s</li>
-		<li>FPS: ${fps}</li>
-		<li>GCD: ${player.gcd ? 'on' : 'off'}</li>
-		${loop.godMode ? html`<li class="Monitor-godMode">GodMode: ON</li>` : ''}
-		${loop.infiniteMana ? html`<li class="Monitor-infiniteMana">InfMana: ON</li>` : ''}
+		<li><em>Time</em> ${roundOne(loop.elapsedTime / 1000)}s</li>
+		<li><em>FPS</em> ${fps}</li>
+		<li><em>GCD</em> ${player.gcd ? 'on' : 'off'}</li>
+		${loop.godMode ? html`<li class="Monitor-godMode"><em>God mode ON</li>` : ''}
+		${loop.infiniteMana ? html`<li class="Monitor-infiniteMana"><em>Inf. mana</em> ON</li>` : ''}
 	</ul>`
 }

@@ -23,11 +23,11 @@ function main() {
 	// @ts-ignore
 	window.webhealer = game
 	render(document.querySelector('#menu')!, () => Menu(game))
-	gsap.to('.Frame', {opacity: 1, duration: 1})
 	const urlParams = new URLSearchParams(window.location.search)
 	const muted = urlParams.has('muted')
 	if (muted) game.muted = true
-	gsap.to('.Frame', {opacity: 1, duration: 2})
+	gsap.to('.Frame', {opacity: 1, duration: 1})
+	// gsap.set('.Frame', {opacity: 1})
 }
 
 function setupDevTools(game: GameLoop) {

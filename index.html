@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background: lab(70.024 -1.25023 -9.22515)">
 	<head>
 		<meta charset="utf-8" />
 		<title>Web Healer</title>
@@ -44,23 +44,18 @@
 			</main>
 		</floating-view>
 
-		<combat-log-viewer></combat-log-viewer>
+		<floating-view data-view-id="combat-log" style="height: 11rem">
+			<header>Combat log</header>
+			<main>
+				<combat-log-viewer></combat-log-viewer>
+			</main>
+		</floating-view>
 
 		<p style="position: fixed; right: 1em; bottom: 0.5em">
 			<a href="https://github.com/oskarrough/webhealer" rel="noreferrer" target="_blank"
 				>source</a
 			>
 		</p>
-
-		<!-- <div class="Menu">
-			<h1>Web Healer</h1>
-			<p style="font-size: 2vw">How long can you keep the tank alive?</p>
-			<menu>
-				<button class="Spell Button" type="button" onclick=${() => start()}>
-					New Game
-				</button>
-			</menu>
-		</div> -->
 
 		<script type="module" src="/src/main.ts"></script>
 	</body>

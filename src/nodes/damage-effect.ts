@@ -244,9 +244,9 @@ export class HugeAttack extends DamageEffect {
 	static interval = 12000
 	static minDamage = 500
 	static maxDamage = 700
-	static sound = 'combat.fast_punch'
-	static name = 'Devastating ranged'
-	static eventType: CombatEventType = 'SWING_DAMAGE'
+	static sound = 'combat.arrow'
+	static name = 'Nasty arrow'
+	static eventType: CombatEventType = 'RANGE_DAMAGE'
 }
 
 /** Tank attack - lower damage but consistent */

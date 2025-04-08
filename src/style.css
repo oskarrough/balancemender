@@ -11,7 +11,6 @@
 @import url('styles/colors.css');
 
 :root {
-	--somekindofgreen: hsl(120, 57.1%, 16%);
 	--easing: cubic-bezier(0.165, 0.84, 0.4, 1);
 }
 
@@ -133,11 +132,15 @@ img {
 	background: var(--c-snow-white);
 	color: var(--c-black);
 	border: 1px solid;
-	min-height: 2rem;
+	min-height: 2em;
 	font-size: inherit;
 	line-height: 1;
-	padding: 0 0.3em;
+	padding: 0.1em 0.3em 0;
 	border-radius: 0.2rem;
+
+	&[hidden] {
+		display: none;
+	}
 }
 
 .Button:hover {

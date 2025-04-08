@@ -9,9 +9,9 @@
 	box-sizing: border-box;
 }
 
-html {
-  scrollbar-gutter: stable;
-}
+/* html { */
+/*   scrollbar-gutter: stable; */
+/* } */
 
 :where(audio, iframe, img, svg, video) {
   max-block-size: 100%;
@@ -36,4 +36,3 @@ html {
 :where([type="search"]) {
   -webkit-appearance: textfield;
 }
-

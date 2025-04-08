@@ -30,20 +30,20 @@ class FloatingView extends HTMLElement {
 		}
 	}
 
-	// Enforce the current position is within bounds
-	enforceBounds(draggable, bounds) {
-		if (!draggable || !bounds) return
-
-		draggable.x = Math.min(Math.max(draggable.x, bounds.minX), bounds.maxX)
-		draggable.y = Math.min(Math.max(draggable.y, bounds.minY), bounds.maxY)
-	}
-
 	connectedCallback() {
-		this.setInitialState()
-		this.setupDraggable()
+		// Initialize draggable directly
+		Draggable.create(this, {
+			type: 'x,y',
+			trigger: this.querySelector('header'),
+			bounds: this.calculateBounds(),
+			inertia: true
+		})
+		
+		// Setup resize handle
 		this.setupResizable()
 
-		this.addEventListener('dblclick', (e) => {
+		// Setup event handlers
+		this.addEventListener('dblclick', e => {
 			if (e.target.closest('header')) {
 				e.currentTarget.toggleAttribute('minimized')
 				e.currentTarget.style.height = 'auto'
@@ -51,38 +51,6 @@ class FloatingView extends HTMLElement {
 		})
 
 		window.addEventListener('resize', this.handleResize.bind(this))
-	}
-
-	/** Restore size and position from store */
-	setInitialState() {
-		const viewId = this.getAttribute('data-view-id')
-		if (!viewId) return
-		const viewData = store.getRow('floating-views', viewId)
-		if (viewData?.x && viewData?.y) {
-			gsap.set(this, {x: viewData.x, y: viewData.y})
-		}
-		if (viewData?.width && viewData?.height) {
-			const minimized = this.hasAttribute('minimized')
-			const height = minimized ? 'auto' : viewData.height
-			gsap.set(this, {width: viewData.width, height})
-		}
-	}
-
-	setupDraggable() {
-		const self = this
-		Draggable.create(this, {
-			trigger: this.querySelector('header'),
-			bounds: this.calculateBounds(),
-			type: 'x,y',
-			inertia: true,
-			onDragEnd: () => this.savePosition(),
-			onPress: function () {
-				this.applyBounds(self.calculateBounds())
-			},
-			onDrag: function () {
-				self.enforceBounds(this, self.calculateBounds())
-			},
-		})
 	}
 
 	setupResizable() {
@@ -115,12 +83,15 @@ class FloatingView extends HTMLElement {
 		const stopResize = () => {
 			document.removeEventListener('mousemove', resize)
 			document.removeEventListener('mouseup', stopResize)
-			this.saveSize()
+			// Disabled during testing
+			// this.saveSize()
 		}
 
 		resizeHandle.addEventListener('mousedown', startResize)
 	}
 
+	// Store functionality disabled during testing
+	/*
 	saveSize() {
 		const viewId = this.id || this.getAttribute('data-view-id')
 		if (!viewId) return
@@ -152,13 +123,12 @@ class FloatingView extends HTMLElement {
 			store.setRow('floating-views', viewId, {x, y, type: 'view'})
 		}
 	}
+	*/
 
 	handleResize() {
 		const draggable = Draggable.get(this)
 		if (draggable) {
-			const bounds = this.calculateBounds()
-			draggable.applyBounds(bounds)
-			this.enforceBounds(draggable, bounds)
+			draggable.applyBounds(this.calculateBounds())
 		}
 	}
 }
