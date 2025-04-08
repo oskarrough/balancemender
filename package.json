@@ -24,7 +24,7 @@
   "dependencies": {
     "gsap": "^3.12.7",
     "pino": "^9.6.0",
-    "tinybase": "^6.0.0",
+    "tinybase": "^6.0.1",
     "uhtml": "^4.7.0",
     "vroum": "^1.0.1",
     "xid-ts": "^1.1.4"
