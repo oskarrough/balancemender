@@ -6,6 +6,7 @@ import {Tank, Rogue, Warrior} from './party-characters'
 import {AudioPlayer} from './audio'
 import {UI} from '../components/ui'
 import {DevConsole} from '../components/dev-console'
+import gsap from 'gsap'
 
 /**
  * Types of characters in the game
@@ -122,21 +123,19 @@ export class GameLoop extends Loop {
 		this.pause()
 
 		// Add GSAP animations for game over effect
-		import('gsap').then(({default: gsap}) => {
-			// Scale down and fade enemies and party
-			gsap.to('.Enemies, .PartyGroup', {
-				scale: 0.95,
-				opacity: 0.7,
-				duration: 0.8,
-				ease: 'power2.out',
-			})
-
-			// Make game over screen more visible with animation
-			gsap.fromTo(
-				'.GameOver',
-				{opacity: 0, scale: 0.9, y: -20},
-				{opacity: 1, scale: 1, y: 0, duration: 1, delay: 0.3, ease: 'back.out(1.4)'},
-			)
+		// Scale down and fade enemies and party
+		gsap.to('.Enemies, .PartyGroup', {
+			scale: 0.95,
+			// opacity: 0.7,
+			duration: 0.8,
+			ease: 'power2.out',
 		})
+
+		// Make game over screen more visible with animation
+		gsap.fromTo(
+			'.GameOver',
+			{opacity: 0, scale: 0.9, y: -20},
+			{opacity: 1, scale: 1, y: 0, duration: 1, delay: 0.3, ease: 'back.out(1.4)'},
+		)
 	}
 }
