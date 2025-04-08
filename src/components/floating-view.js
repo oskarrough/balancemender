@@ -39,18 +39,7 @@ class FloatingView extends HTMLElement {
 	}
 
 	connectedCallback() {
-		const viewId = this.id || this.getAttribute('data-view-id')
-		if (viewId) {
-			const viewData = store.getRow('floating-views', viewId)
-			console.log(viewId, viewData)
-			if (viewData?.x && viewData?.y) {
-				gsap.set(this, {x: viewData.x, y: viewData.y})
-			}
-			if (viewData?.width && viewData?.height) {
-				gsap.set(this, {width: viewData.width, height: viewData.height})
-			}
-		}
-
+		this.setInitialState()
 		this.setupDraggable()
 		this.setupResizable()
 
@@ -61,6 +50,19 @@ class FloatingView extends HTMLElement {
 		})
 
 		window.addEventListener('resize', this.handleResize.bind(this))
+	}
+
+	/** Restore size and position from store */
+	setInitialState() {
+		const viewId = this.getAttribute('data-view-id')
+		if (!viewId) return
+		const viewData = store.getRow('floating-views', viewId)
+		if (viewData?.x && viewData?.y) {
+			gsap.set(this, {x: viewData.x, y: viewData.y})
+		}
+		if (viewData?.width && viewData?.height) {
+			gsap.set(this, {width: viewData.width, height: viewData.height})
+		}
 	}
 
 	setupDraggable() {
