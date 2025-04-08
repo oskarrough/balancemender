@@ -7,25 +7,16 @@
 @import url('styles/floating-view.css');
 @import url('styles/combat-log.css');
 @import url('styles/dev-console.css');
+@import url('styles/colors.css');
 
 :root {
-	--theme: hsl(120, 57.1%, 16%);
-	--background: hsl(47deg 100% 3%);
-	--black: var(--background);
-	--white: hsl(20deg 50% 91%);
-	--yellow: hsl(41.8, 79.8%, 39%);
-	--paleyellow: hsl(40deg 87% 82%);
-	--green: hsl(120.4, 89.6%, 30%);
-	--blue: hsl(240.3, 98.9%, 35%);
-	--gray: hsl(27deg 11% 84%);
-	--red: hsl(0deg 70% 22%);
-	--darkred: hsl(0deg 78% 30%);
+	--somekindofgreen: hsl(120, 57.1%, 16%);
 	--easing: cubic-bezier(0.165, 0.84, 0.4, 1);
 }
 
 html {
-	background: var(--black) !important;
-	color: var(--white);
+	background: var(--gray);
+	/* color: var(--white); */
 	/* background-image: url(/assets/bg.jpg); */
 	/* background-image: url(/assets/bg2.png); */
 	/* background-image: url(/assets/bg3.png); */
