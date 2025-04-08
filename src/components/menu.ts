@@ -22,6 +22,12 @@ export function Menu(game: GameLoop) {
 		checkbox.checked = !game.muted
 	}
 
+	function setVolume(event: Event) {
+		const range = event.target as HTMLInputElement
+		const volume = parseInt(range.value)
+		game.audio.volume = volume / 100
+	}
+
 	return html`
 		<div class="IngameMenu">
 			<menu>
@@ -30,6 +36,9 @@ export function Menu(game: GameLoop) {
 				<button class="Button" type="button" onclick=${() => game.pause()}>Pause</button>
 				<label class="Button SoundToggle"
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
+				</label>
+				<label>
+					<input type="range" min="0" max="100" value="50" onchange=${setVolume} oninput=${setVolume} /> Volume
 				</label>
 			</menu>
 		</div>

@@ -16,7 +16,7 @@ export class AudioPlayer extends Node {
 	folder = '/assets/sounds/'
 	disabled = false
 	paused = false
-	volume = 0.8 
+	private _volume = 0.3
 	private _muted = false
 
 	// Sounds by category
@@ -59,9 +59,6 @@ export class AudioPlayer extends Node {
 			// Set initial mute state from parent
 			this.muted = parent.muted
 
-			// Log initial mute state
-			logger.debug(`audio: initial mute state: ${this.muted}`)
-
 			// Listen for game pause/resume events directly
 			parent.on(GameLoop.PAUSE, () => {
 				this.paused = true
@@ -72,10 +69,6 @@ export class AudioPlayer extends Node {
 				this.paused = false
 			})
 		}
-	}
-
-	mount() {
-		logger.debug(`audio:mount`)
 	}
 
 	// Getter and setter for muted property
@@ -96,23 +89,35 @@ export class AudioPlayer extends Node {
 		}
 	}
 
+	// Getter and setter for volume property
+	get volume(): number {
+		return this._volume
+	}
+
+	set volume(value: number) {
+		// Only update if value is changing
+		if (this._volume !== value) {
+			this._volume = value
+			logger.debug(`audio: volume changed to ${value}`)
+
+			// Update all current audio elements
+			for (const audio of this.audioElements) {
+				audio.volume = value
+			}
+		}
+	}
+
 	/**
 	 * Play a sound using category.sound_id format
 	 * Examples: 'spell.cast', 'combat.sword_hit'
 	 */
 	static play(soundId: string, loop?: boolean) {
-		if (AudioPlayer.global) {
-			return AudioPlayer.global.play(soundId, loop)
-		} else {
-			logger.debug(`No global AudioPlayer available`)
-			return null
-		}
+		return AudioPlayer.global?.play(soundId, loop) || null
 	}
 
 	// Set mute state for all audio
 	static setMuted(muted: boolean) {
 		if (AudioPlayer.global) {
-			logger.debug(`audio: global mute set to ${muted}`)
 			AudioPlayer.global.muted = muted
 			return true
 		}
