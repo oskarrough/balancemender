@@ -175,3 +175,45 @@ menu {
 	padding: 0;
 	margin: 0;
 }
+
+/* Color Grid */
+color-palette {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+	gap: 10px;
+	padding: 15px;
+}
+
+.color-swatch {
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	transition: transform 0.2s var(--easing);
+
+	&:hover {
+		transform: scale(1.1);
+	}
+
+	&::after {
+		content: attr(data-color-name);
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: rgba(0, 0, 0, 0.5);
+		color: white;
+		font-size: 8px;
+		padding: 2px;
+		opacity: 0;
+		transition: opacity 0.2s var(--easing);
+		text-align: center;
+		pointer-events: none;
+	}
+
+	&:hover::after {
+		opacity: 1;
+	}
+}

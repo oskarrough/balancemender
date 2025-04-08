@@ -6,6 +6,7 @@ import {DevConsole} from './components/dev-console'
 import './components/dev-console'
 import './components/floating-view.js'
 import './components/combat-log-viewer.js'
+import './components/color-palette.js'
 import './style.css'
 
 /**
