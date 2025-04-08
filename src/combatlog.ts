@@ -52,26 +52,26 @@ export const EVENT_TYPE_FILTERS: CombatEventType[] = [
 ]
 
 export const EVENT_TYPE_COLORS: Record<CombatEventType, string> = {
-	SPELL_CAST_START: '#6495ED', // Blue
-	SPELL_CAST_SUCCESS: '#3CB371', // Green
-	SPELL_CAST_FAILED: '#CD5C5C', // Red
-	SPELL_CAST_INTERRUPTED: '#FF6347', // Red-orange
-	SPELL_HEAL: '#20B2AA', // Teal
-	SPELL_PERIODIC_HEAL: '#5F9EA0', // Cadet blue
-	SPELL_DAMAGE: '#FF4500', // Orange-red
-	SPELL_PERIODIC_DAMAGE: '#FF8C00', // Dark orange
-	SWING_DAMAGE: '#A52A2A', // Brown
-	RANGE_DAMAGE: '#D2691E', // Chocolate
-	SPELL_AURA_APPLIED: '#9370DB', // Purple
-	SPELL_AURA_REMOVED: '#8A2BE2', // Violet
-	SPELL_AURA_REFRESH: '#9932CC', // Dark orchid
-	RESOURCE_GAIN: '#DAA520', // Goldenrod
-	RESOURCE_SPENT: '#DAA520', // Goldenrod
-	UNIT_DIED: '#2F4F4F', // Dark slate
-	ENCOUNTER_START: '#228B22', // Forest green
-	ENCOUNTER_END: '#B22222', // Firebrick
-	SWEET_SPOT_HIT: '#FFD700', // Gold
-	SWEET_SPOT_MISS: '#C0C0C0', // Silver
+	SPELL_CAST_START: 'var(--c-blue-celeste)',
+	SPELL_CAST_SUCCESS: 'var(--c-emerald-green)',
+	SPELL_CAST_FAILED: 'var(--c-scarlet-lake)',
+	SPELL_CAST_INTERRUPTED: 'var(--c-vermilion)',
+	SPELL_HEAL: 'var(--c-viridian)',
+	SPELL_PERIODIC_HEAL: 'var(--c-cerulean-blue)',
+	SPELL_DAMAGE: 'var(--c-orange)',
+	SPELL_PERIODIC_DAMAGE: 'var(--c-marigold)',
+	SWING_DAMAGE: 'var(--c-burnt-sienna)',
+	RANGE_DAMAGE: 'var(--c-chocolate)',
+	SPELL_AURA_APPLIED: 'var(--c-heliotrope)',
+	SPELL_AURA_REMOVED: 'var(--c-violet-pale)',
+	SPELL_AURA_REFRESH: 'var(--c-mauve)',
+	RESOURCE_GAIN: 'var(--c-yellow-ochre)',
+	RESOURCE_SPENT: 'var(--c-yellow-ochre)',
+	UNIT_DIED: 'var(--c-prussian-blue)',
+	ENCOUNTER_START: 'var(--c-imperial-green)',
+	ENCOUNTER_END: 'var(--c-crimson-lake)',
+	SWEET_SPOT_HIT: 'var(--c-lemon-yellow)',
+	SWEET_SPOT_MISS: 'var(--c-french-grey)',
 }
 
 // Store logs

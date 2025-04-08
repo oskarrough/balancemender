@@ -14,7 +14,7 @@ class FloatingView extends HTMLElement {
 			visibleEdge: 100,
 			visibleTop: 40,
 			minWidth: 200,
-			minHeight: 150,
+			minHeight: 20,
 		}
 	}
 

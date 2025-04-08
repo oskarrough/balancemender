@@ -1,0 +1,39 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+:where(audio, iframe, img, svg, video) {
+  max-block-size: 100%;
+  max-inline-size: 100%;
+}
+
+
+:where(label):has(+:where(textarea, input, select)) {
+  display: block;
+}
+
+:where(button, input, select, textarea) {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+html {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+:where([type="search"]) {
+  -webkit-appearance: textfield;
+}
+

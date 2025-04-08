@@ -32,7 +32,7 @@ export function UI(game: GameLoop) {
 				? html` <div class="GameOver">
 						<h2>Game Over!</h2>
 						<p>You survived for ${roundOne(game.elapsedTime / 1000)} seconds</p>
-						<button onclick=${() => location.reload()}>Play Again</button>
+						<button class="Button" onclick=${() => location.reload()}>Play Again</button>
 					</div>`
 				: null}
 
@@ -64,7 +64,7 @@ export function UI(game: GameLoop) {
 					: ''}
 			</div>
 
-			${Monitor(game)} 
+			${Monitor(game)}
 		</div>
 	`
 }

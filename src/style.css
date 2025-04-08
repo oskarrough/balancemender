@@ -1,3 +1,4 @@
+@import url('styles/reset.css');
 @import url('styles/spell.css');
 @import url('styles/bar.css');
 @import url('styles/log.css');
@@ -15,21 +16,12 @@
 }
 
 html {
+	color-scheme: light;
 	background: var(--gray);
-	/* color: var(--white); */
-	/* background-image: url(/assets/bg.jpg); */
-	/* background-image: url(/assets/bg2.png); */
-	/* background-image: url(/assets/bg3.png); */
+	color: var(--c-black);
 	background-repeat: no-repeat;
-	background-size: 600px;
-	background-position: 50% 10%;
 	line-height: 1.5;
 	text-rendering: optimizeLegibility;
-}
-
-body {
-	margin: 0;
-	color-scheme: dark;
 }
 
 html,
@@ -46,10 +38,8 @@ input[type='text'],
 input[type='search'],
 textarea,
 select {
-	background: transparent;
-	border: 1px solid hsla(0deg 0% 100% / 0.1);
+	border: 1px solid var(--c-black);
 	border-radius: 0.1875rem;
-	color: var(--white);
 	font-size: 1em;
 	padding: 0.2rem 0.4rem;
 	outline: none;
@@ -58,7 +48,7 @@ select {
 
 @media (min-height: 1300px) {
 	html {
-		font-size: 20px;
+		font-size: 18px;
 	}
 }
 
@@ -136,21 +126,24 @@ img {
 }
 
 .Button {
+	display: inline-flex;
+	align-items: center;
 	margin: 0;
 	user-select: none;
 	font-size: 1rem;
-	border: 1px solid hsla(0deg 0% 100% / 0.1);
-	padding: 0.2rem 0.4rem;
-	font-size: 1em;
-	background: #222;
-	/* background: conic-gradient(hsl(0deg 70% 22%) 30%, hsl(0deg 78% 30%)); */
-	color: var(--white);
-	border-radius: 0.1875rem;
+	/* background: var(--c-french-grey); */
+	background: var(--c-snow-white);
+	color: var(--c-black);
+	border: 1px solid;
+	min-height: 2rem;
+	font-size: inherit;
+	line-height: 1;
+	padding: 0 0.3em;
+	border-radius: 0.2rem;
 }
 
 .Button:hover {
-	background-color: rgba(50, 50, 50, 0.9);
-	/* background: conic-gradient(hsl(0deg 70% 24%) 30%, hsl(0deg 78% 32%)); */
+	background: color-mix(in oklch, var(--white), transparent 80%);
 }
 
 .Button:active {
@@ -159,8 +152,8 @@ img {
 }
 
 .Button.active {
-	background: rgba(40, 80, 120, 0.6);
-	border-color: rgba(100, 180, 255, 0.3);
+	background: var(--white);
+	/* background: color-mix(in oklch, var(--white), transparent 80%); */
 }
 
 a.Button {
@@ -174,6 +167,25 @@ a.Button {
 menu {
 	padding: 0;
 	margin: 0;
+}
+
+.ShortcutHint {
+	font-size: 0.8rem;
+	color: var(--c-french-grey);
+	opacity: 0.7;
+	margin: 0 0.5rem;
+	user-select: none;
+}
+
+/* Dev console button in menu */
+.DevButton {
+	margin-left: 8px;
+}
+
+.DevButton .ShortcutHint {
+	font-size: 0.7rem;
+	margin: 0 0 0 4px;
+	opacity: 0.6;
 }
 
 /* Color Grid */

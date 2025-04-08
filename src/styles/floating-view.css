@@ -2,14 +2,16 @@ floating-view {
 	display: flex;
 	flex-flow: column nowrap;
 	position: absolute;
-	background: hsla(0deg 0% 7% / 0.97);
-	color: var(--white);
+	background: var(--c-snow-white);
+	/* color: var(--white); */
+	border: 1px solid;
 	border-radius: 6px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	overflow: hidden;
+	min-height: 26px;
 	min-width: 200px;
-	min-height: 150px;
 	max-width: 100vw;
+	overflow: hidden;
+	max-height: calc(100vh - 100px);
 	pointer-events: auto;
 
 	/* Set initial position - will be converted to transforms */
@@ -17,13 +19,16 @@ floating-view {
 	left: 0;
 
 	header {
-		padding: 6px 10px;
-		background: rgba(0, 0, 0, 0.2);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-		cursor: grab;
-		user-select: none;
 		display: flex;
 		align-items: center;
+		padding: 0;
+		font-size: 13px;
+		padding: 0 0.3em;
+		min-height: 2em;
+		background: var(--c-blue-celeste);
+		border: 1px solid rgba(0, 0, 0, 0.3);
+		cursor: grab;
+		user-select: none;
 	}
 
 	header:active {
@@ -31,14 +36,9 @@ floating-view {
 	}
 
 	main {
-		max-height: calc(100vh - 100px);
+		flex: 1;
 		overflow-y: auto;
-	}
-
-	footer {
-		padding: 6px 8px;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
-		font-size: 0.8em;
+		scrollbar-width: thin;
 	}
 }
 
@@ -66,4 +66,20 @@ floating-view:has(.CombatLogViewer) {
 	align-items: center;
 	justify-content: center;
 	user-select: none;
+}
+
+/* Console shortcut indicator in header */
+.ConsoleShortcut {
+	margin-left: auto;
+	font-size: 0.7rem;
+	background-color: rgba(0, 0, 0, 0.1);
+	padding: 0 4px;
+	border-radius: 3px;
+	margin-right: 4px;
+	opacity: 0.6;
+}
+
+/* Highlight shortcut on hover */
+.ConsoleShortcut:hover {
+	opacity: 1;
 }
