@@ -6,39 +6,34 @@ import {Character} from './character'
 
 export class Heal extends Spell {
 	static name = 'Heal'
-	static cost = 295
-	static heal = 675
-	static castTime = 3000
+	static cost = 50
+	static heal = 75
+	static castTime = 2000
 }
 
 export class FlashHeal extends Spell {
 	static name = 'Flash Heal'
-	static cost = 380
-	static heal = 900
-	static castTime = 1500
+	static cost = 75
+	static heal = 100
+	static castTime = 1000
 }
 
 export class GreaterHeal extends Spell {
 	static name = 'Greater Heal'
-	static cost = 710
-	static heal = 2100
+	static cost = 100
+	static heal = 150
 	static castTime = 3000
 }
 
+/** Renew heals indirectly by applying RenewHOT */
 export class Renew extends Spell {
 	static name = 'Renew'
-	static cost = 450
+	static cost = 60
 	static castTime = 0
 
 	tick() {
-		/** Renew heals indirectly by adding a "RenewHOT" to the target */
-		const gameLoop = this.root as GameLoop
 		const player = this.parent
-
-		// Use the player's current target if set, otherwise fall back to the tank
-		const target = player.currentTarget || gameLoop.tank
-
-		// Apply the RenewHOT effect to the target
+		const target = player.currentTarget
 		if (target) {
 			new RenewHOT(target)
 			AudioPlayer.play('spell.rejuvenation')
@@ -48,8 +43,8 @@ export class Renew extends Spell {
 
 class RenewHOT extends HOT {
 	static name = 'Renew'
-	static heal = 970
-	static interval = 3000
+	static heal = 30
+	static interval = 2000
 	static repeat = 5
 
 	constructor(parent: Character) {

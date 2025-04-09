@@ -43,13 +43,13 @@ export class GameLoop extends Loop {
 		super()
 
 		const tank = new Tank(this)
-		const warrior = new Warrior(this)
+		// const warrior = new Warrior(this)
 		const player = new Player(this)
-		this.party.push(tank, warrior, player)
+		this.party.push(tank, player)
 
-		const boss = new Nakroth(this)
+		// const boss = new Nakroth(this)
 		const imp = new Imp(this)
-		this.enemies.push(boss, imp)
+		this.enemies.push(imp)
 
 		player.currentTarget = tank
 	}
