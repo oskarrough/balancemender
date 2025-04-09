@@ -16,11 +16,9 @@ export function UnitFrame(
 	const health = character.health.current
 	const maxHealth = character.health.max
 	const isCurrentTarget = player.currentTarget === character
-
-	// Get effects directly from the character
+	const displayName = character.name || character.constructor.name
 	const effects: HOT[] = character.effects ? Array.from(character.effects) : []
 
-	const displayName = character.name || character.constructor.name
 	return html`
 		<div
 			class=${`Character ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Character--targeted' : ''}`}

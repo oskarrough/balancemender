@@ -8,8 +8,9 @@ import {GlobalCooldown} from './global-cooldown'
 
 export class Player extends Character {
 	faction = FACTION.PARTY
-	health = new Health(this, 1500)
-	mana: Mana = new Mana(this, 3000)
+	health = new Health(this, 350)
+	mana: Mana = new Mana(this, 600)
+	name = 'Player'
 
 	// keep track of spell casting
 	lastCastTime = 0

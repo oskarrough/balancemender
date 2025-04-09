@@ -208,9 +208,9 @@ export class DamageEffect extends Task {
 /** Small, frequent attack with low damage */
 export class SmallAttack extends DamageEffect {
 	static delay = 0
-	static interval = 1500
-	static minDamage = 21
-	static maxDamage = 30
+	static interval = 1600
+	static minDamage = 7
+	static maxDamage = 11
 	static sound = 'combat.air_hit'
 	static name = 'Quick Stab'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
@@ -240,9 +240,9 @@ export class HugeAttack extends DamageEffect {
 
 /** Tank attack - lower damage but consistent */
 export class TankAttack extends DamageEffect {
-	static interval = 1800
-	static minDamage = 60
-	static maxDamage = 90
+	static interval = 2400
+	static minDamage = 16
+	static maxDamage = 24
 	static sound = 'combat.sword_hit'
 	static name = 'Shield Bash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'

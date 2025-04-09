@@ -41,17 +41,19 @@ export class GameLoop extends Loop {
 
 	constructor() {
 		super()
+		this.prepareEncounter()
+	}
 
-		const tank = new Tank(this)
+	prepareEncounter() {
+		// const tank = new Tank(this)
 		// const warrior = new Warrior(this)
 		const player = new Player(this)
-		this.party.push(tank, player)
+		player.currentTarget = player
+		this.party.push(player)
 
 		// const boss = new Nakroth(this)
 		const imp = new Imp(this)
 		this.enemies.push(imp)
-
-		player.currentTarget = tank
 	}
 
 	// Getter and setter for muted property that syncs with AudioPlayer

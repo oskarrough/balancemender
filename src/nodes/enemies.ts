@@ -16,7 +16,7 @@ export class Nakroth extends Character {
 export class Imp extends Character {
 	faction = FACTION.ENEMY
 	name = 'Annoying Imp'
-	health = new Health(this, 250)
+	health = new Health(this, 400)
 	targetingTask = new RandomTargeting(this)
 	attackEffect = new SmallAttack(this)
 }

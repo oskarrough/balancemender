@@ -16,6 +16,29 @@
 - [ ] Refactor hot + dots
 - Future idea: show combat stats once combat ends: Amount healed, Overhealing, Mana spent
 
+2. Balance updates
+
+spells do percentage dmg
+
+amount of dmg your char can do
+spell has a coeffecient based on char dmg
+
+"example attack" has 20% (of your total dmg)
+
+say you have 1k dmg
+
+15%, 5 targets = 150 per swing
+50%, 1 target = 500 per swing
+
+if you have 20% bonus dmg, you'd do 500 * 1.2 = 600
+
+if the target has 15% physical armor reduction, you will deal 600 * 0.85 = 510 dmg 
+
+spell dmg ignores armor
+
+
+
+
 ## LATER
 
 2. UI Components
