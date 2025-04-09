@@ -41,7 +41,6 @@ export function UI(game: GameLoop) {
 			</div>
 
 			<div class="PartyGroup">
-				<div class="FloatingCombatText"></div>
 				${game.party.map((member) => UnitFrame(member, spell, player))}
 			</div>
 

@@ -149,6 +149,11 @@ body {
 }
 
 .CastBar {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	bottom: 7rem;
 	min-width: 12rem;
 }
 

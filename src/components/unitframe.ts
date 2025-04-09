@@ -53,6 +53,8 @@ export function UnitFrame(
 						${effects.map(EffectIcon)}
 					</ul>`
 				: null}
+
+				<div class="FloatingCombatText"></div>
 		</div>
 	`
 }
