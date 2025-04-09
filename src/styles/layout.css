@@ -173,3 +173,37 @@ body {
 	border-left-color: var(--c-scarlet-lake);
 	border-bottom: 0.4rem solid var(--c-violet-pale);
 }
+
+balance-monitor {
+	floating-view & {
+		margin: 0.2em;
+	}
+
+	table {
+		border-collapse: collapse;
+		width: 100%;
+	}
+	th {
+		text-align: left;
+		font-weight: 400;
+	}
+	td {
+		border-bottom: 1px solid;
+	}
+
+	th,
+	dt {
+		font-size: 13px;
+	}
+
+	dl {
+		display: grid;
+		grid-template-columns: 8rem 1fr;
+		gap: 0 0.2em;
+		margin-bottom: 0.2em;
+	}
+	dt {
+		text-align: right;
+	}
+
+}
