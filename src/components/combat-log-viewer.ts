@@ -39,7 +39,7 @@ const EVENT_FORMATTERS = new Map<CombatEventType, (event: CombatLogEvent) => str
 					: event.sourceName
 						? ' on self'
 						: ''
-			const amount = event.value !== undefined ? ` healed for ${event.value}` : ''
+			const amount = event.value !== undefined ? ` healed ${event.value}` : ''
 			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
 
 			return `${source}${spell}${target}${amount}${extra}`

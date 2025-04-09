@@ -146,8 +146,6 @@ export class Spell extends Task {
 		// If the spell finished at least once, consume mana
 		if (this.cycles > 0 && player.mana) {
 			player.mana.spend(this.cost)
-
-			// Log mana consumption
 			logCombat({
 				timestamp: Date.now(),
 				eventType: 'RESOURCE_CHANGE',
@@ -170,11 +168,10 @@ export class Spell extends Task {
 		const healAmount = naturalizeNumber(this.heal)
 
 		// Apply healing directly to target's health node
-		const actualHeal = target.health.heal(healAmount)
+		const newhp = target.health.heal(healAmount)
 
 		// Display and log the healing
-		fct(`+${actualHeal}`)
-		log(`spell:${this.name}:applyHeal`, actualHeal)
+		fct(`+${healAmount}`)
 
 		// Log healing to combat log
 		logCombat({
@@ -186,7 +183,7 @@ export class Spell extends Task {
 			targetName: target.name || 'Unknown',
 			spellId: this.name,
 			spellName: this.name,
-			value: actualHeal,
+			value: healAmount,
 		})
 	}
 }

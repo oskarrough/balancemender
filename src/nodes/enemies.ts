@@ -18,5 +18,5 @@ export class Imp extends Character {
 	name = 'Annoying Imp'
 	health = new Health(this, 400)
 	targetingTask = new RandomTargeting(this)
-	attackEffect = new SmallAttack(this)
+	// attackEffect = new SmallAttack(this)
 }

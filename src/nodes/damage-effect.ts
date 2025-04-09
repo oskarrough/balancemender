@@ -55,11 +55,9 @@ export class DamageEffect extends Task {
 	/**
 	 * Create a damage effect that will attack the attacker's current target
 	 * @param attacker The character doing the attacking
-	 * @param initialTarget Optional initial target - if not provided, will use attacker.currentTarget
 	 */
 	constructor(
 		public attacker: Character,
-		initialTarget?: Character,
 	) {
 		super(attacker)
 
@@ -76,7 +74,8 @@ export class DamageEffect extends Task {
 		// Store target ID and attacker name for targeting and logs
 		// If initialTarget is provided, use that, otherwise set to attacker
 		// We'll use attacker.currentTarget in tick() if available
-		this.targetId = initialTarget?.id || attacker.id
+		// this.targetId = initialTarget?.id || attacker.id
+		// if (initialTarget) debugger
 	}
 
 	damage() {
@@ -84,32 +83,30 @@ export class DamageEffect extends Task {
 	}
 
 	shouldTick() {
-		// Direct attacks should stop if the attacker is dead
+		// Can't attack if we're dead can we?
 		if (this.attacker.health.current <= 0) {
 			return false
 		}
 
-		// Get current target - prefer attacker's currentTarget if available
-		const target = this.attacker.currentTarget || this.attacker
 
-		// Don't tick if target is dead
-		if (target.health.current <= 0) {
+		if (!this.target) {
+			console.warn('damage effect missing target')
 			return false
 		}
 
-		// Update target ID
-		this.targetId = target.id
+		if (this.target.health.current <= 0) {
+			return false
+		}
 
-		// Otherwise, continue with default behavior
+		// why do this?
+		this.targetId = this.target.id
+
 		return super.shouldTick()
 	}
 
-	/**
-	 * Get the target of this attack
-	 * First try to use attacker's currentTarget, fall back to attacker itself
-	 */
+	/** Get the target of this attack */
 	get target(): Character {
-		return this.attacker.currentTarget || this.attacker
+		return this.attacker.currentTarget
 	}
 
 	tick() {

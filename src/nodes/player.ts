@@ -5,20 +5,19 @@ import {Mana} from './mana'
 import {Spell} from './spell'
 import {Heal, FlashHeal, GreaterHeal, Renew} from './spells'
 import {GlobalCooldown} from './global-cooldown'
+import { TargetOppositeFaction } from './targeting-task'
+import { MediumAttack } from './damage-effect'
 
 export class Player extends Character {
 	faction = FACTION.PARTY
-	health = new Health(this, 350)
-	mana: Mana = new Mana(this, 600)
 	name = 'Player'
 
-	// keep track of spell casting
-	lastCastTime = 0
-	lastCastCompletedTime = 0
-	spell: Spell | undefined
-	gcd: GlobalCooldown | undefined
+	health = new Health(this, 350)
+	mana: Mana = new Mana(this, 600)
 
-	// owns a list of Spells
+	// targetingTask = new TargetOppositeFaction(this)
+	// attackEffect = new MediumAttack(this)
+
 	spellbook: Record<string, typeof Spell> = {
 		Heal: Heal,
 		'Flash Heal': FlashHeal,
@@ -26,17 +25,25 @@ export class Player extends Character {
 		Renew: Renew,
 	}
 
+	// keep track of spell casting
+	lastCastTime = 0
+	lastCastCompletedTime = 0
+	spell: Spell | undefined
+	gcd: GlobalCooldown | undefined
+
 	castSpell(spellName: string) {
 		log(`player:cast:${spellName}`)
 		if (this.spell) return console.warn('Can not cast while already casting')
 		if (this.health.current <= 0) return console.warn('Can not cast while dead. Dummy')
 		if (this.gcd) return console.warn('Can not cast during GCD')
+
+		if (!this.currentTarget) return console.warn('Can not cast without a target.')
+
 		const SpellClass = this.spellbook[spellName]
 		if (!SpellClass) {
 			console.warn(`Spell ${spellName} not found in spellbook`)
 			return
 		}
-
 		if (SpellClass.cost && this.mana && this.mana.current < SpellClass.cost) {
 			console.warn('Not enough mana to cast spell')
 			return
