@@ -114,13 +114,8 @@ export class DamageEffect extends Task {
 
 	tick() {
 		const damage = this.damage()
-		const actualDamage = this.target.health.damage(damage)
+		this.target.health.damage(damage)
 
-		log(
-			`${this.attacker.name}: ${this.name} dealt ${actualDamage} damage to ${this.target.constructor.name}`,
-		)
-
-		// Log damage to combat log
 		logCombat({
 			timestamp: Date.now(),
 			eventType: this.eventType,
@@ -130,17 +125,17 @@ export class DamageEffect extends Task {
 			targetName: this.target.name || this.target.constructor.name,
 			spellId: this.name,
 			spellName: this.name,
-			value: actualDamage,
+			value: damage,
 		})
 
 		this.playSound()
-		this.createVisualEffects(actualDamage)
+		this.createVisualEffects(damage)
 
 		// Emit event for other systems to use
 		this.emit(DAMAGE_EFFECT_EVENTS.DAMAGE_APPLIED, {
 			attacker: this.attacker,
 			target: this.target,
-			damage: actualDamage,
+			damage: damage,
 			attackName: this.name,
 		})
 
@@ -156,7 +151,6 @@ export class DamageEffect extends Task {
 				spellId: this.name,
 				spellName: this.name,
 			})
-
 			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
 				target: this.target,
 			})
@@ -175,22 +169,17 @@ export class DamageEffect extends Task {
 			this.attacker.parent.enemies.some((enemy) => enemy === this.target)
 
 		// For enemy attacks on party members, animate the hit
-		if (!isPartyAttack) {
+		// if (!isPartyAttack) {
 			const targetElement = document.querySelector(
 				`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`,
 			)
 			if (targetElement) this.animateHit(targetElement)
-		}
+		// }
 
 		// Create floating combat text
-		const cssClass = isPartyAttack
-			? `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
-			: 'damage'
-
-		const fct = html`<floating-combat-text class=${cssClass}
-			>-${damageAmount}</floating-combat-text
+		const cssClass = `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
+		const fct = html`<floating-combat-text class=${cssClass}>${damageAmount}</floating-combat-text
 		>`.toDOM()
-
 		const container = document.querySelector('.FloatingCombatText')
 		if (container) container.appendChild(fct)
 	}
