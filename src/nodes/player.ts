@@ -12,7 +12,7 @@ export class Player extends Character {
 	faction = FACTION.PARTY
 	name = 'Player'
 
-	health = new Health(this, 350)
+	health = new Health(this, 160)
 	mana: Mana = new Mana(this, 600)
 
 	// targetingTask = new TargetOppositeFaction(this)

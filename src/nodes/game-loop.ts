@@ -1,7 +1,7 @@
 import {Loop} from 'vroum'
 import {log, render} from '../utils'
 import {Player} from './player'
-import {Nakroth, Imp} from './enemies'
+import {Nakroth, TinyWolf} from './enemies'
 import {Tank, Rogue, Warrior} from './party-characters'
 import {AudioPlayer} from './audio'
 import {UI} from '../components/ui'
@@ -13,7 +13,7 @@ import {logCombat} from '../combatlog'
  * Types of characters in the game
  */
 type Character = Player | Tank | Warrior | Rogue
-type Enemy = Nakroth | Imp
+type Enemy = Nakroth | TinyWolf
 
 /**
  * Main game loop that manages the game state and updates
@@ -52,8 +52,7 @@ export class GameLoop extends Loop {
 		this.party.push(player)
 
 		// const boss = new Nakroth(this)
-		const imp = new Imp(this)
-		this.enemies.push(imp)
+		this.enemies.push(new TinyWolf(this))
 	}
 
 	// Getter and setter for muted property that syncs with AudioPlayer

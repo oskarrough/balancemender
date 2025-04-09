@@ -215,10 +215,10 @@ export class SmallAttack extends DamageEffect {
 
 /** Medium attack with moderate damage and frequency */
 export class MediumAttack extends DamageEffect {
-	static delay = 3100
-	static interval = 2800
-	static minDamage = 400
-	static maxDamage = 550
+	static delay = 4000
+	static interval = 3800
+	static minDamage = 15
+	static maxDamage = 20
 	static sound = 'combat.strong_punch'
 	static name = 'Heavy Blow'
 	static eventType: CombatEventType = 'SWING_DAMAGE'

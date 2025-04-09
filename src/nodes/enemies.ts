@@ -13,10 +13,11 @@ export class Nakroth extends Character {
 	hugeAttack = new HugeAttack(this)
 }
 
-export class Imp extends Character {
+export class TinyWolf extends Character {
 	faction = FACTION.ENEMY
-	name = 'Annoying Imp'
-	health = new Health(this, 400)
+	name = 'Tiny wolf'
+	health = new Health(this, 240)
 	targetingTask = new RandomTargeting(this)
-	// attackEffect = new SmallAttack(this)
+	mainhand = new MediumAttack(this)
+	offhand = new SmallAttack(this)
 }
