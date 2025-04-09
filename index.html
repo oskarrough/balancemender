@@ -13,7 +13,7 @@
 		/>
 		<link href="/favicon.jpg" rel="icon" type="image/x-icon" />
 		<link rel="manifest" href="pwa.webmanifest" />
-		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="preconnect" href="https://fonts.bunny.net" />
 		<link
@@ -37,13 +37,6 @@
 			</main>
 		</floating-view>
 
-		<floating-view data-view-id="color-palette" minimized>
-			<header>Color Palette</header>
-			<main>
-				<color-palette></color-palette>
-			</main>
-		</floating-view>
-
 		<floating-view data-view-id="combat-log" style="height: 11rem">
 			<header>Combat log</header>
 			<main>
@@ -51,10 +44,15 @@
 			</main>
 		</floating-view>
 
+		<!-- <floating-view data-view-id="color-palette" minimized> -->
+		<!-- 	<header>Color Palette</header> -->
+		<!-- 	<main> -->
+		<!-- 		<color-palette></color-palette> -->
+		<!-- 	</main> -->
+		<!-- </floating-view> -->
+
 		<p style="position: fixed; right: 1em; bottom: 0.5em">
-			<a href="https://github.com/oskarrough/webhealer" rel="noreferrer" target="_blank"
-				>source</a
-			>
+			<a href="https://github.com/oskarrough/webhealer" rel="noreferrer" target="_blank">source</a>
 		</p>
 
 		<script type="module" src="/src/main.ts"></script>

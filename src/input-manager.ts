@@ -14,10 +14,9 @@ export class InputManager {
 	}
 
 	private handleKeydown(event: KeyboardEvent) {
-		// if (document.activeElement instanceof HTMLInputElement) return
-
 		// Toggle play/pause with spacebar
 		if (event.code === 'Space' && !event.repeat && !this.game.gameOver) {
+			if (document.activeElement instanceof HTMLInputElement) return
 			event.preventDefault() // Prevent scrolling with spacebar
 			this.togglePlayPause()
 		}
