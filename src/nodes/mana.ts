@@ -2,6 +2,7 @@ import {Task} from 'vroum'
 import {Resource} from './resource'
 import {GameLoop} from './game-loop'
 import {Character} from './character'
+import { logCombat } from '../combatlog'
 /**
  * Events emitted by the Mana node
  */
@@ -62,5 +63,13 @@ export class ManaRegen extends Task {
 
 	tick() {
 		this.parent.set(this.parent.current + this.regenRate)
+		// logCombat({
+		// 	timestamp: Date.now(),
+		// 	eventType: 'RESOURCE_CHANGE',
+		// 	sourceId: this.parent.id,
+		// 	sourceName: this.parent.name,
+		// 	value: this.regenRate,
+		// 	extraInfo: 'MANA',
+		// })
 	}
 }
