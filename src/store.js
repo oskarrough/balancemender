@@ -16,12 +16,12 @@ const hasData = localStorage.getItem(KEY) !== null
 if (hasData) {
 	await persister.load()
 } else {
+	console.log('No existing data found, setting defaults')
 	Object.entries(DEFAULT_VIEWS).forEach(([id, data]) => {
 		store.setRow('floating-views', id, data)
 	})
-	console.log('No existing data found, using defaults')
 }
 
 await persister.startAutoSave()
 
-export {store, persister, KEY}
+export {store, KEY}

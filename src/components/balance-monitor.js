@@ -2,6 +2,17 @@ import {html, render, roundOne} from '../utils'
 import {Task} from 'vroum'
 import {getCombatLogs} from '../combatlog'
 
+/** more ideas
+
+filter types? summary, damage done, damage taken, healing, buffs, debuffs, deaths, interrupts, dispels, resources, casts
+
+damage done+taken: name, amount percentage, total, mitigated, dtakenpersecond
+healing: normal absorbed, crits
+
+https://www.warcraftlogs.com/
+https://www.wowhead.com/guide/how-to-use-warcraft-logs-6341
+*/
+
 // Helper function to create a visual progress bar
 function createProgressBar(percent, value, total, barLength = 10) {
 	const filledBars = Math.floor((percent / 100) * barLength)

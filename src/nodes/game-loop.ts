@@ -44,13 +44,13 @@ export class GameLoop extends Loop {
 		this.prepareEncounter()
 	}
 
+	/** A demo encounter while we're testing. Set up your party and enemy characters here */
 	prepareEncounter() {
 		const tank = new Tank(this)
 		// const warrior = new Warrior(this)
 		const player = new Player(this)
 		player.currentTarget = player
 		this.party.push(tank, player)
-
 		// const boss = new Nakroth(this)
 		this.enemies.push(new TinyWolf(this))
 	}

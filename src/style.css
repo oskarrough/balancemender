@@ -34,7 +34,7 @@ textarea,
 select {
 	border: 1px solid var(--c-black);
 	border-radius: var(--radius);
-	padding: 0.2rem;
+	padding: 0 0.2rem;
 	min-height: 1.5rem;
 	outline: none;
 }

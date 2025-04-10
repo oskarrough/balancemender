@@ -1,21 +1,7 @@
-/* Combat Log Viewer */
 .CombatLogViewer {
-	/* --clv-bg: rgba(0, 0, 0, 0.85); */
-	/* --clv-border: var(--gray); */
-	/* --clv-text: var(--white); */
-	/* --clv-header-bg: rgba(0, 0, 0, 0.7); */
-	/* --clv-item-bg: rgba(40, 40, 40, 0.1); */
-	/* --clv-filter-bg: rgba(30, 30, 30, 0.7); */
-	/* --clv-timestamp: #888; */
-
-	/* max-height: 15rem; */
 	color: var(--clv-text);
 	display: flex;
 	flex-direction: column;
-}
-
-.CombatLogViewer.is-expanded {
-	/* max-height: 80vh; */
 }
 
 .CombatLogViewer-controls {
@@ -40,24 +26,29 @@
 	border-bottom: 1px solid rgba(50, 50, 50, 0.5);
 	display: grid;
 	grid-template-columns: auto auto 1fr;
-	gap: 0.4rem;
 	align-items: baseline;
 	padding: 0 0.2rem;
-	/* line-height: 1.5; */
+	gap: 0.2rem;
 }
 
 .CombatLogViewer-item:nth-child(even) {
 	background-color: var(--clv-item-bg);
 }
 
-.CombatLogViewer-timestamp {
+.CombatLogViewer time {
 	color: var(--clv-timestamp);
-	font-family: monospace;
+	min-width: 10ch;
+}
+
+.CombatLogViewer-filters .Button,
+.CombatLogViewer-eventType {
+	text-transform: lowercase;
 }
 
 .CombatLogViewer-eventType {
+	/* min-width: 10ch; */
 }
 
 .CombatLogViewer-message {
-	overflow-wrap: break-word;
+	/* overflow-wrap: break-word; */
 }
