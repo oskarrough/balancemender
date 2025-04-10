@@ -36,8 +36,17 @@ if the target has 15% physical armor reduction, you will deal 600 * 0.85 = 510 d
 
 spell dmg ignores armor
 
+# Character/class scaling
 
+- 1 stamina = 1 hp
+- 60 int = 1% spell crit
+- 1 intellect = 15 mana
+- 1 strength = 2 attack power (weird, no?)
+- 30 agility = 1% crit
+- 20 agility = 1% dodge
+- 1 spirit helps mana regen. You generate let's say (spirit/4) + 12 mana every 2 seconds after not casting for 5 seconds.
 
+These are just ideas, not strict formulas. Different characters might receive different stats.
 
 ## LATER
 
