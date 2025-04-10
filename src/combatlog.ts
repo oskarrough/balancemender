@@ -1,5 +1,5 @@
 import Pino from 'pino'
-import { store } from './store'
+import {store} from './store'
 
 // Combat event format inspired by WoW
 export interface CombatLogEvent {
