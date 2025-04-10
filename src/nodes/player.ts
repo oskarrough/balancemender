@@ -33,20 +33,17 @@ export class Player extends Character {
 
 	castSpell(spellName: string) {
 		log(`player:cast:${spellName}`)
-		if (this.spell) return console.warn('Can not cast while already casting')
-		if (this.health.current <= 0) return console.warn('Can not cast while dead. Dummy')
-		if (this.gcd) return console.warn('Can not cast during GCD')
-
-		if (!this.currentTarget) return console.warn('Can not cast without a target.')
+		if (this.health.current <= 0) return console.warn(`Can't cast while dead`)
+		if (this.gcd) return console.warn(`Can't cast during global cooldown`)
+		if (this.spell) return console.warn(`Can't cast while casting`)
+		if (!this.currentTarget) return console.warn(`Can't cast without a target`)
 
 		const SpellClass = this.spellbook[spellName]
 		if (!SpellClass) {
-			console.warn(`Spell ${spellName} not found in spellbook`)
-			return
+			return console.warn(`Spell ${spellName} not found in spellbook`)
 		}
 		if (SpellClass.cost && this.mana && this.mana.current < SpellClass.cost) {
-			console.warn('Not enough mana to cast spell')
-			return
+			return console.warn('Not enough mana')
 		}
 
 		this.spell = new SpellClass(this)
