@@ -103,8 +103,17 @@ export class GameLoop extends Loop {
 
 	tick() {
 		if (this.isPartyDefeated()) this.gameOver = true
+		if (this.enemiesDefeated()) this.gameOver = true
 		if (this.gameOver) this.onGameOver()
 		this.render()
+	}
+
+	enemiesDefeated() {
+		if (!this.enemies) return true
+		const anyAlive = this.enemies.some(
+			(character) => character.health && character.health.current > 0,
+		)
+		return !anyAlive
 	}
 
 	/* @returns true if all party members are dead */
@@ -125,7 +134,10 @@ export class GameLoop extends Loop {
 	}
 
 	onGameOver() {
-		log('game:over, pausing game loop')
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'ENCOUNTER_END',
+		})
 		this.audio.stop()
 		this.pause()
 
