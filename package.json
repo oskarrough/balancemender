@@ -29,7 +29,8 @@
     "vroum": "^1.0.1",
     "xid-ts": "^1.1.4"
   },
-  "prettier": {
+  "prettier":{
+    "useTabs": true,
     "semi": false,
     "bracketSpacing": false,
     "singleQuote": true,

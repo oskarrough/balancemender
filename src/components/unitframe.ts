@@ -52,7 +52,7 @@ export function UnitFrame(
 					</ul>`
 				: null}
 
-				<div class="FloatingCombatText"></div>
+			<div class="FloatingCombatText"></div>
 		</div>
 	`
 }

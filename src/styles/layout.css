@@ -35,18 +35,6 @@ body {
 	margin-bottom: 4vh;
 }
 
-.Menu {
-	position: fixed;
-	top: 50vh;
-	left: 0;
-	right: 0;
-	text-align: center;
-}
-
-.Menu nav {
-	margin: 1rem 0;
-}
-
 #webhealer,
 .Game {
 	min-height: calc(100dvh);
@@ -71,7 +59,6 @@ body {
 	background-repeat: no-repeat;
 	background-size: cover;
 	opacity: 0;
-	margin: 0;
 }
 
 .Player,
@@ -100,21 +87,6 @@ body {
 	display: flex;
 	justify-content: center;
 	gap: 0px;
-}
-
-.Monitor {
-	position: fixed;
-	top: 0;
-	right: 0;
-	width: 7rem;
-}
-
-.Monitor-godMode {
-	color: #ff0;
-}
-
-.Monitor-infiniteMana {
-	color: #0ff;
 }
 
 .Combatlog {
@@ -191,19 +163,40 @@ balance-monitor {
 		border-bottom: 1px solid;
 	}
 
-	th,
-	dt {
-		font-size: 13px;
-	}
+	/* h3, */
+	/* th, */
+	/* dt { */
+	/* 	font-size: 13px; */
+	/* } */
 
 	dl {
 		display: grid;
-		grid-template-columns: 8rem 1fr;
+		grid-template-columns: 7rem 1fr;
 		gap: 0 0.2em;
 		margin-bottom: 0.2em;
 	}
 	dt {
+		/* text-align: right; */
+	}
+}
+
+.Monitor {
+	position: fixed;
+	top: 0;
+	right: 0;
+	/* width: 7rem; */
+	gap: 1em;
+	margin: 0.2rem;
+
+	display: flex;
+	list-style: none;
+
+	& li {
+		min-width: 3em;
 		text-align: right;
 	}
 
+	em {
+		display: block;
+	}
 }

@@ -3,12 +3,12 @@ import {Draggable} from 'gsap/Draggable'
 import {gsap} from 'gsap'
 gsap.registerPlugin(Draggable)
 
+/** A draggable, resizable, minimizable panel with persisted layout via the store */
 class FloatingView extends HTMLElement {
 	constructor() {
 		super()
 	}
 
-	// Configuration for the draggable view
 	static get config() {
 		return {
 			minWidth: 200,
@@ -21,7 +21,6 @@ class FloatingView extends HTMLElement {
 	// Calculate boundaries to keep the view within viewport
 	calculateBounds() {
 		const {visibleEdge, visibleTop} = FloatingView.config
-
 		return {
 			minX: 0,
 			maxX: Math.max(0, window.innerWidth - visibleEdge),
@@ -31,19 +30,23 @@ class FloatingView extends HTMLElement {
 	}
 
 	connectedCallback() {
-		// Maybe restore initial layout
-		const viewId = this.id || this.getAttribute('data-view-id')
-		const row = store.getRow('floating-views', viewId)
-		if (row) {
-			const {width, height, x, y} = row
-			gsap.set(this, {width, height, x,y})
-		}
-
+		this.restoreLayout()
 		this.draggable()
 		this.resizable()
 		this.minimizable()
-
 		window.addEventListener('resize', this.handleResize.bind(this))
+	}
+
+	restoreLayout() {
+		const viewId = this.id || this.getAttribute('data-view-id')
+		const row = store.getRow('floating-views', viewId)
+		if (!row) return
+		const {width, height, x, y} = row
+		if (this.hasAttribute('minimized')) {
+			gsap.set(this, {x, y})
+		} else {
+			gsap.set(this, {width, height, x, y})
+		}
 	}
 
 	draggable() {

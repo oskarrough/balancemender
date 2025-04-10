@@ -2,7 +2,7 @@ import {Task} from 'vroum'
 import {Resource} from './resource'
 import {GameLoop} from './game-loop'
 import {Character} from './character'
-import { logCombat } from '../combatlog'
+import {logCombat} from '../combatlog'
 /**
  * Events emitted by the Mana node
  */
@@ -40,9 +40,9 @@ export class Mana extends Resource {
 
 export class ManaRegen extends Task {
 	repeat = Infinity
-	interval = 100
+	interval = 1000
 	regenRate = 3 // mana per tick
-	fiveSecondRule = 4000
+	fiveSecondRule = 5000
 
 	constructor(public parent: Mana) {
 		super(parent)

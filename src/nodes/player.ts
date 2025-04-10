@@ -5,8 +5,8 @@ import {Mana} from './mana'
 import {Spell} from './spell'
 import {Heal, FlashHeal, GreaterHeal, Renew} from './spells'
 import {GlobalCooldown} from './global-cooldown'
-import { TargetOppositeFaction } from './targeting-task'
-import { MediumAttack } from './damage-effect'
+import {TargetOppositeFaction} from './targeting-task'
+import {MediumAttack} from './damage-effect'
 
 export class Player extends Character {
 	faction = FACTION.PARTY

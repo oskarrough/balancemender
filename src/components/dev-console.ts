@@ -31,7 +31,7 @@ export class DevConsole extends HTMLElement {
 		this.floatingView = this.closest('floating-view')
 
 		// Add welcome messages
-		this.logToConsole('WebHealer Developer Console. Blip blop')
+		// this.logToConsole('WebHealer Developer Console. Blip blop')
 	}
 
 	connectedCallback() {

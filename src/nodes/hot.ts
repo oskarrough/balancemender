@@ -2,7 +2,7 @@ import {Task} from 'vroum'
 import {fct} from '../components/floating-combat-text'
 import {log} from '../utils'
 import {Character} from './character'
-import { logCombat } from '../combatlog'
+import {logCombat} from '../combatlog'
 
 export class HOT extends Task {
 	name = 'Periodic Heal'

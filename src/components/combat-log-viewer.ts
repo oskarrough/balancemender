@@ -225,7 +225,7 @@ export class CombatLogViewer extends HTMLElement {
 
 				<input
 					class="CombatLogViewer-search"
-					type="text"
+					type="search"
 					placeholder="Search logs..."
 					value=${this.searchTerm}
 					oninput=${this.handleSearch}
@@ -245,9 +245,7 @@ export class CombatLogViewer extends HTMLElement {
 									${filteredLogs.map(
 										(log) => html`
 											<li class="CombatLogViewer-item" data-event-type=${log.eventType}>
-												<small class="CombatLogViewer-timestamp"
-													>${formatTimestamp(log.timestamp)}</small
-												>
+												<time>${formatTimestamp(log.timestamp)}</time>
 												<strong
 													class="CombatLogViewer-eventType"
 													style=${`color: ${getEventColor(log.eventType)}`}
@@ -262,7 +260,7 @@ export class CombatLogViewer extends HTMLElement {
 									)}
 								</ul>
 							`
-						: html`<div class="CombatLogViewer-empty">No logs to display</div>`}
+						: html`<p>No logs to display</p>`}
 				</div>
 			</div>
 		`

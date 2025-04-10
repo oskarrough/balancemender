@@ -8,26 +8,23 @@
 @import url('styles/floating-view.css');
 @import url('styles/combat-log.css');
 @import url('styles/dev-console.css');
+@import url('styles/color-palette.css');
 @import url('styles/colors.css');
 
 :root {
 	--easing: cubic-bezier(0.165, 0.84, 0.4, 1);
+	--radius: 0.2rem;
 }
 
 html {
 	color-scheme: light;
 	background: var(--c-french-grey);
 	color: var(--c-black);
-	line-height: 1.5;
-}
-
-html,
-button,
-input {
 	font-size: 16px;
 	font-family:
 		Proza Libre,
 		serif;
+	line-height: 1.5;
 }
 
 /* Global input styles */
@@ -36,63 +33,38 @@ input[type='search'],
 textarea,
 select {
 	border: 1px solid var(--c-black);
-	border-radius: 0.1875rem;
-	font-size: 1em;
-	padding: 0.2rem 0.4rem;
+	border-radius: var(--radius);
+	padding: 0.2rem;
+	min-height: 1.5rem;
 	outline: none;
-	font-size: 14px;
-}
-
-@media (min-height: 1300px) {
-	html {
-		font-size: 18px;
-	}
 }
 
 h1,
 h2,
 h3,
-p,
-ul {
-	margin: 0;
+h4,
+h5,
+h6 {
+	font-size: 1rem;
 }
 
-h1 {
+.Title {
 	color: var(--paleyellow);
 	font-family: 'Rubik 80s Fade';
-	/* font-size: 6vw; */
 	font-size: clamp(3rem, 7vw, 100px);
 	line-height: 1.2;
 	font-weight: 400;
 }
 
-header p {
-	margin-left: 0.1em;
-}
-
 h2 {
-	font-size: 1.5rem;
-	line-height: 1.2;
-	font-weight: 700;
+	/* font-weight: 700; */
 }
 
 h3 {
-	font-size: 1rem;
-	font-weight: 700;
+	/* font-weight: 700; */
 }
-
-a {
-	color: var(--theme);
-}
-
-img {
-	vertical-align: bottom;
-}
-
-/* Components */
 
 .Effects {
-	padding: 0;
 	display: flex;
 	min-height: 4rem;
 }
@@ -125,36 +97,32 @@ img {
 .Button {
 	display: inline-flex;
 	align-items: center;
-	margin: 0;
 	user-select: none;
-	font-size: 1rem;
-	/* background: var(--c-french-grey); */
 	background: var(--c-snow-white);
 	color: var(--c-black);
 	border: 1px solid;
-	min-height: 2em;
-	font-size: inherit;
+	min-height: 1.5rem;
 	line-height: 1;
 	padding: 0.1em 0.3em 0;
-	border-radius: 0.2rem;
+	border-radius: var(--radius);
 
 	&[hidden] {
 		display: none;
 	}
-}
 
-.Button:hover {
-	background: color-mix(in oklch, var(--white), transparent 80%);
-}
+	&:hover {
+		background: color-mix(in oklch, var(--white), transparent 80%);
+	}
 
-.Button:active {
-	position: relative;
-	top: 1px;
-}
+	&:active {
+		position: relative;
+		top: 1px;
+	}
 
-.Button.active {
-	background: var(--white);
-	/* background: color-mix(in oklch, var(--white), transparent 80%); */
+	&.active {
+		/* background: var(--white); */
+		background: color-mix(in oklch, var(--c-opera), transparent 80%);
+	}
 }
 
 a.Button {
@@ -163,70 +131,4 @@ a.Button {
 
 .is-takingDamage {
 	filter: drop-shadow(0 0.5rem 0.6rem rgba(217, 0, 0, 0.7));
-}
-
-menu {
-	padding: 0;
-	margin: 0;
-}
-
-.ShortcutHint {
-	font-size: 0.8rem;
-	color: var(--c-french-grey);
-	opacity: 0.7;
-	margin: 0 0.5rem;
-	user-select: none;
-}
-
-/* Dev console button in menu */
-.DevButton {
-	margin-left: 8px;
-}
-
-.DevButton .ShortcutHint {
-	font-size: 0.7rem;
-	margin: 0 0 0 4px;
-	opacity: 0.6;
-}
-
-/* Color Grid */
-color-palette {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-	gap: 10px;
-	padding: 15px;
-}
-
-.color-swatch {
-	width: 40px;
-	height: 40px;
-	border-radius: 10px;
-	cursor: pointer;
-	position: relative;
-	overflow: hidden;
-	transition: transform 0.2s var(--easing);
-
-	&:hover {
-		transform: scale(1.1);
-	}
-
-	&::after {
-		content: attr(data-color-name);
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		background: rgba(0, 0, 0, 0.5);
-		color: white;
-		font-size: 8px;
-		padding: 2px;
-		opacity: 0;
-		transition: opacity 0.2s var(--easing);
-		text-align: center;
-		pointer-events: none;
-	}
-
-	&:hover::after {
-		opacity: 1;
-	}
 }

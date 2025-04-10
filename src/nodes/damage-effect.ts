@@ -56,9 +56,7 @@ export class DamageEffect extends Task {
 	 * Create a damage effect that will attack the attacker's current target
 	 * @param attacker The character doing the attacking
 	 */
-	constructor(
-		public attacker: Character,
-	) {
+	constructor(public attacker: Character) {
 		super(attacker)
 
 		// Copy static properties to instance
@@ -70,33 +68,21 @@ export class DamageEffect extends Task {
 		this.minDamage = constructor.minDamage
 		this.maxDamage = constructor.maxDamage
 		this.eventType = constructor.eventType
-
-		// Store target ID and attacker name for targeting and logs
-		// If initialTarget is provided, use that, otherwise set to attacker
-		// We'll use attacker.currentTarget in tick() if available
-		// this.targetId = initialTarget?.id || attacker.id
-		// if (initialTarget) debugger
 	}
 
 	damage() {
 		return randomIntFromInterval(this.minDamage, this.maxDamage)
 	}
 
+	/** Alias to get the attacker's current target */
+	get target() {
+		return this.attacker.currentTarget
+	}
+
 	shouldTick() {
-		// Can't attack if we're dead can we?
-		if (this.attacker.health.current <= 0) {
-			return false
-		}
-
-
-		if (!this.target) {
-			console.warn('damage effect missing target')
-			return false
-		}
-
-		if (this.target.health.current <= 0) {
-			return false
-		}
+		if (!this.target) return false
+		if (this.attacker.health.current <= 0) return false
+		if (this.target.health.current <= 0) return false
 
 		// why do this?
 		this.targetId = this.target.id
@@ -104,12 +90,9 @@ export class DamageEffect extends Task {
 		return super.shouldTick()
 	}
 
-	/** Get the target of this attack */
-	get target(): Character {
-		return this.attacker.currentTarget
-	}
-
 	tick() {
+		if (!this.target) return // we already check this in shouldTick() but to silence the compiler..
+
 		const damage = this.damage()
 		this.target.health.damage(damage)
 
@@ -160,22 +143,22 @@ export class DamageEffect extends Task {
 
 	createVisualEffects(damageAmount: number) {
 		// Determine if this is a player/party attack or an enemy attack
-		const isPartyAttack =
-			this.attacker.parent === this.target.parent &&
-			'enemies' in this.attacker.parent &&
-			this.attacker.parent.enemies.some((enemy) => enemy === this.target)
-
+		// const isPartyAttack =
+		//   this.attacker.parent === this.target.parent &&
+		//   'enemies' in this.attacker.parent &&
+		//   this.attacker.parent.enemies.some((enemy) => enemy === this.target)
 		// For enemy attacks on party members, animate the hit
 		// if (!isPartyAttack) {
-			const targetElement = document.querySelector(
-				`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`,
-			)
-			if (targetElement) this.animateHit(targetElement)
+		const targetElement = document.querySelector(
+			`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`,
+		)
+		if (targetElement) this.animateHit(targetElement)
 		// }
 
 		// Create floating combat text
 		const cssClass = `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
-		const fct = html`<floating-combat-text class=${cssClass}>${damageAmount}</floating-combat-text
+		const fct = html`<floating-combat-text class=${cssClass}
+			>${damageAmount}</floating-combat-text
 		>`.toDOM()
 		const container = document.querySelector('.FloatingCombatText')
 		if (container) container.appendChild(fct)
@@ -264,4 +247,3 @@ export class RogueAttack extends DamageEffect {
 	static name = 'Quick Slash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
-
