@@ -1,7 +1,7 @@
 import {Loop} from 'vroum'
 import {log, render} from '../utils'
 import {Player} from './player'
-import {Nakroth, Imp} from './enemies'
+import {Nakroth, TinyWolf} from './enemies'
 import {Tank, Rogue, Warrior} from './party-characters'
 import {AudioPlayer} from './audio'
 import {UI} from '../components/ui'
@@ -13,7 +13,7 @@ import {logCombat} from '../combatlog'
  * Types of characters in the game
  */
 type Character = Player | Tank | Warrior | Rogue
-type Enemy = Nakroth | Imp
+type Enemy = Nakroth | TinyWolf
 
 /**
  * Main game loop that manages the game state and updates
@@ -41,17 +41,18 @@ export class GameLoop extends Loop {
 
 	constructor() {
 		super()
+		this.prepareEncounter()
+	}
 
+	/** A demo encounter while we're testing. Set up your party and enemy characters here */
+	prepareEncounter() {
 		const tank = new Tank(this)
-		const warrior = new Warrior(this)
+		// const warrior = new Warrior(this)
 		const player = new Player(this)
-		this.party.push(tank, warrior, player)
-
-		const boss = new Nakroth(this)
-		const imp = new Imp(this)
-		this.enemies.push(boss, imp)
-
-		player.currentTarget = tank
+		player.currentTarget = player
+		this.party.push(tank, player)
+		// const boss = new Nakroth(this)
+		this.enemies.push(new TinyWolf(this))
 	}
 
 	// Getter and setter for muted property that syncs with AudioPlayer
@@ -102,8 +103,17 @@ export class GameLoop extends Loop {
 
 	tick() {
 		if (this.isPartyDefeated()) this.gameOver = true
+		if (this.enemiesDefeated()) this.gameOver = true
 		if (this.gameOver) this.onGameOver()
 		this.render()
+	}
+
+	enemiesDefeated() {
+		if (!this.enemies) return true
+		const anyAlive = this.enemies.some(
+			(character) => character.health && character.health.current > 0,
+		)
+		return !anyAlive
 	}
 
 	/* @returns true if all party members are dead */
@@ -124,7 +134,10 @@ export class GameLoop extends Loop {
 	}
 
 	onGameOver() {
-		log('game:over, pausing game loop')
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'ENCOUNTER_END',
+		})
 		this.audio.stop()
 		this.pause()
 

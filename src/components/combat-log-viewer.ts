@@ -6,9 +6,22 @@ import {
 	clearLogs,
 	CombatEventType,
 	EVENT_TYPE_COLORS,
-	EVENT_TYPE_FILTERS,
 } from '../combatlog'
 import '../components/floating-view.js'
+
+/** The types we allow filtering for in the UI */
+export const EVENT_TYPE_FILTERS: CombatEventType[] = [
+	'SPELL_CAST_START',
+	'SPELL_CAST_SUCCESS',
+	'SPELL_CAST_FAILED',
+	'SPELL_HEAL',
+	'SPELL_DAMAGE',
+	'SPELL_PERIODIC_DAMAGE',
+	'SPELL_PERIODIC_HEAL',
+	'SWING_DAMAGE',
+	'RANGE_DAMAGE',
+	'UNIT_DIED',
+]
 
 /**
  * Format a combat log event for display
@@ -39,7 +52,7 @@ const EVENT_FORMATTERS = new Map<CombatEventType, (event: CombatLogEvent) => str
 					: event.sourceName
 						? ' on self'
 						: ''
-			const amount = event.value !== undefined ? ` healed for ${event.value}` : ''
+			const amount = event.value !== undefined ? ` healed ${event.value}` : ''
 			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
 
 			return `${source}${spell}${target}${amount}${extra}`
@@ -217,21 +230,18 @@ export class CombatLogViewer extends HTMLElement {
 								onclick=${() => this.setFilter(type)}
 								style=${`color: ${getEventColor(type)}`}
 							>
-								${type.replace('SPELL_', '')}
+								${type}
 							</button>
 						`,
 					)}
+					<input
+						class="CombatLogViewer-search"
+						type="search"
+						placeholder="Search logs..."
+						value=${this.searchTerm}
+						oninput=${this.handleSearch}
+					/>
 				</menu>
-
-				<input
-					class="CombatLogViewer-search"
-					type="text"
-					placeholder="Search logs..."
-					value=${this.searchTerm}
-					oninput=${this.handleSearch}
-				/>
-
-				<button hidden class="Button" onclick=${this.handleClear}>Clear</button>
 			</div>
 		`
 
@@ -245,15 +255,13 @@ export class CombatLogViewer extends HTMLElement {
 									${filteredLogs.map(
 										(log) => html`
 											<li class="CombatLogViewer-item" data-event-type=${log.eventType}>
-												<small class="CombatLogViewer-timestamp"
-													>${formatTimestamp(log.timestamp)}</small
-												>
-												<strong
+												<time>${formatTimestamp(log.timestamp)}</time>
+												<span
 													class="CombatLogViewer-eventType"
 													style=${`color: ${getEventColor(log.eventType)}`}
 												>
 													${log.eventType}
-												</strong>
+												</span>
 												<span class="CombatLogViewer-message">
 													${formatLogEntry(log)}
 												</span>
@@ -262,7 +270,7 @@ export class CombatLogViewer extends HTMLElement {
 									)}
 								</ul>
 							`
-						: html`<div class="CombatLogViewer-empty">No logs to display</div>`}
+						: html`<p>No logs to display</p>`}
 				</div>
 			</div>
 		`

@@ -55,12 +55,8 @@ export class DamageEffect extends Task {
 	/**
 	 * Create a damage effect that will attack the attacker's current target
 	 * @param attacker The character doing the attacking
-	 * @param initialTarget Optional initial target - if not provided, will use attacker.currentTarget
 	 */
-	constructor(
-		public attacker: Character,
-		initialTarget?: Character,
-	) {
+	constructor(public attacker: Character) {
 		super(attacker)
 
 		// Copy static properties to instance
@@ -72,55 +68,34 @@ export class DamageEffect extends Task {
 		this.minDamage = constructor.minDamage
 		this.maxDamage = constructor.maxDamage
 		this.eventType = constructor.eventType
-
-		// Store target ID and attacker name for targeting and logs
-		// If initialTarget is provided, use that, otherwise set to attacker
-		// We'll use attacker.currentTarget in tick() if available
-		this.targetId = initialTarget?.id || attacker.id
 	}
 
 	damage() {
 		return randomIntFromInterval(this.minDamage, this.maxDamage)
 	}
 
+	/** Alias to get the attacker's current target */
+	get target() {
+		return this.attacker.currentTarget
+	}
+
 	shouldTick() {
-		// Direct attacks should stop if the attacker is dead
-		if (this.attacker.health.current <= 0) {
-			return false
-		}
+		if (!this.target) return false
+		if (this.attacker.health.current <= 0) return false
+		if (this.target.health.current <= 0) return false
 
-		// Get current target - prefer attacker's currentTarget if available
-		const target = this.attacker.currentTarget || this.attacker
+		// why do this?
+		this.targetId = this.target.id
 
-		// Don't tick if target is dead
-		if (target.health.current <= 0) {
-			return false
-		}
-
-		// Update target ID
-		this.targetId = target.id
-
-		// Otherwise, continue with default behavior
 		return super.shouldTick()
 	}
 
-	/**
-	 * Get the target of this attack
-	 * First try to use attacker's currentTarget, fall back to attacker itself
-	 */
-	get target(): Character {
-		return this.attacker.currentTarget || this.attacker
-	}
-
 	tick() {
+		if (!this.target) return // we already check this in shouldTick() but to silence the compiler..
+
 		const damage = this.damage()
-		const actualDamage = this.target.health.damage(damage)
+		this.target.health.damage(damage)
 
-		log(
-			`${this.attacker.name}: ${this.name} dealt ${actualDamage} damage to ${this.target.constructor.name}`,
-		)
-
-		// Log damage to combat log
 		logCombat({
 			timestamp: Date.now(),
 			eventType: this.eventType,
@@ -130,17 +105,17 @@ export class DamageEffect extends Task {
 			targetName: this.target.name || this.target.constructor.name,
 			spellId: this.name,
 			spellName: this.name,
-			value: actualDamage,
+			value: damage,
 		})
 
 		this.playSound()
-		this.createVisualEffects(actualDamage)
+		this.createVisualEffects(damage)
 
 		// Emit event for other systems to use
 		this.emit(DAMAGE_EFFECT_EVENTS.DAMAGE_APPLIED, {
 			attacker: this.attacker,
 			target: this.target,
-			damage: actualDamage,
+			damage: damage,
 			attackName: this.name,
 		})
 
@@ -156,7 +131,6 @@ export class DamageEffect extends Task {
 				spellId: this.name,
 				spellName: this.name,
 			})
-
 			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
 				target: this.target,
 			})
@@ -169,28 +143,23 @@ export class DamageEffect extends Task {
 
 	createVisualEffects(damageAmount: number) {
 		// Determine if this is a player/party attack or an enemy attack
-		const isPartyAttack =
-			this.attacker.parent === this.target.parent &&
-			'enemies' in this.attacker.parent &&
-			this.attacker.parent.enemies.some((enemy) => enemy === this.target)
-
+		// const isPartyAttack =
+		//   this.attacker.parent === this.target.parent &&
+		//   'enemies' in this.attacker.parent &&
+		//   this.attacker.parent.enemies.some((enemy) => enemy === this.target)
 		// For enemy attacks on party members, animate the hit
-		if (!isPartyAttack) {
-			const targetElement = document.querySelector(
-				`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`,
-			)
-			if (targetElement) this.animateHit(targetElement)
-		}
+		// if (!isPartyAttack) {
+		const targetElement = document.querySelector(
+			`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`,
+		)
+		if (targetElement) this.animateHit(targetElement)
+		// }
 
 		// Create floating combat text
-		const cssClass = isPartyAttack
-			? `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
-			: 'damage'
-
+		const cssClass = `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
 		const fct = html`<floating-combat-text class=${cssClass}
-			>-${damageAmount}</floating-combat-text
+			>${damageAmount}</floating-combat-text
 		>`.toDOM()
-
 		const container = document.querySelector('.FloatingCombatText')
 		if (container) container.appendChild(fct)
 	}
@@ -219,9 +188,9 @@ export class DamageEffect extends Task {
 /** Small, frequent attack with low damage */
 export class SmallAttack extends DamageEffect {
 	static delay = 0
-	static interval = 1500
-	static minDamage = 21
-	static maxDamage = 30
+	static interval = 1600
+	static minDamage = 7
+	static maxDamage = 11
 	static sound = 'combat.air_hit'
 	static name = 'Quick Stab'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
@@ -229,10 +198,10 @@ export class SmallAttack extends DamageEffect {
 
 /** Medium attack with moderate damage and frequency */
 export class MediumAttack extends DamageEffect {
-	static delay = 3100
-	static interval = 2800
-	static minDamage = 400
-	static maxDamage = 550
+	static delay = 4000
+	static interval = 3800
+	static minDamage = 15
+	static maxDamage = 20
 	static sound = 'combat.strong_punch'
 	static name = 'Heavy Blow'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
@@ -251,9 +220,9 @@ export class HugeAttack extends DamageEffect {
 
 /** Tank attack - lower damage but consistent */
 export class TankAttack extends DamageEffect {
-	static interval = 1800
-	static minDamage = 60
-	static maxDamage = 90
+	static interval = 2400
+	static minDamage = 16
+	static maxDamage = 24
 	static sound = 'combat.sword_hit'
 	static name = 'Shield Bash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
@@ -277,59 +246,4 @@ export class RogueAttack extends DamageEffect {
 	static sound = 'combat.sword_hit'
 	static name = 'Quick Slash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-}
-
-/**
- * Base class for periodic damage effects (DoTs)
- */
-export class WIP_PeriodicDamageEffect extends DamageEffect {
-	static eventType: CombatEventType = 'SPELL_PERIODIC_DAMAGE' // Use periodic damage by default
-
-	tick() {
-		const damage = this.damage()
-		const actualDamage = this.target.health.damage(damage)
-
-		log(
-			`${this.attacker.name}: ${this.name} dealt ${actualDamage} periodic damage to ${this.target.constructor.name}`,
-		)
-
-		// Log damage to combat log with periodic event type
-		logCombat({
-			timestamp: Date.now(),
-			eventType: this.eventType,
-			sourceId: this.attacker.id,
-			sourceName: this.attacker.name,
-			targetId: this.target.id,
-			targetName: this.target.name || this.target.constructor.name,
-			spellId: this.name,
-			spellName: this.name,
-			value: actualDamage,
-		})
-
-		this.playSound()
-		this.createVisualEffects(actualDamage)
-
-		// Emit event for other systems to use
-		this.emit(DAMAGE_EFFECT_EVENTS.DAMAGE_APPLIED, {
-			attacker: this.attacker,
-			target: this.target,
-			damage: actualDamage,
-			attackName: this.name,
-		})
-
-		// Check if target died
-		if (this.target.health.current <= 0) {
-			// Log unit death to combat log
-			logCombat({
-				timestamp: Date.now(),
-				eventType: 'UNIT_DIED',
-				targetId: this.target.id,
-				targetName: this.target.name || this.target.constructor.name,
-			})
-
-			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
-				target: this.target,
-			})
-		}
-	}
 }

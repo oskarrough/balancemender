@@ -1,4 +1,5 @@
 import Pino from 'pino'
+import { store } from './store'
 
 // Combat event format inspired by WoW
 export interface CombatLogEvent {
@@ -16,6 +17,16 @@ export interface CombatLogEvent {
 	groupId?: string
 }
 
+/**
+more human event types? damage, healing, buffs or debuffs, dispels, deaths or ressurects, casts, interrupts, resources, other
+damage is either direct or periodic? physical or magical?
+healing is either direct or periodic, normal and crit heals, or absorbs (overhealing)
+buff/debuffs (effects, as we call it) can be filtered by buff, debuff, apply, refresh, remove, apply stack, remove stack
+events can have a source (the player or NPC doing the action),
+a target receiving the action
+*/
+
+/** All combat event types */
 export type CombatEventType =
 	| 'SPELL_CAST_START'
 	| 'SPELL_CAST_SUCCESS'
@@ -37,19 +48,6 @@ export type CombatEventType =
 	| 'ENCOUNTER_END'
 	| 'SWEET_SPOT_HIT'
 	| 'SWEET_SPOT_MISS'
-
-export const EVENT_TYPE_FILTERS: CombatEventType[] = [
-	'SPELL_CAST_START',
-	'SPELL_CAST_SUCCESS',
-	'SPELL_CAST_FAILED',
-	'SPELL_HEAL',
-	'SPELL_DAMAGE',
-	'SPELL_PERIODIC_DAMAGE',
-	'SPELL_PERIODIC_HEAL',
-	'SWING_DAMAGE',
-	'RANGE_DAMAGE',
-	'UNIT_DIED',
-]
 
 export const EVENT_TYPE_COLORS: Record<CombatEventType, string> = {
 	SPELL_CAST_START: 'var(--c-blue-celeste)',
@@ -74,7 +72,7 @@ export const EVENT_TYPE_COLORS: Record<CombatEventType, string> = {
 	SWEET_SPOT_MISS: 'var(--c-french-grey)',
 }
 
-// Store logs
+// All logs are stored here.
 export const combatLogs: CombatLogEvent[] = []
 
 // Format timestamp with millisecond precision

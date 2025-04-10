@@ -35,18 +35,6 @@ body {
 	margin-bottom: 4vh;
 }
 
-.Menu {
-	position: fixed;
-	top: 50vh;
-	left: 0;
-	right: 0;
-	text-align: center;
-}
-
-.Menu nav {
-	margin: 1rem 0;
-}
-
 #webhealer,
 .Game {
 	min-height: calc(100dvh);
@@ -71,7 +59,6 @@ body {
 	background-repeat: no-repeat;
 	background-size: cover;
 	opacity: 0;
-	margin: 0;
 }
 
 .Player,
@@ -95,26 +82,11 @@ body {
 .ActionBar {
 	position: absolute;
 	left: 0;
-	bottom: 0;
+	bottom: -4px;
 	right: 0;
 	display: flex;
 	justify-content: center;
-	gap: 5px;
-}
-
-.Monitor {
-	position: fixed;
-	top: 0;
-	right: 0;
-	width: 7rem;
-}
-
-.Monitor-godMode {
-	color: #ff0;
-}
-
-.Monitor-infiniteMana {
-	color: #0ff;
+	gap: 0px;
 }
 
 .Combatlog {
@@ -149,6 +121,11 @@ body {
 }
 
 .CastBar {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	bottom: 7rem;
 	min-width: 12rem;
 }
 
@@ -167,4 +144,59 @@ body {
 	border: 0.4rem solid var(--c-vermilion);
 	border-left-color: var(--c-scarlet-lake);
 	border-bottom: 0.4rem solid var(--c-violet-pale);
+}
+
+balance-monitor {
+	floating-view & {
+		margin: 0.2em;
+	}
+
+	table {
+		border-collapse: collapse;
+		width: 100%;
+	}
+	th {
+		text-align: left;
+		font-weight: 400;
+	}
+	td {
+		border-bottom: 1px solid;
+	}
+
+	/* h3, */
+	/* th, */
+	/* dt { */
+	/* 	font-size: 13px; */
+	/* } */
+
+	dl {
+		display: grid;
+		grid-template-columns: 7rem 1fr;
+		gap: 0 0.2em;
+		margin-bottom: 0.2em;
+	}
+	dt {
+		/* text-align: right; */
+	}
+}
+
+.Monitor {
+	position: fixed;
+	top: 0;
+	right: 0;
+	/* width: 7rem; */
+	gap: 1em;
+	margin: 0.2rem;
+
+	display: flex;
+	list-style: none;
+
+	& li {
+		min-width: 3em;
+		text-align: right;
+	}
+
+	em {
+		display: block;
+	}
 }
