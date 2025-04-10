@@ -131,3 +131,9 @@ a.Button {
 .is-takingDamage {
 	filter: drop-shadow(0 0.5rem 0.6rem rgba(217, 0, 0, 0.7));
 }
+
+healer-2d {
+	display: block;
+	height: 500px;
+	& canvas {height: 500px; }
+}

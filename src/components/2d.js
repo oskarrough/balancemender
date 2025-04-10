@@ -28,27 +28,68 @@ export class Healer2d extends HTMLElement {
 			rotate,
 			anchor,
 			vec2,
+			onMouseMove,
+			onUpdate,
+			mousePos,
+			circle,
 		} = k
 
-		const createMob = (vec) => add([area(), body(), rect(64, 64), pos(vec), 'mob'])
-		// const createPlayer = () => add([area(), rect(64, 64)])
-		// const createEnemy = () => add([area(), rect(64, 64)])
-		// add([
-		// 	pos(100, 200),
-		// 	rect(64, 64),
-		// 	color(50, 10, 200),
-		// 	anchor(k.vec2(0, 0)),
-		// 	area(),
-		// 	body(),
-		// 	'player',
-		// ])
-		// const eyes = player.add([rect(16, 16), anchor(k.vec2(-2, 0)), rotate(0), 'eyes'])
+		const createMob = (vec, mobColor = [50, 50, 200]) =>
+			add([
+				area(),
+				body(),
+				rect(64, 64),
+				pos(vec),
+				color(...mobColor),
+				anchor('center'),
+				'mob',
+			])
 
-		const gameScene = scene('game', () => {
-			const player = createMob(vec2(100, 200))
-			player.use(color(50, 10, 200))
-			const enemy = createMob(vec2(300, 200))
-			enemy.use(color(250, 10, 20))
+		scene('game', () => {
+			const player = createMob(vec2(100, 200), [50, 10, 200])
+
+			// Add weapon/aiming indicator
+			const weapon = player.add([
+				rect(40, 8),
+				pos(0, 0),
+				anchor('left'),
+				color(150, 150, 150),
+				rotate(0),
+				'weapon',
+			])
+
+			// Add eyes to player
+			const eyes = player.add([circle(5), pos(15, -10), color(255, 255, 255), 'eyes'])
+			const eyes2 = player.add([circle(5), pos(15, 10), color(255, 255, 255), 'eyes'])
+
+			// Add pupils to eyes that will move slightly based on aim direction
+			const pupil1 = eyes.add([circle(2), pos(0, 0), color(0, 0, 0), 'pupil'])
+			const pupil2 = eyes2.add([circle(2), pos(0, 0), color(0, 0, 0), 'pupil'])
+
+			// Update eyes and weapon on mouse move
+			onMouseMove(() => {
+				// Convert mouse position to world coordinates
+				const worldMousePos = k.toWorld(mousePos())
+				const direction = worldMousePos.sub(player.pos)
+				const angle = direction.angle()
+				
+				// Update weapon rotation
+				weapon.angle = angle
+				
+				// Calculate pupil offset (max 2 pixels in the look direction)
+				const pupilOffset = direction.unit().scale(2)
+				pupil1.pos = vec2(pupilOffset.x, pupilOffset.y)
+				pupil2.pos = vec2(pupilOffset.x, pupilOffset.y)
+				
+				// Flip weapon if pointing left
+				if (Math.abs(angle) > 90) {
+					weapon.flipY = true
+				} else {
+					weapon.flipY = false
+				}
+			})
+
+			const enemy = createMob(vec2(300, 200), [250, 10, 20])
 
 			const score = add([
 				text('0', {
@@ -71,18 +112,9 @@ export class Healer2d extends HTMLElement {
 				'wall',
 			])
 
-			// onCollide which is fired when the collision starts.
-			// onCollideUpdate which is fired during collision.
-			// onCollideEnd which is fired when the collision ends.
 			player.onCollide('enemy', () => {
 				score.value += 1
 				score.text = score.value
-				// k.destroy(player)
-				// go('lose')
-			})
-			player.onUpdate(() => {
-				// if (player.isColliding(bomb)) {
-				// }
 			})
 
 			const SPEED = 300
@@ -111,18 +143,10 @@ export class Healer2d extends HTMLElement {
 				})
 			}
 
-			// k.onKeyDown('w', () => {
-			// 	player.moveBy(0, -speed)
-			// })
-			// k.onKeyDown('s', () => {
-			// 	player.moveBy(0, speed)
-			// })
-			// k.onKeyDown('a', () => {
-			// 	player.moveBy(-speed, 0)
-			// })
-			// k.onKeyDown('d', () => {
-			// 	player.moveBy(speed, 0)
-			// })
+			// Add camera follow
+			onUpdate(() => {
+				k.camPos(k.camPos().lerp(player.pos, k.dt() * 3))
+			})
 		})
 
 		scene('lose', () => {
