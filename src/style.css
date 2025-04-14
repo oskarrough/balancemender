@@ -1,7 +1,6 @@
 @import url('styles/reset.css');
 @import url('styles/spell.css');
 @import url('styles/bar.css');
-@import url('styles/log.css');
 @import url('styles/layout.css');
 @import url('styles/floating-combat-text.css');
 @import url('styles/character.css');
@@ -131,4 +130,10 @@ a.Button {
 
 .is-takingDamage {
 	filter: drop-shadow(0 0.5rem 0.6rem rgba(217, 0, 0, 0.7));
+}
+
+healer-2d {
+	display: block;
+	height: 500px;
+	& canvas {height: 500px; }
 }

@@ -21,6 +21,7 @@ dist/
 *.njsproj
 *.sln
 *.sw?
+.cursor/
 
 # Don't want this making my diffs unreadable
 yarn.lock
