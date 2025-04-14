@@ -1,0 +1,54 @@
+.CombatLogViewer {
+	color: var(--clv-text);
+	display: flex;
+	flex-direction: column;
+}
+
+.CombatLogViewer-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.2rem;
+	padding: 0.2rem;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.CombatLogViewer-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.2rem;
+}
+
+.CombatLogViewer-list {
+	list-style: none;
+}
+
+.CombatLogViewer-item {
+	border-bottom: 1px solid rgba(50, 50, 50, 0.5);
+	display: grid;
+	grid-template-columns: auto auto 1fr;
+	align-items: baseline;
+	padding: 0 0.2rem;
+	gap: 0.2rem;
+}
+
+.CombatLogViewer-item:nth-child(even) {
+	background-color: var(--clv-item-bg);
+}
+
+.CombatLogViewer time {
+	color: var(--clv-timestamp);
+	min-width: 10ch;
+}
+
+.CombatLogViewer-filters .Button,
+.CombatLogViewer-eventType {
+	text-transform: lowercase;
+}
+
+.CombatLogViewer-eventType {
+	/* min-width: 10ch; */
+}
+
+.CombatLogViewer-message {
+	/* overflow-wrap: break-word; */
+}

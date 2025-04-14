@@ -7,16 +7,17 @@ import {SmallAttack, MediumAttack, HugeAttack} from './damage-effect'
 export class Nakroth extends Character {
 	faction = FACTION.ENEMY
 	name = 'Nakroth the Destroyer'
-	health = new Health(this, 4000)
+	health = new Health(this, 750)
 	targetingTask = new TankTargeting(this)
 	mediumAttack = new MediumAttack(this)
 	hugeAttack = new HugeAttack(this)
 }
 
-export class Imp extends Character {
+export class TinyWolf extends Character {
 	faction = FACTION.ENEMY
-	name = 'Annoying Imp'
-	health = new Health(this, 1000)
+	name = 'Tiny wolf'
+	health = new Health(this, 240)
 	targetingTask = new RandomTargeting(this)
-	attackEffect = new SmallAttack(this)
+	mainhand = new MediumAttack(this)
+	offhand = new SmallAttack(this)
 }

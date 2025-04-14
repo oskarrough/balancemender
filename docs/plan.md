@@ -1,26 +1,32 @@
-# Implementation Plan
-
+This is our plan. Items are either todo, later or done.
 
 ## TODO
 
 1. Game Loop & Architecture
 
-- [x] Fix spell system (static vs instance properties)
-- [x] Fix keyboard shortcuts for spell casting
-- [x] Implement HOT effects system
-- [x] Fix static props on Boss class. Look at Spells for inspiration
-- [x] Complete the core game loop with proper state management
-- [x] Implement clean sound system with categorized sounds
 - [ ] Implement event-driven architecture for game events
+- [ ] Add Spell.spellId and Spell.id (instance) id?
+- Refactor spells to use coefficients instead of hard values. For example, "Renew heals 160% of spell power over 15 secs for 8% base mana cost. It applies a periodic_heal effect which heals 32% of spell power every 3 secs. Renew spell itself doesn't heal".
+- Improve character design. type: player | npc? Givem attack power + spell power
+- Future idea: show combat stats once combat ends: Amount healed, Overhealing, Mana spent
 - [ ] Reduce complexity in audio.ts
-- [ ] Refactor hot + dots
+
+### Character/class scaling
+- 1 stamina = 1 hp
+- 60 int = 1% spell crit
+- 1 intellect = 15 mana
+- 1 strength = 2 attack power (weird, no?)
+- 30 agility = 1% crit
+- 20 agility = 1% dodge
+- 1 spirit helps mana regen. You generate let's say (spirit/4) + 12 mana every 2 seconds after not casting for 5 seconds.
+These are just ideas, not strict formulas. Different characters might receive different stats.
 
 ## LATER
 
 2. UI Components
 
 - [x] Basic Action Bar for spell selection
-- [ ] Improve Action Bar with cooldown indicators
+- [ ] Improve Action Bar with cooldown indicators (no spells have cd atm)
 - [x] Basic Cast Bar implementation
 - [ ] Enhance Cast Bar with sweet spot indicator
 - [x] Party Frames for target selection and health monitoring
@@ -68,7 +74,7 @@
 - [x] InfiniteMana for spell testing
 - [x] Toggle for removing enemies
 - [x] Web component-based developer console for better encapsulation
-- [x] Performance monitor for FPS and game state 
+- [x] Performance monitor for FPS and game state
 - [x] Combat log for tracking game events
 - [ ] Integrate developer tools into a unified debug panel
 
@@ -93,6 +99,31 @@
    - [ ] Adjust enemy health and damage values for better pacing
    - [ ] Balance spell costs and cooldowns
    - [ ] Create progression curve for difficulty
+spells do percentage dmg
+
+amount of dmg your char can do
+spell has a coeffecient based on char dmg
+
+"example attack" has 20% (of your total dmg)
+
+say you have 1k dmg
+
+15%, 5 targets = 150 per swing
+50%, 1 target = 500 per swing
+
+if you have 20% bonus dmg, you'd do 500 * 1.2 = 600
+
+if the target has 15% physical armor reduction, you will deal 600 * 0.85 = 510 dmg
+
+spell dmg ignores armor
+
+
+I want to make it easier for myself to balance the characters and enemies and spells in the game. It's about the resources health, mana, how fast they regenerate, how much spells cost, cast times, how much dmg do enemies do and so on. This has been done countless of times in other games such as classics as Warcraft 3 and wow etc.
+
+I've gone from two enemies and three partymembers to 1v1 to make it easier to debug for now.
+
+The goal is to discuss rules around balancing and how I do this. I don't want the numbers to go grow too big, either. E.g. a unit should be more like 250-500hp, not 5000! And so damage spells should not one shot etc.
+
 
 3. Content Expansion
    - [ ] Create a simple dungeon with multiple encounters
@@ -103,3 +134,20 @@
    - [ ] Optimize rendering for better performance
    - [ ] Implement proper garbage collection for removed effects
    - [ ] Add frame rate limiter for consistent experience
+
+5. Enhanced Combat Logging System
+   - [x] Implement structured combat log format (see plan-advanced-logs.md for details)
+   - [ ] Create local storage solution using IndexedDB
+   - [ ] Develop in-game log viewer with filtering capabilities
+   - [ ] Add opt-in system for players to contribute logs
+   - [ ] Set up cloud storage with privacy considerations
+   - [ ] Build analysis tools for gameplay metrics and statistics
+
+## Done
+
+- [x] Fix spell system (static vs instance properties)
+- [x] Fix keyboard shortcuts for spell casting
+- [x] Implement HOT effects system
+- [x] Fix static props on Boss class. Look at Spells for inspiration
+- [x] Complete the core game loop with proper state management
+- [x] Implement clean sound system with categorized sounds

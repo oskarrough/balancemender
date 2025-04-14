@@ -1,0 +1,9 @@
+{
+	"name": "webhealer",
+	"compatibility_date": "2025-04-05",
+	// "main": "./src/main.ts",
+	"assets": {
+		"not_found_handling": "single-page-application"
+	}
+}
+

@@ -1,8 +1,9 @@
 .Bar {
-	--health: var(--green);
+	--health: var(--c-sap-green);
 	--health-bg: pink;
-	--mana: var(--blue);
+	--mana: var(--c-blue-celeste);
 	--mana-bg: lightblue;
+	--cast: var(--c-linden-green);
 	--radius: 4px;
 
 	display: flex;
@@ -16,7 +17,7 @@
 .Bar div {
 	min-height: 1.5em;
 	border-radius: var(--radius);
-	background: var(--theme);
+	background: var(--bg);
 	border-top: 1px solid hsla(0 0% 90% / 0 4);
 	border-right: 1px solid hsla(0 0% 10% / 0.6);
 	/* transition: width 600ms; */
@@ -25,26 +26,28 @@
 div.Bar-potentialValue {
 	position: absolute;
 	top: 0;
-	background: var(--theme);
-	opacity: 0.4;
+	background: var(--c-chrome-green-1);
+	opacity: 0.6;
 }
 
 .Bar span {
-	font-size: 0.75rem;
+	user-select: none;
+	font-size: 13px;
 	position: absolute;
 	right: 0.4rem;
-	top: 0.4em;
+	top: 0.28em;
 	text-align: right;
+	/* font-weight: 600; */
 	/* avoid jumps because no monospace */
 	min-width: 8em;
-	color: var(--white);
-	text-shadow:
-		0 0 2px black,
-		0 0 2px black,
-		0 0 3px black,
-		0 0 3px black,
-		0 0 1px black,
-		0 0 1px black;
+	/* color: var(--white); */
+	/* text-shadow: */
+	/* 	0 0 2px black, */
+	/* 	0 0 2px black, */
+	/* 	0 0 3px black, */
+	/* 	0 0 3px black, */
+	/* 	0 0 1px black, */
+	/* 	0 0 1px black; */
 }
 
 .Bar span[hidden] {
@@ -53,20 +56,19 @@ div.Bar-potentialValue {
 }
 
 [data-type='health'] {
-	--theme: var(--green);
+	--bg: var(--health);
 }
 
 [data-type='mana'] {
-	--theme: var(--blue);
+	--bg: var(--mana);
 }
 
 [data-type='cd'] {
-	--theme: rgb(from var(--yellow) r g b / 0.8);
+	--bg: rgb(from var(--cast) r g b / 0.8);
 }
 
 [data-type='cast'] {
-	--theme: var(--yellow);
-	max-width: 15rem;
+	--bg: var(--cast);
 	/* because of the label */
 	margin-bottom: 0.7rem;
 }

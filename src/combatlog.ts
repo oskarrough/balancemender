@@ -1,70 +1,217 @@
 import Pino from 'pino'
-import {html} from './utils'
+import {store} from './store'
 
-interface LogEvent {
-	level: {
-		label: string
-		value: number
-	}
-	messages: (string | number | object)[]
-	ts: number
-}
-
-const logs: LogEvent[] = []
-
-const formatter = new Intl.DateTimeFormat('de', {
-	// day: '2-digit',
-	// month: '2-digit',
-	// year: 'numeric',
-	hour: '2-digit',
-	minute: '2-digit',
-	second: '2-digit',
-	fractionalSecondDigits: 2, // include milliseconds
-})
-
-function formatTimestamp(timestamp: number) {
-	return formatter.format(new Date(timestamp))
+// Combat event format inspired by WoW
+export interface CombatLogEvent {
+	timestamp: number
+	eventType: CombatEventType
+	sourceId?: string
+	sourceName?: string
+	targetId?: string
+	targetName?: string
+	spellId?: string
+	spellName?: string
+	value?: number
+	extraInfo?: string
+	isAOE?: boolean
+	groupId?: string
 }
 
 /**
- * Example usage
-	import {createLogger} from 'combatlog'
-	const logger = createLogger('info') // only logs from info lvl and up
-	logger.{debug/info/warn/error}('hello world')
- *
- * @param logLevel - sets the Pino log level, e.g. 'debug', 'info', 'warn', 'error'
- * @param renderToDom - if true, the log will be rendered to the DOM
- * @returns
- */
-export function createLogger(logLevel?: string, renderToDom = true) {
-	const logger = Pino({
-		browser: {
-			transmit: {
-				send(_level, logEvent) {
-					logs.push(logEvent)
-					if (renderToDom) afterLog(logEvent)
-				},
-			},
-		},
-	})
-	if (logLevel) logger.level = logLevel
-	return logger
+more human event types? damage, healing, buffs or debuffs, dispels, deaths or ressurects, casts, interrupts, resources, other
+damage is either direct or periodic? physical or magical?
+healing is either direct or periodic, normal and crit heals, or absorbs (overhealing)
+buff/debuffs (effects, as we call it) can be filtered by buff, debuff, apply, refresh, remove, apply stack, remove stack
+events can have a source (the player or NPC doing the action),
+a target receiving the action
+*/
+
+/** All combat event types */
+export type CombatEventType =
+	| 'SPELL_CAST_START'
+	| 'SPELL_CAST_SUCCESS'
+	| 'SPELL_CAST_FAILED'
+	| 'SPELL_CAST_INTERRUPTED'
+	| 'SPELL_HEAL'
+	| 'SPELL_PERIODIC_HEAL'
+	| 'SPELL_DAMAGE'
+	| 'SPELL_PERIODIC_DAMAGE'
+	| 'SWING_DAMAGE'
+	| 'RANGE_DAMAGE'
+	| 'SPELL_AURA_APPLIED'
+	| 'SPELL_AURA_REMOVED'
+	| 'SPELL_AURA_REFRESH'
+	| 'RESOURCE_GAIN'
+	| 'RESOURCE_SPENT'
+	| 'UNIT_DIED'
+	| 'ENCOUNTER_START'
+	| 'ENCOUNTER_END'
+	| 'SWEET_SPOT_HIT'
+	| 'SWEET_SPOT_MISS'
+
+export const EVENT_TYPE_COLORS: Record<CombatEventType, string> = {
+	SPELL_CAST_START: 'var(--c-blue-celeste)',
+	SPELL_CAST_SUCCESS: 'var(--c-emerald-green)',
+	SPELL_CAST_FAILED: 'var(--c-scarlet-lake)',
+	SPELL_CAST_INTERRUPTED: 'var(--c-vermilion)',
+	SPELL_HEAL: 'var(--c-viridian)',
+	SPELL_PERIODIC_HEAL: 'var(--c-cerulean-blue)',
+	SPELL_DAMAGE: 'var(--c-orange)',
+	SPELL_PERIODIC_DAMAGE: 'var(--c-marigold)',
+	SWING_DAMAGE: 'var(--c-burnt-sienna)',
+	RANGE_DAMAGE: 'var(--c-chocolate)',
+	SPELL_AURA_APPLIED: 'var(--c-heliotrope)',
+	SPELL_AURA_REMOVED: 'var(--c-violet-pale)',
+	SPELL_AURA_REFRESH: 'var(--c-mauve)',
+	RESOURCE_GAIN: 'var(--c-yellow-ochre)',
+	RESOURCE_SPENT: 'var(--c-yellow-ochre)',
+	UNIT_DIED: 'var(--c-prussian-blue)',
+	ENCOUNTER_START: 'var(--c-imperial-green)',
+	ENCOUNTER_END: 'var(--c-crimson-lake)',
+	SWEET_SPOT_HIT: 'var(--c-lemon-yellow)',
+	SWEET_SPOT_MISS: 'var(--c-french-grey)',
 }
 
-// Hardcoded function to render a log event into the DOM
-function afterLog(log: LogEvent) {
-	const el = document.querySelector('.Combatlog ul')
-	if (!el) {
-		console.warn('Failed to render log event. Missing container element', log)
-		return
-	}
-	const li = html`
-		<li class=${log.level.label}>
-			<em>${log.level.label}</em>
-			<time>${formatTimestamp(log.ts)}</time>
-			<span>${log.messages.map((msg) => html`<span>${msg}</span>`)}</span>
-		</li>
-	`.toDOM()
-	el.appendChild(li)
-	el.scrollTop = el.scrollHeight
+// All logs are stored here.
+export const combatLogs: CombatLogEvent[] = []
+
+// Format timestamp with millisecond precision
+const formatter = new Intl.DateTimeFormat('de', {
+	hour: '2-digit',
+	minute: '2-digit',
+	second: '2-digit',
+	fractionalSecondDigits: 2,
+})
+
+function formatTime(timestamp: number) {
+	return formatter.format(new Date(timestamp))
+}
+
+// Type for Pino log objects in the browser
+interface PinoLogObject {
+	msg?: string
+	combat?: CombatLogEvent
+	[key: string]: any
+}
+
+// Format a combat event as string for display
+function formatCombatEvent(event: CombatLogEvent): string {
+	const parts = [formatTime(event.timestamp), event.eventType]
+
+	if (event.sourceName) parts.push(event.sourceName)
+	if (event.targetName) parts.push(event.targetName)
+	if (event.spellName) parts.push(event.spellName)
+	if (event.value !== undefined) parts.push(event.value.toString())
+	if (event.extraInfo) parts.push(event.extraInfo)
+	if (event.isAOE) parts.push('AOE')
+
+	return parts.join(' ')
+}
+
+// Custom level for combat events
+const LEVELS = {
+	combat: 35, // Between info (30) and warn (40)
+}
+
+// Pino serializers
+const serializers = {
+	// Standard error serializer
+	err: Pino.stdSerializers.err,
+
+	// Combat event serializer
+	combat: (event: CombatLogEvent) => {
+		// Store the event in our array for the viewer
+		combatLogs.push(event)
+
+		// Notify the viewer about the new event
+		if (typeof document !== 'undefined') {
+			document.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
+		}
+
+		// Return the event for logging
+		return event
+	},
+}
+
+// Browser-specific Pino logger with custom formatting
+export const logger = Pino({
+	// Define custom levels
+	customLevels: LEVELS,
+
+	// Use browser-specific configuration
+	browser: {
+		// Generate structured objects instead of passing to console directly
+		asObject: true,
+
+		// Apply serializers in the browser
+		serialize: true,
+
+		// Custom write method for browser logs
+		write: {
+			// Regular log levels use standard console methods
+			info: (o: PinoLogObject) => {
+				if (o.combat) console.debug(`[COMBAT] ${formatCombatEvent(o.combat)}`)
+				else console.info(o.msg || o)
+			},
+			debug: (o: PinoLogObject) => console.debug(o.msg || o),
+			warn: (o: PinoLogObject) => console.warn(o.msg || o),
+			error: (o: PinoLogObject) => console.error(o.msg || o),
+
+			// Custom combat level
+			combat: (o: PinoLogObject) => {
+				// This will be called when using logger.combat()
+				if (o.combat) {
+					console.debug(`[COMBAT] ${formatCombatEvent(o.combat)}`)
+				} else {
+					console.debug(o.msg || o)
+				}
+			},
+		},
+
+		// Transmit option for potential remote logging
+		transmit: {
+			level: 'warn', // Only transmit warnings and above
+			send: (level: string) => {
+				// Could send logs to a server or analytics service
+				// For now, just collecting events, but this gives us a future extension point
+				if (level === 'error' || level === 'fatal') {
+					// Add server transmission here if needed
+				}
+			},
+		},
+	},
+	serializers,
+})
+
+/**
+ * Create a logger with combat capabilities
+ */
+export function createLogger(logLevel = 'info') {
+	const childLogger = logger.child({})
+	childLogger.level = logLevel
+	return childLogger
+}
+
+/**
+ * Log a CombatLogEvent using Pino
+ */
+export function logCombat(event: CombatLogEvent) {
+	if (!event.timestamp) event.timestamp = Date.now()
+	// "combat" is our pino serializer
+	logger.info({combat: event})
+}
+
+/**
+ * Get combat logs, optionally filtered by type
+ */
+export function getCombatLogs(eventType?: CombatEventType): CombatLogEvent[] {
+	if (eventType) return combatLogs.filter((log) => log.eventType === eventType)
+	return [...combatLogs]
+}
+
+/**
+ * Clear all logs
+ */
+export function clearLogs() {
+	combatLogs.length = 0
 }

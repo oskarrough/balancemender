@@ -1,30 +1,40 @@
 # Web Healer
 
-A little game for the web inspired by healing raids and five man dungeons back in Azeroth. Who remembers Heal Rank 2?
+A tactical game inspired by healing raids and five-man dungeons back in Azeroth. Who remembers Heal Rank 2? Keep your party alive, kill the enemies.
 
-- Play on https://webhealer.0sk.ar
+🎮 Play on https://webhealer.0sk.ar
 
-A work in progress and happy to welcome new contributors.
+The game is an evening hobby project in progress and happy to welcome new contributors.
 
-See the /docs folder for more.
+## Development 
+
+```
+bun install
+bun dev
+```
+
+## Documentation
+
+This is a website and uses vite as build system.
+
+→
+
+1. [`index.html`](./index.html) loads [`src/main.ts`](./src/main.ts)
+2. main.ts renders the menu and sets up the dev tools
+3. main.ts also creates a [`GameLoop`](./src/nodes/game-loop.ts). The game loop ties everything together. It continuously renders [`components/ui.ts`](./src/components/ui.ts) to its `element` DOM node (assigned via main). Actually, should just make it a web component.
+
+The game uses the `vroum` (https://gitlab.com/jfalxa/vroum library). Vroum helps organize everything into `Nodes` and `Tasks` that run on a (Game)`Loop`.
+
+To render DOM nodes, https://github.com/WebReflection/uhtml is used.
+
+Animations are made using CSS and `gsap`.
+
+See the [`DOCS.md`](./docs/) folder for more.
 
 ## Notes
 
 - Most spells trigger a global cooldown (GCD) of 1.5 seconds. During this time you cannot cast any other spells
 - Mana regen is paused for X seconds after a cast completes
-- Show combat stats once combat ends: Amount healed, Overhealing, Mana spent
-
-## Development
-
-- `bun run dev` 
-
-### Structure
-
-index.html -> src/main.ts
-
-The game uses the `vroum` (https://gitlab.com/jfalxa/vroum library). Vroum helps organize everything in a structure of `Nodes` and `Tasks` that run on a (Game)`Loop`.
-
-To make it easier to create HTML elements, we use https://github.com/WebReflection/uhtml.
 
 ## References
 

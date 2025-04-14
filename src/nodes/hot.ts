@@ -2,6 +2,7 @@ import {Task} from 'vroum'
 import {fct} from '../components/floating-combat-text'
 import {log} from '../utils'
 import {Character} from './character'
+import {logCombat} from '../combatlog'
 
 export class HOT extends Task {
 	name = 'Periodic Heal'
@@ -23,12 +24,21 @@ export class HOT extends Task {
 		const character = this.parent
 		const heal = this.heal / this.repeat
 
-		// Apply healing directly to character's health node
-		const actualHeal = character.health.heal(heal)
+		character.health.heal(heal)
 
-		// Show healing in UI
-		fct(`+${actualHeal}`)
-		log(`hot:${this.name}:tick`, this.cycles, this.repeat, this.heal, actualHeal)
+		fct(`+${heal}`)
+
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'PERIODIC_SPELL_HEAL',
+			sourceId: this.parent.id,
+			sourceName: this.parent.name,
+			targetId: this.parent.id,
+			targetName: this.parent.name || 'Unknown',
+			spellId: this.name,
+			spellName: this.name,
+			value: heal,
+		})
 	}
 
 	destroy() {

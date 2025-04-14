@@ -1,9 +1,3 @@
-*,
-*::before,
-*::after {
-	box-sizing: border-box;
-}
-
 body {
 	overflow: hidden;
 }
@@ -22,9 +16,13 @@ body {
 
 .IngameMenu {
 	position: fixed;
-	top: 0.5rem;
-	left: 0.5rem;
+	top: 0.2rem;
+	left: 0.2rem;
 	transition: opacity 500ms;
+
+	& menu {
+		display: flex;
+	}
 }
 
 .Frame-splashImage {
@@ -37,18 +35,6 @@ body {
 	margin-bottom: 4vh;
 }
 
-.Menu {
-	position: fixed;
-	top: 50vh;
-	left: 0;
-	right: 0;
-	text-align: center;
-}
-
-.Menu nav {
-	margin: 1rem 0;
-}
-
 #webhealer,
 .Game {
 	min-height: calc(100dvh);
@@ -56,9 +42,9 @@ body {
 }
 
 .Game {
-	/* display: grid; */
-	/* grid-template-columns: repeat(5, 1fr); */
-	/* grid-template-rows: 7rem 1fr 7rem; */
+	display: flex;
+	flex-flow: column;
+	place-items: center;
 	padding-top: 7rem;
 }
 
@@ -73,7 +59,6 @@ body {
 	background-repeat: no-repeat;
 	background-size: cover;
 	opacity: 0;
-	margin: 0;
 }
 
 .Player,
@@ -97,30 +82,17 @@ body {
 .ActionBar {
 	position: absolute;
 	left: 0;
-	bottom: 0;
+	bottom: -4px;
 	right: 0;
 	display: flex;
 	justify-content: center;
-	gap: 5px;
-}
-
-.Monitor {
-	position: fixed;
-	top: 0;
-	right: 0;
-	width: 7rem;
-}
-.Monitor-godMode {
-	color: #ff0;
-}
-
-.Monitor-infiniteMana {
-	color: #0ff;
+	gap: 0px;
 }
 
 .Combatlog {
 	margin-left: auto;
-	width: 320px;
+	width: 30rem;
+	max-width: 95%;
 	height: 240px;
 	position: fixed;
 	right: 0;
@@ -149,10 +121,82 @@ body {
 }
 
 .CastBar {
-	min-width: 10rem;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	bottom: 7rem;
+	min-width: 12rem;
 }
 
 .GameOver {
+	max-width: 30em;
+	margin: 3rem auto;
+	position: fixed;
+	top: 30%;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	background-color: var(--c-crimson-lake);
+	color: var(--c-snow-white);
 	text-align: center;
-	margin: 3rem 0;
+	padding: 2rem;
+	border: 0.4rem solid var(--c-vermilion);
+	border-left-color: var(--c-scarlet-lake);
+	border-bottom: 0.4rem solid var(--c-violet-pale);
+}
+
+balance-monitor {
+	floating-view & {
+		margin: 0.2em;
+	}
+
+	table {
+		border-collapse: collapse;
+		width: 100%;
+	}
+	th {
+		text-align: left;
+		font-weight: 400;
+	}
+	td {
+		border-bottom: 1px solid;
+	}
+
+	/* h3, */
+	/* th, */
+	/* dt { */
+	/* 	font-size: 13px; */
+	/* } */
+
+	dl {
+		display: grid;
+		grid-template-columns: 7rem 1fr;
+		gap: 0 0.2em;
+		margin-bottom: 0.2em;
+	}
+	dt {
+		/* text-align: right; */
+	}
+}
+
+.Monitor {
+	position: fixed;
+	top: 0;
+	right: 0;
+	/* width: 7rem; */
+	gap: 1em;
+	margin: 0.2rem;
+
+	display: flex;
+	list-style: none;
+
+	& li {
+		min-width: 3em;
+		text-align: right;
+	}
+
+	em {
+		display: block;
+	}
 }

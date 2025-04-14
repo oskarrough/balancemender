@@ -1,0 +1,72 @@
+:root {
+	--black: hsl(47deg 100% 3%);
+	--white: hsl(20deg 50% 91%);
+	--yellow: hsl(41.8, 79.8%, 39%);
+
+	/* --paleyellow: hsl(40deg 87% 82%); */
+	/* --green: hsl(120.4, 89.6%, 30%); */
+	/* --blue: hsl(240.3, 98.9%, 35%); */
+	/* --gray: hsl(27deg 11% 84%); */
+	/* --red: hsl(0deg 70% 22%); */
+	/* --darkred: hsl(0deg 78% 30%); */
+
+	--c-lemon-yellow: lab(94.2674 -9.40282 82.8094);
+	--c-permanent-yellow: lab(85.3906 10.2282 92.7778);
+	--c-chrome-yellow: lab(85.3861 16.208 93.4389);
+	--c-chrome-yellow-deep: lab(78.1128 32.6792 82.6376);
+	--c-marigold: lab(65.1177 53.6556 66.5807);
+	--c-orange: lab(62.8388 56.6662 58.8344);
+	--c-scarlet-lake: lab(45.05 60.3279 41.5119);
+	--c-vermilion: lab(51.0916 62.7477 41.8985);
+	--c-carmine: lab(41.7688 64.4412 34.4842);
+	--c-crimson-lake: lab(38.4285 56.2639 29.7217);
+	--c-coral: lab(63.0034 54.6564 26.0879);
+	--c-rose-red: lab(47.16 68.98 17.79);
+	--c-opera: lab(51.212 67.8799 10.8645);
+	--c-magenta: lab(44.9946 68.9684 -6.21602);
+	--c-brilliant-rose: lab(50.227 76.0093 -8.98042);
+	--c-pink: lab(67.5775 68.3862 -12.7348);
+	--c-violet-pale: lab(34.7926 53.7108 -27.3196);
+	--c-cobalt-violet: lab(29.1228 39.7406 -35.8505);
+	--c-mauve: lab(21.6938 25.8671 -33.7391);
+	--c-iris-blue: lab(24.6344 25.0934 -48.2078);
+	--c-heliotrope: lab(59.173 20.487 -39.7255);
+	--c-ultramarine: lab(24.8584 32.9191 -70.7267);
+	--c-prussian-blue: lab(15.1153 7.788 -18.7404);
+	--c-cobalt-blue: lab(30.2304 28.9849 -71.6502);
+	--c-indigo: lab(22.2702 5.37059 -14.0214);
+	--c-french-blue: lab(28.3369 5.74303 -50.1995);
+	--c-blue-celeste: lab(63.0659 1.23221 -44.4879);
+	--c-marine-blue: lab(32.9597 -2.47469 -37.2772);
+	--c-french-grey: lab(70.024 -1.25023 -9.22515);
+	--c-sky-blue: lab(58.0569 -10.4415 -45.1862);
+	--c-cerulean-blue: lab(44.5032 -23.5638 -46.1849);
+	--c-light-blue: lab(65.9893 -26.7224 -32.2677);
+	--c-blue-gray: lab(67.5044 -17.3946 -7.71007);
+	--c-compose-blue: lab(70.855 -36.4744 -14.9111);
+	--c-turkey-green: lab(43.3265 -45.1403 -17.333);
+	--c-viridian: lab(38.92 -48.1083 -0.874702);
+	--c-chrome-green-3: lab(30.5325 -23.1375 -0.1884);
+	--c-cobalt-green: lab(59.2648 -49.2568 3.41769);
+	--c-emerald-green: lab(71.1376 -44.6808 10.8983);
+	--c-chrome-green-2: lab(46.1633 -55.204 14.4567);
+	--c-imperial-green: lab(45.7792 -56.0089 22.497);
+	--c-light-green: lab(61.5296 -58.6363 39.9921);
+	--c-sap-green: lab(52.2011 -37.329 34.1102);
+	--c-chrome-green-1: lab(72.5603 -41.5438 62.4397);
+	--c-linden-green: lab(89.078 -22.7311 68.7124);
+	--c-naples-yellow: lab(84.6744 6.12866 46.9872);
+	--c-raw-umber: lab(41.2198 3.80537 23.9634);
+	--c-yellow-ochre: lab(68.1739 14.7461 54.8651);
+	--c-jaune-brilliant: lab(81.9857 19.8556 41.6542);
+	--c-sepia: lab(33.2388 7.39939 11.5045);
+	--c-burnt-umber: lab(29.9456 10.1868 11.5943);
+	--c-burnt-sienna: lab(43.7626 33.3261 27.7532);
+	--c-chocolate: lab(28.335 11.6426 9.22044);
+	--c-purple-lake: lab(35.14 42.75 14.27);
+	--c-olive-green: lab(41.171 -8.84617 26.7596);
+	--c-snow-white: lab(99.0984 -0.122539 0.363965);
+	--c-white: lab(98.6917 0.0397944 0.116489);
+	--c-b-black: lab(11.9702 1.31062 -1.58183);
+	--c-black: lab(9.38758 0.879477 -0.339045);
+}

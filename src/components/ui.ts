@@ -32,7 +32,7 @@ export function UI(game: GameLoop) {
 				? html` <div class="GameOver">
 						<h2>Game Over!</h2>
 						<p>You survived for ${roundOne(game.elapsedTime / 1000)} seconds</p>
-						<button onclick=${() => location.reload()}>Play Again</button>
+						<button class="Button" onclick=${() => location.reload()}>Play Again</button>
 					</div>`
 				: null}
 
@@ -41,7 +41,6 @@ export function UI(game: GameLoop) {
 			</div>
 
 			<div class="PartyGroup">
-				<div class="FloatingCombatText"></div>
 				${game.party.map((member) => UnitFrame(member, spell, player))}
 			</div>
 
@@ -65,14 +64,6 @@ export function UI(game: GameLoop) {
 			</div>
 
 			${Monitor(game)}
-
-			<div
-				class="Combatlog"
-				onclick=${(event: Event) =>
-					(event.currentTarget as Element).classList.toggle('sticky')}
-			>
-				<ul class="Log Log--scroller"></ul>
-			</div>
 		</div>
 	`
 }

@@ -1,17 +1,19 @@
 import {Loop} from 'vroum'
 import {log, render} from '../utils'
 import {Player} from './player'
-import {Nakroth, Imp} from './enemies'
+import {Nakroth, TinyWolf} from './enemies'
 import {Tank, Rogue, Warrior} from './party-characters'
 import {AudioPlayer} from './audio'
 import {UI} from '../components/ui'
 import {DevConsole} from '../components/dev-console'
+import gsap from 'gsap'
+import {logCombat} from '../combatlog'
 
 /**
  * Types of characters in the game
  */
 type Character = Player | Tank | Warrior | Rogue
-type Enemy = Nakroth | Imp
+type Enemy = Nakroth | TinyWolf
 
 /**
  * Main game loop that manages the game state and updates
@@ -35,22 +37,22 @@ export class GameLoop extends Loop {
 	// Developer mode properties
 	godMode = false
 	infiniteMana = false
-	speed = 1.0
-	developerConsole!: DevConsole
+	console!: DevConsole
 
 	constructor() {
 		super()
+		this.prepareEncounter()
+	}
 
+	/** A demo encounter while we're testing. Set up your party and enemy characters here */
+	prepareEncounter() {
 		const tank = new Tank(this)
-		const warrior = new Warrior(this)
+		// const warrior = new Warrior(this)
 		const player = new Player(this)
-		this.party.push(tank, warrior, player)
-
-		const boss = new Nakroth(this)
-		const imp = new Imp(this)
-		this.enemies.push(boss, imp)
-
-		player.currentTarget = tank
+		player.currentTarget = player
+		this.party.push(tank, player)
+		// const boss = new Nakroth(this)
+		this.enemies.push(new TinyWolf(this))
 	}
 
 	// Getter and setter for muted property that syncs with AudioPlayer
@@ -84,6 +86,11 @@ export class GameLoop extends Loop {
 		log('game:mount')
 		this.on(GameLoop.PLAY, this.handlePlay)
 		this.on(GameLoop.PAUSE, this.handlePause)
+
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'ENCOUNTER_START',
+		})
 	}
 
 	handlePlay() {
@@ -96,8 +103,17 @@ export class GameLoop extends Loop {
 
 	tick() {
 		if (this.isPartyDefeated()) this.gameOver = true
+		if (this.enemiesDefeated()) this.gameOver = true
 		if (this.gameOver) this.onGameOver()
 		this.render()
+	}
+
+	enemiesDefeated() {
+		if (!this.enemies) return true
+		const anyAlive = this.enemies.some(
+			(character) => character.health && character.health.current > 0,
+		)
+		return !anyAlive
 	}
 
 	/* @returns true if all party members are dead */
@@ -118,8 +134,27 @@ export class GameLoop extends Loop {
 	}
 
 	onGameOver() {
-		log('game:over, pausing game loop')
+		logCombat({
+			timestamp: Date.now(),
+			eventType: 'ENCOUNTER_END',
+		})
 		this.audio.stop()
 		this.pause()
+
+		// Add GSAP animations for game over effect
+		// Scale down and fade enemies and party
+		gsap.to('.Enemies, .PartyGroup', {
+			scale: 0.95,
+			// opacity: 0.7,
+			duration: 0.8,
+			ease: 'power2.out',
+		})
+
+		// Make game over screen more visible with animation
+		gsap.fromTo(
+			'.GameOver',
+			{opacity: 0, scale: 0.9, y: -20},
+			{opacity: 1, scale: 1, y: 0, duration: 1, delay: 0.3, ease: 'back.out(1.4)'},
+		)
 	}
 }
