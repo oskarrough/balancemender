@@ -118,6 +118,13 @@ if the target has 15% physical armor reduction, you will deal 600 * 0.85 = 510 d
 spell dmg ignores armor
 
 
+I want to make it easier for myself to balance the characters and enemies and spells in the game. It's about the resources health, mana, how fast they regenerate, how much spells cost, cast times, how much dmg do enemies do and so on. This has been done countless of times in other games such as classics as Warcraft 3 and wow etc.
+
+I've gone from two enemies and three partymembers to 1v1 to make it easier to debug for now.
+
+The goal is to discuss rules around balancing and how I do this. I don't want the numbers to go grow too big, either. E.g. a unit should be more like 250-500hp, not 5000! And so damage spells should not one shot etc.
+
+
 3. Content Expansion
    - [ ] Create a simple dungeon with multiple encounters
    - [ ] Implement more bosses with unique mechanics
