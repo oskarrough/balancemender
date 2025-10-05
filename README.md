@@ -1,8 +1,8 @@
-# Web Healer
+# Balance Mender
 
 A tactical game inspired by healing raids and five-man dungeons back in Azeroth. Who remembers Heal Rank 2? Keep your party alive, kill the enemies.
 
-🎮 Play on https://webhealer.0sk.ar
+🎮 Play on https://balancemender.0sk.ar
 
 The game is an evening hobby project in progress and happy to welcome new contributors.
 

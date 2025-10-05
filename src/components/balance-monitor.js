@@ -102,9 +102,9 @@ export class BalanceMonitor extends HTMLElement {
 		this.metrics.healingEvents = 0
 		this.metrics.characters.clear()
 
-		// Update faction info if webhealer is available
-		if (window.webhealer) {
-			window.webhealer.party.forEach((character) => {
+		// Update faction info if balancemender is available
+		if (window.balancemender) {
+			window.balancemender.party.forEach((character) => {
 				if (character.id) {
 					const charMetrics = this.getCharacterMetrics(
 						character.id,
@@ -114,7 +114,7 @@ export class BalanceMonitor extends HTMLElement {
 				}
 			})
 
-			window.webhealer.enemies.forEach((enemy) => {
+			window.balancemender.enemies.forEach((enemy) => {
 				if (enemy.id) {
 					const charMetrics = this.getCharacterMetrics(enemy.id, enemy.name || 'Enemy')
 					charMetrics.faction = 'enemy'
@@ -200,7 +200,7 @@ export class BalanceMonitor extends HTMLElement {
 	}
 
 	calculateTimeToLive() {
-		if (!window.webhealer?.player?.health) return 'N/A'
+		if (!window.balancemender?.player?.health) return 'N/A'
 
 		// Get damage and healing per second
 		const dps = this.metrics.totalDamage / this.metrics.period
@@ -213,15 +213,15 @@ export class BalanceMonitor extends HTMLElement {
 
 		// Get total party health for more accurate estimation
 		let totalPartyHealth = 0
-		if (window.webhealer) {
-			window.webhealer.party.forEach((member) => {
+		if (window.balancemender) {
+			window.balancemender.party.forEach((member) => {
 				if (member.health) {
 					totalPartyHealth += member.health.current
 				}
 			})
 		} else {
 			// Fallback to just player health
-			totalPartyHealth = window.webhealer.player.health.current
+			totalPartyHealth = window.balancemender.player.health.current
 		}
 
 		// Consider mana constraints - if we'll run out of mana, healing stops
@@ -245,12 +245,12 @@ export class BalanceMonitor extends HTMLElement {
 
 	// Raw time to OOM calculation (without formatting)
 	calculateRawTimeToOOM() {
-		if (!window.webhealer?.player?.mana) return Infinity
+		if (!window.balancemender?.player?.mana) return Infinity
 
 		const manaPerSec = this.metrics.totalManaSpent / this.metrics.period
 		if (manaPerSec <= 0) return Infinity
 
-		const currentMana = window.webhealer.player.mana.current
+		const currentMana = window.balancemender.player.mana.current
 		return Math.floor(currentMana / manaPerSec)
 	}
 

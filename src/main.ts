@@ -17,12 +17,12 @@ import './style.css'
  */
 function main() {
 	const game = new GameLoop()
-	game.element = document.querySelector('#webhealer')
+	game.element = document.querySelector('#balancemender')
 	game.render()
 	setupDevTools(game)
 	new InputManager(game)
 	// @ts-ignore
-	window.webhealer = game
+	window.balancemender = game
 	render(document.querySelector('#menu')!, () => Menu(game))
 	const urlParams = new URLSearchParams(window.location.search)
 	const muted = urlParams.has('muted')

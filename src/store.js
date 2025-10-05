@@ -1,7 +1,7 @@
 import {createLocalPersister} from 'tinybase/persisters/persister-browser'
 import {createStore} from 'tinybase'
 
-const KEY = 'webhealer-data-v1'
+const KEY = 'balancemender-data-v1'
 
 const DEFAULT_VIEWS = {
 	// combatlog: {position: JSON.stringify({x: 0, y: 0})},

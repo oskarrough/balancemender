@@ -1,5 +1,5 @@
 {
-  "name": "webhealer",
+  "name": "balancemender",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -34,6 +34,6 @@
     "semi": false,
     "bracketSpacing": false,
     "singleQuote": true,
-    "printWidth": 90
+    "printWidth": 120
   }
 }

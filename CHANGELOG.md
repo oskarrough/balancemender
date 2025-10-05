@@ -1,4 +1,4 @@
-# Changelog for Web Healer
+# Changelog for Balance Mender
 
 ## April 2025
 
