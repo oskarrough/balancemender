@@ -1,5 +1,9 @@
 # Changelog for Balance Mender
 
+## October 2026
+
+- Renamed project to Balance Mender. Hello
+
 ## April 2025
 
 - The player no longer auto-targets anything

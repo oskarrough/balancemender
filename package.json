@@ -14,19 +14,19 @@
     "deploy": "bun run build && wrangler deploy"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.0.4",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.3",
-    "vite": "^6.2.6",
-    "vitest": "^3.1.1",
-    "wrangler": "^4.9.1"
+    "@cloudflare/vite-plugin": "^1.13.10",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.42.0"
   },
   "dependencies": {
-    "gsap": "^3.12.7",
-    "pino": "^9.6.0",
-    "tinybase": "^6.0.1",
-    "uhtml": "^4.7.0",
-    "vroum": "^1.0.1",
+    "gsap": "^3.13.0",
+    "pino": "^10.0.0",
+    "tinybase": "^6.7.0",
+    "uhtml": "^4.7.1",
+    "vroum": "^1.2.4",
     "xid-ts": "^1.1.4"
   },
   "prettier": {
