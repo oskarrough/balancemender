@@ -87,7 +87,7 @@ export class DamageEffect extends Task {
 		// why do this?
 		this.targetId = this.target.id
 
-		return super.shouldTick()
+		return true
 	}
 
 	tick() {

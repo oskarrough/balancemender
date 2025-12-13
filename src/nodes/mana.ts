@@ -49,9 +49,6 @@ export class ManaRegen extends Task {
 	}
 
 	shouldTick(): boolean {
-		// First check the parent Task's conditions
-		if (!super.shouldTick()) return false
-
 		const gameLoop = this.root as GameLoop
 
 		// Get time since last cast
