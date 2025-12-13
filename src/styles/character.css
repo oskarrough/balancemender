@@ -25,10 +25,7 @@
 }
 
 .Character.Enemy {
-	&:hover {
-	}
-	&.Character--targeted {
-	}
+	--health: var(--c-crimson-lake);
 }
 
 .Character-avatar {
