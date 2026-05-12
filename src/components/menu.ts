@@ -1,6 +1,7 @@
 import {html} from 'uhtml'
 import {log} from '../utils'
 import {GameLoop} from '../nodes/game-loop'
+import {restartGame} from '../animations'
 
 export function Menu(game: GameLoop) {
 	const toggleMuted = (event: Event) => {
@@ -28,7 +29,7 @@ export function Menu(game: GameLoop) {
 	return html`
 		<div class="IngameMenu">
 			<menu>
-				<a class="Button" type="button" href="/">Reset</a>
+				<button class="Button" type="button" onclick=${() => restartGame(game)}>Reset</button>
 				<button class="Button" type="button" onclick=${() => game.play()}>Play</button>
 				<button class="Button" type="button" onclick=${() => game.pause()}>Pause</button>
 				<label class="Button SoundToggle"

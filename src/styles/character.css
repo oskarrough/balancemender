@@ -1,24 +1,26 @@
 .Character {
+	--character-bg: var(--c-snow-white);
+	--character-hover-bg: color-mix(in oklch, var(--c-snow-white), var(--c-linden-green));
+	--character-targeted-bg: var(--c-linden-green);
+
 	position: relative;
 	padding: 0.2rem;
 	border: 1px solid;
 	border-radius: var(--radius);
 	cursor: pointer;
 	transition: background 100ms;
-	background: var(--c-snow-white);
+	background: var(--character-bg);
 	max-width: 100%;
 	width: 20rem;
 }
 
 .Character:not(.Character--targeted):hover {
-	background: color-mix(in oklch, var(--c-snow-white), var(--c-linden-green));
+	background: var(--character-hover-bg);
 }
 
 /* Styles for the selected target */
 .Character--targeted {
-	background: var(--c-linden-green);
-	&:hover {
-	}
+	background: var(--character-targeted-bg);
 }
 
 .Character.PartyMember {
@@ -26,6 +28,9 @@
 
 .Character.Enemy {
 	--health: var(--c-crimson-lake);
+	--character-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
+	--character-hover-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
+	--character-targeted-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
 }
 
 .Character-row {
