@@ -46,6 +46,19 @@ export function createId() {
 }
 
 /**
+ * Copy named static fields from `instance.constructor` onto `instance`.
+ * Lets subclasses act as pure data templates while preserving the
+ * snapshot-at-construction semantics the balance UI relies on.
+ */
+export function applyStatics<T extends object, K extends keyof T>(instance: T, ...keys: K[]) {
+	const Ctor = instance.constructor as unknown as Record<string, unknown>
+	for (const k of keys) {
+		const v = Ctor[k as string]
+		if (v !== undefined) (instance as Record<string, unknown>)[k as string] = v
+	}
+}
+
+/**
  * Format a timestamp for display
  */
 export function formatTimestamp(timestamp: number): string {

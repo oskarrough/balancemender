@@ -2,7 +2,7 @@ import {Task} from 'vroum'
 import {AudioPlayer} from './audio'
 import {GlobalCooldown} from './global-cooldown'
 import {fct} from '../components/floating-combat-text'
-import {log, naturalizeNumber} from '../utils'
+import {applyStatics, log, naturalizeNumber} from '../utils'
 import {Player} from './player'
 import {GameLoop} from './game-loop'
 import {logCombat} from '../combatlog'
@@ -10,27 +10,20 @@ import {logCombat} from '../combatlog'
 export class Spell extends Task {
 	repeat = 1
 
-	// Instance properties
 	name = ''
 	cost = 0
 	heal = 0
-	// We'll use castTime instead of delay to avoid conflicts with Task API
 
-	// Static properties for spell definitions
 	static name = ''
 	static cost = 0
 	static heal = 0
-	static castTime = 0 // Cast time in milliseconds
+	/** Cast time in ms. Mirrored onto Task.delay at construction. */
+	static castTime = 0
 
 	constructor(public parent: Player) {
 		super(parent)
-
-		// Copy static properties to instance
-		const constructor = this.constructor as typeof Spell
-		this.name = constructor.name || this.name
-		this.cost = constructor.cost || this.cost
-		this.heal = constructor.heal || this.heal
-		this.delay = constructor.castTime || 0 // Set Task.delay from castTime
+		applyStatics(this, 'name', 'cost', 'heal')
+		this.delay = (this.constructor as typeof Spell).castTime
 	}
 
 	mount() {

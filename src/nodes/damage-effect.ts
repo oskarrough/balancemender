@@ -1,5 +1,5 @@
 import {Task} from 'vroum'
-import {html, randomIntFromInterval} from '../utils'
+import {applyStatics, html, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
 import {Character} from './character'
 import {logCombat, CombatEventType} from '../combatlog'
@@ -7,12 +7,10 @@ import {getFctContainer} from '../components/floating-combat-text'
 
 /**
  * Base class for all damage effects (attacks from any character to any character).
- * Subclasses declare static balance fields; the constructor copies them to instance
- * fields so balance updates only affect newly created attacks (canonical source: statics).
+ * Subclasses declare static balance fields; construction snapshots them onto the
+ * instance so balance edits only affect newly spawned attacks.
  */
 export class DamageEffect extends Task {
-	delay = 0
-	interval = 1000
 	duration = 0
 	repeat = Infinity
 
@@ -34,14 +32,7 @@ export class DamageEffect extends Task {
 
 	constructor(public attacker: Character) {
 		super(attacker)
-		const c = this.constructor as typeof DamageEffect
-		this.delay = c.delay
-		this.interval = c.interval
-		this.sound = c.sound
-		this.name = c.name
-		this.minDamage = c.minDamage
-		this.maxDamage = c.maxDamage
-		this.eventType = c.eventType
+		applyStatics(this, 'delay', 'interval', 'sound', 'name', 'minDamage', 'maxDamage', 'eventType')
 	}
 
 	damage() {
