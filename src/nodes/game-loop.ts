@@ -1,19 +1,13 @@
 import {Loop} from 'vroum'
 import {log, render} from '../utils'
-import {Player} from './player'
-import {Nakroth, TinyWolf} from './enemies'
-import {Tank, Rogue, Warrior} from './party-characters'
+import type {Player} from './player'
+import type {Tank} from './party-characters'
 import {AudioPlayer} from './audio'
+import {Encounter, DemoEncounter} from './encounter'
 import {UI} from '../components/ui'
 import {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
 import {logCombat} from '../combatlog'
-
-/**
- * Types of characters in the game
- */
-type Character = Player | Tank | Warrior | Rogue
-type Enemy = Nakroth | TinyWolf
 
 /**
  * Main game loop that manages the game state and updates
@@ -29,30 +23,21 @@ export class GameLoop extends Loop {
 	private _muted = true
 
 	audio = new AudioPlayer(this)
-
-	// Game state arrays
-	party: Character[] = []
-	enemies: Enemy[] = []
+	encounter: Encounter = new DemoEncounter(this)
 
 	// Developer mode properties
 	godMode = false
 	infiniteMana = false
 	console!: DevConsole
 
-	constructor() {
-		super()
-		this.prepareEncounter()
-	}
-
-	/** A demo encounter while we're testing. Set up your party and enemy characters here */
-	prepareEncounter() {
-		const tank = new Tank(this)
-		// const warrior = new Warrior(this)
-		const player = new Player(this)
-		player.currentTarget = player
-		this.party.push(tank, player)
-		// const boss = new Nakroth(this)
-		this.enemies.push(new TinyWolf(this))
+	/** Swap the active encounter, tearing down the previous one. */
+	loadEncounter(Klass: typeof Encounter) {
+		this.pause()
+		this.encounter.disconnect()
+		this.encounter = new Klass(this)
+		this.gameOver = false
+		this.elapsedTime = 0
+		this.render()
 	}
 
 	// Getter and setter for muted property that syncs with AudioPlayer
@@ -74,12 +59,20 @@ export class GameLoop extends Loop {
 		}
 	}
 
+	get party() {
+		return this.encounter.party
+	}
+
+	get enemies() {
+		return this.encounter.enemies
+	}
+
 	get player(): Player {
-		return this.party.find((x) => x instanceof Player) as Player
+		return this.encounter.player
 	}
 
 	get tank(): Tank {
-		return this.party.find((char) => char instanceof Tank) as Tank
+		return this.encounter.tank
 	}
 
 	mount() {
@@ -93,32 +86,20 @@ export class GameLoop extends Loop {
 		})
 	}
 
-	handlePlay() {
+	handlePlay = () => {
 		log('game:play')
 	}
 
-	handlePause() {
+	handlePause = () => {
 		log('game:pause')
 	}
 
 	tick() {
-		if (this.isPartyDefeated()) this.gameOver = true
-		if (this.enemiesDefeated()) this.gameOver = true
+		if (this.encounter.isPartyDefeated() || this.encounter.isEnemiesDefeated()) {
+			this.gameOver = true
+		}
 		if (this.gameOver) this.onGameOver()
 		this.render()
-	}
-
-	enemiesDefeated() {
-		if (!this.enemies) return true
-		const anyAlive = this.enemies.some((character) => character.health && character.health.current > 0)
-		return !anyAlive
-	}
-
-	/* @returns true if all party members are dead */
-	isPartyDefeated() {
-		if (this.party.length === 0) return true
-		const anyAlive = this.party.some((character) => character.health && character.health.current > 0)
-		return !anyAlive
 	}
 
 	render() {
@@ -145,12 +126,6 @@ export class GameLoop extends Loop {
 
 	/** Reset state for a fresh encounter. Does not animate — pair with `restartGame()` for the visual transition. */
 	restart() {
-		this.pause()
-		this.party = []
-		this.enemies = []
-		this.prepareEncounter()
-		this.gameOver = false
-		this.elapsedTime = 0
-		this.render()
+		this.loadEncounter(DemoEncounter)
 	}
 }

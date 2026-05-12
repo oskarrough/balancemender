@@ -2,7 +2,6 @@ import {Task} from 'vroum'
 import {Resource} from './resource'
 import {GameLoop} from './game-loop'
 import {Character} from './character'
-import {logCombat} from '../combatlog'
 /**
  * Events emitted by the Mana node
  */

@@ -126,7 +126,7 @@ export class DevConsole extends HTMLElement {
 				}
 
 				if (args[0] === 'removeall') {
-					game.enemies = []
+					game.encounter.enemies = []
 					this.logToConsole('All enemies removed')
 				} else if (args[0] === 'spawn') {
 					this.logToConsole('Spawn functionality coming soon')

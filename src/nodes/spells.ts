@@ -1,6 +1,5 @@
 import {Spell} from './spell'
 import {HOT} from './hot'
-import {GameLoop} from './game-loop'
 import {AudioPlayer} from './audio'
 import {Character} from './character'
 

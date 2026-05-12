@@ -1,6 +1,6 @@
 import {Character} from './character'
 import {Health} from './health'
-import {TankAttack, SmallAttack, WarriorAttack, RogueAttack} from './damage-effect'
+import {TankAttack} from './damage-effect'
 import {FACTION} from './types'
 import {TargetOppositeFaction} from './targeting-task'
 

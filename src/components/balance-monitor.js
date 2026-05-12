@@ -14,7 +14,7 @@ https://www.wowhead.com/guide/how-to-use-warcraft-logs-6341
 */
 
 // Helper function to create a visual progress bar
-function createProgressBar(percent, value, total, barLength = 10) {
+function createProgressBar(percent, _value, total, barLength = 10) {
 	const filledBars = Math.floor((percent / 100) * barLength)
 	const emptyBars = barLength - filledBars
 	const barDisplay = '-'.repeat(filledBars) + 'X' + '-'.repeat(emptyBars - 1)
@@ -34,6 +34,7 @@ class AnalyzeTask extends Task {
 
 export class BalanceMonitor extends HTMLElement {
 	analyzer = new AnalyzeTask(this)
+	_boundHandleLogUpdate = this.handleLogUpdate.bind(this)
 
 	constructor() {
 		super()
@@ -58,16 +59,16 @@ export class BalanceMonitor extends HTMLElement {
 	}
 
 	connectedCallback() {
-		document.addEventListener('combatlog-update', this.handleLogUpdate.bind(this))
+		document.addEventListener('combatlog-update', this._boundHandleLogUpdate)
 		this.render()
 	}
 
 	disconnectedCallback() {
-		document.removeEventListener('combatlog-update', this.handleLogUpdate.bind(this))
+		document.removeEventListener('combatlog-update', this._boundHandleLogUpdate)
 		this.analyzer.disconnect()
 	}
 
-	handleLogUpdate(event) {
+	handleLogUpdate(_event) {
 		// We'll do bulk updates in updateMetrics instead of per-event
 		if (Date.now() - this.metrics.lastUpdate > 1000) {
 			this.updateMetrics()
@@ -257,10 +258,6 @@ export class BalanceMonitor extends HTMLElement {
 		// Calculate metrics
 		const dps = roundOne(this.metrics.totalDamage / period)
 		const hps = roundOne(this.metrics.totalHealing / period)
-		const avgHeal =
-			this.metrics.healingEvents > 0 ? Math.round(this.metrics.totalHealing / this.metrics.healingEvents) : 0
-		const avgDamage =
-			this.metrics.damageEvents > 0 ? Math.round(this.metrics.totalDamage / this.metrics.damageEvents) : 0
 		const hpm = this.metrics.totalManaSpent > 0 ? roundOne(this.metrics.totalHealing / this.metrics.totalManaSpent) : 0
 		const mps = roundOne(this.metrics.totalManaSpent / period)
 
