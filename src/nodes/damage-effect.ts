@@ -79,25 +79,25 @@ export class DamageEffect extends Task {
 	}
 
 	shouldTick() {
-		if (!this.target) return false
 		if (this.attacker.health.current <= 0) return false
-		this.targetId = this.target.id
-		return true
+		return !!this.target
 	}
 
 	tick() {
-		if (!this.target) return // we already check this in shouldTick() but to silence the compiler..
+		const target = this.target
+		if (!target) return
 
+		this.targetId = target.id
 		const damage = this.damage()
-		this.target.health.damage(damage)
+		target.health.damage(damage)
 
 		logCombat({
 			timestamp: Date.now(),
 			eventType: this.eventType,
 			sourceId: this.attacker.id,
 			sourceName: this.attacker.name,
-			targetId: this.target.id,
-			targetName: this.target.name || this.target.constructor.name,
+			targetId: target.id,
+			targetName: target.name || target.constructor.name,
 			spellId: this.name,
 			spellName: this.name,
 			value: damage,
@@ -109,25 +109,25 @@ export class DamageEffect extends Task {
 		// Emit event for other systems to use
 		this.emit(DAMAGE_EFFECT_EVENTS.DAMAGE_APPLIED, {
 			attacker: this.attacker,
-			target: this.target,
+			target,
 			damage: damage,
 			attackName: this.name,
 		})
 
 		// Check if target died
-		if (this.target.health.current <= 0) {
+		if (target.health.current <= 0) {
 			logCombat({
 				timestamp: Date.now(),
 				eventType: 'UNIT_DIED',
 				sourceId: this.attacker.id,
 				sourceName: this.attacker.name,
-				targetId: this.target.id,
-				targetName: this.target.name || this.target.constructor.name,
+				targetId: target.id,
+				targetName: target.name || target.constructor.name,
 				spellId: this.name,
 				spellName: this.name,
 			})
 			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
-				target: this.target,
+				target,
 			})
 		}
 	}

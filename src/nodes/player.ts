@@ -42,7 +42,7 @@ export class Player extends Character {
 		if (this.health.current <= 0) return console.warn(`Can't cast while dead`)
 		if (this.gcd) return console.warn(`Can't cast during global cooldown`)
 		if (this.spell) return console.warn(`Can't cast while casting`)
-		if (!this.currentTarget) return console.warn(`Can't cast without a target`)
+		if (!this.getTarget()) return console.warn(`Can't cast without a target`)
 
 		const SpellClass = this.spellbook[spellName]
 		if (!SpellClass) {

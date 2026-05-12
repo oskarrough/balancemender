@@ -11,7 +11,7 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 	const isEnemy = character.faction === 'enemy'
 	const health = character.health.current
 	const maxHealth = character.health.max
-	const isCurrentTarget = player.currentTarget === character
+	const isCurrentTarget = player.getTarget() === character
 	const displayName = character.name || character.constructor.name
 	const effects: HOT[] = character.effects ? Array.from(character.effects) : []
 

@@ -32,7 +32,7 @@ export class Renew extends Spell {
 
 	tick() {
 		const player = this.parent
-		const target = player.currentTarget
+		const target = player.getTarget()
 		if (target) {
 			new RenewHOT(target)
 			AudioPlayer.play('spell_rejuvenation')

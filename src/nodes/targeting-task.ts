@@ -19,7 +19,7 @@ export class Targeting extends Task {
 	}
 
 	needsTarget() {
-		return !this.parent.currentTarget || this.parent.currentTarget.health.current <= 0
+		return !this.parent.getTarget()
 	}
 
 	reconsiders() {
