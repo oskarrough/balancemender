@@ -1,6 +1,9 @@
 import {GameLoop} from '../nodes/game-loop'
 import {html, render} from '../utils'
 import {createLogger} from '../combatlog'
+import {commands} from '../commands'
+import {SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, SpellKey, AttackKey, UnitKey} from '../balance'
+import {EnemyId, enemyRegistry} from '../nodes/registry'
 
 /**
  * Interface for console commands
@@ -115,21 +118,110 @@ export class DevConsole extends HTMLElement {
 			},
 		})
 
-		// Enemy management command
-		this.commands.set('enemies', {
-			name: 'enemies',
-			description: 'Manage enemies (removeall, spawn [type])',
+		// Enemy management command — /enemy spawn <Type> | /enemy remove <id> | /enemy removeall
+		this.commands.set('enemy', {
+			name: 'enemy',
+			description: 'Manage enemies: spawn <Type> | remove <id> | removeall',
 			execute: (game, args) => {
 				if (!args || args.length === 0) {
-					this.logToConsole('Usage: /enemies removeall|spawn [type]')
+					this.logToConsole(
+						`Usage: /enemy spawn <Type> | /enemy remove <id> | /enemy removeall\nTypes: ${Object.keys(enemyRegistry).join(', ')}`,
+					)
 					return
 				}
-
 				if (args[0] === 'removeall') {
-					game.encounter.enemies = []
+					for (const e of game.encounter.enemies.slice()) commands.removeUnit(game, e.id)
 					this.logToConsole('All enemies removed')
 				} else if (args[0] === 'spawn') {
-					this.logToConsole('Spawn functionality coming soon')
+					const type = args[1] as EnemyId
+					if (!type || !(type in enemyRegistry)) {
+						this.logToConsole(`Unknown enemy type. Known: ${Object.keys(enemyRegistry).join(', ')}`)
+						return
+					}
+					const e = commands.spawnEnemy(game, type)
+					this.logToConsole(e ? `Spawned ${type} (${e.id.slice(-6)})` : `Failed to spawn ${type}`)
+				} else if (args[0] === 'remove') {
+					const id = args[1]
+					if (!id) return this.logToConsole('Usage: /enemy remove <id>')
+					const ok = commands.removeUnit(game, id)
+					this.logToConsole(ok ? `Removed ${id}` : `Not found: ${id}`)
+				} else {
+					this.logToConsole(`Unknown subcommand: ${args[0]}`)
+				}
+			},
+		})
+
+		// Spell tuning — /spell <Name> <key> <value>. Multi-word names need underscores: Flash_Heal.
+		this.commands.set('spell', {
+			name: 'spell',
+			description: 'Tune a spell: /spell <Name> <key> <value> (e.g. /spell Heal cost 55)',
+			execute: (game, args) => {
+				if (!args || args.length < 3) {
+					this.logToConsole(`Usage: /spell <Name> <key> <value>\nKeys: ${SPELL_KEYS.join(', ')}`)
+					return
+				}
+				const name = args[0].replaceAll('_', ' ')
+				const key = args[1] as SpellKey
+				const value = Number(args[2])
+				if (!(SPELL_KEYS as readonly string[]).includes(key) || !Number.isFinite(value)) {
+					this.logToConsole(`Invalid key or value. Keys: ${SPELL_KEYS.join(', ')}`)
+					return
+				}
+				const ok = commands.setSpell(game, name, key, value)
+				this.logToConsole(ok ? `${name}.${key} = ${value}` : `Unknown spell: ${name}`)
+			},
+		})
+
+		// Attack tuning — /attack <Name> <key> <value>
+		this.commands.set('attack', {
+			name: 'attack',
+			description: 'Tune an attack: /attack <Name> <key> <value>',
+			execute: (game, args) => {
+				if (!args || args.length < 3) {
+					this.logToConsole(`Usage: /attack <Name> <key> <value>\nKeys: ${ATTACK_KEYS.join(', ')}`)
+					return
+				}
+				const [name, key, valueStr] = args
+				const value = Number(valueStr)
+				if (!(ATTACK_KEYS as readonly string[]).includes(key as AttackKey) || !Number.isFinite(value)) {
+					this.logToConsole(`Invalid key or value. Keys: ${ATTACK_KEYS.join(', ')}`)
+					return
+				}
+				const ok = commands.setAttack(game, name, key as AttackKey, value)
+				this.logToConsole(ok ? `${name}.${key} = ${value}` : `Unknown attack: ${name}`)
+			},
+		})
+
+		// Unit tuning — /unit <Name> <key> <value>
+		this.commands.set('unit', {
+			name: 'unit',
+			description: 'Tune a unit: /unit <Name> <key> <value>',
+			execute: (game, args) => {
+				if (!args || args.length < 3) {
+					this.logToConsole(`Usage: /unit <Name> <key> <value>\nKeys: ${UNIT_KEYS.join(', ')}`)
+					return
+				}
+				const [name, key, valueStr] = args
+				const value = Number(valueStr)
+				if (!(UNIT_KEYS as readonly string[]).includes(key as UnitKey) || !Number.isFinite(value)) {
+					this.logToConsole(`Invalid key or value. Keys: ${UNIT_KEYS.join(', ')}`)
+					return
+				}
+				const ok = commands.setUnit(game, name, key as UnitKey, value)
+				this.logToConsole(ok ? `${name}.${key} = ${value}` : `Unknown unit: ${name}`)
+			},
+		})
+
+		// Balance management — /balance reset
+		this.commands.set('balance', {
+			name: 'balance',
+			description: 'Balance ops: reset',
+			execute: (game, args) => {
+				if (args?.[0] === 'reset') {
+					commands.resetBalance(game)
+					this.logToConsole('Balance reset to defaults')
+				} else {
+					this.logToConsole('Usage: /balance reset')
 				}
 			},
 		})
@@ -139,9 +231,7 @@ export class DevConsole extends HTMLElement {
 			name: 'heal',
 			description: 'Heal all party members to full',
 			execute: (game) => {
-				game.party.forEach((member) => {
-					member.health.current = member.health.max
-				})
+				commands.healParty(game)
 				this.logToConsole('All party members healed to full')
 			},
 		})

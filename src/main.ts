@@ -5,12 +5,14 @@ import {buildSplashIntro, buildIntro} from './animations'
 import {DevConsole} from './components/dev-console'
 import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
+import {BalanceLab} from './components/balance-lab'
 import './components/dev-console'
 import './components/animation-debugger'
 import './components/floating-view.js'
 import './components/combat-log-viewer.js'
 import './components/color-palette.js'
 import './components/balance-monitor.js'
+import './components/balance-lab'
 import './style.css'
 
 /**
@@ -85,6 +87,9 @@ function setupDevTools(game: GameLoop) {
 	}
 	devConsole.init(game)
 	game.console = devConsole
+
+	const balanceLab = document.querySelector('balance-lab') as BalanceLab | null
+	balanceLab?.init(game)
 }
 
 main()
