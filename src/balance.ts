@@ -1,18 +1,22 @@
 import {Heal, FlashHeal, GreaterHeal, Renew} from './nodes/spells'
 import {TinyWolf, Nakroth} from './nodes/enemies'
+import {Tank} from './nodes/party-characters'
+import {Player} from './nodes/player'
 import {SmallAttack, MediumAttack, HugeAttack, TankAttack} from './nodes/damage-effect'
 
 export const SPELL_KEYS = ['cost', 'heal', 'castTime'] as const
 export const ATTACK_KEYS = ['minDamage', 'maxDamage', 'interval', 'delay'] as const
-export const UNIT_KEYS = ['maxHealth'] as const
+export const UNIT_KEYS = ['maxHealth', 'maxMana'] as const
 
 export type SpellKey = (typeof SPELL_KEYS)[number]
 export type AttackKey = (typeof ATTACK_KEYS)[number]
 export type UnitKey = (typeof UNIT_KEYS)[number]
 
+type NumberDict = Record<string, number>
+
 type SpellClass = {cost: number; heal: number; castTime: number}
 type AttackClass = {minDamage: number; maxDamage: number; interval: number; delay: number}
-type UnitClass = {maxHealth: number}
+type UnitClass = {maxHealth: number; maxMana?: number}
 
 export const spellClasses: Record<string, SpellClass> = {
 	Heal,
@@ -29,31 +33,35 @@ export const attackClasses: Record<string, AttackClass> = {
 }
 
 export const unitClasses: Record<string, UnitClass> = {
+	Player,
+	Tank,
 	TinyWolf,
 	Nakroth,
 }
 
-function snapshot<K extends string>(src: Record<string, Record<string, number>>, keys: readonly K[]) {
-	const out: Record<string, Record<K, number>> = {}
+function snapshot<K extends string>(src: Record<string, NumberDict>, keys: readonly K[]) {
+	const out: Record<string, Partial<Record<K, number>>> = {}
 	for (const [name, cls] of Object.entries(src)) {
-		const row = {} as Record<K, number>
-		for (const k of keys) row[k] = cls[k]
+		const row: Partial<Record<K, number>> = {}
+		for (const k of keys) {
+			if (k in cls) row[k] = cls[k]
+		}
 		out[name] = row
 	}
 	return out
 }
 
 const defaults = {
-	spells: snapshot(spellClasses, SPELL_KEYS),
-	attacks: snapshot(attackClasses, ATTACK_KEYS),
-	units: snapshot(unitClasses, UNIT_KEYS),
+	spells: snapshot(spellClasses as Record<string, NumberDict>, SPELL_KEYS),
+	attacks: snapshot(attackClasses as Record<string, NumberDict>, ATTACK_KEYS),
+	units: snapshot(unitClasses as Record<string, NumberDict>, UNIT_KEYS),
 }
 
 export const balance = structuredClone(defaults)
 
 function writeBack(
-	classes: Record<string, Record<string, number>>,
-	state: Record<string, Record<string, number>>,
+	classes: Record<string, NumberDict>,
+	state: Record<string, Partial<NumberDict>>,
 	name: string,
 	key: string,
 	value: number,
@@ -66,23 +74,32 @@ function writeBack(
 }
 
 export function setSpellValue(name: string, key: SpellKey, value: number) {
-	return writeBack(spellClasses, balance.spells, name, key, value)
+	return writeBack(spellClasses as Record<string, NumberDict>, balance.spells, name, key, value)
 }
 export function setAttackValue(name: string, key: AttackKey, value: number) {
-	return writeBack(attackClasses, balance.attacks, name, key, value)
+	return writeBack(attackClasses as Record<string, NumberDict>, balance.attacks, name, key, value)
 }
 export function setUnitValue(name: string, key: UnitKey, value: number) {
-	return writeBack(unitClasses, balance.units, name, key, value)
+	return writeBack(unitClasses as Record<string, NumberDict>, balance.units, name, key, value)
 }
 
 export function resetBalance() {
 	for (const [name, def] of Object.entries(defaults.spells)) {
-		for (const k of SPELL_KEYS) setSpellValue(name, k, def[k])
+		for (const k of SPELL_KEYS) {
+			const v = def[k]
+			if (v !== undefined) setSpellValue(name, k, v)
+		}
 	}
 	for (const [name, def] of Object.entries(defaults.attacks)) {
-		for (const k of ATTACK_KEYS) setAttackValue(name, k, def[k])
+		for (const k of ATTACK_KEYS) {
+			const v = def[k]
+			if (v !== undefined) setAttackValue(name, k, v)
+		}
 	}
 	for (const [name, def] of Object.entries(defaults.units)) {
-		for (const k of UNIT_KEYS) setUnitValue(name, k, def[k])
+		for (const k of UNIT_KEYS) {
+			const v = def[k]
+			if (v !== undefined) setUnitValue(name, k, v)
+		}
 	}
 }

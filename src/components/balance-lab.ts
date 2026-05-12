@@ -1,143 +1,115 @@
 import {html, render} from '../utils'
 import type {GameLoop} from '../nodes/game-loop'
-import {balance, SPELL_KEYS, UNIT_KEYS, SpellKey, UnitKey} from '../balance'
-import {commands} from '../commands'
+import {allInspectables, Inspectable, InspectableSection} from '../inspectables'
+import {BalanceInspector} from './balance-inspector'
+import './balance-inspector'
 
-const SPELL_LABEL: Record<SpellKey, string> = {
-	cost: 'Mana cost',
-	heal: 'Heal amount',
-	castTime: 'Cast time (ms)',
-}
-
-const UNIT_LABEL: Record<UnitKey, string> = {
-	maxHealth: 'Max health',
+declare global {
+	interface Window {
+		balancemender?: GameLoop
+	}
 }
 
 export class BalanceLab extends HTMLElement {
-	private game: GameLoop | null = null
-	private _boundHandleLogUpdate = () => this.render()
+	private selectedId: string | null = 'globals'
+	private _onLogUpdate = () => this.refreshInspector()
+	private _retryTimer: number | null = null
 
-	init(game: GameLoop) {
-		this.game = game
+	private get game(): GameLoop | undefined {
+		return window.balancemender
+	}
+
+	select(id: string) {
+		this.selectedId = id
 		this.render()
 	}
 
 	connectedCallback() {
-		document.addEventListener('combatlog-update', this._boundHandleLogUpdate)
-		if (!this.firstChild) this.render()
+		document.addEventListener('combatlog-update', this._onLogUpdate)
+		this.render()
+		if (!this.game) {
+			// Game isn't constructed yet (splash). Poll briefly until it appears.
+			this._retryTimer = window.setInterval(() => {
+				if (this.game) {
+					if (this._retryTimer) window.clearInterval(this._retryTimer)
+					this._retryTimer = null
+					this.render()
+				}
+			}, 250)
+		}
 	}
 
 	disconnectedCallback() {
-		document.removeEventListener('combatlog-update', this._boundHandleLogUpdate)
+		document.removeEventListener('combatlog-update', this._onLogUpdate)
+		if (this._retryTimer) {
+			window.clearInterval(this._retryTimer)
+			this._retryTimer = null
+		}
 	}
 
-	private onNumber(handler: (value: number) => void) {
-		return (e: Event) => {
-			const value = (e.target as HTMLInputElement).valueAsNumber
-			if (!Number.isFinite(value)) return
-			handler(value)
-			this.render()
+	private sections(): InspectableSection[] {
+		const game = this.game
+		if (!game) return []
+		return allInspectables(game)
+	}
+
+	private findSelected(sections: InspectableSection[]): Inspectable | null {
+		for (const s of sections) {
+			const found = s.items.find((i) => i.id === this.selectedId)
+			if (found) return found
 		}
+		return null
+	}
+
+	/** Re-pull the live data into the inspector without rebuilding the nav. */
+	private refreshInspector() {
+		const sections = this.sections()
+		const selected = this.findSelected(sections)
+		const insp = this.querySelector('balance-inspector') as BalanceInspector | null
+		insp?.setTarget(selected)
 	}
 
 	render() {
-		const game = this.game
-		if (!game) {
+		if (!this.game) {
 			render(this, () => html`<p>Waiting for game…</p>`)
 			return
 		}
-
-		const heal = balance.spells['Heal']
-		const wolf = balance.units['TinyWolf']
-		const liveWolves = game.encounter.enemies.filter((e) => e.constructor.name === 'TinyWolf')
+		const sections = this.sections()
+		const selected = this.findSelected(sections)
 
 		render(
 			this,
 			() => html`
-				<section>
-					<h3>Spell — Heal</h3>
-					<dl>
-						${SPELL_KEYS.map(
-							(k) => html`
-								<dt>${SPELL_LABEL[k]}</dt>
-								<dd>
-									<input
-										type="number"
-										.value=${String(heal[k])}
-										onchange=${this.onNumber((v) => commands.setSpell(game, 'Heal', k, v))}
-									/>
-								</dd>
-							`,
-						)}
-					</dl>
-				</section>
-
-				<section>
-					<h3>Enemy — TinyWolf</h3>
-					<dl>
-						${UNIT_KEYS.map(
-							(k) => html`
-								<dt>${UNIT_LABEL[k]}</dt>
-								<dd>
-									<input
-										type="number"
-										.value=${String(wolf[k])}
-										onchange=${this.onNumber((v) => commands.setUnit(game, 'TinyWolf', k, v))}
-									/>
-								</dd>
-							`,
-						)}
-					</dl>
-					<p>
-						<button
-							onclick=${() => {
-								commands.spawnEnemy(game, 'TinyWolf')
-								this.render()
-							}}
-						>
-							Spawn TinyWolf
-						</button>
-					</p>
-					<p>Live (${liveWolves.length}):</p>
-					<ul>
-						${liveWolves.map(
-							(w) => html`
-								<li>
-									${w.id.slice(-6)} — ${w.health.current}/${w.health.max}
-									<button
-										onclick=${() => {
-											commands.removeUnit(game, w.id)
-											this.render()
-										}}
-									>
-										Remove
-									</button>
-								</li>
-							`,
-						)}
-					</ul>
-				</section>
-
-				<section>
-					<button
-						onclick=${() => {
-							commands.healParty(game)
-							this.render()
-						}}
-					>
-						Heal party
-					</button>
-					<button
-						onclick=${() => {
-							commands.resetBalance(game)
-							this.render()
-						}}
-					>
-						Reset balance
-					</button>
-				</section>
+				<nav class="BalanceLab-nav">
+					${sections.map(
+						(sec) => html`
+							<details open>
+								<summary>${sec.section}</summary>
+								<ul>
+									${sec.items.map(
+										(item) => html`
+											<li>
+												<button
+													class=${`BalanceLab-pick ${item.id === this.selectedId ? 'is-active' : ''}`}
+													onclick=${() => this.select(item.id)}
+												>
+													<span class="BalanceLab-pickTitle">${item.title}</span>
+													${item.subtitle ? html`<small>${item.subtitle}</small>` : ''}
+												</button>
+											</li>
+										`,
+									)}
+								</ul>
+							</details>
+						`,
+					)}
+				</nav>
+				<balance-inspector class="BalanceLab-inspector"></balance-inspector>
 			`,
 		)
+
+		const insp = this.querySelector('balance-inspector') as BalanceInspector | null
+		insp?.setTarget(selected)
 	}
 }
 

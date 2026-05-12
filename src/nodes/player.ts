@@ -7,12 +7,14 @@ import {Heal, FlashHeal, GreaterHeal, Renew} from './spells'
 import {GlobalCooldown} from './global-cooldown'
 
 export class Player extends Character {
+	static maxHealth = 160
+	static maxMana = 600
 	faction = FACTION.PARTY
 	name = 'Player'
 	image = '/assets/generated/characters/player.png'
 
-	health = new Health(this, 160)
-	mana: Mana = new Mana(this, 600)
+	health = new Health(this, (this.constructor as typeof Player).maxHealth)
+	mana: Mana = new Mana(this, (this.constructor as typeof Player).maxMana)
 
 	// targetingTask = new TargetOppositeFaction(this)
 	// attackEffect = new MediumAttack(this)

@@ -4,70 +4,43 @@ import {AudioPlayer} from './audio'
 import {Character} from './character'
 import {logCombat, CombatEventType} from '../combatlog'
 
-// Event names for damage effects
-export const DAMAGE_EFFECT_EVENTS = {
-	DAMAGE_APPLIED: 'damageApplied',
-	TARGET_KILLED: 'targetKilled',
-}
-
 /**
- * Configuration interface for damage effects
- */
-export interface DamageEffectConfig {
-	name: string
-	minDamage: number
-	maxDamage: number
-	interval: number
-	delay: number
-	sound?: string
-}
-
-/**
- * Base class for all damage effects (attacks from any character to any character)
+ * Base class for all damage effects (attacks from any character to any character).
+ * Subclasses declare static balance fields; the constructor copies them to instance
+ * fields so balance updates only affect newly created attacks (canonical source: statics).
  */
 export class DamageEffect extends Task {
-	// Task properties
-	delay = 0 // delay the first cycle
-	interval = 1000 // wait between cycles
-	duration = 0 // tick once every cycle
+	delay = 0
+	interval = 1000
+	duration = 0
 	repeat = Infinity
 
 	minDamage = 0
 	maxDamage = 0
 	sound = ''
 	name = ''
+	eventType: CombatEventType = 'SPELL_DAMAGE'
 
-	// Target id for DOM operations
 	targetId: string = ''
 
-	// Static properties for attack definitions
 	static delay = 0
 	static interval = 1000
 	static sound = ''
 	static name = 'Generic Attack'
 	static minDamage = 0
 	static maxDamage = 0
-	static eventType: CombatEventType = 'SPELL_DAMAGE' // Default event type
+	static eventType: CombatEventType = 'SPELL_DAMAGE'
 
-	// Instance event type
-	eventType: CombatEventType = 'SPELL_DAMAGE' // Default
-
-	/**
-	 * Create a damage effect that will attack the attacker's current target
-	 * @param attacker The character doing the attacking
-	 */
 	constructor(public attacker: Character) {
 		super(attacker)
-
-		// Copy static properties to instance
-		const constructor = this.constructor as typeof DamageEffect
-		this.delay = constructor.delay
-		this.interval = constructor.interval
-		this.sound = constructor.sound
-		this.name = constructor.name
-		this.minDamage = constructor.minDamage
-		this.maxDamage = constructor.maxDamage
-		this.eventType = constructor.eventType
+		const c = this.constructor as typeof DamageEffect
+		this.delay = c.delay
+		this.interval = c.interval
+		this.sound = c.sound
+		this.name = c.name
+		this.minDamage = c.minDamage
+		this.maxDamage = c.maxDamage
+		this.eventType = c.eventType
 	}
 
 	damage() {
@@ -91,13 +64,14 @@ export class DamageEffect extends Task {
 		const damage = this.damage()
 		target.health.damage(damage)
 
+		const targetName = target.name || target.constructor.name
 		logCombat({
 			timestamp: Date.now(),
 			eventType: this.eventType,
 			sourceId: this.attacker.id,
 			sourceName: this.attacker.name,
 			targetId: target.id,
-			targetName: target.name || target.constructor.name,
+			targetName,
 			spellId: this.name,
 			spellName: this.name,
 			value: damage,
@@ -106,15 +80,6 @@ export class DamageEffect extends Task {
 		this.playSound()
 		this.createVisualEffects(damage)
 
-		// Emit event for other systems to use
-		this.emit(DAMAGE_EFFECT_EVENTS.DAMAGE_APPLIED, {
-			attacker: this.attacker,
-			target,
-			damage: damage,
-			attackName: this.name,
-		})
-
-		// Check if target died
 		if (target.health.current <= 0) {
 			logCombat({
 				timestamp: Date.now(),
@@ -122,12 +87,9 @@ export class DamageEffect extends Task {
 				sourceId: this.attacker.id,
 				sourceName: this.attacker.name,
 				targetId: target.id,
-				targetName: target.name || target.constructor.name,
+				targetName,
 				spellId: this.name,
 				spellName: this.name,
-			})
-			this.emit(DAMAGE_EFFECT_EVENTS.TARGET_KILLED, {
-				target,
 			})
 		}
 	}
@@ -137,18 +99,9 @@ export class DamageEffect extends Task {
 	}
 
 	createVisualEffects(damageAmount: number) {
-		// Determine if this is a player/party attack or an enemy attack
-		// const isPartyAttack =
-		//   this.attacker.parent === this.target.parent &&
-		//   'enemies' in this.attacker.parent &&
-		//   this.attacker.parent.enemies.some((enemy) => enemy === this.target)
-		// For enemy attacks on party members, animate the hit
-		// if (!isPartyAttack) {
 		const targetElement = document.querySelector(`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`)
 		if (targetElement) this.animateHit(targetElement)
-		// }
 
-		// Create floating combat text
 		const cssClass = `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
 		const fct = html`<floating-combat-text class=${cssClass}>${damageAmount}</floating-combat-text>`.toDOM()
 		const container = document.querySelector('.FloatingCombatText')
@@ -169,16 +122,12 @@ export class DamageEffect extends Task {
 			],
 			{duration: 200, easing: 'ease-in-out'},
 		)
-
-		animation.onfinish = () => {
-			element.classList.remove('is-takingDamage')
-		}
+		animation.onfinish = () => element.classList.remove('is-takingDamage')
 	}
 }
 
 /** Small, frequent attack with low damage */
 export class SmallAttack extends DamageEffect {
-	static delay = 0
 	static interval = 1600
 	static minDamage = 7
 	static maxDamage = 11
@@ -216,25 +165,5 @@ export class TankAttack extends DamageEffect {
 	static maxDamage = 24
 	static sound = 'combat_sword_hit'
 	static name = 'Shield Bash'
-	static eventType: CombatEventType = 'SWING_DAMAGE'
-}
-
-/** Warrior attack - high damage, slower attack speed */
-export class WarriorAttack extends DamageEffect {
-	static interval = 2200
-	static minDamage = 120
-	static maxDamage = 220
-	static sound = 'combat_sword_hit'
-	static name = 'Mighty Swing'
-	static eventType: CombatEventType = 'SWING_DAMAGE'
-}
-
-/** Rogue attack - lower damage but fast attack speed */
-export class RogueAttack extends DamageEffect {
-	static interval = 1000
-	static minDamage = 65
-	static maxDamage = 95
-	static sound = 'combat_sword_hit'
-	static name = 'Quick Slash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }

@@ -13,11 +13,16 @@ import {
 import {enemyRegistry, EnemyId} from './nodes/registry'
 
 function applyUnitSideEffects(game: GameLoop, name: string, key: UnitKey, value: number) {
-	if (key !== 'maxHealth') return
-	for (const e of game.encounter.enemies) {
-		if (e.constructor.name !== name) continue
-		e.health.max = value
-		if (e.health.current > value) e.health.current = value
+	const all: Character[] = [...game.party, ...game.encounter.enemies]
+	for (const c of all) {
+		if (c.constructor.name !== name) continue
+		if (key === 'maxHealth') {
+			c.health.max = value
+			if (c.health.current > value) c.health.current = value
+		} else if (key === 'maxMana' && c.mana) {
+			c.mana.max = value
+			if (c.mana.current > value) c.mana.current = value
+		}
 	}
 }
 

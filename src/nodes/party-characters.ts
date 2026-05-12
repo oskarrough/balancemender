@@ -5,8 +5,9 @@ import {FACTION} from './types'
 import {TargetOppositeFaction} from './targeting-task'
 
 export class Tank extends Character {
+	static maxHealth = 300
 	faction = FACTION.PARTY
-	health = new Health(this, 300)
+	health = new Health(this, (this.constructor as typeof Tank).maxHealth)
 	targetingTask = new TargetOppositeFaction(this)
 	attackEffect = new TankAttack(this)
 	name = 'Tank'

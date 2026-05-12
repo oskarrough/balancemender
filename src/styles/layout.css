@@ -156,6 +156,127 @@ body {
 	border-bottom: 0.4rem solid var(--c-violet-pale);
 }
 
+balance-lab {
+	display: grid;
+	grid-template-columns: 12rem 1fr;
+	gap: 0.5rem;
+	min-height: 18rem;
+	padding: 0.4rem;
+	font-size: 12px;
+}
+
+.BalanceLab-nav {
+	overflow-y: auto;
+	max-height: 24rem;
+	border-right: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+	padding-right: 0.3rem;
+}
+
+.BalanceLab-nav details {
+	margin-bottom: 0.3rem;
+}
+
+.BalanceLab-nav summary {
+	cursor: pointer;
+	opacity: 0.7;
+	padding: 0.1rem 0;
+	user-select: none;
+}
+
+.BalanceLab-nav ul {
+	list-style: none;
+	padding: 0;
+	margin: 0.1rem 0 0.3rem 0.2rem;
+}
+
+.BalanceLab-pick {
+	width: 100%;
+	text-align: left;
+	background: transparent;
+	border: 0;
+	color: inherit;
+	padding: 0.15rem 0.3rem;
+	cursor: pointer;
+	border-radius: 2px;
+	display: block;
+}
+
+.BalanceLab-pick:hover {
+	background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.BalanceLab-pick.is-active {
+	background: color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.BalanceLab-pickTitle {
+	display: block;
+	font-weight: 500;
+}
+
+.BalanceLab-pick small {
+	opacity: 0.55;
+	font-size: 0.85em;
+}
+
+.BalanceLab-inspector {
+	display: block;
+	min-width: 0;
+}
+
+.BalanceInspector-empty {
+	opacity: 0.6;
+	padding: 1rem;
+}
+
+.BalanceInspector-header {
+	margin-bottom: 0.4rem;
+}
+
+.BalanceInspector-header h3 {
+	margin: 0;
+}
+
+.BalanceInspector-header small {
+	opacity: 0.6;
+}
+
+.BalanceInspector-fields {
+	display: grid;
+	gap: 0.2rem;
+	margin-bottom: 0.5rem;
+}
+
+.BalanceInspector-row {
+	display: grid;
+	grid-template-columns: 9rem 1fr;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.BalanceInspector-row input[type='number'] {
+	width: 100%;
+	min-width: 0;
+}
+
+.BalanceInspector-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem;
+}
+
+.BalanceInspector-action {
+	cursor: pointer;
+}
+
+.BalanceInspector-action.is-danger {
+	color: var(--c-crimson-lake, #b00);
+}
+
+.BalanceInspector-action.is-primary {
+	font-weight: 600;
+}
+
 balance-monitor {
 	floating-view & {
 		margin: 0.2em;
