@@ -30,7 +30,7 @@ export class HOT extends Task {
 
 		logCombat({
 			timestamp: Date.now(),
-			eventType: 'PERIODIC_SPELL_HEAL',
+			eventType: 'SPELL_PERIODIC_HEAL',
 			sourceId: this.parent.id,
 			sourceName: this.parent.name,
 			targetId: this.parent.id,

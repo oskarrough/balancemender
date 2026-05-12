@@ -21,7 +21,7 @@ function main() {
 	// Wait for web fonts before animating the splash — otherwise "Rubik 80s Fade" swaps in mid-tween
 	// and re-rasterizes the giant title, which reads as jank no matter what GSAP does.
 	let splashIntro: ReturnType<typeof buildSplashIntro> | null = null
-	document.fonts.ready.then(() => {
+	void document.fonts.ready.then(() => {
 		// Small breather so any final layout/paint settles before the title slams in.
 		setTimeout(() => {
 			splashIntro = buildSplashIntro()

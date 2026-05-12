@@ -147,7 +147,7 @@ export class AudioPlayer extends Node {
 			logger.debug(`audio: started ${name}, volume: ${audio.volume}, muted: ${audio.muted}`)
 			return audio
 		} catch (err) {
-			logger.debug(`audio: error creating audio element for ${name}: ${err}`)
+			logger.debug(`audio: error creating audio element for ${name}: ${String(err)}`)
 			return null
 		}
 	}

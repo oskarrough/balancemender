@@ -34,7 +34,7 @@ export function Meter({value, max, type, potentialValue = 0, spell}: MeterProps)
 	const barStyles = `width: ${percent}%`
 
 	if (spell?.delay === 0) {
-		potentialValue = potentialValue - (potentialValue / spell.repeat) * spell.cycles
+		potentialValue = potentialValue - (potentialValue / spell.repeat) * spell._cycles
 	}
 	const potentialBarStyles = `left: ${percent}%; width: ${toPercent(potentialValue, max)}%`
 

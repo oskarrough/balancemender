@@ -1,5 +1,5 @@
 import {html, formatTimestamp, render} from '../utils'
-import {CombatLogEvent, combatLogs, getCombatLogs, clearLogs, CombatEventType, EVENT_TYPE_COLORS} from '../combatlog'
+import {CombatLogEvent, combatLogs, getCombatLogs, CombatEventType, EVENT_TYPE_COLORS} from '../combatlog'
 import '../components/floating-view.js'
 
 /** The types we allow filtering for in the UI */
@@ -178,13 +178,6 @@ export class CombatLogViewer extends HTMLElement {
 	private handleSearch = (e: Event) => {
 		const input = e.target as HTMLInputElement
 		this.searchTerm = input.value
-		this.render()
-	}
-
-	private handleClear = () => {
-		clearLogs()
-		this.currentFilter = null
-		this.searchTerm = ''
 		this.render()
 	}
 

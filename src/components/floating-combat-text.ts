@@ -18,7 +18,7 @@ export class FloatingCombatText extends HTMLElement {
 		this.style.left = `${isDamage ? randomIntFromInterval(-4, 14) : randomIntFromInterval(-10, 0)}rem`
 
 		// Remove node once the CSS animation is done
-		this.addEventListener('animationend', this.remove)
+		this.addEventListener('animationend', () => this.remove())
 	}
 }
 

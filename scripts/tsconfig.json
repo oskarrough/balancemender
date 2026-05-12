@@ -1,0 +1,8 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"types": ["bun", "node"],
+		"noUnusedLocals": false
+	},
+	"include": ["."]
+}

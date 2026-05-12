@@ -1,5 +1,4 @@
 import Pino from 'pino'
-import {store} from './store'
 
 // Combat event format inspired by WoW
 export interface CombatLogEvent {
@@ -48,6 +47,8 @@ export type CombatEventType =
 	| 'ENCOUNTER_END'
 	| 'SWEET_SPOT_HIT'
 	| 'SWEET_SPOT_MISS'
+	| 'GAME_PAUSE'
+	| 'GAME_RESUME'
 
 export const EVENT_TYPE_COLORS: Record<CombatEventType, string> = {
 	SPELL_CAST_START: 'var(--c-blue-celeste)',
@@ -70,6 +71,8 @@ export const EVENT_TYPE_COLORS: Record<CombatEventType, string> = {
 	ENCOUNTER_END: 'var(--c-crimson-lake)',
 	SWEET_SPOT_HIT: 'var(--c-lemon-yellow)',
 	SWEET_SPOT_MISS: 'var(--c-french-grey)',
+	GAME_PAUSE: 'var(--c-french-grey)',
+	GAME_RESUME: 'var(--c-emerald-green)',
 }
 
 // All logs are stored here.

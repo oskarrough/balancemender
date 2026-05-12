@@ -37,10 +37,10 @@ export class InputManager {
 	togglePlayPause() {
 		if (this.game.running) {
 			this.game.pause()
-			logCombat({eventType: 'GAME_PAUSE'})
+			logCombat({timestamp: Date.now(), eventType: 'GAME_PAUSE'})
 		} else {
 			this.game.play()
-			logCombat({eventType: 'GAME_RESUME'})
+			logCombat({timestamp: Date.now(), eventType: 'GAME_RESUME'})
 		}
 	}
 
