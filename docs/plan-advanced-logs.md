@@ -1,9 +1,11 @@
 # Enhanced Combat Logging System
 
 ## Overview
+
 Create a comprehensive combat logging system inspired by World of Warcraft's combat logs. The system will capture detailed information about gameplay events for both debugging during development and player analytics. It will support opt-in cloud storage with privacy considerations while maintaining a structured, searchable format.
 
 ## Goals
+
 - Capture detailed combat data for analysis and debugging
 - Enable developers to track bugs and balance issues
 - Allow players to analyze their performance
@@ -12,7 +14,9 @@ Create a comprehensive combat logging system inspired by World of Warcraft's com
 - Maintain privacy and data ownership for players
 
 ## Log Format
+
 Based on WoW's proven format:
+
 ```
 [TIMESTAMP] EVENT_TYPE,SourceID,"SourceName",TargetID,"TargetName",SpellID,"SpellName",Value,ExtraInfo,IsAOE,GroupID
 ```
@@ -20,6 +24,7 @@ Based on WoW's proven format:
 ## Implementation Plan
 
 ### Phase 1: Local Logging Infrastructure
+
 - [x] Enhance existing `combatlog.ts` to use structured format
 - [x] Create proper `LogEvent` interface with all required fields
 - [x] Add timestamp precision to milliseconds
@@ -28,6 +33,7 @@ Based on WoW's proven format:
 - [ ] Implement log rotation to prevent storage overflow
 
 ### Phase 2: In-Game Log Viewer
+
 - [x] Create basic log viewer accessible in dev mode
 - [x] Add filtering capabilities (by event type, source, target)
 - [x] Implement color coding for different event types
@@ -35,6 +41,7 @@ Based on WoW's proven format:
 - [ ] Add session overview with key metrics
 
 ### Phase 3: Cloud Storage & Opt-In System
+
 - [ ] Design and implement opt-in UI with clear privacy information
 - [ ] Create simple REST API endpoint for log submission
 - [ ] Set up SQLite database with optimized schema for log storage
@@ -44,6 +51,7 @@ Based on WoW's proven format:
 - [ ] Create basic admin interface to view submitted logs
 
 ### Phase 4: Analysis Tools
+
 - [ ] Develop metrics dashboard for player performance
 - [ ] Add spell usage statistics
 - [ ] Create healing/damage done summaries
@@ -51,6 +59,7 @@ Based on WoW's proven format:
 - [ ] Add combat replay prototype (if feasible)
 
 ## Technical Considerations
+
 - Use structured JSON internally but compressed format for transmission
 - Implement proper error handling for log submission failures
 - Consider rate limiting to prevent excessive logging
@@ -58,6 +67,7 @@ Based on WoW's proven format:
 - Use unique session IDs to correlate events without personal identifiers
 
 ## Privacy & Data Handling
+
 - No player identification without explicit consent
 - Clear opt-in process with explanation of data usage
 - Option to delete contributed data
@@ -66,6 +76,7 @@ Based on WoW's proven format:
 - Clear data retention policy
 
 ## Future Possibilities
+
 - Real-time analytics dashboard
 - Performance benchmarking against other players
 - Combat replay functionality

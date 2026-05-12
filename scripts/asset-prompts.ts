@@ -71,7 +71,8 @@ if (ids.length > 0) {
 }
 
 if (list) {
-	for (const asset of assets) console.log(asset.id + '\t' + asset.type + '\t' + asset.name + '\tpublic' + outputPath(asset))
+	for (const asset of assets)
+		console.log(asset.id + '\t' + asset.type + '\t' + asset.name + '\tpublic' + outputPath(asset))
 	process.exit(0)
 }
 

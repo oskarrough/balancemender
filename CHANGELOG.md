@@ -7,8 +7,8 @@
 ## April 2025
 
 - The player no longer auto-targets anything
-- Balance reset, all values (health  and damage and heal etc) are much lower
-- Advanced combat logging through <combat-log-viewer > 
+- Balance reset, all values (health and damage and heal etc) are much lower
+- Advanced combat logging through <combat-log-viewer >
 - A <balance-monitor> component that I use to figure out why it's going as it is
 - Redesign with <floating-panel>s. This was more to make it easier to debug the game rather than make it fun to play
 

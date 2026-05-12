@@ -55,13 +55,9 @@ for await (const file of walk(root)) {
 	const longest = Math.max(meta.width ?? 0, meta.height ?? 0)
 
 	const resized =
-		longest > max
-			? image.resize({width: max, height: max, fit: 'inside', withoutEnlargement: true})
-			: image
+		longest > max ? image.resize({width: max, height: max, fit: 'inside', withoutEnlargement: true}) : image
 
-	const buffer = await resized
-		.png({compressionLevel: 9, palette: true, quality: 80, effort: 10})
-		.toBuffer()
+	const buffer = await resized.png({compressionLevel: 9, palette: true, quality: 80, effort: 10}).toBuffer()
 
 	if (!dryRun) await Bun.write(file, buffer)
 	const after = buffer.byteLength
@@ -96,5 +92,14 @@ if (processed === 0) {
 
 const totalChange = totalBefore > 0 ? Math.round(((totalBefore - totalAfter) / totalBefore) * 100) : 0
 console.log(
-	'\nTotal: ' + format(totalBefore) + ' -> ' + format(totalAfter) + ' (-' + totalChange + '%) across ' + processed + ' file' + (processed === 1 ? '' : 's'),
+	'\nTotal: ' +
+		format(totalBefore) +
+		' -> ' +
+		format(totalAfter) +
+		' (-' +
+		totalChange +
+		'%) across ' +
+		processed +
+		' file' +
+		(processed === 1 ? '' : 's'),
 )
