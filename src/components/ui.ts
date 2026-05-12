@@ -6,6 +6,7 @@ import {SpellIcon} from './spell-icon'
 import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
 import {UnitFrame} from './unitframe'
+import {restartGame} from '../animations'
 
 register()
 
@@ -32,7 +33,7 @@ export function UI(game: GameLoop) {
 				? html` <div class="GameOver">
 						<h2>Game Over!</h2>
 						<p>You survived for ${roundOne(game.elapsedTime / 1000)} seconds</p>
-						<button class="Button" onclick=${() => location.reload()}>Play Again</button>
+						<button class="Button" onclick=${() => restartGame(game)}>Play Again</button>
 					</div>`
 				: null}
 

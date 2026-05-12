@@ -1,10 +1,12 @@
 import {render} from './utils'
 import {GameLoop} from './nodes/game-loop'
 import {Menu} from './components/menu'
-import gsap from 'gsap'
+import {buildStartGame} from './animations'
 import {DevConsole} from './components/dev-console'
+import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
 import './components/dev-console'
+import './components/animation-debugger'
 import './components/floating-view.js'
 import './components/combat-log-viewer.js'
 import './components/color-palette.js'
@@ -27,8 +29,12 @@ function main() {
 	const urlParams = new URLSearchParams(window.location.search)
 	const muted = urlParams.has('muted')
 	if (muted) game.muted = true
-	gsap.to('.Frame', {opacity: 1, duration: 1})
-	// gsap.set('.Frame', {opacity: 1})
+
+	const animDebugger = document.querySelector('animation-debugger') as AnimationDebugger | null
+	animDebugger?.init(game)
+
+	const intro = buildStartGame(game)
+	intro.eventCallback('onComplete', () => game.play())
 }
 
 function setupDevTools(game: GameLoop) {

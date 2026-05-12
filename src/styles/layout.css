@@ -22,6 +22,16 @@ body {
 
 	& menu {
 		display: flex;
+		gap: 0.2rem;
+	}
+
+	& .SoundToggle input[type='checkbox'],
+	& .VolumeControl input[type='range'] {
+		margin-right: 0.3rem;
+	}
+
+	& .VolumeControl input[type='range'] {
+		width: 6rem;
 	}
 }
 

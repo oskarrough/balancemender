@@ -2,6 +2,11 @@ import {html} from '../utils'
 import {GameLoop} from '../nodes/game-loop'
 import {Spell} from '../nodes/spell'
 
+function spellIconPath(spellName: string) {
+	const slug = spellName.toLowerCase().replaceAll(' ', '-')
+	return `/assets/generated/spells/${slug}.png`
+}
+
 export function SpellIcon(game: GameLoop, spellName: string, shortcut: string | number) {
 	const player = game.player
 	const SpellClass = player.spellbook[spellName] as typeof Spell
@@ -25,6 +30,7 @@ export function SpellIcon(game: GameLoop, spellName: string, shortcut: string | 
 
 	return html`
 		<button class="Spell" onclick=${() => player.castSpell(spellName)} .disabled=${game.gameOver}>
+			<img class="Spell-image" src=${spellIconPath(spellName)} alt="" />
 			<div class="Spell-inner">
 				<h3>${SpellClass.name}</h3>
 				<p>

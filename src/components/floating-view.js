@@ -41,7 +41,11 @@ class FloatingView extends HTMLElement {
 		const viewId = this.id || this.getAttribute('data-view-id')
 		const row = store.getRow('floating-views', viewId)
 		if (!row) return
-		const {width, height, x, y} = row
+		const {minWidth, minHeight} = FloatingView.config
+		const width = Math.max(minWidth, Math.min(row.width, window.innerWidth))
+		const height = Math.max(minHeight, Math.min(row.height, window.innerHeight))
+		const x = Math.max(0, Math.min(row.x, window.innerWidth - minWidth))
+		const y = Math.max(0, Math.min(row.y, window.innerHeight - minHeight))
 		if (this.hasAttribute('minimized')) {
 			gsap.set(this, {x, y})
 		} else {
@@ -69,8 +73,11 @@ class FloatingView extends HTMLElement {
 		let startWidth, startHeight, startX, startY
 		const {minWidth, minHeight} = FloatingView.config
 
+		let openedOnDrag = false
+
 		const startResize = (e) => {
 			e.preventDefault()
+			openedOnDrag = false
 			startWidth = this.offsetWidth
 			startHeight = this.offsetHeight
 			startX = e.clientX
@@ -80,6 +87,11 @@ class FloatingView extends HTMLElement {
 		}
 
 		const resize = (e) => {
+			if (!openedOnDrag && this.hasAttribute('minimized')) {
+				this.style.height = `${startHeight}px`
+				this.removeAttribute('minimized')
+				openedOnDrag = true
+			}
 			const width = Math.max(minWidth, startWidth + (e.clientX - startX))
 			const height = Math.max(minHeight, startHeight + (e.clientY - startY))
 			this.style.width = `${width}px`
