@@ -110,7 +110,7 @@ export class Poison extends DoT {
 	static minDamage = 200
 	static maxDamage = 400
 	static interval = 2000
-	static sound = 'combat.poison'
+	static sound = 'combat_poison'
 }
 
 export class Bleed extends DoT {
@@ -120,7 +120,7 @@ export class Bleed extends DoT {
 	static name = 'Bleed'
 	static minDamage = 150
 	static maxDamage = 300
-	static sound = 'combat.blood'
+	static sound = 'combat_blood'
 }
 
 export class Burn extends DoT {
@@ -130,5 +130,5 @@ export class Burn extends DoT {
 	static name = 'Burn'
 	static minDamage = 400
 	static maxDamage = 600
-	static sound = 'combat.fire'
+	static sound = 'combat_fire'
 }

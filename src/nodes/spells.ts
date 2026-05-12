@@ -36,7 +36,7 @@ export class Renew extends Spell {
 		const target = player.currentTarget
 		if (target) {
 			new RenewHOT(target)
-			AudioPlayer.play('spell.rejuvenation')
+			AudioPlayer.play('spell_rejuvenation')
 		}
 	}
 }

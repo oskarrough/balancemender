@@ -191,7 +191,7 @@ export class SmallAttack extends DamageEffect {
 	static interval = 1600
 	static minDamage = 7
 	static maxDamage = 11
-	static sound = 'combat.air_hit'
+	static sound = 'combat_air_hit'
 	static name = 'Quick Stab'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
@@ -202,7 +202,7 @@ export class MediumAttack extends DamageEffect {
 	static interval = 3800
 	static minDamage = 15
 	static maxDamage = 20
-	static sound = 'combat.strong_punch'
+	static sound = 'combat_strong_punch'
 	static name = 'Heavy Blow'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
@@ -213,7 +213,7 @@ export class HugeAttack extends DamageEffect {
 	static interval = 12000
 	static minDamage = 500
 	static maxDamage = 700
-	static sound = 'combat.arrow'
+	static sound = 'combat_arrow'
 	static name = 'Nasty arrow'
 	static eventType: CombatEventType = 'RANGE_DAMAGE'
 }
@@ -223,7 +223,7 @@ export class TankAttack extends DamageEffect {
 	static interval = 2400
 	static minDamage = 16
 	static maxDamage = 24
-	static sound = 'combat.sword_hit'
+	static sound = 'combat_sword_hit'
 	static name = 'Shield Bash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
@@ -233,7 +233,7 @@ export class WarriorAttack extends DamageEffect {
 	static interval = 2200
 	static minDamage = 120
 	static maxDamage = 220
-	static sound = 'combat.sword_hit'
+	static sound = 'combat_sword_hit'
 	static name = 'Mighty Swing'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
@@ -243,7 +243,7 @@ export class RogueAttack extends DamageEffect {
 	static interval = 1000
 	static minDamage = 65
 	static maxDamage = 95
-	static sound = 'combat.sword_hit'
+	static sound = 'combat_sword_hit'
 	static name = 'Quick Slash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
