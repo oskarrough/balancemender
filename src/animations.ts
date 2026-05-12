@@ -8,6 +8,64 @@ export interface NamedAnimation {
 	build: (game: GameLoop) => gsap.core.Timeline
 }
 
+let splashPromptPulse: gsap.core.Tween | null = null
+
+/** Splash entrance. Slams the title in, then loops a pulse on the prompt until the outro kills it. */
+export function buildSplashIntro(): gsap.core.Timeline {
+	const tl = gsap.timeline()
+	tl.fromTo(
+		'.Splash-titleLine',
+		{opacity: 0.001, scale: 1.8, y: -40, rotation: -4},
+		{
+			opacity: 1,
+			scale: 1,
+			y: 0,
+			rotation: 0,
+			duration: 0.7,
+			stagger: 0.35,
+			ease: 'back.out(1.8)',
+		},
+	)
+	tl.fromTo('.Splash-subtitle', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out'}, '>0.05')
+	tl.fromTo('.Splash-prompt', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5}, '>-0.1')
+	tl.call(() => {
+		splashPromptPulse?.kill()
+		splashPromptPulse = gsap.to('.Splash-prompt', {
+			autoAlpha: 0.3,
+			duration: 0.7,
+			repeat: -1,
+			yoyo: true,
+			ease: 'sine.inOut',
+		})
+	})
+	return tl
+}
+
+/** Splash exit. Flashes the prompt, punches the title out, fades the overlay. */
+export function buildSplashOutro(): gsap.core.Timeline {
+	const tl = gsap.timeline({
+		onStart: () => {
+			splashPromptPulse?.kill()
+			splashPromptPulse = null
+		},
+	})
+	tl.set('.Splash-prompt', {autoAlpha: 1})
+	tl.to('.Splash-prompt', {autoAlpha: 0, duration: 0.06, repeat: 5, yoyo: true})
+	tl.to('.Splash-title', {scale: 1.25, autoAlpha: 0, duration: 0.35, ease: 'power2.in'})
+	tl.to('.Splash-subtitle, .Splash-prompt', {autoAlpha: 0, y: -20, duration: 0.25, ease: 'power2.in'}, '<')
+	tl.to('.Splash', {autoAlpha: 0, duration: 0.3, ease: 'power2.in'}, '>-0.1')
+	tl.set('.Splash', {display: 'none'})
+	return tl
+}
+
+/** Full intro: splash outro → game intro, scrubbable as one timeline. */
+export function buildIntro(game: GameLoop): gsap.core.Timeline {
+	const tl = gsap.timeline()
+	tl.add(buildSplashOutro())
+	tl.add(buildStartGame(game), '>-0.3')
+	return tl
+}
+
 /** Intro sequence. Pure — assumes the game UI is already rendered. */
 export function buildStartGame(_game: GameLoop): gsap.core.Timeline {
 	const tl = gsap.timeline()
@@ -59,7 +117,30 @@ export function restartGame(game: GameLoop): gsap.core.Timeline {
 	return tl
 }
 
+const resetSplashForPreview = () => {
+	splashPromptPulse?.kill()
+	splashPromptPulse = null
+	gsap.set('.Splash', {clearProps: 'all'})
+	gsap.set('.Splash-bg, .Splash-title, .Splash-titleLine, .Splash-subtitle, .Splash-prompt', {
+		clearProps: 'all',
+	})
+}
+
 export const animations: NamedAnimation[] = [
+	{
+		name: 'Splash intro',
+		prepare: resetSplashForPreview,
+		build: () => buildSplashIntro(),
+	},
+	{
+		name: 'Splash outro',
+		prepare: () => {
+			resetSplashForPreview()
+			// Put the splash in its "fully visible" idle state so the outro has something to remove.
+			buildSplashIntro().progress(1).kill()
+		},
+		build: () => buildSplashOutro(),
+	},
 	{
 		name: 'New game',
 		prepare: (game) => {

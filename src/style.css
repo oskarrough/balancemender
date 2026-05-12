@@ -10,6 +10,7 @@
 @import url('styles/dev-console.css');
 @import url('styles/color-palette.css');
 @import url('styles/colors.css');
+@import url('styles/splash.css');
 
 :root {
 	--easing: cubic-bezier(0.165, 0.84, 0.4, 1);

@@ -9,7 +9,7 @@ type Timeline = ReturnType<NamedAnimation['build']>
  * To register a new animation, add an entry to `src/animations.ts`.
  */
 class AnimationDebugger extends HTMLElement {
-	private game!: GameLoop
+	private game: GameLoop | null = null
 	private tl: Timeline | null = null
 	private rafId = 0
 	private selectedIndex = 0
@@ -19,7 +19,7 @@ class AnimationDebugger extends HTMLElement {
 	private timeScaleLabel!: HTMLSpanElement
 	private status!: HTMLSpanElement
 
-	init(game: GameLoop) {
+	init(game: GameLoop | null) {
 		this.game = game
 		this.render()
 	}
@@ -91,6 +91,7 @@ class AnimationDebugger extends HTMLElement {
 	}
 
 	private handleGameAction(action: string) {
+		if (!this.game) return
 		if (action === 'gameover') {
 			this.game.onGameOver()
 			this.setStatus('triggered game over')
@@ -116,11 +117,11 @@ class AnimationDebugger extends HTMLElement {
 	}
 
 	private buildTimeline() {
-		this.game.pause()
+		this.game?.pause()
 		if (this.tl) this.tl.kill()
 		const anim = animations[this.selectedIndex]
-		anim.prepare?.(this.game)
-		this.tl = anim.build(this.game)
+		anim.prepare?.(this.game!)
+		this.tl = anim.build(this.game!)
 		this.tl.timeScale(parseFloat(this.timeScale.value))
 		const prevOnComplete = this.tl.eventCallback('onComplete')
 		this.tl.eventCallback('onComplete', () => {
