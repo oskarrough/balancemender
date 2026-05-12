@@ -1,9 +1,8 @@
 import {log} from '../utils'
 import {Character, FACTION} from './character'
-import {Health} from './health'
 import {Mana} from './mana'
 import {Spell} from './spell'
-import {Heal, FlashHeal, GreaterHeal, Renew} from './spells'
+import {spellRegistry} from './registry'
 import {GlobalCooldown} from './global-cooldown'
 
 export class Player extends Character {
@@ -13,18 +12,9 @@ export class Player extends Character {
 	name = 'Player'
 	image = '/assets/generated/characters/player.png'
 
-	health = new Health(this, (this.constructor as typeof Player).maxHealth)
 	mana: Mana = new Mana(this, (this.constructor as typeof Player).maxMana)
 
-	// targetingTask = new TargetOppositeFaction(this)
-	// attackEffect = new MediumAttack(this)
-
-	spellbook: Record<string, typeof Spell> = {
-		Heal: Heal,
-		'Flash Heal': FlashHeal,
-		'Greater Heal': GreaterHeal,
-		Renew: Renew,
-	}
+	spellbook: Record<string, typeof Spell> = spellRegistry
 
 	getTarget() {
 		const target = super.getTarget()

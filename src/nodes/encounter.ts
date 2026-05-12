@@ -13,25 +13,24 @@ const alive = (c: {health?: {current: number}}) => !!c.health && c.health.curren
  * Owns the party + enemies for a single fight. Subclass and override
  * `populate()` to define a new encounter variant; swap at runtime with
  * `GameLoop.loadEncounter(MyEncounter)`.
+ *
+ * `player` and `tank` are resolved once in `populate()` and read directly
+ * thereafter — the UI hits them every render, so a per-access `find()` was wasteful.
  */
 export class Encounter extends Node {
 	party: Character[] = []
 	enemies: Enemy[] = []
+	player!: Player
+	tank!: Tank
 
 	constructor(public parent: GameLoop) {
 		super(parent)
 		this.populate()
+		this.player = this.party.find((c) => c instanceof Player) as Player
+		this.tank = this.party.find((c) => c instanceof Tank) as Tank
 	}
 
 	populate() {}
-
-	get player(): Player {
-		return this.party.find((c) => c instanceof Player) as Player
-	}
-
-	get tank(): Tank {
-		return this.party.find((c) => c instanceof Tank) as Tank
-	}
 
 	isPartyDefeated() {
 		return !this.party.some(alive)

@@ -5,23 +5,24 @@ import {Encounter} from './encounter'
 import {DoT} from './dot'
 import {HOT} from './hot'
 import {createId} from '../utils'
+import {Faction, FACTION} from './types'
 
 export type CharacterEffect = HOT | DoT
-export type Faction = 'party' | 'enemy'
-export const FACTION = {
-	PARTY: 'party' as Faction,
-	ENEMY: 'enemy' as Faction,
-} as const
+export type {Faction} from './types'
+export {FACTION} from './types'
 
 /**
- * Base character class
+ * Base character class. Subclasses declare `static maxHealth = N` and the
+ * base constructor wires up the Health node — defining `health` as a field
+ * initializer in a subclass would create (and orphan) a second one.
  */
 export class Character extends Node {
-	readonly id: string = ''
+	readonly id: string
+	static maxHealth = 100
 
 	name = ''
 	image = ''
-	health = new Health(this)
+	health: Health
 	mana?: Mana
 	effects = new Set<CharacterEffect>()
 	faction: Faction = FACTION.ENEMY
@@ -35,6 +36,7 @@ export class Character extends Node {
 	constructor(public parent: Encounter) {
 		super(parent)
 		this.id = createId()
+		this.health = new Health(this, (this.constructor as typeof Character).maxHealth)
 		this.health.on(HEALTH_EVENTS.EMPTY, this.onHealthEmpty)
 	}
 
@@ -46,10 +48,4 @@ export class Character extends Node {
 	damage(amount: number) {
 		return this.health.damage(amount)
 	}
-
-	// protected getPotentialTargets(): Character[] {
-	// 	const targets =
-	// 		this.faction === FACTION.PARTY ? this.parent.enemies : this.parent.party
-	// 	return targets.filter((target) => target.health.current > 0)
-	// }
 }

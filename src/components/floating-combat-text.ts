@@ -27,9 +27,22 @@ export function register() {
 }
 
 /**
+ * Cached FCT container. Combat effects look this up every tick;
+ * one DOM query at module init beats N per second during a fight.
+ * If the UI re-mounts, we re-resolve.
+ */
+let fctContainer: Element | null = null
+export function getFctContainer(): Element | null {
+	if (!fctContainer || !fctContainer.isConnected) {
+		fctContainer = document.querySelector('.FloatingCombatText')
+	}
+	return fctContainer
+}
+
+/**
  * Inserts a new combat text into the game
  */
 export function fct(text: string | number) {
-	const fct = html`<floating-combat-text>${text}</floating-combat-text>`.toDOM()
-	document.querySelector('.FloatingCombatText')?.appendChild(fct)
+	const node = html`<floating-combat-text>${text}</floating-combat-text>`.toDOM()
+	getFctContainer()?.appendChild(node)
 }

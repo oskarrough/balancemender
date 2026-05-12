@@ -1,5 +1,5 @@
 import {Task} from 'vroum'
-// import {fct} from '../components/floating-combat-text'
+import {getFctContainer} from '../components/floating-combat-text'
 import {log, randomIntFromInterval} from '../utils'
 import {Character} from './character'
 import {AudioPlayer} from './audio'
@@ -80,16 +80,13 @@ export class DoT extends Task {
 	 * Create visual effects for the damage
 	 */
 	createVisualEffects(damageAmount: number) {
-		// Get the DOM element with class .FloatingCombatText
-		const container = document.querySelector('.FloatingCombatText')
+		const container = getFctContainer()
 		if (!container) return
 
-		// Create the floating combat text element
 		const element = document.createElement('floating-combat-text')
 		element.classList.add('damage', `${this.casterName.toLowerCase()}-damage`)
 		element.textContent = `-${damageAmount}`
 
-		// Add it to the container
 		container.appendChild(element)
 	}
 

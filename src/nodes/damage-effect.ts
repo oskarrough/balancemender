@@ -3,6 +3,7 @@ import {html, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
 import {Character} from './character'
 import {logCombat, CombatEventType} from '../combatlog'
+import {getFctContainer} from '../components/floating-combat-text'
 
 /**
  * Base class for all damage effects (attacks from any character to any character).
@@ -102,10 +103,11 @@ export class DamageEffect extends Task {
 		const targetElement = document.querySelector(`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`)
 		if (targetElement) this.animateHit(targetElement)
 
+		const container = getFctContainer()
+		if (!container) return
 		const cssClass = `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
 		const fct = html`<floating-combat-text class=${cssClass}>${damageAmount}</floating-combat-text>`.toDOM()
-		const container = document.querySelector('.FloatingCombatText')
-		if (container) container.appendChild(fct)
+		container.appendChild(fct)
 	}
 
 	/* Animates a DOM element to shake and flash a bit */
