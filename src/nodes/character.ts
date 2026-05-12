@@ -1,7 +1,7 @@
 import {Node} from 'vroum'
 import {Health, HEALTH_EVENTS} from './health'
 import {Mana} from './mana'
-import {GameLoop} from './game-loop'
+import {Encounter} from './encounter'
 import {DoT} from './dot'
 import {HOT} from './hot'
 import {createId} from '../utils'
@@ -27,7 +27,12 @@ export class Character extends Node {
 	faction: Faction = FACTION.ENEMY
 	currentTarget?: Character
 
-	constructor(public parent: GameLoop) {
+	getTarget(): Character | undefined {
+		if (this.currentTarget && this.currentTarget.health.current > 0) return this.currentTarget
+		return undefined
+	}
+
+	constructor(public parent: Encounter) {
 		super(parent)
 		this.id = createId()
 		this.health.on(HEALTH_EVENTS.EMPTY, this.onHealthEmpty)

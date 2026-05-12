@@ -5,8 +5,6 @@ import {Mana} from './mana'
 import {Spell} from './spell'
 import {Heal, FlashHeal, GreaterHeal, Renew} from './spells'
 import {GlobalCooldown} from './global-cooldown'
-import {TargetOppositeFaction} from './targeting-task'
-import {MediumAttack} from './damage-effect'
 
 export class Player extends Character {
 	faction = FACTION.PARTY
@@ -24,6 +22,13 @@ export class Player extends Character {
 		'Flash Heal': FlashHeal,
 		'Greater Heal': GreaterHeal,
 		Renew: Renew,
+	}
+
+	getTarget() {
+		const target = super.getTarget()
+		if (target) return target
+		const tank = this.parent.tank
+		return tank?.health.current > 0 ? tank : undefined
 	}
 
 	// keep track of spell casting
@@ -48,6 +53,6 @@ export class Player extends Character {
 		}
 
 		this.spell = new SpellClass(this)
-		this.lastCastTime = this.parent.elapsedTime
+		this.lastCastTime = this.parent.parent.elapsedTime
 	}
 }

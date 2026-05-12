@@ -88,7 +88,7 @@ export class Spell extends Task {
 		player.spell = undefined
 
 		// Track when spell was completed (used for mana regen)
-		if (this.cycles > 0) {
+		if (this._cycles > 0) {
 			player.lastCastCompletedTime = gameLoop.elapsedTime
 		} else {
 			// Log spell cast interrupted since it didn't complete any cycles
@@ -109,11 +109,11 @@ export class Spell extends Task {
 		}
 
 		// If the spell finished at least once, consume mana
-		if (this.cycles > 0 && player.mana) {
+		if (this._cycles > 0 && player.mana) {
 			player.mana.spend(this.cost)
 			logCombat({
 				timestamp: Date.now(),
-				eventType: 'RESOURCE_CHANGE',
+				eventType: 'RESOURCE_SPENT',
 				sourceId: this.parent.id,
 				sourceName: this.parent.name,
 				value: -this.cost,
@@ -123,17 +123,14 @@ export class Spell extends Task {
 	}
 
 	applyHeal() {
-		const gameLoop = this.root as GameLoop
 		const player = this.parent
-
-		// Use the player's current target if set, otherwise fall back to the tank
-		const target = player.currentTarget || gameLoop.tank
+		const target = player.getTarget()
 		if (!target) return
 
 		const healAmount = naturalizeNumber(this.heal)
 
 		// Apply healing directly to target's health node
-		const newhp = target.health.heal(healAmount)
+		target.health.heal(healAmount)
 
 		// Display and log the healing
 		fct(`+${healAmount}`)

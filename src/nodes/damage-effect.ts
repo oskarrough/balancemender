@@ -1,5 +1,5 @@
 import {Task} from 'vroum'
-import {html, log, randomIntFromInterval} from '../utils'
+import {html, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
 import {Character} from './character'
 import {logCombat, CombatEventType} from '../combatlog'
@@ -74,19 +74,14 @@ export class DamageEffect extends Task {
 		return randomIntFromInterval(this.minDamage, this.maxDamage)
 	}
 
-	/** Alias to get the attacker's current target */
 	get target() {
-		return this.attacker.currentTarget
+		return this.attacker.getTarget()
 	}
 
 	shouldTick() {
 		if (!this.target) return false
 		if (this.attacker.health.current <= 0) return false
-		if (this.target.health.current <= 0) return false
-
-		// why do this?
 		this.targetId = this.target.id
-
 		return true
 	}
 
