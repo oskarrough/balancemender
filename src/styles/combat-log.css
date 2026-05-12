@@ -45,10 +45,65 @@
 	text-transform: lowercase;
 }
 
-.CombatLogViewer-eventType {
-	/* min-width: 10ch; */
+[data-event-type='SPELL_CAST_START'] {
+	color: var(--c-blue-celeste);
 }
-
-.CombatLogViewer-message {
-	/* overflow-wrap: break-word; */
+[data-event-type='SPELL_CAST_SUCCESS'] {
+	color: var(--c-emerald-green);
+}
+[data-event-type='SPELL_CAST_FAILED'] {
+	color: var(--c-scarlet-lake);
+}
+[data-event-type='SPELL_CAST_INTERRUPTED'] {
+	color: var(--c-vermilion);
+}
+[data-event-type='SPELL_HEAL'] {
+	color: var(--c-viridian);
+}
+[data-event-type='SPELL_PERIODIC_HEAL'] {
+	color: var(--c-cerulean-blue);
+}
+[data-event-type='SPELL_DAMAGE'] {
+	color: var(--c-orange);
+}
+[data-event-type='SPELL_PERIODIC_DAMAGE'] {
+	color: var(--c-marigold);
+}
+[data-event-type='SWING_DAMAGE'] {
+	color: var(--c-burnt-sienna);
+}
+[data-event-type='RANGE_DAMAGE'] {
+	color: var(--c-chocolate);
+}
+[data-event-type='SPELL_AURA_APPLIED'] {
+	color: var(--c-heliotrope);
+}
+[data-event-type='SPELL_AURA_REMOVED'] {
+	color: var(--c-violet-pale);
+}
+[data-event-type='SPELL_AURA_REFRESH'] {
+	color: var(--c-mauve);
+}
+[data-event-type='RESOURCE_GAIN'],
+[data-event-type='RESOURCE_SPENT'] {
+	color: var(--c-yellow-ochre);
+}
+[data-event-type='UNIT_DIED'] {
+	color: var(--c-prussian-blue);
+}
+[data-event-type='ENCOUNTER_START'] {
+	color: var(--c-imperial-green);
+}
+[data-event-type='ENCOUNTER_END'] {
+	color: var(--c-crimson-lake);
+}
+[data-event-type='SWEET_SPOT_HIT'] {
+	color: var(--c-lemon-yellow);
+}
+[data-event-type='SWEET_SPOT_MISS'],
+[data-event-type='GAME_PAUSE'] {
+	color: var(--c-french-grey);
+}
+[data-event-type='GAME_RESUME'] {
+	color: var(--c-emerald-green);
 }

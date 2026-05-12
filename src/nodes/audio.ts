@@ -79,25 +79,17 @@ export class AudioPlayer extends Node {
 	get muted(): boolean {
 		return this._muted
 	}
-
 	set muted(value: boolean) {
-		if (this._muted !== value) {
-			this._muted = value
-			logger.debug(`audio: mute state changed to ${value}`)
-			for (const audio of this.elements) audio.muted = value
-		}
+		this._muted = value
+		for (const audio of this.elements) audio.muted = value
 	}
 
 	get volume(): number {
 		return this._volume
 	}
-
 	set volume(value: number) {
-		if (this._volume !== value) {
-			this._volume = value
-			logger.debug(`audio: volume changed to ${value}`)
-			for (const audio of this.elements) audio.volume = value
-		}
+		this._volume = value
+		for (const audio of this.elements) audio.volume = value
 	}
 
 	static play(name: SoundName, opts?: PlayOptions) {
@@ -126,30 +118,24 @@ export class AudioPlayer extends Node {
 
 		if (this.paused && def.category !== 'ui') return null
 
-		try {
-			const audio = new Audio(this.folder + def.file)
-			audio.loop = Boolean(opts.loop)
-			audio.muted = this.muted
-			audio.volume = this.volume
+		const audio = new Audio(this.folder + def.file)
+		audio.loop = Boolean(opts.loop)
+		audio.muted = this.muted
+		audio.volume = this.volume
 
-			this.elements.push(audio)
-			if (opts.owner) this.ownedByElement.set(audio, opts.owner)
+		this.elements.push(audio)
+		if (opts.owner) this.ownedByElement.set(audio, opts.owner)
 
-			audio.onended = () => {
-				audio.pause()
-				this.forget(audio)
-			}
-
-			audio.play().catch((err) => {
-				logger.debug(`audio: error playing ${name}: ${err.message}`)
-			})
-
-			logger.debug(`audio: started ${name}, volume: ${audio.volume}, muted: ${audio.muted}`)
-			return audio
-		} catch (err) {
-			logger.debug(`audio: error creating audio element for ${name}: ${String(err)}`)
-			return null
+		audio.onended = () => {
+			audio.pause()
+			this.forget(audio)
 		}
+
+		audio.play().catch((err) => {
+			logger.debug(`audio: error playing ${name}: ${err.message}`)
+		})
+
+		return audio
 	}
 
 	stopOwned(owner: object) {
