@@ -6,7 +6,7 @@ import {Tank, Rogue, Warrior} from './party-characters'
 import {AudioPlayer} from './audio'
 import {UI} from '../components/ui'
 import {DevConsole} from '../components/dev-console'
-import gsap from 'gsap'
+import {buildGameOver} from '../animations'
 import {logCombat} from '../combatlog'
 
 /**
@@ -110,18 +110,14 @@ export class GameLoop extends Loop {
 
 	enemiesDefeated() {
 		if (!this.enemies) return true
-		const anyAlive = this.enemies.some(
-			(character) => character.health && character.health.current > 0,
-		)
+		const anyAlive = this.enemies.some((character) => character.health && character.health.current > 0)
 		return !anyAlive
 	}
 
 	/* @returns true if all party members are dead */
 	isPartyDefeated() {
 		if (this.party.length === 0) return true
-		const anyAlive = this.party.some(
-			(character) => character.health && character.health.current > 0,
-		)
+		const anyAlive = this.party.some((character) => character.health && character.health.current > 0)
 		return !anyAlive
 	}
 
@@ -140,21 +136,21 @@ export class GameLoop extends Loop {
 		})
 		this.audio.stop()
 		this.pause()
+		// gameOver/render are already set/done by tick() before this fires;
+		// also set here so the debugger's manual trigger works from any state.
+		this.gameOver = true
+		this.render()
+		buildGameOver(this)
+	}
 
-		// Add GSAP animations for game over effect
-		// Scale down and fade enemies and party
-		gsap.to('.Enemies, .PartyGroup', {
-			scale: 0.95,
-			// opacity: 0.7,
-			duration: 0.8,
-			ease: 'power2.out',
-		})
-
-		// Make game over screen more visible with animation
-		gsap.fromTo(
-			'.GameOver',
-			{opacity: 0, scale: 0.9, y: -20},
-			{opacity: 1, scale: 1, y: 0, duration: 1, delay: 0.3, ease: 'back.out(1.4)'},
-		)
+	/** Reset state for a fresh encounter. Does not animate — pair with `restartGame()` for the visual transition. */
+	restart() {
+		this.pause()
+		this.party = []
+		this.enemies = []
+		this.prepareEncounter()
+		this.gameOver = false
+		this.elapsedTime = 0
+		this.render()
 	}
 }

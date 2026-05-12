@@ -23,11 +23,21 @@
 		0 0 1px black;
 }
 
+@media (min-height: 760px) {
+	.Spell {
+		min-height: 6rem;
+	}
+}
+
 .Spell:hover {
 	background: hsl(120, 40%, 16%);
 	background: linear-gradient(hsl(60, 7%, 13%) 25%, hsl(20, 5%, 20%));
 	background: linear-gradient(hsl(170, 35%, 55%) 20%, hsl(170, 30%, 20%));
 	background: conic-gradient(hsl(60, 7%, 15%) 25%, hsl(20, 5%, 20%));
+}
+
+.Spell:hover .Spell-image {
+	filter: saturate(1) contrast(1);
 }
 
 .Spell:hover .Spell-gcd {
@@ -38,13 +48,32 @@
 	border-color: initial;
 }
 
+.Spell-image {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: var(--radius);
+	filter: saturate(0.85) contrast(0.9);
+	transition: filter 150ms var(--easing);
+	pointer-events: none;
+}
+
 .Spell-inner {
 	position: relative;
 	z-index: 2;
 }
 
+.Spell-inner h3 {
+	font-size: 14px;
+}
+
 .Spell-inner p {
 	font-size: 13px;
+	&:not(.Spell:hover &) {
+		opacity: 0;
+	}
 }
 
 .Spell-gcd {
@@ -69,10 +98,7 @@
 	height: 100%;
 	border-radius: var(--radius);
 	border: 1px solid hsla(0, 0%, 0%, 0.8);
-	background: conic-gradient(
-		hsla(0 0% 90% / 0.2) var(--progress),
-		transparent var(--progress)
-	);
+	background: conic-gradient(hsla(0 0% 90% / 0.2) var(--progress), transparent var(--progress));
 }
 
 .Spell-shortcut {

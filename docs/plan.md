@@ -12,6 +12,7 @@ This is our plan. Items are either todo, later or done.
 - [ ] Reduce complexity in audio.ts
 
 ### Character/class scaling
+
 - 1 stamina = 1 hp
 - 60 int = 1% spell crit
 - 1 intellect = 15 mana
@@ -19,7 +20,7 @@ This is our plan. Items are either todo, later or done.
 - 30 agility = 1% crit
 - 20 agility = 1% dodge
 - 1 spirit helps mana regen. You generate let's say (spirit/4) + 12 mana every 2 seconds after not casting for 5 seconds.
-These are just ideas, not strict formulas. Different characters might receive different stats.
+  These are just ideas, not strict formulas. Different characters might receive different stats.
 
 ## LATER
 
@@ -99,7 +100,7 @@ These are just ideas, not strict formulas. Different characters might receive di
    - [ ] Adjust enemy health and damage values for better pacing
    - [ ] Balance spell costs and cooldowns
    - [ ] Create progression curve for difficulty
-spells do percentage dmg
+         spells do percentage dmg
 
 amount of dmg your char can do
 spell has a coeffecient based on char dmg
@@ -111,19 +112,17 @@ say you have 1k dmg
 15%, 5 targets = 150 per swing
 50%, 1 target = 500 per swing
 
-if you have 20% bonus dmg, you'd do 500 * 1.2 = 600
+if you have 20% bonus dmg, you'd do 500 \* 1.2 = 600
 
-if the target has 15% physical armor reduction, you will deal 600 * 0.85 = 510 dmg
+if the target has 15% physical armor reduction, you will deal 600 \* 0.85 = 510 dmg
 
 spell dmg ignores armor
-
 
 I want to make it easier for myself to balance the characters and enemies and spells in the game. It's about the resources health, mana, how fast they regenerate, how much spells cost, cast times, how much dmg do enemies do and so on. This has been done countless of times in other games such as classics as Warcraft 3 and wow etc.
 
 I've gone from two enemies and three partymembers to 1v1 to make it easier to debug for now.
 
 The goal is to discuss rules around balancing and how I do this. I don't want the numbers to go grow too big, either. E.g. a unit should be more like 250-500hp, not 5000! And so damage spells should not one shot etc.
-
 
 3. Content Expansion
    - [ ] Create a simple dungeon with multiple encounters

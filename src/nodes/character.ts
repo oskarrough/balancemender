@@ -20,6 +20,7 @@ export class Character extends Node {
 	readonly id: string = ''
 
 	name = ''
+	image = ''
 	health = new Health(this)
 	mana?: Mana
 	effects = new Set<CharacterEffect>()

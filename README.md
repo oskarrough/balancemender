@@ -6,7 +6,7 @@ A tactical game inspired by healing raids and five-man dungeons back in Azeroth.
 
 The game is an evening hobby project in progress and happy to welcome new contributors.
 
-## Development 
+## Development
 
 ```
 bun install

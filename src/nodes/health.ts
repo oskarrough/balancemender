@@ -24,9 +24,8 @@ export class Health extends Resource {
 	}
 
 	damage(amount: number) {
-		const gameLoop = this.root as GameLoop
-		if (gameLoop?.godMode) return this.current
-
-		return this.set(this.current - amount)
+		const {godMode} = this.root as GameLoop
+		const next = this.current - amount
+		return this.set(godMode ? Math.max(1, next) : next)
 	}
 }

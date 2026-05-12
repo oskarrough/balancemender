@@ -106,10 +106,7 @@ export class BalanceMonitor extends HTMLElement {
 		if (window.balancemender) {
 			window.balancemender.party.forEach((character) => {
 				if (character.id) {
-					const charMetrics = this.getCharacterMetrics(
-						character.id,
-						character.name || 'Party Member',
-					)
+					const charMetrics = this.getCharacterMetrics(character.id, character.name || 'Party Member')
 					charMetrics.faction = 'party'
 				}
 			})
@@ -143,11 +140,7 @@ export class BalanceMonitor extends HTMLElement {
 				) {
 					sourceMetrics.totalHealing += log.value || 0
 					sourceMetrics.healingEvents += 1
-				} else if (
-					log.eventType === 'RESOURCE_CHANGE' &&
-					log.extraInfo === 'MANA' &&
-					log.value < 0
-				) {
+				} else if (log.eventType === 'RESOURCE_CHANGE' && log.extraInfo === 'MANA' && log.value < 0) {
 					sourceMetrics.totalManaSpent += Math.abs(log.value || 0)
 				}
 			}
@@ -168,11 +161,7 @@ export class BalanceMonitor extends HTMLElement {
 			) {
 				this.metrics.totalHealing += log.value || 0
 				this.metrics.healingEvents += 1
-			} else if (
-				log.eventType === 'RESOURCE_CHANGE' &&
-				log.extraInfo === 'MANA' &&
-				log.value < 0
-			) {
+			} else if (log.eventType === 'RESOURCE_CHANGE' && log.extraInfo === 'MANA' && log.value < 0) {
 				this.metrics.totalManaSpent += Math.abs(log.value || 0)
 			}
 		}
@@ -262,27 +251,17 @@ export class BalanceMonitor extends HTMLElement {
 	}
 
 	render() {
-		const timePassed = Math.max(
-			1,
-			Math.round((Date.now() - this.metrics.startTime) / 1000),
-		)
+		const timePassed = Math.max(1, Math.round((Date.now() - this.metrics.startTime) / 1000))
 		const period = Math.min(timePassed, this.metrics.period)
 
 		// Calculate metrics
 		const dps = roundOne(this.metrics.totalDamage / period)
 		const hps = roundOne(this.metrics.totalHealing / period)
 		const avgHeal =
-			this.metrics.healingEvents > 0
-				? Math.round(this.metrics.totalHealing / this.metrics.healingEvents)
-				: 0
+			this.metrics.healingEvents > 0 ? Math.round(this.metrics.totalHealing / this.metrics.healingEvents) : 0
 		const avgDamage =
-			this.metrics.damageEvents > 0
-				? Math.round(this.metrics.totalDamage / this.metrics.damageEvents)
-				: 0
-		const hpm =
-			this.metrics.totalManaSpent > 0
-				? roundOne(this.metrics.totalHealing / this.metrics.totalManaSpent)
-				: 0
+			this.metrics.damageEvents > 0 ? Math.round(this.metrics.totalDamage / this.metrics.damageEvents) : 0
+		const hpm = this.metrics.totalManaSpent > 0 ? roundOne(this.metrics.totalHealing / this.metrics.totalManaSpent) : 0
 		const mps = roundOne(this.metrics.totalManaSpent / period)
 
 		// Sort characters by faction and then by name
@@ -313,21 +292,13 @@ export class BalanceMonitor extends HTMLElement {
 									<tbody>
 										${enemies.map((enemy) => {
 											const damagePercent =
-												this.metrics.totalDamage > 0
-													? (enemy.totalDamage / this.metrics.totalDamage) * 100
-													: 0
+												this.metrics.totalDamage > 0 ? (enemy.totalDamage / this.metrics.totalDamage) * 100 : 0
 											return html`
 												<tr>
 													<td>${enemy.name}</td>
 													<td>${roundOne(enemy.totalDamage / period)}</td>
 													<td>${Math.floor(enemy.totalDamage)}</td>
-													<td>
-														${createProgressBar(
-															damagePercent,
-															enemy.totalDamage,
-															Math.floor(enemy.totalDamage),
-														)}
-													</td>
+													<td>${createProgressBar(damagePercent, enemy.totalDamage, Math.floor(enemy.totalDamage))}</td>
 												</tr>
 											`
 										})}
@@ -361,20 +332,14 @@ export class BalanceMonitor extends HTMLElement {
 									<tbody>
 										${partyMembers.map((member) => {
 											const healPercent =
-												this.metrics.totalHealing > 0
-													? (member.totalHealing / this.metrics.totalHealing) * 100
-													: 0
+												this.metrics.totalHealing > 0 ? (member.totalHealing / this.metrics.totalHealing) * 100 : 0
 											return html`
 												<tr>
 													<td>${member.name}</td>
 													<td>${roundOne(member.totalHealing / period)}</td>
 													<td>${Math.floor(member.totalHealing)}</td>
 													<td>
-														${createProgressBar(
-															healPercent,
-															member.totalHealing,
-															Math.floor(member.totalHealing),
-														)}
+														${createProgressBar(healPercent, member.totalHealing, Math.floor(member.totalHealing))}
 													</td>
 													<td>${roundOne(member.totalDamage / period)}</td>
 													<td>${Math.floor(member.totalDamage)}</td>
@@ -397,21 +362,11 @@ export class BalanceMonitor extends HTMLElement {
 				<section>
 					<h3>Resources & Efficiency</h3>
 					<dl>
-						<dt title="Mana Per Second - Your average mana consumption rate">
-							Mana per sec:
-						</dt>
+						<dt title="Mana Per Second - Your average mana consumption rate">Mana per sec:</dt>
 						<dd>${mps}</dd>
-						<dt
-							title="Estimated time until you run out of mana at current consumption rate"
-						>
-							Time to OOM:
-						</dt>
+						<dt title="Estimated time until you run out of mana at current consumption rate">Time to OOM:</dt>
 						<dd>${this.calculateTimeToOOM()}</dd>
-						<dt
-							title="Healing Per Mana - How much healing you get for each point of mana spent"
-						>
-							Healing per mana:
-						</dt>
+						<dt title="Healing Per Mana - How much healing you get for each point of mana spent">Healing per mana:</dt>
 						<dd>${hpm}</dd>
 					</dl>
 				</section>
@@ -419,23 +374,13 @@ export class BalanceMonitor extends HTMLElement {
 				<section>
 					<h3>Survival Analysis</h3>
 					<dl>
-						<dt
-							title="Rating of how well healing keeps up with incoming damage (10 is best)"
-						>
-							Survival rating:
-						</dt>
+						<dt title="Rating of how well healing keeps up with incoming damage (10 is best)">Survival rating:</dt>
 						<dd>${this.calculateSurvivalRating()}</dd>
-						<dt
-							title="Ratio of healing output to incoming damage - values over 1.0 mean you're keeping up"
-						>
+						<dt title="Ratio of healing output to incoming damage - values over 1.0 mean you're keeping up">
 							HPS/DPS ratio:
 						</dt>
 						<dd>${dps > 0 ? roundOne(hps / dps) : 'N/A'}</dd>
-						<dt
-							title="Estimated time until death based on current damage vs healing rate"
-						>
-							Time to live:
-						</dt>
+						<dt title="Estimated time until death based on current damage vs healing rate">Time to live:</dt>
 						<dd>${this.calculateTimeToLive()}</dd>
 						${dps > 0 && hps > 0
 							? html`

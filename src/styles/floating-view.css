@@ -16,6 +16,7 @@ floating-view {
 	max-width: 100vw;
 	overflow: hidden;
 	pointer-events: auto;
+	z-index: 1;
 
 	header {
 		display: flex;
@@ -55,6 +56,37 @@ floating-view:has(color-palette) {
 floating-view:has(combat-log-viewer) {
 	transform: translate3d(40px, 70vh, 0px);
 	width: 40rem;
+}
+
+floating-view:has(animation-debugger) {
+	transform: translate3d(4rem, 11rem, 0);
+	width: 22rem;
+}
+
+animation-debugger {
+	display: block;
+	padding: 0.4rem 0.5rem;
+}
+
+.AnimationDebugger-row {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin-bottom: 0.3rem;
+}
+
+.AnimationDebugger-row:last-child {
+	margin-bottom: 0;
+}
+
+.AnimationDebugger-row input[type='range'] {
+	flex: 1;
+}
+
+.AnimationDebugger-status {
+	margin-left: auto;
+	font-size: 12px;
+	opacity: 0.6;
 }
 
 .resize-handle {

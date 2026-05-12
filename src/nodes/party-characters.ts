@@ -10,6 +10,7 @@ export class Tank extends Character {
 	targetingTask = new TargetOppositeFaction(this)
 	attackEffect = new TankAttack(this)
 	name = 'Tank'
+	image = '/assets/generated/characters/tank.png'
 }
 
 // export class Warrior extends Character {

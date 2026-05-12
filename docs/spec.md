@@ -22,10 +22,10 @@ Different spell types might have unique sweet spot behaviors (e.g. varying sweet
 Spell Properties: Each spell is defined by properties such as cost (mana cost), castTime (casting duration in milliseconds; 0 for instant), cooldown (time before the spell can be reused), and effect (the outcome of the spell – healing amount, damage dealt, buff details, etc.). These properties drive the spell's behavior in the game logic. (Internally, spell effects are executed via the game's task system on each tick of the game loop to handle timing and durations.)
 
 Spell Casting Flow: To cast a spell, the player selects a target and then activates the desired spell:
-    Target Selection – The healer chooses an ally (or enemy for damage spells) via the party frame UI as the spell's target.
-    Spell Activation – The player selects a spell from the action bar (or presses its hotkey) to begin casting. If the spell has a cast time, a cast bar appears showing progress.
-    Sweet Spot Timing – If the spell uses the sweet spot mechanic, the timing bar is displayed during the cast. The player attempts to hit the sweet spot zone before the cast completes.
-    Effect Resolution – Once casting finishes (or immediately for instant spells), the spell's effects are applied to the target. The target's health is adjusted (healing or damage), buffs/debuffs are applied, etc. The caster's mana is deducted and the spell enters its cooldown period.
+Target Selection – The healer chooses an ally (or enemy for damage spells) via the party frame UI as the spell's target.
+Spell Activation – The player selects a spell from the action bar (or presses its hotkey) to begin casting. If the spell has a cast time, a cast bar appears showing progress.
+Sweet Spot Timing – If the spell uses the sweet spot mechanic, the timing bar is displayed during the cast. The player attempts to hit the sweet spot zone before the cast completes.
+Effect Resolution – Once casting finishes (or immediately for instant spells), the spell's effects are applied to the target. The target's health is adjusted (healing or damage), buffs/debuffs are applied, etc. The caster's mana is deducted and the spell enters its cooldown period.
 
 Targeting System
 
@@ -164,7 +164,6 @@ Rendering
     While DOM rendering is sufficient for the initial version, the design anticipates possibly moving to a canvas or WebGL-based rendering for more advanced visuals and animations in the future
 
     We use uhtml for creating and rendering DOM nodes (render + html).
-
 
 This would allow richer graphical effects (spell animations, boss telegraphs, etc.) once the core gameplay is solid.
 The UI is designed to be responsive, so it can adapt to different screen sizes or window layouts without breaking.

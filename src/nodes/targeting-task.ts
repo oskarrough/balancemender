@@ -40,10 +40,7 @@ export class Targeting extends Task {
 /** Targets alive characters from opposite faction */
 export class TargetOppositeFaction extends Targeting {
 	getPotentialTargets(): Character[] {
-		const targets =
-			this.parent.faction === 'party'
-				? this.parent.parent.enemies
-				: this.parent.parent.party
+		const targets = this.parent.faction === 'party' ? this.parent.parent.enemies : this.parent.parent.party
 
 		return targets.filter((target) => target.health && target.health.current > 0)
 	}
@@ -83,8 +80,6 @@ export class LowestHealth extends TargetOppositeFaction {
 	prefers(): Character | undefined {
 		const targets = this.getPotentialTargets()
 		if (targets.length === 0) return undefined
-		return targets.sort(
-			(a, b) => a.health.current / a.health.max - b.health.current / b.health.max,
-		)[0]
+		return targets.sort((a, b) => a.health.current / a.health.max - b.health.current / b.health.max)[0]
 	}
 }

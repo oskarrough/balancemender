@@ -26,17 +26,17 @@ const CATALOG: Record<string, SoundDef> = {
 	spell_cast: {file: '568017.ogg', category: 'spell'},
 	spell_rejuvenation: {file: '1687853.ogg', category: 'spell'},
 	spell_fizzle: {file: '569772.ogg', category: 'spell'},
-	combat_air_hit: {file: 'air-in-a-hit-2161.wav', category: 'combat'},
-	combat_arrow: {file: 'arrow-shot-through-air-2771.wav', category: 'combat'},
-	combat_ball_tap: {file: 'game-ball-tap-2073.wav', category: 'combat'},
-	combat_body_punch: {file: 'body-punch-quick-hit-2153.wav', category: 'combat'},
-	combat_fast_blow: {file: 'fast-blow-2144.wav', category: 'combat'},
-	combat_fast_punch: {file: 'martial-arts-fast-punch-2047.wav', category: 'combat'},
+	combat_air_hit: {file: 'air-in-a-hit-2161.ogg', category: 'combat'},
+	combat_arrow: {file: 'arrow-shot-through-air-2771.ogg', category: 'combat'},
+	combat_ball_tap: {file: 'game-ball-tap-2073.ogg', category: 'combat'},
+	combat_body_punch: {file: 'body-punch-quick-hit-2153.ogg', category: 'combat'},
+	combat_fast_blow: {file: 'fast-blow-2144.ogg', category: 'combat'},
+	combat_fast_punch: {file: 'martial-arts-fast-punch-2047.ogg', category: 'combat'},
 	combat_punch_through_air: {file: 'punch-through-air-2141.mp3', category: 'combat'},
-	combat_quick_punch: {file: 'soft-quick-punch-2151.wav', category: 'combat'},
-	combat_strong_punch: {file: 'strong-punches-to-the-body-2198.wav', category: 'combat'},
+	combat_quick_punch: {file: 'soft-quick-punch-2151.ogg', category: 'combat'},
+	combat_strong_punch: {file: 'strong-punches-to-the-body-2198.ogg', category: 'combat'},
 	combat_strong_punch2: {file: 'impact-of-a-strong-punch-2155.mp3', category: 'combat'},
-	combat_sword_hit: {file: 'strong-punches-to-the-body-2198.wav', category: 'combat'},
+	combat_sword_hit: {file: 'strong-punches-to-the-body-2198.ogg', category: 'combat'},
 }
 
 export type SoundName = keyof typeof CATALOG | (string & {})
@@ -144,6 +144,7 @@ export class AudioPlayer extends Node {
 				logger.debug(`audio: error playing ${name}: ${err.message}`)
 			})
 
+			logger.debug(`audio: started ${name}, volume: ${audio.volume}, muted: ${audio.muted}`)
 			return audio
 		} catch (err) {
 			logger.debug(`audio: error creating audio element for ${name}: ${err}`)

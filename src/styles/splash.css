@@ -1,0 +1,65 @@
+.Splash {
+	position: fixed;
+	inset: 0;
+	z-index: 200;
+	display: grid;
+	place-items: center;
+	background: var(--c-black);
+	overflow: hidden;
+	user-select: none;
+	cursor: pointer;
+}
+
+.Splash-bg {
+	position: absolute;
+	inset: 0;
+	/** disabled until we find a proper image */
+	/* background-image: url(/assets/splash.png); */
+	background-size: contain;
+	background-position: center;
+	opacity: 0;
+}
+
+.Splash-content {
+	position: relative;
+	z-index: 1;
+	text-align: center;
+	padding: 2rem;
+}
+
+.Splash-title {
+	font-family: 'Rubik 80s Fade', 'Proza Libre', serif;
+	font-size: clamp(3rem, 14vw, 9rem);
+	line-height: 0.9;
+	margin: 0;
+	color: var(--c-snow-white);
+	text-shadow:
+		0 0.04em 0 var(--c-crimson-lake),
+		0 0.08em 0.4em rgba(0, 0, 0, 0.6);
+}
+
+.Splash-titleLine {
+	display: block;
+	/* Imperceptible non-zero so the glyph gets rasterized into its compositor layer
+	   on first paint — avoids a jank when the intro tween first ramps opacity. */
+	opacity: 0.001;
+	will-change: transform, opacity;
+	transform-origin: 50% 50%;
+	backface-visibility: hidden;
+}
+
+.Splash-subtitle {
+	font-style: italic;
+	font-size: clamp(1rem, 2vw, 1.4rem);
+	margin: 1.5rem 0 3rem;
+	color: var(--c-snow-white);
+	opacity: 0;
+}
+
+.Splash-prompt {
+	font-weight: 700;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--c-snow-white);
+	opacity: 0;
+}

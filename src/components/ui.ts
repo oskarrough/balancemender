@@ -6,6 +6,7 @@ import {SpellIcon} from './spell-icon'
 import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
 import {UnitFrame} from './unitframe'
+import {restartGame} from '../animations'
 
 register()
 
@@ -32,17 +33,13 @@ export function UI(game: GameLoop) {
 				? html` <div class="GameOver">
 						<h2>Game Over!</h2>
 						<p>You survived for ${roundOne(game.elapsedTime / 1000)} seconds</p>
-						<button class="Button" onclick=${() => location.reload()}>Play Again</button>
+						<button class="Button" onclick=${() => restartGame(game)}>Play Again</button>
 					</div>`
 				: null}
 
-			<div class="Enemies">
-				${game.enemies.map((enemy) => UnitFrame(enemy, spell, player))}
-			</div>
+			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, spell, player))}</div>
 
-			<div class="PartyGroup">
-				${game.party.map((member) => UnitFrame(member, spell, player))}
-			</div>
+			<div class="PartyGroup">${game.party.map((member) => UnitFrame(member, spell, player))}</div>
 
 			<div class="CastingInfo">
 				${spell
@@ -57,9 +54,7 @@ export function UI(game: GameLoop) {
 
 			<div class="ActionBar">
 				${Object.keys(player.spellbook).length > 0
-					? Object.keys(player.spellbook).map((name, index) =>
-							SpellIcon(game, name, index + 1),
-						)
+					? Object.keys(player.spellbook).map((name, index) => SpellIcon(game, name, index + 1))
 					: ''}
 			</div>
 

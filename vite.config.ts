@@ -1,9 +1,12 @@
-import { defineConfig } from "vite";
-import { cloudflare } from "@cloudflare/vite-plugin";
+import {defineConfig} from 'vite-plus'
 
 export default defineConfig({
-	plugins: [cloudflare()],
-	build: {
-		target: 'esnext'
-	}
+	fmt: {
+		bracketSpacing: false,
+		printWidth: 120,
+		semi: false,
+		singleQuote: true,
+		useTabs: true,
+		ignorePatterns: [],
+	},
 })

@@ -1,0 +1,52 @@
+{
+	"project": "Balance Mender",
+	"style": "Readable hand-painted fantasy game art with flat-fill composition, visible gouache-like brushwork, and textured painted edges. Strong silhouettes and simplified forms that remain legible at small UI sizes. Mystical, quiet, slightly ominous tone rather than heroic spectacle. Use restrained dominant palettes with warm accent glows for magic, windows, embers, or healing light. Favor ancient floating ruins, impossible architecture, maze-etched surfaces, silent guardian presences, miniature settlements, cypress-like vertical shapes, blue-hour or golden-hour atmosphere, and long soft shadows when relevant. No text, logos, UI chrome, watermarks, frames, photorealism, or busy backgrounds.",
+	"types": {
+		"spell": "Square spell icon. Center one clear magical effect with strong shape language. Keep the mood mystical and quiet rather than explosive or heroic. Use high contrast, a clean silhouette readable at 64x64 pixels, and restrained color with warm accent glows. No character faces unless explicitly requested.",
+		"character": "Square unit-frame avatar portrait. Bust or head-and-shoulders crop, clear face or creature identity, simple atmospheric backdrop. The asset should still read in a compact target frame."
+	},
+	"assets": [
+		{
+			"id": "heal",
+			"type": "spell",
+			"name": "Heal",
+			"prompt": "A steady warm golden healing light, calm and reliable, like a basic efficient restorative spell."
+		},
+		{
+			"id": "flash-heal",
+			"type": "spell",
+			"name": "Flash Heal",
+			"prompt": "A sharp burst of white-gold healing light, fast and urgent, like a single concentrated pulse."
+		},
+		{
+			"id": "greater-heal",
+			"type": "spell",
+			"name": "Greater Heal",
+			"prompt": "A powerful radiant healing surge, broad and weighty, with layered holy light and a sense of large impact."
+		},
+		{
+			"id": "renew",
+			"type": "spell",
+			"name": "Renew",
+			"prompt": "A quiet green healing bloom made from simplified leaf shapes and warm gold inner light. The bloom feels ancient and restorative, like a soft recurring pulse of life rather than a burst. Dark muted green background, warm gold glow accents, clean centered silhouette."
+		},
+		{
+			"id": "tiny-wolf",
+			"type": "character",
+			"name": "Tiny wolf",
+			"prompt": "A small scrappy dungeon wolf with alert eyes, rough grey fur, and a mildly dangerous expression."
+		},
+		{
+			"id": "tank",
+			"type": "character",
+			"name": "Tank",
+			"prompt": "A sturdy fantasy tank adventurer in worn plate armor, protective stance, practical and dependable."
+		},
+		{
+			"id": "player",
+			"type": "character",
+			"name": "Player",
+			"prompt": "A focused healer adventurer with simple robes, kind but determined expression, carrying soft restorative magic."
+		}
+	]
+}

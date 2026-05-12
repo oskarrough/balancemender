@@ -16,6 +16,7 @@ export class Nakroth extends Character {
 export class TinyWolf extends Character {
 	faction = FACTION.ENEMY
 	name = 'Tiny wolf'
+	image = '/assets/generated/characters/tiny-wolf.png'
 	health = new Health(this, 240)
 	targetingTask = new RandomTargeting(this)
 	mainhand = new MediumAttack(this)

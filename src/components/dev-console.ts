@@ -227,10 +227,7 @@ export class DevConsole extends HTMLElement {
 	private navigateHistory(direction: number, input: HTMLInputElement) {
 		if (this.history.length === 0) return
 
-		this.historyIndex = Math.max(
-			0,
-			Math.min(this.history.length - 1, this.historyIndex + direction),
-		)
+		this.historyIndex = Math.max(0, Math.min(this.history.length - 1, this.historyIndex + direction))
 		input.value = this.history[this.historyIndex]
 
 		// Move cursor to end of input

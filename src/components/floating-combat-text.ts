@@ -15,9 +15,7 @@ export class FloatingCombatText extends HTMLElement {
 		if (isDamage) this.classList.add('damage')
 
 		// Put heals to the left, damage to the right
-		this.style.left = `${
-			isDamage ? randomIntFromInterval(-4, 14) : randomIntFromInterval(-10, 0)
-		}rem`
+		this.style.left = `${isDamage ? randomIntFromInterval(-4, 14) : randomIntFromInterval(-10, 0)}rem`
 
 		// Remove node once the CSS animation is done
 		this.addEventListener('animationend', this.remove)
