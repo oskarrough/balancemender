@@ -28,9 +28,44 @@
 	--health: var(--c-crimson-lake);
 }
 
+.Character-row {
+	display: flex;
+}
+
+.Character-bars {
+	flex: 1;
+	min-width: 0;
+}
+
 .Character-avatar {
 	position: relative;
-	margin-right: 1rem;
+	margin: 0;
 	font-weight: bold;
 	user-select: none;
+}
+
+.Character-avatar img {
+	display: block;
+	width: 3rem;
+	height: 3rem;
+	object-fit: cover;
+	border-radius: var(--radius);
+}
+
+.Character-health {
+	position: relative;
+}
+
+.Character-name {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	padding-left: 0.5rem;
+	font-weight: bold;
+	user-select: none;
+	pointer-events: none;
+	text-shadow: 0 0 2px black, 0 0 2px black;
+	color: white;
 }

@@ -11,6 +11,7 @@ import {MediumAttack} from './damage-effect'
 export class Player extends Character {
 	faction = FACTION.PARTY
 	name = 'Player'
+	image = '/assets/generated/characters/player.png'
 
 	health = new Health(this, 160)
 	mana: Mana = new Mana(this, 600)
