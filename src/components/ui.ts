@@ -36,13 +36,9 @@ export function UI(game: GameLoop) {
 					</div>`
 				: null}
 
-			<div class="Enemies">
-				${game.enemies.map((enemy) => UnitFrame(enemy, spell, player))}
-			</div>
+			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, spell, player))}</div>
 
-			<div class="PartyGroup">
-				${game.party.map((member) => UnitFrame(member, spell, player))}
-			</div>
+			<div class="PartyGroup">${game.party.map((member) => UnitFrame(member, spell, player))}</div>
 
 			<div class="CastingInfo">
 				${spell
@@ -57,9 +53,7 @@ export function UI(game: GameLoop) {
 
 			<div class="ActionBar">
 				${Object.keys(player.spellbook).length > 0
-					? Object.keys(player.spellbook).map((name, index) =>
-							SpellIcon(game, name, index + 1),
-						)
+					? Object.keys(player.spellbook).map((name, index) => SpellIcon(game, name, index + 1))
 					: ''}
 			</div>
 

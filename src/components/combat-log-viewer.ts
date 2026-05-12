@@ -1,12 +1,5 @@
 import {html, formatTimestamp, render} from '../utils'
-import {
-	CombatLogEvent,
-	combatLogs,
-	getCombatLogs,
-	clearLogs,
-	CombatEventType,
-	EVENT_TYPE_COLORS,
-} from '../combatlog'
+import {CombatLogEvent, combatLogs, getCombatLogs, clearLogs, CombatEventType, EVENT_TYPE_COLORS} from '../combatlog'
 import '../components/floating-view.js'
 
 /** The types we allow filtering for in the UI */
@@ -78,10 +71,7 @@ const EVENT_FORMATTERS = new Map<CombatEventType, (event: CombatLogEvent) => str
 		(event) => {
 			const source = safe(event.sourceName)
 			const spell = event.spellName ? ` cast ${event.spellName}` : ' cast unknown spell'
-			const target =
-				event.targetName && event.targetName !== event.sourceName
-					? ` on ${event.targetName}`
-					: ''
+			const target = event.targetName && event.targetName !== event.sourceName ? ` on ${event.targetName}` : ''
 			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
 
 			return `${source}${spell}${target}${extra}`
@@ -92,13 +82,8 @@ const EVENT_FORMATTERS = new Map<CombatEventType, (event: CombatLogEvent) => str
 		'SPELL_CAST_START',
 		(event) => {
 			const source = safe(event.sourceName)
-			const spell = event.spellName
-				? ` begins casting ${event.spellName}`
-				: ' begins casting'
-			const target =
-				event.targetName && event.targetName !== event.sourceName
-					? ` on ${event.targetName}`
-					: ''
+			const spell = event.spellName ? ` begins casting ${event.spellName}` : ' begins casting'
+			const target = event.targetName && event.targetName !== event.sourceName ? ` on ${event.targetName}` : ''
 			const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
 
 			return `${source}${spell}${target}${extra}`
@@ -109,9 +94,7 @@ const EVENT_FORMATTERS = new Map<CombatEventType, (event: CombatLogEvent) => str
 		'SPELL_CAST_FAILED',
 		(event) => {
 			const source = safe(event.sourceName)
-			const spell = event.spellName
-				? ` failed to cast ${event.spellName}`
-				: ' failed to cast'
+			const spell = event.spellName ? ` failed to cast ${event.spellName}` : ' failed to cast'
 			const reason = event.extraInfo ? ` (${event.extraInfo})` : ''
 
 			return `${source}${spell}${reason}`
@@ -130,10 +113,7 @@ const EVENT_FORMATTERS = new Map<CombatEventType, (event: CombatLogEvent) => str
 const defaultFormatter = (event: CombatLogEvent): string => {
 	const source = safe(event.sourceName)
 	const action = event.spellName ? ` used ${event.spellName}` : ''
-	const target =
-		event.targetName && event.targetName !== event.sourceName
-			? ` on ${event.targetName}`
-			: ''
+	const target = event.targetName && event.targetName !== event.sourceName ? ` on ${event.targetName}` : ''
 	const value = event.value !== undefined ? ` ${event.value}` : ''
 	const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
 
@@ -173,9 +153,7 @@ export class CombatLogViewer extends HTMLElement {
 	 * Filter logs based on current filter and search term
 	 */
 	private getFilteredLogs(): CombatLogEvent[] {
-		let filtered = this.currentFilter
-			? getCombatLogs(this.currentFilter)
-			: [...combatLogs]
+		let filtered = this.currentFilter ? getCombatLogs(this.currentFilter) : [...combatLogs]
 
 		if (this.searchTerm) {
 			const term = this.searchTerm.toLowerCase()
@@ -217,10 +195,7 @@ export class CombatLogViewer extends HTMLElement {
 		const controlsTemplate = html`
 			<div class="CombatLogViewer-controls">
 				<menu class="CombatLogViewer-filters">
-					<button
-						class=${!this.currentFilter ? 'Button active' : 'Button'}
-						onclick=${() => this.setFilter(null)}
-					>
+					<button class=${!this.currentFilter ? 'Button active' : 'Button'} onclick=${() => this.setFilter(null)}>
 						All
 					</button>
 					${EVENT_TYPE_FILTERS.map(
@@ -256,15 +231,10 @@ export class CombatLogViewer extends HTMLElement {
 										(log) => html`
 											<li class="CombatLogViewer-item" data-event-type=${log.eventType}>
 												<time>${formatTimestamp(log.timestamp)}</time>
-												<span
-													class="CombatLogViewer-eventType"
-													style=${`color: ${getEventColor(log.eventType)}`}
-												>
+												<span class="CombatLogViewer-eventType" style=${`color: ${getEventColor(log.eventType)}`}>
 													${log.eventType}
 												</span>
-												<span class="CombatLogViewer-message">
-													${formatLogEntry(log)}
-												</span>
+												<span class="CombatLogViewer-message"> ${formatLogEntry(log)} </span>
 											</li>
 										`,
 									)}

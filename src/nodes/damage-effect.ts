@@ -149,17 +149,13 @@ export class DamageEffect extends Task {
 		//   this.attacker.parent.enemies.some((enemy) => enemy === this.target)
 		// For enemy attacks on party members, animate the hit
 		// if (!isPartyAttack) {
-		const targetElement = document.querySelector(
-			`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`,
-		)
+		const targetElement = document.querySelector(`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`)
 		if (targetElement) this.animateHit(targetElement)
 		// }
 
 		// Create floating combat text
 		const cssClass = `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
-		const fct = html`<floating-combat-text class=${cssClass}
-			>${damageAmount}</floating-combat-text
-		>`.toDOM()
+		const fct = html`<floating-combat-text class=${cssClass}>${damageAmount}</floating-combat-text>`.toDOM()
 		const container = document.querySelector('.FloatingCombatText')
 		if (container) container.appendChild(fct)
 	}

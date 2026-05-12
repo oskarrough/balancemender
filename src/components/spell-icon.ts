@@ -24,11 +24,7 @@ export function SpellIcon(game: GameLoop, spellName: string, shortcut: string | 
 	// console.log(Spell)
 
 	return html`
-		<button
-			class="Spell"
-			onclick=${() => player.castSpell(spellName)}
-			.disabled=${game.gameOver}
-		>
+		<button class="Spell" onclick=${() => player.castSpell(spellName)} .disabled=${game.gameOver}>
 			<div class="Spell-inner">
 				<h3>${SpellClass.name}</h3>
 				<p>

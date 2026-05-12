@@ -110,18 +110,14 @@ export class GameLoop extends Loop {
 
 	enemiesDefeated() {
 		if (!this.enemies) return true
-		const anyAlive = this.enemies.some(
-			(character) => character.health && character.health.current > 0,
-		)
+		const anyAlive = this.enemies.some((character) => character.health && character.health.current > 0)
 		return !anyAlive
 	}
 
 	/* @returns true if all party members are dead */
 	isPartyDefeated() {
 		if (this.party.length === 0) return true
-		const anyAlive = this.party.some(
-			(character) => character.health && character.health.current > 0,
-		)
+		const anyAlive = this.party.some((character) => character.health && character.health.current > 0)
 		return !anyAlive
 	}
 

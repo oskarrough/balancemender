@@ -6,11 +6,7 @@ import {Meter} from './bar'
 import {EffectIcon} from './effect-icon'
 import {html} from 'uhtml'
 
-export function UnitFrame(
-	character: Character,
-	spell: Spell | undefined,
-	player: Player,
-) {
+export function UnitFrame(character: Character, spell: Spell | undefined, player: Player) {
 	const id = character.id
 	const isEnemy = character.faction === 'enemy'
 	const health = character.health.current

@@ -36,10 +36,7 @@ export function Meter({value, max, type, potentialValue = 0, spell}: MeterProps)
 	if (spell?.delay === 0) {
 		potentialValue = potentialValue - (potentialValue / spell.repeat) * spell.cycles
 	}
-	const potentialBarStyles = `left: ${percent}%; width: ${toPercent(
-		potentialValue,
-		max,
-	)}%`
+	const potentialBarStyles = `left: ${percent}%; width: ${toPercent(potentialValue, max)}%`
 
 	return html` <div class="Bar" data-type=${type}>
 		<div style="${barStyles}"></div>

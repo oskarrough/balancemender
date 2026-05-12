@@ -55,9 +55,7 @@ export class DoT extends Task {
 	mount() {
 		// Add self to target's effects collection when mounted
 		this.parent.effects.add(this)
-		log(
-			`dot:mount ${this.name} from ${this.casterName} on ${this.parent.constructor.name}`,
-		)
+		log(`dot:mount ${this.name} from ${this.casterName} on ${this.parent.constructor.name}`)
 	}
 
 	damage() {
@@ -71,9 +69,7 @@ export class DoT extends Task {
 		const actualDamage = this.parent.damage(damageAmount)
 		this.createVisualEffects(actualDamage)
 		if (this.sound) AudioPlayer.play(this.sound)
-		log(
-			`dot:${this.name}:tick damage=${actualDamage} from=${this.casterName} to=${this.parent.constructor.name}`,
-		)
+		log(`dot:${this.name}:tick damage=${actualDamage} from=${this.casterName} to=${this.parent.constructor.name}`)
 	}
 
 	shouldTick() {

@@ -1,11 +1,5 @@
 import {describe, it, expect, beforeEach, vi} from 'vitest'
-import {
-	CombatLogEvent,
-	combatLogs,
-	clearLogs,
-	getCombatLogs,
-	logCombat,
-} from './combatlog'
+import {CombatLogEvent, combatLogs, clearLogs, getCombatLogs, logCombat} from './combatlog'
 
 // Simply mock document for the combatlog.ts file
 vi.mock('./utils', () => ({

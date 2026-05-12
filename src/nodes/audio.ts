@@ -203,9 +203,7 @@ export class AudioPlayer extends Node {
 			})
 
 			// Log confirmation that we're attempting to play
-			logger.debug(
-				`audio: started ${soundId}, volume: ${audio.volume}, muted: ${audio.muted}`,
-			)
+			logger.debug(`audio: started ${soundId}, volume: ${audio.volume}, muted: ${audio.muted}`)
 
 			return audio
 		} catch (err) {
