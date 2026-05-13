@@ -1,6 +1,6 @@
 import {Task} from 'vroum'
 import {fct} from '../components/floating-combat-text'
-import {log} from '../utils'
+import {applyStatics, log} from '../utils'
 import {Character} from './character'
 import {logCombat} from '../combatlog'
 
@@ -10,8 +10,14 @@ export class HOT extends Task {
 	interval = 3000
 	repeat = 5
 
+	static name = 'Periodic Heal'
+	static heal = 0
+	static interval = 3000
+	static repeat = 5
+
 	constructor(public parent: Character) {
 		super(parent)
+		applyStatics(this, 'name', 'heal', 'interval', 'repeat')
 	}
 
 	mount() {

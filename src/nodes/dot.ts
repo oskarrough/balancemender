@@ -1,15 +1,14 @@
 import {Task} from 'vroum'
 import {getFctContainer} from '../components/floating-combat-text'
-import {log, randomIntFromInterval} from '../utils'
+import {applyStatics, log, randomIntFromInterval} from '../utils'
 import {Character} from './character'
 import {AudioPlayer} from './audio'
 
 /**
- * Base class for all Damage over Time effects
- * DoTs attach to the target character and apply damage periodically
+ * Base class for all Damage over Time effects.
+ * DoTs attach to the target character and apply damage periodically.
  */
 export class DoT extends Task {
-	// Instance properties
 	name = 'Periodic Damage'
 	minDamage = 0
 	maxDamage = 0
@@ -17,14 +16,12 @@ export class DoT extends Task {
 	repeat = 5
 	sound = ''
 
-	// Required for compatibility with HOT effects in the Character.effects Set
+	/** Kept so HOT/DoT can share Character.effects without a type union check. */
 	heal = 0
 
-	// Store original caster for damage attribution
 	casterName = ''
 	casterId = ''
 
-	// Static properties for effect definitions
 	static name = 'Periodic Damage'
 	static minDamage = 0
 	static maxDamage = 0
@@ -33,21 +30,11 @@ export class DoT extends Task {
 	static sound = ''
 
 	constructor(
-		public parent: Character, // The target character this DoT is attached to
-		public caster: Character, // The character who applied this DoT
+		public parent: Character,
+		public caster: Character,
 	) {
-		super(parent) // Parent is the target
-
-		// Copy static properties to instance
-		const constructor = this.constructor as typeof DoT
-		this.name = constructor.name
-		this.minDamage = constructor.minDamage
-		this.maxDamage = constructor.maxDamage
-		this.interval = constructor.interval
-		this.repeat = constructor.repeat
-		this.sound = constructor.sound
-
-		// Store caster info for attribution
+		super(parent)
+		applyStatics(this, 'name', 'minDamage', 'maxDamage', 'interval', 'repeat', 'sound')
 		this.casterName = caster.constructor.name
 		this.casterId = caster.id
 	}

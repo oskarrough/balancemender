@@ -1,7 +1,6 @@
 import {Spell} from './spell'
 import {HOT} from './hot'
 import {AudioPlayer} from './audio'
-import {Character} from './character'
 
 export class Heal extends Spell {
 	static name = 'Heal'
@@ -45,13 +44,4 @@ class RenewHOT extends HOT {
 	static heal = 30
 	static interval = 2000
 	static repeat = 5
-
-	constructor(parent: Character) {
-		super(parent)
-		// Copy static properties to instance
-		this.name = RenewHOT.name
-		this.heal = RenewHOT.heal
-		this.interval = RenewHOT.interval
-		this.repeat = RenewHOT.repeat
-	}
 }
