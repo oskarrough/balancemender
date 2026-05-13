@@ -1,8 +1,19 @@
-- uses: voidzero-dev/setup-vp@v1
-  with:
-    node-version: '24'
-    cache: true
-- run: vp install
-- run: vp check
-- run: vp test
-- run: vp build
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+      - run: bun run check
+      - run: bun run test
+      - run: bun run build
