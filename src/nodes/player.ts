@@ -1,9 +1,9 @@
-import {log} from '../utils'
 import {Character, FACTION} from './character'
 import {Mana} from './mana'
 import {Spell} from './spell'
 import {spellRegistry} from './registry'
-import {GlobalCooldown} from './global-cooldown'
+import {SpellCast} from './spell-cast'
+import type {GlobalCooldown} from './global-cooldown'
 
 export class Player extends Character {
 	static maxHealth = 160
@@ -30,21 +30,6 @@ export class Player extends Character {
 	gcd: GlobalCooldown | undefined
 
 	castSpell(spellName: string) {
-		log(`player:cast:${spellName}`)
-		if (this.health.current <= 0) return console.warn(`Can't cast while dead`)
-		if (this.gcd) return console.warn(`Can't cast during global cooldown`)
-		if (this.spell) return console.warn(`Can't cast while casting`)
-		if (!this.getTarget()) return console.warn(`Can't cast without a target`)
-
-		const SpellClass = this.spellbook[spellName]
-		if (!SpellClass) {
-			return console.warn(`Spell ${spellName} not found in spellbook`)
-		}
-		if (SpellClass.cost && this.mana && this.mana.current < SpellClass.cost) {
-			return console.warn('Not enough mana')
-		}
-
-		this.spell = new SpellClass(this)
-		this.lastCastTime = this.parent.parent.elapsedTime
+		return SpellCast.cast(this, spellName)
 	}
 }
