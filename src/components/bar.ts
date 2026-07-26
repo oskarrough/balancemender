@@ -12,7 +12,7 @@ export function Bar({value, max, type}: BarProps) {
 	const percent = toPercent(value, max)
 	const barStyles = `width: ${percent}%`
 	return html` <div class="Bar" data-type=${type}>
-		<div style=${barStyles}></div>
+		<div class="Bar-value" style=${barStyles}></div>
 		<span>${Math.round(value)}/${max} ${type}</span>
 	</div>`
 }
@@ -39,7 +39,7 @@ export function Meter({value, max, type, potentialValue = 0, spell}: MeterProps)
 	const potentialBarStyles = `left: ${percent}%; width: ${toPercent(potentialValue, max)}%`
 
 	return html` <div class="Bar" data-type=${type}>
-		<div style="${barStyles}"></div>
+		<div class="Bar-value" style="${barStyles}"></div>
 		<div class="Bar-potentialValue" style=${potentialBarStyles}></div>
 		<span>${Math.round(value)}/${max}</span>
 	</div>`

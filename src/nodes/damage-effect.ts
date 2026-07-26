@@ -64,9 +64,13 @@ export class DamageEffect extends Task {
 		if (this.sound) AudioPlayer.play(this.sound)
 	}
 
-	/** The hit reaction on the unit frame, which is this attack's own to draw. */
+	/**
+	 * The hit reaction on the unit frame, which is this attack's own to draw. Keyed on the
+	 * character id alone — it is unique, and scoping to `.PartyMember` meant the Tank's own
+	 * Shield Bash never found its target, so enemies took every hit without flinching.
+	 */
 	shakeTarget() {
-		const element = document.querySelector(`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`)
+		const element = document.querySelector(`[data-character-id="${this.targetId}"] .Character-avatar`)
 		if (element) this.animateHit(element)
 	}
 

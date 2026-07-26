@@ -20,7 +20,23 @@
 	background: var(--bg);
 	border-top: 1px solid hsla(0 0% 90% / 0 4);
 	border-right: 1px solid hsla(0 0% 10% / 0.6);
-	/* transition: width 600ms; */
+}
+
+/*
+	Health and mana catch up to a hit instead of teleporting.
+
+	Two reasons this is narrower than the `transition: width 600ms` on `.Bar div` that used to sit
+	here commented out. That selector also matched the cast bar, which is a progress meter re-set
+	every frame — a transition there lags behind the cast and never reaches the end — and the
+	potential-value overlay, whose `left` and `width` move together, so tweening one desyncs it
+	from the other.
+
+	And it is short on purpose. The health bar is the instrument you heal off; a slow tween is a
+	bar that misreports current health for as long as it runs, which in a healing game is worse
+	than a bar that jumps.
+*/
+.Bar:not([data-type='cast']) > .Bar-value {
+	transition: width 150ms ease-out;
 }
 
 div.Bar-potentialValue {
