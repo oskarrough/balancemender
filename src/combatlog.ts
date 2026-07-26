@@ -60,6 +60,20 @@ export function setCombatClock(fn: () => number) {
 	return previous
 }
 
+/**
+ * Whether the panels get told about new events. A simulation borrows the log and turns this
+ * off: those events belong to a fight nobody is watching, and letting them through would make
+ * the live Combat log and Fight report redraw thousands of times off someone else's log.
+ */
+let notifying = true
+
+/** Returns the setting it replaced, so a temporary swap can put it back. */
+export function setCombatNotify(enabled: boolean) {
+	const previous = notifying
+	notifying = enabled
+	return previous
+}
+
 const formatter = new Intl.DateTimeFormat('de', {
 	hour: '2-digit',
 	minute: '2-digit',
@@ -117,7 +131,7 @@ export function logCombat(event: CombatLogEvent) {
 	if (!event.timestamp) event.timestamp = Date.now()
 	if (event.time === undefined) event.time = clock()
 	combatLogs.push(event)
-	if (typeof document !== 'undefined') {
+	if (notifying && typeof document !== 'undefined') {
 		document.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
 	}
 	logger.info({combat: event})

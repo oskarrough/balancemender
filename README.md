@@ -11,6 +11,7 @@ The game is an evening hobby project in progress and happy to welcome new contri
 ```
 bun install
 bun dev
+bun run sim --repeat 10   # play out fights headlessly and report on them
 ```
 
 ## Documentation
@@ -29,7 +30,8 @@ To render DOM nodes, https://github.com/WebReflection/uhtml is used.
 
 Animations are made using CSS and `gsap`.
 
-See the [`DOCS.md`](./docs/) folder for more.
+See the [`docs/`](./docs/) folder for more — [architecture](./docs/architecture.md) is the map,
+[simulation](./docs/simulation.md) explains how fights are run and analysed without a browser.
 
 ## Notes
 

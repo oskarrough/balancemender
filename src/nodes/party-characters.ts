@@ -5,7 +5,7 @@ import {TargetOppositeFaction} from './targeting-task'
 
 export class Tank extends Character {
 	static maxHealth = 300
-	faction = FACTION.PARTY
+	static faction = FACTION.PARTY
 	targetingTask = new TargetOppositeFaction(this)
 	attackEffect = new TankAttack(this)
 	name = 'Tank'

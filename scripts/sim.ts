@@ -37,20 +37,21 @@ bun run sim [options]
 }
 
 // parseUnits validates against the unit registry and throws with the list of known units.
+const party = text('party')
+const enemies = text('enemies')
 const spec = {
-	party: args.party ? parseUnits(String(args.party)) : undefined,
-	enemies: args.enemies ? parseUnits(String(args.enemies)) : undefined,
-	policy: (args.policy ?? 'triage') as keyof typeof policies,
-	seed: Number(args.seed ?? 1),
-	maxDuration: Number(args.duration ?? 120) * 1000,
+	party: party ? parseUnits(party) : undefined,
+	enemies: enemies ? parseUnits(enemies) : undefined,
+	policy: (text('policy') ?? 'triage') as keyof typeof policies,
+	seed: num('seed', 1),
+	maxDuration: num('duration', 120) * 1000,
 }
 
 if (!(spec.policy in policies)) {
-	console.error(`Unknown policy "${spec.policy}". Known: ${Object.keys(policies).join(', ')}`)
-	process.exit(1)
+	bail(`Unknown policy "${spec.policy}". Known: ${Object.keys(policies).join(', ')}`)
 }
 
-const repeat = Number(args.repeat ?? 0)
+const repeat = num('repeat', 0)
 
 if (repeat > 1) {
 	const results = await runFights(spec, repeat)
@@ -95,5 +96,29 @@ function parse(argv: string[]) {
 			i++
 		}
 	}
-	return out as {[key: string]: string | undefined} & {help?: true; json?: true}
+	return out
+}
+
+/**
+ * A flag that needs a value. `--seed` on its own parses as `true`, and `Number(true)` is 1 —
+ * so without these checks a typo silently runs a different fight than you asked for.
+ */
+function text(name: string) {
+	const raw = args[name]
+	if (raw === undefined) return undefined
+	if (raw === true) bail(`--${name} needs a value`)
+	return raw
+}
+
+function num(name: string, fallback: number) {
+	const raw = text(name)
+	if (raw === undefined) return fallback
+	const value = Number(raw)
+	if (!Number.isFinite(value)) bail(`--${name} needs a number, got "${raw}"`)
+	return value
+}
+
+function bail(message: string): never {
+	console.error(message)
+	process.exit(1)
 }

@@ -1,9 +1,10 @@
 import {GameLoop} from '../nodes/game-loop'
 import {html, render} from '../utils'
 import {createLogger} from '../combatlog'
-import {commands} from '../commands'
 import {SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, SpellKey, AttackKey, UnitKey} from '../balance'
-import {EnemyId, enemyRegistry} from '../nodes/unit-registry'
+import {unitIds, UnitId} from '../nodes/unit-registry'
+import type {GameAction} from '../actions'
+import type {Character} from '../nodes/character'
 
 export interface Command {
 	name: string
@@ -24,25 +25,22 @@ export class DevConsole extends HTMLElement {
 		this.render()
 	}
 
-	private tuneCommand<K extends string>(
-		name: string,
-		keys: readonly K[],
-		setter: (game: GameLoop, n: string, k: K, v: number) => boolean,
-	): Command {
+	/** Parse `<Name> <key> <value>` and hand it to the interpreter. All three tune commands are this. */
+	private tuneCommand<K extends string>(of: 'spell' | 'attack' | 'unit', keys: readonly K[]): Command {
 		const log = (msg: string) => this.logToConsole(msg)
 		return {
-			name,
-			description: `Tune a ${name}: /${name} <Name> <key> <value>`,
+			name: of,
+			description: `Tune a ${of}: /${of} <Name> <key> <value>`,
 			execute: (game, args) => {
-				if (!args || args.length < 3) return log(`Usage: /${name} <Name> <key> <value>\nKeys: ${keys.join(', ')}`)
-				const targetName = args[0].replaceAll('_', ' ')
+				if (!args || args.length < 3) return log(`Usage: /${of} <Name> <key> <value>\nKeys: ${keys.join(', ')}`)
+				const name = args[0].replaceAll('_', ' ')
 				const key = args[1] as K
 				const value = Number(args[2])
 				if (!(keys as readonly string[]).includes(key) || !Number.isFinite(value)) {
 					return log(`Invalid key or value. Keys: ${keys.join(', ')}`)
 				}
-				const ok = setter(game, targetName, key, value)
-				log(ok ? `${targetName}.${key} = ${value}` : `Unknown ${name}: ${targetName}`)
+				const result = game.perform({type: 'tune', of, name, key, value} as GameAction)
+				log(result.ok ? `${name}.${key} = ${value}` : result.error)
 			},
 		}
 	}
@@ -102,7 +100,7 @@ export class DevConsole extends HTMLElement {
 				name: 'godmode',
 				description: 'Toggle invulnerability for players',
 				execute: (game) => {
-					game.godMode = !game.godMode
+					game.perform({type: 'set', key: 'godMode', value: !game.godMode})
 					this.logToConsole(`God mode ${game.godMode ? 'enabled' : 'disabled'}`)
 				},
 			},
@@ -110,8 +108,7 @@ export class DevConsole extends HTMLElement {
 				name: 'infinitemana',
 				description: 'Toggle infinite mana for the player',
 				execute: (game) => {
-					game.infiniteMana = !game.infiniteMana
-					if (game.infiniteMana && game.player?.mana) game.player.mana.current = game.player.mana.max
+					game.perform({type: 'set', key: 'infiniteMana', value: !game.infiniteMana})
 					this.logToConsole(`Infinite mana ${game.infiniteMana ? 'enabled' : 'disabled'}`)
 				},
 			},
@@ -119,39 +116,43 @@ export class DevConsole extends HTMLElement {
 				name: 'enemy',
 				description: 'Manage enemies: spawn <Type> | remove <id> | removeall',
 				execute: (game, args) => {
-					const types = Object.keys(enemyRegistry).join(', ')
+					// The console offers enemies only; `spawn` itself is happy to make anyone.
+					const known = unitIds('enemy')
+					const types = known.join(', ')
 					if (!args || args.length === 0) {
 						return this.logToConsole(
 							`Usage: /enemy spawn <Type> | /enemy remove <id> | /enemy removeall\nTypes: ${types}`,
 						)
 					}
 					if (args[0] === 'removeall') {
-						for (const e of game.encounter.enemies.slice()) commands.removeUnit(game, e.id)
+						for (const e of game.encounter.enemies.slice()) game.perform({type: 'remove', unit: e.id})
 						this.logToConsole('All enemies removed')
 					} else if (args[0] === 'spawn') {
-						const type = args[1] as EnemyId
-						if (!type || !(type in enemyRegistry)) return this.logToConsole(`Unknown enemy type. Known: ${types}`)
-						const e = commands.spawnEnemy(game, type)
-						this.logToConsole(e ? `Spawned ${type} (${e.id.slice(-6)})` : `Failed to spawn ${type}`)
+						const unit = args[1] as UnitId
+						if (!unit || !known.includes(unit)) return this.logToConsole(`Unknown enemy type. Known: ${types}`)
+						const result = game.perform({type: 'spawn', unit})
+						this.logToConsole(
+							result.ok ? `Spawned ${unit} (${(result.value as Character).id.slice(-6)})` : result.error,
+						)
 					} else if (args[0] === 'remove') {
 						const id = args[1]
 						if (!id) return this.logToConsole('Usage: /enemy remove <id>')
-						const ok = commands.removeUnit(game, id)
-						this.logToConsole(ok ? `Removed ${id}` : `Not found: ${id}`)
+						const result = game.perform({type: 'remove', unit: id})
+						this.logToConsole(result.ok ? `Removed ${id}` : result.error)
 					} else {
 						this.logToConsole(`Unknown subcommand: ${args[0]}`)
 					}
 				},
 			},
-			this.tuneCommand<SpellKey>('spell', SPELL_KEYS, (g, n, k, v) => commands.setSpell(g, n, k, v)),
-			this.tuneCommand<AttackKey>('attack', ATTACK_KEYS, (g, n, k, v) => commands.setAttack(g, n, k, v)),
-			this.tuneCommand<UnitKey>('unit', UNIT_KEYS, (g, n, k, v) => commands.setUnit(g, n, k, v)),
+			this.tuneCommand<SpellKey>('spell', SPELL_KEYS),
+			this.tuneCommand<AttackKey>('attack', ATTACK_KEYS),
+			this.tuneCommand<UnitKey>('unit', UNIT_KEYS),
 			{
 				name: 'balance',
 				description: 'Balance ops: reset',
 				execute: (game, args) => {
 					if (args?.[0] === 'reset') {
-						commands.resetBalance(game)
+						game.perform({type: 'resetBalance'})
 						this.logToConsole('Balance reset to defaults')
 					} else {
 						this.logToConsole('Usage: /balance reset')
@@ -162,8 +163,18 @@ export class DevConsole extends HTMLElement {
 				name: 'heal',
 				description: 'Heal all party members to full',
 				execute: (game) => {
-					commands.healParty(game)
+					game.perform({type: 'healParty'})
 					this.logToConsole('All party members healed to full')
+				},
+			},
+			{
+				name: 'cast',
+				description: 'Cast a spell: /cast <Spell_Name>',
+				execute: (game, args) => {
+					if (!args?.length) return this.logToConsole('Usage: /cast <Spell_Name>')
+					const spell = args.join(' ').replaceAll('_', ' ')
+					const result = game.perform({type: 'cast', spell})
+					this.logToConsole(result.ok ? `Casting ${spell}` : result.error)
 				},
 			},
 			{

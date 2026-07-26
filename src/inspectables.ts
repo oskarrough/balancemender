@@ -1,19 +1,8 @@
 import type {GameLoop} from './nodes/game-loop'
 import type {Character} from './nodes/character'
-import {
-	balance,
-	setSpellValue,
-	setAttackValue,
-	SPELL_KEYS,
-	ATTACK_KEYS,
-	UNIT_KEYS,
-	SpellKey,
-	AttackKey,
-	UnitKey,
-} from './balance'
+import {balance, SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, SpellKey, AttackKey, UnitKey} from './balance'
 import {spellRegistry, attackRegistry} from './nodes/registry'
-import {enemyRegistry, EnemyId} from './nodes/unit-registry'
-import {commands} from './commands'
+import type {UnitId} from './nodes/unit-registry'
 
 export type NumberField = {
 	kind: 'number'
@@ -68,40 +57,40 @@ const UNIT_LABEL: Record<UnitKey, string> = {
 	maxMana: 'Max mana',
 }
 
-export function spellInspectables(): Inspectable[] {
+export function spellInspectables(game: GameLoop): Inspectable[] {
 	return Object.keys(spellRegistry).map((name) => ({
 		id: `spell:${name}`,
 		kind: 'spell',
 		title: name,
 		subtitle: 'Spell defaults',
 		fields: SPELL_KEYS.map(
-			(k): NumberField => ({
+			(key): NumberField => ({
 				kind: 'number',
-				key: k,
-				label: SPELL_LABEL[k],
-				get: () => balance.spells[name][k] ?? 0,
-				set: (v) => {
-					setSpellValue(name, k, v)
+				key,
+				label: SPELL_LABEL[key],
+				get: () => balance.spells[name][key] ?? 0,
+				set: (value) => {
+					game.perform({type: 'tune', of: 'spell', name, key, value})
 				},
 			}),
 		),
 	}))
 }
 
-export function attackInspectables(): Inspectable[] {
+export function attackInspectables(game: GameLoop): Inspectable[] {
 	return Object.keys(attackRegistry).map((name) => ({
 		id: `attack:${name}`,
 		kind: 'attack',
 		title: name,
 		subtitle: 'Attack defaults',
 		fields: ATTACK_KEYS.map(
-			(k): NumberField => ({
+			(key): NumberField => ({
 				kind: 'number',
-				key: k,
-				label: ATTACK_LABEL[k],
-				get: () => balance.attacks[name][k] ?? 0,
-				set: (v) => {
-					setAttackValue(name, k, v)
+				key,
+				label: ATTACK_LABEL[key],
+				get: () => balance.attacks[name][key] ?? 0,
+				set: (value) => {
+					game.perform({type: 'tune', of: 'attack', name, key, value})
 				},
 			}),
 		),
@@ -110,29 +99,31 @@ export function attackInspectables(): Inspectable[] {
 
 export function unitInspectables(game: GameLoop): Inspectable[] {
 	return Object.keys(balance.units).map((name) => {
-		const presentKeys = UNIT_KEYS.filter((k) => k in balance.units[name])
-		const fields = presentKeys.map(
-			(k): NumberField => ({
+		const fields = UNIT_KEYS.filter((key) => key in balance.units[name]).map(
+			(key): NumberField => ({
 				kind: 'number',
-				key: k,
-				label: UNIT_LABEL[k],
-				get: () => balance.units[name][k] ?? 0,
-				set: (v) => {
-					commands.setUnit(game, name, k, v)
+				key,
+				label: UNIT_LABEL[key],
+				get: () => balance.units[name][key] ?? 0,
+				set: (value) => {
+					game.perform({type: 'tune', of: 'unit', name, key, value})
 				},
 				min: 0,
 			}),
 		)
-		const actions: Action[] = []
-		if (name in enemyRegistry) {
-			actions.push({
-				label: `Spawn ${name}`,
-				variant: 'primary',
-				run: () => {
-					commands.spawnEnemy(game, name as EnemyId)
-				},
-			})
-		}
+		// The player is spawned with the encounter; a second one would just stand there.
+		const actions: Action[] =
+			name === 'Player'
+				? []
+				: [
+						{
+							label: `Spawn ${name}`,
+							variant: 'primary',
+							run: () => {
+								game.perform({type: 'spawn', unit: name as UnitId})
+							},
+						},
+					]
 		return {
 			id: `unit:${name}`,
 			kind: 'unit',
@@ -223,7 +214,7 @@ function liveInspectable(game: GameLoop, c: Character): Inspectable {
 			label: 'Remove',
 			variant: 'danger',
 			run: () => {
-				commands.removeUnit(game, c.id)
+				game.perform({type: 'remove', unit: c.id})
 			},
 		})
 	}
@@ -231,8 +222,8 @@ function liveInspectable(game: GameLoop, c: Character): Inspectable {
 	return {
 		id: `live:${c.id}`,
 		kind: 'live',
-		title: c.name || c.constructor.name,
-		subtitle: `${c.faction} · ${c.constructor.name}`,
+		title: c.name || c.unitId || '?',
+		subtitle: `${c.faction} · ${c.unitId}`,
 		fields,
 		actions,
 	}
@@ -250,8 +241,8 @@ export function globalsInspectable(game: GameLoop): Inspectable {
 				key: 'godMode',
 				label: 'God mode',
 				get: () => game.godMode,
-				set: (v) => {
-					game.godMode = v
+				set: (value) => {
+					game.perform({type: 'set', key: 'godMode', value})
 				},
 			},
 			{
@@ -259,9 +250,8 @@ export function globalsInspectable(game: GameLoop): Inspectable {
 				key: 'infiniteMana',
 				label: 'Infinite mana',
 				get: () => game.infiniteMana,
-				set: (v) => {
-					game.infiniteMana = v
-					if (v && game.player?.mana) game.player.mana.current = game.player.mana.max
+				set: (value) => {
+					game.perform({type: 'set', key: 'infiniteMana', value})
 				},
 			},
 			{
@@ -269,8 +259,8 @@ export function globalsInspectable(game: GameLoop): Inspectable {
 				key: 'gcd',
 				label: 'Global cooldown (ms)',
 				get: () => game.gcd,
-				set: (v) => {
-					game.gcd = v
+				set: (value) => {
+					game.perform({type: 'set', key: 'gcd', value})
 				},
 				min: 0,
 				step: 100,
@@ -280,20 +270,20 @@ export function globalsInspectable(game: GameLoop): Inspectable {
 			{
 				label: 'Heal party',
 				run: () => {
-					commands.healParty(game)
+					game.perform({type: 'healParty'})
 				},
 			},
 			{
 				label: 'Restart encounter',
 				run: () => {
-					commands.restartEncounter(game)
+					game.perform({type: 'restart'})
 				},
 			},
 			{
 				label: 'Reset balance',
 				variant: 'danger',
 				run: () => {
-					commands.resetBalance(game)
+					game.perform({type: 'resetBalance'})
 				},
 			},
 		],
@@ -306,8 +296,8 @@ export function allInspectables(game: GameLoop): InspectableSection[] {
 	return [
 		{section: 'Live', items: liveInspectables(game)},
 		{section: 'Game', items: [globalsInspectable(game)]},
-		{section: 'Spells', items: spellInspectables()},
+		{section: 'Spells', items: spellInspectables(game)},
 		{section: 'Units', items: unitInspectables(game)},
-		{section: 'Attacks', items: attackInspectables()},
+		{section: 'Attacks', items: attackInspectables(game)},
 	]
 }

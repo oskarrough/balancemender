@@ -8,6 +8,7 @@ import {UI} from '../components/ui'
 import {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
 import {logCombat, setCombatClock, clearLogs} from '../combatlog'
+import {perform, type GameAction} from '../actions'
 
 /**
  * Main game loop that manages the game state and updates
@@ -35,6 +36,14 @@ export class GameLoop extends Loop {
 	godMode = false
 	infiniteMana = false
 	console!: DevConsole
+
+	/**
+	 * Do something to this game. The only way anything mutates a fight — keyboard, spell
+	 * buttons, dev console, Balance Lab, Autopilot, tests, agents. See `src/actions.ts`.
+	 */
+	perform(action: GameAction) {
+		return perform(this, action)
+	}
 
 	/** Swap the active encounter, tearing down the previous one. */
 	loadEncounter(roster: Roster) {

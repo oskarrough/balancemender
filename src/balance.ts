@@ -1,8 +1,6 @@
 import {Heal, FlashHeal, GreaterHeal, Renew} from './nodes/spells'
-import {TinyWolf, Nakroth} from './nodes/enemies'
-import {Tank} from './nodes/party-characters'
-import {Player} from './nodes/player'
 import {SmallAttack, MediumAttack, HugeAttack, TankAttack} from './nodes/damage-effect'
+import {unitRegistry} from './nodes/unit-registry'
 
 export const SPELL_KEYS = ['cost', 'heal', 'castTime'] as const
 export const ATTACK_KEYS = ['minDamage', 'maxDamage', 'interval', 'delay'] as const
@@ -32,12 +30,8 @@ export const attackClasses: Record<string, AttackClass> = {
 	TankAttack,
 }
 
-export const unitClasses: Record<string, UnitClass> = {
-	Player,
-	Tank,
-	TinyWolf,
-	Nakroth,
-}
+/** Keyed by unit id, so tuning a unit and spawning one name it the same way. */
+export const unitClasses: Record<string, UnitClass> = unitRegistry
 
 function snapshot<K extends string>(src: Record<string, NumberDict>, keys: readonly K[]) {
 	const out: Record<string, Partial<Record<K, number>>> = {}

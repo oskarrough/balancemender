@@ -8,7 +8,7 @@ import type {GlobalCooldown} from './global-cooldown'
 export class Player extends Character {
 	static maxHealth = 160
 	static maxMana = 600
-	faction = FACTION.PARTY
+	static faction = FACTION.PARTY
 	name = 'Player'
 	image = '/assets/generated/characters/player.png'
 
@@ -29,6 +29,7 @@ export class Player extends Character {
 	spell: Spell | undefined
 	gcd: GlobalCooldown | undefined
 
+	/** The primitive `perform({type: 'cast'})` composes. Returns why it refused, if it did. */
 	castSpell(spellName: string) {
 		return SpellCast.cast(this, spellName)
 	}

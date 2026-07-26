@@ -20,6 +20,8 @@ export {FACTION} from './types'
 export class Character extends Node {
 	readonly id: string
 	static maxHealth = 100
+	/** Which side this unit fights on. Static so the registry can be read without spawning anyone. */
+	static faction: Faction = FACTION.ENEMY
 
 	name = ''
 	image = ''
@@ -30,7 +32,7 @@ export class Character extends Node {
 	health: Health
 	mana?: Mana
 	effects = new Set<CharacterEffect>()
-	faction: Faction = FACTION.ENEMY
+	faction: Faction = (this.constructor as typeof Character).faction
 	currentTarget?: Character
 
 	getTarget(): Character | undefined {

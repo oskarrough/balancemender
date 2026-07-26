@@ -1,7 +1,7 @@
 import {GameLoop} from '../nodes/game-loop'
 import {AudioPlayer} from '../nodes/audio'
 import {Autopilot, Policy, PolicyName} from '../nodes/autopilot'
-import {combatLogs, logger, setCombatClock, CombatLogEvent} from '../combatlog'
+import {combatLogs, logger, setCombatClock, setCombatNotify, CombatLogEvent} from '../combatlog'
 import {logger as gameLogger} from '../utils'
 import {setSeed} from '../rng'
 import {DEMO_ROSTER, Roster} from '../nodes/encounter'
@@ -20,7 +20,8 @@ export interface FightSpec extends Roster {
 	fps?: number
 }
 
-export interface RosterEntry {
+/** Who was in a fight. Not a `Roster` — that is the spec you spawn *from*. */
+export interface UnitInfo {
 	id: string
 	name: string
 	maxHealth: number
@@ -34,7 +35,7 @@ export interface FightResult {
 	/** Fight time in ms. */
 	duration: number
 	events: CombatLogEvent[]
-	roster: RosterEntry[]
+	roster: UnitInfo[]
 	survivors: {party: number; enemies: number}
 }
 
@@ -131,7 +132,7 @@ Object.assign(SimLoop.prototype, {_requestNextFrame() {}})
 const isAlive = (c: Character) => c.health.current > 0
 
 /** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
-export function rosterOf(game: GameLoop): RosterEntry[] {
+export function rosterOf(game: GameLoop): UnitInfo[] {
 	return [...game.party, ...game.enemies].map((c) => ({
 		id: c.id,
 		name: c.name || c.constructor.name,
@@ -150,9 +151,12 @@ const flush = () => Promise.resolve()
 function borrowCombatLog() {
 	const previous = combatLogs.splice(0, combatLogs.length)
 	const previousClock = setCombatClock(() => 0)
+	// The panels listen on `document` — a simulated fight is not theirs to redraw.
+	const previousNotify = setCombatNotify(false)
 	return () => {
 		combatLogs.length = 0
 		combatLogs.push(...previous)
 		setCombatClock(previousClock)
+		setCombatNotify(previousNotify)
 	}
 }

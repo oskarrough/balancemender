@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import {describe, it, expect} from 'vitest'
 import {GameLoop} from './game-loop'
-import {commands} from '../commands'
 
 /**
  * One spawn door. Whatever adds a unit — boot, a roster, the dev console, a simulation —
@@ -54,10 +53,9 @@ describe('Encounter.spawn', () => {
 
 	it('is the same door the dev console spawns through', () => {
 		const game = new GameLoop({party: [], enemies: []})
-		const enemy = commands.spawnEnemy(game, 'Nakroth')
-		expect(enemy).toBeDefined()
-		expect(enemy?.unitId).toBe('Nakroth')
-		expect(game.enemies).toContain(enemy)
+		const result = game.perform({type: 'spawn', unit: 'Nakroth'})
+		expect(result.ok).toBe(true)
+		expect(game.enemies.map((u) => u.unitId)).toEqual(['Nakroth'])
 		game.disconnect()
 	})
 })

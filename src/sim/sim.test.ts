@@ -49,6 +49,22 @@ describe('running a fight', () => {
 		expect(combatLogs[0].eventType).toBe('GAME_PAUSE')
 	})
 
+	it('does not make the live panels redraw for a fight nobody is watching', async () => {
+		const {logCombat} = await import('../combatlog')
+		let heard = 0
+		const listener = () => heard++
+		document.addEventListener('combatlog-update', listener)
+		try {
+			await runFight({maxDuration: 5000})
+			expect(heard).toBe(0)
+			// …and the notification comes back on afterwards.
+			logCombat({timestamp: 1, eventType: 'GAME_PAUSE'})
+			expect(heard).toBe(1)
+		} finally {
+			document.removeEventListener('combatlog-update', listener)
+		}
+	})
+
 	it('gives the borrowed globals back even when building the fight throws', async () => {
 		const {combatLogs, logCombat} = await import('../combatlog')
 		const {logger} = await import('../combatlog')

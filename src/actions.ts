@@ -1,20 +1,144 @@
 import {log} from './utils'
 import {AudioPlayer} from './nodes/audio'
-import {GameLoop} from './nodes/game-loop'
+import {setSpellValue, setAttackValue, setUnitValue, resetBalance, SpellKey, AttackKey, UnitKey} from './balance'
+import type {GameLoop} from './nodes/game-loop'
+import type {Character} from './nodes/character'
+import type {Roster} from './nodes/encounter'
+import type {UnitId} from './nodes/unit-registry'
 
-export function interrupt(game: GameLoop) {
+/**
+ * Everything that can change a running game.
+ *
+ * There is one interpreter — `game.perform(action)` — and everything that mutates a fight goes
+ * through it: the keyboard, the spell buttons, the dev console, the Balance Lab, the Autopilot,
+ * tests and agents. The console is a text adapter over this, nothing more.
+ *
+ * Actions go in; combat events come out of the fight separately (see `src/combatlog.ts`). An
+ * action is a request that may be refused; an event is a record of something that happened.
+ */
+export type GameAction =
+	/** Add a unit to the fight. It joins the side its class belongs to. */
+	| {type: 'spawn'; unit: UnitId}
+	/** Take a unit out of the fight, by character id. */
+	| {type: 'remove'; unit: string}
+	/** Point the player at a character id. */
+	| {type: 'target'; unit: string}
+	/** Cast, optionally switching target first — the pair every caller used to duplicate. */
+	| {type: 'cast'; spell: string; target?: string}
+	/** Stop the cast in progress. */
+	| {type: 'interrupt'}
+	| {type: 'tune'; of: 'spell'; name: string; key: SpellKey; value: number}
+	| {type: 'tune'; of: 'attack'; name: string; key: AttackKey; value: number}
+	| {type: 'tune'; of: 'unit'; name: string; key: UnitKey; value: number}
+	| {type: 'resetBalance'}
+	| {type: 'healParty'}
+	/** Start a different fight. */
+	| {type: 'loadEncounter'; roster: Roster}
+	/** Replay the fight you are in. */
+	| {type: 'restart'}
+	| {type: 'set'; key: 'godMode' | 'infiniteMana' | 'muted'; value: boolean}
+	| {type: 'set'; key: 'gcd'; value: number}
+
+/**
+ * Explicit, so a caller can say why something did not happen instead of guessing from a
+ * missing return value. The dev console prints `error`; the UI mostly ignores it.
+ */
+export type ActionResult<T = void> = {ok: true; value: T} | {ok: false; error: string}
+
+export const ok = <T>(value: T): ActionResult<T> => ({ok: true, value})
+export const fail = (error: string): ActionResult<never> => ({ok: false, error})
+
+/** The one interpreter. Reached as `game.perform(action)`. */
+export function perform(game: GameLoop, action: GameAction): ActionResult<unknown> {
+	switch (action.type) {
+		case 'spawn':
+			return ok(game.encounter.spawn(action.unit))
+
+		case 'remove':
+			return game.encounter.remove(action.unit) ? ok(action.unit) : fail(`No unit with id ${action.unit}`)
+
+		case 'target': {
+			const unit = findUnit(game, action.unit)
+			if (!unit) return fail(`No unit with id ${action.unit}`)
+			game.player.currentTarget = unit
+			return ok(unit)
+		}
+
+		case 'cast': {
+			if (action.target) {
+				const targeted = perform(game, {type: 'target', unit: action.target})
+				if (!targeted.ok) return targeted
+			}
+			return game.player.castSpell(action.spell)
+		}
+
+		case 'interrupt':
+			return interrupt(game)
+
+		case 'tune': {
+			const applied =
+				action.of === 'spell'
+					? setSpellValue(action.name, action.key, action.value)
+					: action.of === 'attack'
+						? setAttackValue(action.name, action.key, action.value)
+						: setUnitValue(action.name, action.key, action.value) &&
+							retuneLiveUnits(game, action.name, action.key, action.value)
+			return applied ? ok(action.value) : fail(`Unknown ${action.of}: ${action.name}`)
+		}
+
+		case 'resetBalance':
+			resetBalance()
+			return ok(undefined)
+
+		case 'healParty':
+			for (const member of game.party) member.health.set(member.health.max)
+			return ok(undefined)
+
+		case 'loadEncounter':
+			game.loadEncounter(action.roster)
+			return ok(undefined)
+
+		case 'restart':
+			game.loadEncounter(game.encounter.roster)
+			return ok(undefined)
+
+		case 'set':
+			game[action.key] = action.value as never
+			if (action.key === 'infiniteMana' && action.value && game.player.mana) {
+				game.player.mana.set(game.player.mana.max)
+			}
+			return ok(action.value)
+	}
+}
+
+const findUnit = (game: GameLoop, id: string): Character | undefined =>
+	[...game.party, ...game.enemies].find((unit) => unit.id === id)
+
+/**
+ * A retuned unit type applies to the ones already fighting, matched by `unitId` — never by
+ * class name, which the production build minifies into nonsense.
+ */
+function retuneLiveUnits(game: GameLoop, unit: string, key: UnitKey, value: number) {
+	for (const character of [...game.party, ...game.enemies]) {
+		if (character.unitId !== unit) continue
+		const resource = key === 'maxHealth' ? character.health : character.mana
+		if (!resource) continue
+		resource.max = value
+		if (resource.current > value) resource.set(value)
+	}
+	return true
+}
+
+function interrupt(game: GameLoop): ActionResult<void> {
 	log('interrupt')
-
 	const player = game.player
+	if (!player.spell) return fail('Nothing to interrupt')
 
-	if (player.spell) AudioPlayer.stopOwned(player.spell)
+	AudioPlayer.stopOwned(player.spell)
 	AudioPlayer.play('spell_fizzle')
-
-	// Now disconnect the spell and GCD tasks
-	player.spell?.disconnect()
+	player.spell.disconnect()
 	player.gcd?.disconnect()
-
-	// Clean up all references
 	player.spell = undefined
 	player.gcd = undefined
+	return ok(undefined)
 }

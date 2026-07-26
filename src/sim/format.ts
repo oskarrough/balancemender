@@ -97,7 +97,7 @@ export function formatAggregate(results: FightResult[]): string {
 }
 
 function endState(unit: Series, report: FightReport) {
-	const death = report.deaths.find((d) => d.name === unit.name)
+	const death = report.deaths.find((d) => deathOf(d, unit))
 	if (death) return `dead ${seconds(death.time)}`
 	if (unit.endHealth <= 0) return 'dead'
 	return `${Math.round(unit.endHealth)}/${unit.maxHealth} (${Math.round((unit.endHealth / unit.maxHealth) * 100)}%)`
@@ -110,11 +110,16 @@ function table(headers: string[], rows: (string | number)[][]) {
 	return [line(headers), ...rows.map(line)].join('\n')
 }
 
+/** By id, because a unit can be renamed mid-fight; by name only for logs that carry no ids. */
+export const deathOf = (death: {id?: string; name: string}, unit: {id: string; name: string}) =>
+	death.id ? death.id === unit.id : death.name === unit.name
+
 const pad = (value: string | number, width: number) => String(value).padEnd(width)
 const padStart = (value: string | number, width: number) => String(value).padStart(width)
 const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`
 const perSecond = (total: number, ms: number) => (total / (ms / 1000 || 1)).toFixed(1)
-const percentOf = (part: number, whole: number) => (whole > 0 ? `${Math.round((part / whole) * 100)}%` : '0%')
+/** Shared with the Fight report panel so the terminal and the browser round the same way. */
+export const percentOf = (part: number, whole: number) => (whole > 0 ? `${Math.round((part / whole) * 100)}%` : '0%')
 const avg = (numbers: number[]) => numbers.reduce((total, n) => total + n, 0) / (numbers.length || 1)
 
 function count<T>(items: T[]) {

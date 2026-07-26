@@ -1,5 +1,5 @@
 import type {CombatEventType, CombatLogEvent} from '../combatlog'
-import type {Outcome, RosterEntry} from './run'
+import type {Outcome, UnitInfo} from './run'
 
 /**
  * Everything in here is a pure function over a combat log. That is the point: a fight
@@ -11,6 +11,8 @@ const DAMAGE: CombatEventType[] = ['SPELL_DAMAGE', 'SPELL_PERIODIC_DAMAGE', 'SWI
 const HEAL: CombatEventType[] = ['SPELL_HEAL', 'SPELL_PERIODIC_HEAL']
 
 export interface ActorStats {
+	/** The unit's id. Names change mid-fight — `Encounter.renumber()` sees to that. */
+	id?: string
 	name: string
 	faction?: string
 	damageDone: number
@@ -38,6 +40,7 @@ export interface SpellStats {
 }
 
 export interface Series {
+	id: string
 	name: string
 	faction: string
 	maxHealth: number
@@ -52,13 +55,13 @@ export interface FightReport {
 	outcome?: Outcome
 	actors: ActorStats[]
 	spells: SpellStats[]
-	deaths: {name: string; time: number}[]
+	deaths: {id?: string; name: string; time: number}[]
 	health: Series[]
 	totals: {damage: number; healing: number; overhealing: number; dps: number; hps: number}
 }
 
 export interface AnalyzeOptions {
-	roster?: RosterEntry[]
+	roster?: UnitInfo[]
 	outcome?: Outcome
 	duration?: number
 	/** Resolution of the health graph. */
@@ -75,40 +78,45 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 
 	const actors = new Map<string, ActorStats>()
 	const spells = new Map<string, SpellStats>()
-	const deaths: {name: string; time: number}[] = []
+	const deaths: {id?: string; name: string; time: number}[] = []
+	const source = (event: CombatLogEvent) => actor(actors, event.sourceId, event.sourceName)
+	const target = (event: CombatLogEvent) => actor(actors, event.targetId, event.targetName)
 
 	for (const event of sorted) {
 		const value = event.value ?? 0
 		const overheal = event.overheal ?? 0
 
 		if (DAMAGE.includes(event.eventType)) {
-			const source = actor(actors, event.sourceName)
-			source.damageDone += value
-			source.hits++
-			actor(actors, event.targetName).damageTaken += value
+			const attacker = source(event)
+			attacker.damageDone += value
+			attacker.hits++
+			target(event).damageTaken += value
 			spell(spells, event.spellName, value, 0)
 		} else if (HEAL.includes(event.eventType)) {
-			const source = actor(actors, event.sourceName)
-			source.healingDone += value - overheal
-			source.overhealing += overheal
-			actor(actors, event.targetName).healingTaken += value - overheal
+			const healer = source(event)
+			healer.healingDone += value - overheal
+			healer.overhealing += overheal
+			target(event).healingTaken += value - overheal
 			spell(spells, event.spellName, value, overheal)
 		} else if (event.eventType === 'SPELL_CAST_SUCCESS') {
-			actor(actors, event.sourceName).casts++
+			source(event).casts++
 			const stats = spell(spells, event.spellName, 0, 0)
 			stats.casts++
 		} else if (event.eventType === 'RESOURCE_SPENT') {
-			actor(actors, event.sourceName).manaSpent += Math.abs(value)
+			source(event).manaSpent += Math.abs(value)
 		} else if (event.eventType === 'UNIT_DIED' && event.targetName) {
 			const time = at(event) - start
-			deaths.push({name: event.targetName, time})
-			actor(actors, event.targetName).deathTime = time
+			deaths.push({id: event.targetId, name: event.targetName, time})
+			target(event).deathTime = time
 		}
 	}
 
+	// The roster is the authority on who is who. It also carries the *current* name, which
+	// matters because spawning a second wolf renames the first one halfway through the log.
 	if (roster) {
 		for (const entry of roster) {
-			const stats = actor(actors, entry.name)
+			const stats = actor(actors, entry.id, entry.name)
+			stats.name = entry.name
 			stats.faction = entry.faction
 		}
 	}
@@ -143,7 +151,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
  */
 export function healthSeries(
 	events: CombatLogEvent[],
-	roster: RosterEntry[],
+	roster: UnitInfo[],
 	start: number,
 	duration: number,
 	columns: number,
@@ -168,6 +176,7 @@ export function healthSeries(
 	}
 
 	return roster.map((unit) => ({
+		id: unit.id,
 		name: unit.name,
 		faction: unit.faction,
 		maxHealth: unit.maxHealth,
@@ -186,10 +195,16 @@ function fill(points: (number | null)[]) {
 	})
 }
 
-function actor(actors: Map<string, ActorStats>, name = 'unknown') {
-	let stats = actors.get(name)
+/**
+ * One row per unit, keyed by id. Every event the game logs carries one; the name is only a
+ * label, and two units can share it for the moment between a spawn and the renumbering.
+ */
+function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
+	const key = id ?? name
+	let stats = actors.get(key)
 	if (!stats) {
 		stats = {
+			id,
 			name,
 			damageDone: 0,
 			damageTaken: 0,
@@ -200,7 +215,7 @@ function actor(actors: Map<string, ActorStats>, name = 'unknown') {
 			hits: 0,
 			manaSpent: 0,
 		}
-		actors.set(name, stats)
+		actors.set(key, stats)
 	}
 	return stats
 }

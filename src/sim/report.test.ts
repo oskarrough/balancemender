@@ -2,9 +2,9 @@ import {describe, it, expect} from 'vitest'
 import {analyze, healthSeries} from './report'
 import {sparkline} from './format'
 import type {CombatLogEvent} from '../combatlog'
-import type {RosterEntry} from './run'
+import type {UnitInfo} from './run'
 
-const roster: RosterEntry[] = [
+const roster: UnitInfo[] = [
 	{id: 'tank', name: 'Tank', maxHealth: 100, faction: 'party'},
 	{id: 'wolf', name: 'Wolf', maxHealth: 50, faction: 'enemy'},
 ]
@@ -16,21 +16,32 @@ const event = (partial: Partial<CombatLogEvent>): CombatLogEvent => ({
 	...partial,
 })
 
+// Every event the game logs carries both an id and a name for whoever it touches, so these do too.
 const fight: CombatLogEvent[] = [
 	event({time: 0, eventType: 'ENCOUNTER_START'}),
-	event({time: 1000, eventType: 'SWING_DAMAGE', sourceName: 'Wolf', targetName: 'Tank', targetId: 'tank', value: 30}),
+	event({
+		time: 1000,
+		eventType: 'SWING_DAMAGE',
+		sourceId: 'wolf',
+		sourceName: 'Wolf',
+		targetId: 'tank',
+		targetName: 'Tank',
+		value: 30,
+	}),
 	event({
 		time: 2000,
 		eventType: 'SPELL_CAST_SUCCESS',
+		sourceId: 'player',
 		sourceName: 'Player',
 		spellName: 'Heal',
 	}),
 	event({
 		time: 2000,
 		eventType: 'SPELL_HEAL',
+		sourceId: 'player',
 		sourceName: 'Player',
-		targetName: 'Tank',
 		targetId: 'tank',
+		targetName: 'Tank',
 		spellName: 'Heal',
 		value: 40,
 		overheal: 10,
@@ -38,13 +49,14 @@ const fight: CombatLogEvent[] = [
 	event({
 		time: 3000,
 		eventType: 'SWING_DAMAGE',
+		sourceId: 'tank',
 		sourceName: 'Tank',
-		targetName: 'Wolf',
 		targetId: 'wolf',
+		targetName: 'Wolf',
 		spellName: 'Shield Bash',
 		value: 50,
 	}),
-	event({time: 3000, eventType: 'UNIT_DIED', targetName: 'Wolf', targetId: 'wolf'}),
+	event({time: 3000, eventType: 'UNIT_DIED', targetId: 'wolf', targetName: 'Wolf'}),
 ]
 
 describe('analyze', () => {
@@ -71,8 +83,30 @@ describe('analyze', () => {
 	})
 
 	it('records deaths with the time they happened', () => {
-		expect(report.deaths).toEqual([{name: 'Wolf', time: 3000}])
+		expect(report.deaths).toEqual([{id: 'wolf', name: 'Wolf', time: 3000}])
 		expect(report.actors.find((a) => a.name === 'Wolf')!.deathTime).toBe(3000)
+	})
+
+	// Spawning a second wolf renames the first one to "Tiny wolf 1" halfway through the log.
+	// Keyed by name, that split one unit into two rows and merged the new one into the old.
+	it('follows a unit that gets renamed mid-fight', () => {
+		const renamed = analyze(
+			[
+				event({time: 0, eventType: 'SWING_DAMAGE', sourceId: 'w1', sourceName: 'Tiny wolf', value: 10}),
+				event({time: 1000, eventType: 'SWING_DAMAGE', sourceId: 'w2', sourceName: 'Tiny wolf 2', value: 5}),
+				event({time: 2000, eventType: 'SWING_DAMAGE', sourceId: 'w1', sourceName: 'Tiny wolf 1', value: 10}),
+			],
+			{
+				roster: [
+					{id: 'w1', name: 'Tiny wolf 1', maxHealth: 50, faction: 'enemy'},
+					{id: 'w2', name: 'Tiny wolf 2', maxHealth: 50, faction: 'enemy'},
+				],
+			},
+		)
+		expect(renamed.actors.map((a) => [a.name, a.damageDone])).toEqual([
+			['Tiny wolf 1', 20],
+			['Tiny wolf 2', 5],
+		])
 	})
 
 	it('groups by spell', () => {

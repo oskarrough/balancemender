@@ -52,10 +52,12 @@ Based on WoW's proven format:
 
 ### Phase 4: Analysis Tools
 
-- [ ] Develop metrics dashboard for player performance
-- [ ] Add spell usage statistics
-- [ ] Create healing/damage done summaries
-- [ ] Implement timeline visualization
+Done via `src/sim/report.ts` (pure analysis over the combat log) — see [simulation.md](./simulation.md).
+
+- [x] Develop metrics dashboard for player performance — the Fight report panel
+- [x] Add spell usage statistics
+- [x] Create healing/damage done summaries, including overhealing
+- [x] Implement timeline visualization — health over time, rebuilt from the log
 - [ ] Add combat replay prototype (if feasible)
 
 ## Technical Considerations

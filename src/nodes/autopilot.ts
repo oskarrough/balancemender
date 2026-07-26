@@ -2,6 +2,7 @@ import {Task} from 'vroum'
 import type {Character} from './character'
 import type {Player} from './player'
 import {spellRegistry, SpellId} from './registry'
+import type {GameLoop} from './game-loop'
 
 /**
  * A healer that plays itself.
@@ -31,8 +32,8 @@ export class Autopilot extends Task {
 	tick() {
 		const decision = this.policy(this.parent)
 		if (!decision) return
-		this.parent.currentTarget = decision.target
-		this.parent.castSpell(decision.spell)
+		const game = this.parent.root as GameLoop
+		game.perform({type: 'cast', spell: decision.spell, target: decision.target.id})
 	}
 }
 

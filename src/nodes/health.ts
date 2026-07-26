@@ -1,6 +1,6 @@
 import {Node} from 'vroum'
 import {Resource} from './resource'
-import {GameLoop} from './game-loop'
+import type {GameLoop} from './game-loop'
 
 /**
  * Events emitted by the Health node

@@ -1,5 +1,6 @@
 import {Character} from '../nodes/character'
 import {Player} from '../nodes/player'
+import type {GameLoop} from '../nodes/game-loop'
 import {HOT} from '../nodes/hot'
 import {Spell} from '../nodes/spell'
 import {Meter} from './bar'
@@ -19,9 +20,7 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 		<div
 			class=${`Character ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Character--targeted' : ''}`}
 			data-character-id=${id}
-			onclick=${() => {
-				player.currentTarget = character
-			}}
+			onclick=${() => (player.root as GameLoop).perform({type: 'target', unit: id})}
 		>
 			<div class="Character-row">
 				<figure class="Character-avatar">

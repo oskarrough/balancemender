@@ -1,10 +1,13 @@
 import {log} from '../utils'
 import {logCombat} from '../combatlog'
 import {AudioPlayer} from './audio'
-import {GameLoop} from './game-loop'
+import type {GameLoop} from './game-loop'
 import {GlobalCooldown} from './global-cooldown'
 import type {Player} from './player'
 import type {Spell} from './spell'
+// Type-only: a value import here would close the loop `actions → balance → spells → spell-cast`
+// and leave the balance snapshot reading half-built spell classes.
+import type {ActionResult} from '../actions'
 
 type SpellClass = typeof Spell
 
@@ -20,22 +23,21 @@ const failureMessage: Record<CastFailure, string> = {
 }
 
 export class SpellCast {
-	static cast(player: Player, spellName: string) {
+	/** Refusals come back as `{ok: false, error}` rather than a warning nobody reads. */
+	static cast(player: Player, spellName: string): ActionResult<Spell> {
 		log(`player:cast:${spellName}`)
 
 		const SpellClass = player.spellbook[spellName]
 		const failure = this.validate(player, SpellClass)
 		if (failure) {
-			const message =
-				failure === 'missing-spell' ? `Spell ${spellName} not found in spellbook` : failureMessage[failure]
-			console.warn(message)
-			return
+			const error = failure === 'missing-spell' ? `Spell ${spellName} not found in spellbook` : failureMessage[failure]
+			return {ok: false, error}
 		}
 
 		const spell = new SpellClass(player)
 		player.spell = spell
 		player.lastCastTime = (player.root as GameLoop).elapsedTime
-		return spell
+		return {ok: true, value: spell}
 	}
 
 	static validate(player: Player, SpellClass?: SpellClass): CastFailure | undefined {

@@ -1,0 +1,97 @@
+.FightReport {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 0.3rem;
+	font-size: 0.8rem;
+}
+
+.FightReport-summary {
+	line-height: 1.2;
+}
+
+.FightReport-units {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.FightReport-unit {
+	display: grid;
+	grid-template-columns: 8rem 1fr 4rem;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.FightReport-unitName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.FightReport-unitHealth {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.FightReport-graph {
+	width: 100%;
+	height: 1.2rem;
+	overflow: visible;
+
+	& polygon {
+		fill: color-mix(in oklch, var(--c-marine-blue), transparent 75%);
+	}
+
+	& polyline {
+		fill: none;
+		stroke: var(--c-marine-blue);
+		stroke-width: 1;
+		vector-effect: non-scaling-stroke;
+	}
+}
+
+.FightReport-unit[data-faction='enemy'] .FightReport-graph {
+	& polygon {
+		fill: color-mix(in oklch, var(--c-crimson-lake), transparent 75%);
+	}
+
+	& polyline {
+		stroke: var(--c-crimson-lake);
+	}
+}
+
+.FightReport-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-variant-numeric: tabular-nums;
+
+	& th {
+		text-align: right;
+		font-weight: 400;
+		opacity: 0.6;
+	}
+
+	& td {
+		text-align: right;
+	}
+
+	& th:first-child,
+	& td:first-child {
+		text-align: left;
+	}
+}
+
+.FightReport-controls {
+	display: flex;
+	gap: 0.3rem;
+	align-items: center;
+}
+
+.FightReport-sim {
+	font-size: 0.7rem;
+	line-height: 1.3;
+	white-space: pre;
+	overflow-x: auto;
+}

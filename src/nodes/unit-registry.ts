@@ -1,37 +1,32 @@
+import type {Character} from './character'
+import type {Faction} from './types'
 import {TinyWolf, Nakroth} from './enemies'
 import {Tank} from './party-characters'
 import {Player} from './player'
 
 /**
- * Which units exist, by id.
+ * Every spawnable unit, by id. `Encounter.spawn()` reads this and routes by the class's own
+ * faction, so party and enemies go through one door.
+ *
+ * Ids are stable strings, unlike `constructor.name`, which the production build minifies.
+ * They are also the keys of `balance.units`.
  *
  * Deliberately separate from `registry.ts`: `player.ts` imports the spell registry, so
- * anything that names the Player class from inside `registry.ts` would be reading it
+ * anything that names the `Player` class from inside `registry.ts` would be reading it
  * mid-initialisation and get `undefined`. Nothing here may be imported by `player.ts`.
  */
-
-/** Allies. The player is always in the fight, but is spawned like anyone else. */
-export const partyRegistry = {
-	Tank,
+export const unitRegistry = {
 	Player,
-} as const
-
-export const enemyRegistry = {
+	Tank,
 	TinyWolf,
 	Nakroth,
 } as const
 
-/**
- * Every spawnable unit. `Encounter.spawn()` reads this and routes by the class's own
- * faction, so party and enemies go through one door.
- *
- * Ids are stable strings, unlike `constructor.name`, which the production build minifies.
- */
-export const unitRegistry = {
-	...partyRegistry,
-	...enemyRegistry,
-} as const
-
-export type PartyId = keyof typeof partyRegistry
-export type EnemyId = keyof typeof enemyRegistry
 export type UnitId = keyof typeof unitRegistry
+
+/** Ids of every unit on a side, for the callers that only offer one (the console, the Balance Lab). */
+export function unitIds(faction?: Faction): UnitId[] {
+	const ids = Object.keys(unitRegistry) as UnitId[]
+	if (!faction) return ids
+	return ids.filter((id) => (unitRegistry[id] as unknown as typeof Character).faction === faction)
+}
