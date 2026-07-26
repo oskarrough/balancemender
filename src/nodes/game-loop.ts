@@ -55,11 +55,25 @@ export class GameLoop extends Loop {
 	console!: DevConsole
 
 	/**
+	 * Why the last action was refused, on the fight clock. One slot, not a queue: only the most
+	 * recent refusal is worth showing, and a player leaning on an unaffordable spell should read
+	 * one steady message rather than a backlog. The UI decides how long it stays — see
+	 * `src/components/ui.ts`.
+	 */
+	lastRefusal?: {error: string; at: number}
+
+	/**
 	 * Do something to this game. The only way anything mutates a fight — keyboard, spell
 	 * buttons, dev console, Balance Lab, Autopilot, tests, agents. See `src/actions.ts`.
+	 *
+	 * Refusals are recorded here rather than at each call site, so a caller cannot forget to
+	 * tell the player why nothing happened — which is exactly what the spell buttons and the
+	 * keyboard both did, discarding `{ok: false, error}` and leaving a dead click.
 	 */
 	perform(action: GameAction) {
-		return perform(this, action)
+		const result = perform(this, action)
+		if (!result.ok) this.lastRefusal = {error: result.error, at: this.elapsedTime}
+		return result
 	}
 
 	/** Swap the active encounter, tearing down the previous one. */
@@ -72,6 +86,9 @@ export class GameLoop extends Loop {
 		this.encounter = new Encounter(this, roster)
 		this.gameOver = false
 		this.elapsedTime = 0
+		// Stamped against a clock that just went back to zero, so it would otherwise read as
+		// having happened in this fight's future and never expire.
+		this.lastRefusal = undefined
 		this.render()
 	}
 

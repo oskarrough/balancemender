@@ -133,6 +133,32 @@ body {
 	place-content: center;
 }
 
+/* Sits just under the cast bar, so a refusal during a cast reads as a second line and not as
+   a replacement for it. Pinned to the same spot whether or not a cast bar is above it. */
+.Refusal {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: 5rem;
+	z-index: 5;
+	margin: 0;
+	white-space: nowrap;
+	color: var(--c-vermilion);
+	text-shadow: 0.1rem 0.1rem 0 var(--black);
+	animation: refusal-in 150ms ease-out;
+}
+
+@keyframes refusal-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, 0.4rem);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+}
+
 .CastBar {
 	position: absolute;
 	left: 50%;

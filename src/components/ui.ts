@@ -9,6 +9,9 @@ import {restartGame} from '../animations'
 
 register()
 
+/** How long a refused action stays on screen, in fight-clock milliseconds. */
+const REFUSAL_DURATION = 1200
+
 export function UI(game: GameLoop) {
 	const player = game.player
 	if (!player) return html`Woops, no player to heal the party...`
@@ -31,6 +34,15 @@ export function UI(game: GameLoop) {
 
 	const spell = player.spell
 	const timeSinceCast = game.elapsedTime - player.lastCastTime
+
+	/**
+	 * A refusal is shown for a moment and then forgotten, and it renders alongside the cast bar
+	 * rather than instead of it — `Can't cast while casting` is a refusal you can only ever get
+	 * while the cast bar is up, so hiding one behind the other would silence that case.
+	 * Measured on the fight clock, so it holds while paused instead of expiring unseen.
+	 */
+	const refusal = game.lastRefusal
+	const showRefusal = refusal && game.elapsedTime - refusal.at < REFUSAL_DURATION
 
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
@@ -55,6 +67,7 @@ export function UI(game: GameLoop) {
 							</div>
 						`
 					: null}
+				${showRefusal ? html`<p class="Refusal" role="status">${refusal.error}</p>` : null}
 			</div>
 
 			<div class="ActionBar">

@@ -97,6 +97,56 @@ describe('perform', () => {
 	})
 })
 
+/**
+ * A refusal the player never sees is the same as the game ignoring the keyboard, which is what
+ * casting with no mana used to be: `perform()` returned a reason and both the spell buttons and
+ * the shortcut handler dropped it. Recording it on the game means a caller cannot forget to.
+ */
+describe('refusals', () => {
+	it('remembers why, and when, so the UI can say so', () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		expect(game.lastRefusal).toBeUndefined()
+
+		game.elapsedTime = 5000
+		game.perform({type: 'cast', spell: 'Fireball'})
+
+		expect(game.lastRefusal).toEqual({error: 'Spell Fireball not found in spellbook', at: 5000})
+		game.disconnect()
+	})
+
+	it('names the reason a player can act on, not a generic failure', () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game.player.mana?.set(0)
+
+		game.perform({type: 'cast', spell: 'Heal', target: game.tank.id})
+
+		expect(game.lastRefusal?.error).toBe('Not enough mana')
+		game.disconnect()
+	})
+
+	it('stays quiet when the action went through', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		expect(game.perform({type: 'cast', spell: 'Heal', target: game.tank.id}).ok).toBe(true)
+		expect(game.lastRefusal).toBeUndefined()
+		await flush()
+		game.disconnect()
+	})
+
+	// Stamped on the fight clock, which `loadEncounter()` sends back to zero. A leftover would
+	// then sit in the new fight's future and never age out of the UI.
+	it('forgets the last fight, whose clock no longer applies', () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game.elapsedTime = 5000
+		game.perform({type: 'cast', spell: 'Fireball'})
+		expect(game.lastRefusal).toBeDefined()
+
+		game.perform({type: 'restart'})
+
+		expect(game.lastRefusal).toBeUndefined()
+		game.disconnect()
+	})
+})
+
 describe('every spell in the spellbook', () => {
 	beforeEach(() => clearLogs())
 
