@@ -34,7 +34,14 @@ export class Spell extends Task {
 	tick() {
 		log('spell:tick')
 		SpellCast.succeed(this)
+		this.cast()
+	}
 
+	/**
+	 * What the spell does once the cast lands. Subclasses override this rather than
+	 * `tick()`, so the cast is logged no matter what the spell itself does.
+	 */
+	cast() {
 		if (this.heal) this.applyHeal()
 
 		AudioPlayer.stopOwned(this)
@@ -59,7 +66,9 @@ export class Spell extends Task {
 		const healAmount = naturalizeNumber(this.heal)
 
 		// Apply healing directly to target's health node
+		const before = target.health.current
 		target.health.heal(healAmount)
+		const overheal = healAmount - (target.health.current - before)
 
 		// Display and log the healing
 		fct(`+${healAmount}`)
@@ -75,6 +84,7 @@ export class Spell extends Task {
 			spellId: this.name,
 			spellName: this.name,
 			value: healAmount,
+			overheal,
 		})
 	}
 }
