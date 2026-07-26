@@ -1,11 +1,12 @@
 import {Node} from 'vroum'
 import {Health, HEALTH_EVENTS} from './health'
 import {Mana} from './mana'
-import {Encounter} from './encounter'
+import type {Encounter} from './encounter'
 import {DoT} from './dot'
 import {HOT} from './hot'
-import {createId} from '../utils'
+import {createId, log} from '../utils'
 import {Faction, FACTION} from './types'
+import type {UnitId} from './unit-registry'
 
 export type CharacterEffect = HOT | DoT
 export type {Faction} from './types'
@@ -22,6 +23,10 @@ export class Character extends Node {
 
 	name = ''
 	image = ''
+	/** The registry id this unit was spawned from. Survives minification; `constructor.name` does not. */
+	unitId?: UnitId
+	/** `name` before duplicate numbering, so renumbering stays idempotent. */
+	baseName?: string
 	health: Health
 	mana?: Mana
 	effects = new Set<CharacterEffect>()
@@ -41,7 +46,7 @@ export class Character extends Node {
 	}
 
 	private onHealthEmpty = () => {
-		console.log(`${this.constructor.name} is dead`)
+		log(`${this.constructor.name} is dead`)
 		this.disconnect()
 	}
 

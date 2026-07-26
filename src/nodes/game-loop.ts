@@ -3,11 +3,11 @@ import {log, render} from '../utils'
 import type {Player} from './player'
 import type {Tank} from './party-characters'
 import {AudioPlayer} from './audio'
-import {Encounter, DemoEncounter} from './encounter'
+import {Encounter, DEMO_ROSTER, Roster} from './encounter'
 import {UI} from '../components/ui'
 import {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
-import {logCombat} from '../combatlog'
+import {logCombat, setCombatClock, clearLogs} from '../combatlog'
 
 /**
  * Main game loop that manages the game state and updates
@@ -23,7 +23,13 @@ export class GameLoop extends Loop {
 	private _muted = true
 
 	audio = new AudioPlayer(this)
-	encounter: Encounter = new DemoEncounter(this)
+	encounter: Encounter
+
+	/** Pass a roster to start on something other than the demo fight. */
+	constructor(roster: Roster = DEMO_ROSTER) {
+		super()
+		this.encounter = new Encounter(this, roster)
+	}
 
 	// Developer mode properties
 	godMode = false
@@ -31,10 +37,13 @@ export class GameLoop extends Loop {
 	console!: DevConsole
 
 	/** Swap the active encounter, tearing down the previous one. */
-	loadEncounter(Klass: typeof Encounter) {
+	loadEncounter(roster: Roster) {
 		this.pause()
 		this.encounter.disconnect()
-		this.encounter = new Klass(this)
+		// The fight clock restarts, so the log has to as well — otherwise the last fight's
+		// damage gets divided by this fight's duration and every rate reads high.
+		clearLogs()
+		this.encounter = new Encounter(this, roster)
 		this.gameOver = false
 		this.elapsedTime = 0
 		this.render()
@@ -79,6 +88,8 @@ export class GameLoop extends Loop {
 		log('game:mount')
 		this.on(GameLoop.PLAY, this.handlePlay)
 		this.on(GameLoop.PAUSE, this.handlePause)
+		// Stamp combat events with fight time instead of wall time.
+		setCombatClock(() => this.elapsedTime)
 
 		logCombat({
 			timestamp: Date.now(),
@@ -102,11 +113,9 @@ export class GameLoop extends Loop {
 		this.render()
 	}
 
+	/** No element means we're running headless (a simulation) — the fight still happens, nobody watches. */
 	render() {
-		if (!this.element) {
-			console.warn('No element to render to')
-			return
-		}
+		if (!this.element) return
 		render(this.element, UI(this))
 	}
 
@@ -121,11 +130,11 @@ export class GameLoop extends Loop {
 		// also set here so the debugger's manual trigger works from any state.
 		this.gameOver = true
 		this.render()
-		buildGameOver(this)
+		if (this.element) buildGameOver(this)
 	}
 
 	/** Reset state for a fresh encounter. Does not animate — pair with `restartGame()` for the visual transition. */
 	restart() {
-		this.loadEncounter(DemoEncounter)
+		this.loadEncounter(this.encounter.roster)
 	}
 }

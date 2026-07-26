@@ -10,7 +10,7 @@ import {
 	AttackKey,
 	UnitKey,
 } from './balance'
-import {enemyRegistry, EnemyId} from './nodes/registry'
+import {enemyRegistry, EnemyId} from './nodes/unit-registry'
 
 function applyUnitSideEffects(game: GameLoop, name: string, key: UnitKey, value: number) {
 	const all: Character[] = [...game.party, ...game.encounter.enemies]
@@ -41,20 +41,14 @@ export const commands = {
 		return ok
 	},
 
+	/** Thin wrapper over the one spawn door. Returns undefined for an unknown id, as callers expect. */
 	spawnEnemy(game: GameLoop, name: EnemyId): Character | undefined {
-		const Klass = enemyRegistry[name]
-		if (!Klass) return undefined
-		const enemy = new Klass(game.encounter)
-		game.encounter.enemies.push(enemy as InstanceType<typeof Klass>)
-		return enemy
+		if (!(name in enemyRegistry)) return undefined
+		return game.encounter.spawn(name)
 	},
 
 	removeUnit(game: GameLoop, id: string) {
-		const enemy = game.encounter.enemies.find((e) => e.id === id)
-		if (!enemy) return false
-		enemy.disconnect()
-		game.encounter.enemies = game.encounter.enemies.filter((e) => e.id !== id)
-		return true
+		return game.encounter.remove(id)
 	},
 
 	healParty(game: GameLoop) {

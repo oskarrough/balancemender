@@ -11,7 +11,8 @@ import {
 	AttackKey,
 	UnitKey,
 } from './balance'
-import {spellRegistry, attackRegistry, enemyRegistry, EnemyId} from './nodes/registry'
+import {spellRegistry, attackRegistry} from './nodes/registry'
+import {enemyRegistry, EnemyId} from './nodes/unit-registry'
 import {commands} from './commands'
 
 export type NumberField = {

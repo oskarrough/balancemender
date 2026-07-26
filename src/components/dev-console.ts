@@ -3,7 +3,7 @@ import {html, render} from '../utils'
 import {createLogger} from '../combatlog'
 import {commands} from '../commands'
 import {SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, SpellKey, AttackKey, UnitKey} from '../balance'
-import {EnemyId, enemyRegistry} from '../nodes/registry'
+import {EnemyId, enemyRegistry} from '../nodes/unit-registry'
 
 export interface Command {
 	name: string
