@@ -2,7 +2,7 @@ import {Heal, FlashHeal, GreaterHeal, Renew} from './nodes/spells'
 import {SmallAttack, MediumAttack, HugeAttack, TankAttack} from './nodes/damage-effect'
 import {unitRegistry} from './nodes/unit-registry'
 
-export const SPELL_KEYS = ['cost', 'heal', 'castTime'] as const
+export const SPELL_KEYS = ['cost', 'heal', 'castTime', 'cooldown'] as const
 export const ATTACK_KEYS = ['minDamage', 'maxDamage', 'interval', 'delay'] as const
 export const UNIT_KEYS = ['maxHealth', 'maxMana'] as const
 
@@ -12,7 +12,7 @@ export type UnitKey = (typeof UNIT_KEYS)[number]
 
 type NumberDict = Record<string, number>
 
-type SpellClass = {cost: number; heal: number; castTime: number}
+type SpellClass = {cost: number; heal: number; castTime: number; cooldown: number}
 type AttackClass = {minDamage: number; maxDamage: number; interval: number; delay: number}
 type UnitClass = {maxHealth: number; maxMana?: number}
 

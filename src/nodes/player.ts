@@ -29,6 +29,17 @@ export class Player extends Character {
 	spell: Spell | undefined
 	gcd: GlobalCooldown | undefined
 
+	/**
+	 * When each spell comes off its own cooldown, in fight-clock ms, keyed by spell name.
+	 *
+	 * Expiry stamps rather than a Task per spell: vroum defers `connect()` to a microtask, so a
+	 * cooldown Task started during a cast is not mounted yet when something asks about it in the
+	 * same tick. Storing when it ends also means retuning a cooldown mid-fight leaves the one
+	 * already running alone, as the rest of balance does. A fight gets a fresh Player, so there is
+	 * nothing to reset between them.
+	 */
+	cooldowns = new Map<string, number>()
+
 	/** The primitive `perform({type: 'cast'})` composes. Returns why it refused, if it did. */
 	castSpell(spellName: string) {
 		return SpellCast.cast(this, spellName)

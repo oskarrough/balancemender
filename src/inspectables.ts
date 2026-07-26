@@ -43,6 +43,7 @@ const SPELL_LABEL: Record<SpellKey, string> = {
 	cost: 'Mana cost',
 	heal: 'Heal amount',
 	castTime: 'Cast time (ms)',
+	cooldown: 'Cooldown (ms)',
 }
 
 const ATTACK_LABEL: Record<AttackKey, string> = {

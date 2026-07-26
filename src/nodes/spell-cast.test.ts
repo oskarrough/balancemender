@@ -53,6 +53,30 @@ describe('what a cast is allowed to be', () => {
 		game.disconnect()
 	})
 
+	it('holds a spell on its own cooldown, and lets it go when the clock passes', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		const player = game.player
+		// No spell ships with a cooldown yet — the numbers are a balance question. Tune one in,
+		// which also proves the Balance Lab can reach it.
+		expect(game.perform({type: 'tune', of: 'spell', name: 'Heal', key: 'cooldown', value: 8000}).ok).toBe(true)
+
+		expect(game.perform({type: 'cast', spell: 'Heal', target: game.tank.id}).ok).toBe(true)
+		// The cooldown starts when the cast lands, so finish it.
+		player.spell!._cycles = 1
+		player.spell!.destroy()
+		await Promise.resolve()
+
+		expect(SpellCast.whyNotCast(player, spellRegistry['Heal'], game.tank)).toBe('cooldown')
+		// Only that one spell. A shared cooldown would be the global one, which this is not.
+		expect(SpellCast.whyNotCast(player, spellRegistry['Flash Heal'], game.tank)).toBeUndefined()
+
+		game.elapsedTime = 8000
+		expect(SpellCast.whyNotCast(player, spellRegistry['Heal'], game.tank)).toBeUndefined()
+
+		game.perform({type: 'resetBalance'})
+		game.disconnect()
+	})
+
 	it('reports missing mana per spell, which is what an icon draws', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		const player = game.player
