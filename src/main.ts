@@ -63,7 +63,7 @@ function main() {
 		// vroum's mount() runs in a microtask and sets running=true, so a synchronous pause()
 		// here would be overwritten. Queue it so it lands after mount.
 		queueMicrotask(() => game.pause())
-		game.element = document.querySelector('#balancemender')
+		game.element = document.querySelector('#game')
 		setupDevTools(game)
 		// @ts-ignore
 		window.balancemender = game

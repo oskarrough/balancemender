@@ -1,6 +1,6 @@
 import {html, render} from '../utils'
 import {combatLogs} from '../combatlog'
-import type {GameLoop} from '../nodes/game-loop'
+import {currentGame, type GameLoop} from '../nodes/game-loop'
 import {analyze, FightReport as Report, Series} from '../sim/report'
 import {rosterOf, runFights} from '../sim/run'
 import {deathOf, formatAggregate, percentOf as percent} from '../sim/format'
@@ -20,7 +20,7 @@ export class FightReportView extends HTMLElement {
 	private onLogUpdate = () => this.schedule()
 
 	private get game(): GameLoop | undefined {
-		return window.balancemender
+		return currentGame()
 	}
 
 	connectedCallback() {

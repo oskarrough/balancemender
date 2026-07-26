@@ -45,7 +45,7 @@ body {
 	margin-bottom: 4vh;
 }
 
-#balancemender,
+#game,
 .Game {
 	min-height: calc(100dvh);
 	outline: none;

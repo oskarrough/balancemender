@@ -10,6 +10,23 @@ import {buildGameOver} from '../animations'
 import {logCombat, setCombatClock, clearLogs} from '../combatlog'
 import {perform, type GameAction} from '../actions'
 
+declare global {
+	interface Window {
+		balancemender?: GameLoop
+	}
+}
+
+/**
+ * The running game, or undefined while we are still on the splash.
+ *
+ * `main()` parks the game on `window.balancemender` so the console (and the dev panels) can
+ * reach it. The `instanceof` is not paranoia: any element with `id="x"` also shows up as
+ * `window.x`, so a truthiness check here silently hands out a DOM node instead.
+ */
+export function currentGame(): GameLoop | undefined {
+	return window.balancemender instanceof GameLoop ? window.balancemender : undefined
+}
+
 /**
  * Main game loop that manages the game state and updates
  */

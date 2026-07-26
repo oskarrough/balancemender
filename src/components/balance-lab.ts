@@ -1,14 +1,8 @@
 import {html, render} from '../utils'
-import type {GameLoop} from '../nodes/game-loop'
+import {currentGame, type GameLoop} from '../nodes/game-loop'
 import {allInspectables, Inspectable, InspectableSection} from '../inspectables'
 import {BalanceInspector} from './balance-inspector'
 import './balance-inspector'
-
-declare global {
-	interface Window {
-		balancemender?: GameLoop
-	}
-}
 
 export class BalanceLab extends HTMLElement {
 	private selectedId: string | null = 'globals'
@@ -16,7 +10,7 @@ export class BalanceLab extends HTMLElement {
 	private _retryTimer: number | null = null
 
 	private get game(): GameLoop | undefined {
-		return window.balancemender
+		return currentGame()
 	}
 
 	select(id: string) {
