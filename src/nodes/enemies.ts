@@ -4,7 +4,7 @@ import {TankTargeting, RandomTargeting} from './targeting-task'
 import {SmallAttack, MediumAttack, HugeAttack} from './damage-effect'
 
 export class Nakroth extends Character {
-	static maxHealth = 750
+	static maxHealth = 500
 	static faction = FACTION.ENEMY
 	name = 'Nakroth the Destroyer'
 	targetingTask = new TankTargeting(this)

@@ -109,12 +109,15 @@ export class MediumAttack extends DamageEffect {
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 
-/** Heavy attack with high damage but infrequent */
+/**
+ * The boss spike: rare, telegraphed by its 12s cadence, and worth about half a tank's
+ * health bar — big enough that ignoring it kills, small enough that a heal answers it.
+ */
 export class HugeAttack extends DamageEffect {
 	static delay = 8000
 	static interval = 12000
-	static minDamage = 500
-	static maxDamage = 700
+	static minDamage = 120
+	static maxDamage = 180
 	static sound = 'combat_arrow'
 	static name = 'Nasty arrow'
 	static eventType: CombatEventType = 'RANGE_DAMAGE'

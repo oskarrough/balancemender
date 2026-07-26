@@ -93,6 +93,18 @@ describe('healing changes the outcome', () => {
 		expect(analyze(unhealed.events).totals.healing).toBe(0)
 	})
 
+	// Nakroth's spike used to be 500-700 against a 300hp tank, so the boss was unwinnable no
+	// matter how well you healed. Pin both ends: a retune that puts it back out of reach, or
+	// one that makes it win itself, should fail here.
+	it('makes the boss winnable by healing and only by healing', async () => {
+		const spec = {enemies: ['Nakroth'] as never, seed: 1}
+		const unhealed = await runFight({...spec, policy: 'idle'})
+		const healed = await runFight({...spec, policy: 'triage'})
+
+		expect(unhealed.outcome).toBe('defeat')
+		expect(healed.outcome).toBe('victory')
+	})
+
 	it('spamming the expensive heal overheals more than triaging', async () => {
 		const spec = {enemies: ['TinyWolf', 'TinyWolf'] as never, seed: 5, maxDuration: 40_000}
 		const overheal = async (policy: 'panic' | 'triage') => {
