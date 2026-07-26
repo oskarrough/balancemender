@@ -1,7 +1,7 @@
 import {html} from '../utils'
-import {HOT} from '../nodes/hot'
+import type {PeriodicEffect} from '../nodes/periodic'
 
-export function EffectIcon(effect: HOT) {
+export function EffectIcon(effect: PeriodicEffect) {
 	return html`
 		<div class="Spell">
 			<div class="Spell-inner">

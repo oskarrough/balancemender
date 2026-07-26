@@ -1,7 +1,7 @@
 import {Character} from '../nodes/character'
 import {Player} from '../nodes/player'
 import type {GameLoop} from '../nodes/game-loop'
-import {HOT} from '../nodes/hot'
+import type {PeriodicEffect} from '../nodes/periodic'
 import {Spell} from '../nodes/spell'
 import {Meter} from './bar'
 import {EffectIcon} from './effect-icon'
@@ -14,7 +14,7 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 	const maxHealth = character.health.max
 	const isCurrentTarget = player.getTarget() === character
 	const displayName = character.name || character.constructor.name
-	const effects: HOT[] = character.effects ? Array.from(character.effects) : []
+	const effects: PeriodicEffect[] = character.effects ? Array.from(character.effects) : []
 
 	return html`
 		<div

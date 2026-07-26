@@ -2,13 +2,12 @@ import {Node} from 'vroum'
 import {Health, HEALTH_EVENTS} from './health'
 import {Mana} from './mana'
 import type {Encounter} from './encounter'
-import {DoT} from './dot'
-import {HOT} from './hot'
+import type {PeriodicEffect} from './periodic'
 import {createId, log} from '../utils'
 import {Faction, FACTION} from './types'
 import type {UnitId} from './unit-registry'
 
-export type CharacterEffect = HOT | DoT
+export type CharacterEffect = PeriodicEffect
 export type {Faction} from './types'
 export {FACTION} from './types'
 

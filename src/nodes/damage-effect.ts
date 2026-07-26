@@ -1,9 +1,9 @@
 import {Task} from 'vroum'
-import {applyStatics, html, randomIntFromInterval} from '../utils'
+import {applyStatics, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
 import {Character} from './character'
-import {logCombat, CombatEventType} from '../combatlog'
-import {getFctContainer} from '../components/floating-combat-text'
+import type {CombatEventType} from '../combatlog'
+import {applyHit} from './hit'
 
 /**
  * Base class for all damage effects (attacks from any character to any character).
@@ -53,52 +53,21 @@ export class DamageEffect extends Task {
 		if (!target) return
 
 		this.targetId = target.id
-		const damage = this.damage()
-		target.health.damage(damage)
-
-		const targetName = target.name || target.constructor.name
-		logCombat({
-			timestamp: Date.now(),
-			eventType: this.eventType,
-			sourceId: this.attacker.id,
-			sourceName: this.attacker.name,
-			targetId: target.id,
-			targetName,
-			spellId: this.name,
-			spellName: this.name,
-			value: damage,
-		})
+		// The floating number, the combat log entry and the death are all applyHit's job.
+		applyHit({source: this.attacker, target, amount: -this.damage(), spell: this.name, eventType: this.eventType})
 
 		this.playSound()
-		this.createVisualEffects(damage)
-
-		if (target.health.current <= 0) {
-			logCombat({
-				timestamp: Date.now(),
-				eventType: 'UNIT_DIED',
-				sourceId: this.attacker.id,
-				sourceName: this.attacker.name,
-				targetId: target.id,
-				targetName,
-				spellId: this.name,
-				spellName: this.name,
-			})
-		}
+		this.shakeTarget()
 	}
 
 	playSound() {
 		if (this.sound) AudioPlayer.play(this.sound)
 	}
 
-	createVisualEffects(damageAmount: number) {
-		const targetElement = document.querySelector(`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`)
-		if (targetElement) this.animateHit(targetElement)
-
-		const container = getFctContainer()
-		if (!container) return
-		const cssClass = `damage ${this.attacker.constructor.name.toLowerCase()}-damage`
-		const fct = html`<floating-combat-text class=${cssClass}>${damageAmount}</floating-combat-text>`.toDOM()
-		container.appendChild(fct)
+	/** The hit reaction on the unit frame, which is this attack's own to draw. */
+	shakeTarget() {
+		const element = document.querySelector(`.PartyMember[data-character-id="${this.targetId}"] .Character-avatar`)
+		if (element) this.animateHit(element)
 	}
 
 	/* Animates a DOM element to shake and flash a bit */

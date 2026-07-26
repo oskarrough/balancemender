@@ -109,6 +109,13 @@ Log both an id and a name for whoever an event touches. The analyzer keys on the
 only a label, and it changes mid-fight — spawning a second wolf renames the first one to
 "Tiny wolf 1", so anything keyed by name splits that unit in two.
 
+Getting logged is not left to the caller: **every change to a health bar goes through
+`applyHit()`** in [`hit.ts`](../src/nodes/hit.ts), which applies it, floats the number, records
+the event and announces the death. Spells, attacks and periodic effects all call it and do
+nothing else about it. `PeriodicEffect` is the one class for both heals over time and damage
+over time — a negative `amount` hurts — because once the health change moved into `applyHit`,
+nothing else about them differed.
+
 ## Fights without a browser
 
 `src/sim/` runs the real GameLoop on a stepped clock with an `Autopilot` playing the healer.

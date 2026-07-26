@@ -1,5 +1,5 @@
 import {Spell} from './spell'
-import {HOT} from './hot'
+import {PeriodicEffect} from './periodic'
 import {AudioPlayer} from './audio'
 
 export class Heal extends Spell {
@@ -23,7 +23,7 @@ export class GreaterHeal extends Spell {
 	static castTime = 3000
 }
 
-/** Renew heals indirectly by applying RenewHOT */
+/** Renew heals indirectly, by leaving a periodic effect on the target. */
 export class Renew extends Spell {
 	static name = 'Renew'
 	static cost = 60
@@ -33,15 +33,15 @@ export class Renew extends Spell {
 		const player = this.parent
 		const target = player.getTarget()
 		if (target) {
-			new RenewHOT(target, player)
+			new RenewEffect(target, player)
 			AudioPlayer.play('spell_rejuvenation')
 		}
 	}
 }
 
-class RenewHOT extends HOT {
+class RenewEffect extends PeriodicEffect {
 	static name = 'Renew'
-	static heal = 30
+	static amount = 30
 	static interval = 2000
 	static repeat = 5
 }

@@ -1,9 +1,8 @@
 import {Task} from 'vroum'
 import {AudioPlayer} from './audio'
-import {fct} from '../components/floating-combat-text'
 import {applyStatics, log, naturalizeNumber} from '../utils'
 import {Player} from './player'
-import {logCombat} from '../combatlog'
+import {applyHit} from './hit'
 import {SpellCast} from './spell-cast'
 
 export class Spell extends Task {
@@ -59,32 +58,15 @@ export class Spell extends Task {
 	}
 
 	applyHeal() {
-		const player = this.parent
-		const target = player.getTarget()
+		const target = this.parent.getTarget()
 		if (!target) return
 
-		const healAmount = naturalizeNumber(this.heal)
-
-		// Apply healing directly to target's health node
-		const before = target.health.current
-		target.health.heal(healAmount)
-		const overheal = healAmount - (target.health.current - before)
-
-		// Display and log the healing
-		fct(`+${healAmount}`)
-
-		// Log healing to combat log
-		logCombat({
-			timestamp: Date.now(),
+		applyHit({
+			source: this.parent,
+			target,
+			amount: naturalizeNumber(this.heal),
+			spell: this.name,
 			eventType: 'SPELL_HEAL',
-			sourceId: this.parent.id,
-			sourceName: this.parent.name,
-			targetId: target.id,
-			targetName: target.name || 'Unknown',
-			spellId: this.name,
-			spellName: this.name,
-			value: healAmount,
-			overheal,
 		})
 	}
 }
