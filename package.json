@@ -17,19 +17,19 @@
 	"dependencies": {
 		"gsap": "^3.15.0",
 		"pino": "^10.3.1",
-		"tinybase": "^8.3.0",
+		"tinybase": "^9.2.0",
 		"uhtml": "^4.7.1",
 		"vroum": "^1.2.4",
-		"xid-ts": "^1.2.1"
+		"xid-ts": "^1.3.0"
 	},
 	"devDependencies": {
-		"@cloudflare/vite-plugin": "^1.36.4",
-		"@types/bun": "^1.3.13",
-		"sharp": "^0.34.5",
-		"typescript": "^6.0.3",
-		"vite-plus": "^0.1.20",
-		"vitest": "^4.1.6",
-		"wrangler": "^4.90.1"
+		"@cloudflare/vite-plugin": "^1.47.0",
+		"@types/bun": "^1.3.14",
+		"sharp": "^0.35.3",
+		"typescript": "^7.0.2",
+		"vite-plus": "^0.2.6",
+		"vitest": "^4.1.10",
+		"wrangler": "^4.114.0"
 	},
 	"packageManager": "bun@1.3.13"
 }
