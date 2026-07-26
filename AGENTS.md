@@ -31,3 +31,13 @@ bun run sim --enemies 'TinyWolf*3' --policy triage --repeat 10
 
 Then read the report. The same numbers show up in the in-game "Fight report" panel while you
 play, because both come from `analyze()` over the same combat log.
+
+One seed cannot tell a balanced fight from a lucky roll, and one roster cannot tell you the
+shape of the difficulty curve. For that, sweep:
+
+```
+bun run sweep --seeds 25
+```
+
+Read the `idle` column first — it is the control group. A retune that lifts a win rate by making
+the healer irrelevant shows up as `idle` climbing too.

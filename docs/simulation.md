@@ -71,6 +71,32 @@ seed 1 · triage · defeat in 20.0s
   deaths    Tiny wolf 1 5/5   Player 5/5   Tank 5/5
 ```
 
+### Sweeping the whole curve
+
+`--repeat` answers "how does _this_ fight usually go". One level up is "is the difficulty curve
+the shape we think it is", which needs every roster against every policy:
+
+```
+bun run sweep                                       # 10 seeds, the standard rosters
+bun run sweep --seeds 25                            # tighter
+bun run sweep --rosters 'TinyWolf*3; Nakroth' --policies triage,renew
+bun run sweep --json > sweep.json
+```
+
+```
+roster      policy  win%  timeout%  median  hps   overheal%  mana/s  casts
+TinyWolf*3  idle    0%    0%        15.4s   0.0   0%         0.0     0.0
+TinyWolf*3  triage  0%    0%        45.8s   16.0  21%        12.8    11.0
+Nakroth     idle    0%    0%        32.0s   0.0   0%         0.0     0.0
+Nakroth     triage  100%  0%        60.0s   13.6  12%        10.1    9.1
+```
+
+Read the `idle` rows first — they are the control group. A retune that lifts a win rate by making
+the healer irrelevant shows up as `idle` climbing alongside `triage` instead of staying at 0%.
+
+This is how the inverted difficulty curve in the table above was found: three trash mobs are
+unwinnable while the boss is a guaranteed win.
+
 ## From the browser
 
 The **Fight report** panel shows the fight you are playing right now — health graphs, healing,
@@ -131,6 +157,7 @@ new (await import('/src/nodes/autopilot.ts')).Autopilot(balancemender.player, 't
 | `src/sim/format.ts`      | plain-text reports                                                   |
 | `src/nodes/autopilot.ts` | the healer policies                                                  |
 | `scripts/sim.ts`         | the CLI                                                              |
+| `scripts/sweep.ts`       | `bun run sweep` — every roster × every policy, over many seeds       |
 
 `src/rng.ts` is why any of it repeats: seed it and every damage roll and target choice replays
 identically. Unseeded — how the browser plays — it is just `Math.random`.

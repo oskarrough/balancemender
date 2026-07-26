@@ -12,6 +12,7 @@
 		"test": "vp test",
 		"deploy": "bun run build && wrangler deploy",
 		"sim": "bun scripts/sim.ts",
+		"sweep": "bun scripts/sweep.ts",
 		"asset:prompt": "bun scripts/asset-prompts.ts",
 		"asset:optimize": "bun scripts/optimize-images.ts"
 	},
