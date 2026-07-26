@@ -3,6 +3,7 @@ import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
 import {PeriodicEffect} from './periodic'
+import {Renew} from './spells'
 import {combatLogs, clearLogs} from '../combatlog'
 
 /**
@@ -90,6 +91,31 @@ describe('PeriodicEffect', () => {
 			targetId: wolf.id,
 			value: 10,
 		})
+		game.disconnect()
+	})
+
+	/**
+	 * `amount` is the total over the whole effect, but it reads like a per-tick number, and
+	 * Renew sat at 30 for years meaning 6 a tick — a fifth of what the number implied, and
+	 * less healing than Heal for more mana. Pin the total the spell advertises to the total
+	 * that lands, so the two cannot drift apart again.
+	 */
+	it('lands the total a heal-over-time advertises, not a fraction of it', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game.tank.health.set(1)
+		game.player.currentTarget = game.tank
+
+		new Renew(game.player).cast()
+		await Promise.resolve()
+
+		const renew = [...game.tank.effects].find((effect) => effect.name === 'Renew')
+		expect(renew).toBeDefined()
+		for (let i = 0; i < renew!.repeat; i++) renew!.tick()
+
+		const healed = combatLogs
+			.filter((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
+			.reduce((total, event) => total + (event.value ?? 0), 0)
+		expect(healed).toBe(Renew.heal)
 		game.disconnect()
 	})
 })

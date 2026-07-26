@@ -25,13 +25,19 @@ export class PeriodicEffect extends Task {
 	static interval = 3000
 	static repeat = 5
 
-	/** `parent` is the unit it lands on; `caster` is who to credit it to. */
+	/**
+	 * `parent` is the unit it lands on; `caster` is who to credit it to. `amount` overrides the
+	 * class default, so a spell can own its own total — see `Renew`, which keeps the number on
+	 * the spell where the balance lab can reach it.
+	 */
 	constructor(
 		public parent: Character,
 		public caster: Character,
+		amount?: number,
 	) {
 		super(parent)
 		applyStatics(this, 'name', 'amount', 'interval', 'repeat')
+		if (amount !== undefined) this.amount = amount
 		this.casterName = caster.name
 		this.casterId = caster.id
 	}

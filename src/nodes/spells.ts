@@ -4,8 +4,8 @@ import {AudioPlayer} from './audio'
 
 /**
  * Healing per mana is the ladder these four are tuned on, not healing per second:
- * Renew 2.50, Heal 1.60, Greater Heal 1.45, Flash Heal 1.25. The efficient spell is
- * the slow one, so throughput is always bought with mana you will want later.
+ * Renew 2.00, Heal 1.60, Greater Heal 1.45, Flash Heal 1.25. The patient spell is the
+ * efficient one, so throughput is always bought with mana you will want later.
  */
 
 /** The workhorse. Nothing heals more per mana except a Renew you had time to plant. */
@@ -32,17 +32,26 @@ export class GreaterHeal extends Spell {
 	static castTime = 3000
 }
 
-/** Renew heals indirectly, by leaving a periodic effect on the target. */
+/**
+ * The one you plant before you need it. Renew heals indirectly, by leaving a periodic
+ * effect on the target, so `heal` is the total it lands over five ticks rather than a
+ * lump — the effect divides it. Keeping the number here and handing it to the effect is
+ * what lets the balance lab tune Renew alongside the other three.
+ *
+ * Note this overrides `cast()` outright: the base class heals when `heal` is set, and
+ * calling `super.cast()` from here would land the whole total twice over.
+ */
 export class Renew extends Spell {
 	static name = 'Renew'
 	static cost = 60
+	static heal = 120
 	static castTime = 0
 
 	cast() {
 		const player = this.parent
 		const target = player.getTarget()
 		if (target) {
-			new RenewEffect(target, player)
+			new RenewEffect(target, player, this.heal)
 			AudioPlayer.play('spell_rejuvenation')
 		}
 	}
@@ -50,7 +59,6 @@ export class Renew extends Spell {
 
 class RenewEffect extends PeriodicEffect {
 	static name = 'Renew'
-	static amount = 30
 	static interval = 2000
 	static repeat = 5
 }
