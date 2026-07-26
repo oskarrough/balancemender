@@ -95,6 +95,7 @@ export class FightReportView extends HTMLElement {
 								<th>overheal</th>
 								<th>taken</th>
 								<th>casts</th>
+								<th>mana</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -107,11 +108,43 @@ export class FightReportView extends HTMLElement {
 										<td>${percent(actor.overhealing, actor.healingDone + actor.overhealing)}</td>
 										<td>${actor.damageTaken}</td>
 										<td>${actor.casts}</td>
+										<td>${actor.manaSpent}</td>
 									</tr>
 								`,
 							)}
 						</tbody>
 					</table>
+
+					${report.spells.length
+						? html`
+								<table class="FightReport-table">
+									<thead>
+										<tr>
+											<th>spell</th>
+											<th>casts</th>
+											<th>hits</th>
+											<th>total</th>
+											<th>avg</th>
+											<th>overheal</th>
+										</tr>
+									</thead>
+									<tbody>
+										${report.spells.map(
+											(spell) => html`
+												<tr>
+													<td>${spell.name}</td>
+													<td>${spell.casts}</td>
+													<td>${spell.hits}</td>
+													<td>${spell.total}</td>
+													<td>${spell.avg}</td>
+													<td>${percent(spell.overheal, spell.total)}</td>
+												</tr>
+											`,
+										)}
+									</tbody>
+								</table>
+							`
+						: ''}
 
 					<div class="FightReport-controls">
 						<select

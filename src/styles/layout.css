@@ -121,8 +121,11 @@ body {
 	transition-delay: 0ms;
 }
 
+/* Spans its unit frame, so the numbers inside are placed relative to that character */
 .FloatingCombatText {
 	position: absolute;
+	inset: 0;
+	pointer-events: none;
 }
 
 .CastingInfo {

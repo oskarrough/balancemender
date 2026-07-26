@@ -27,7 +27,7 @@ export function applyHit({source, target, amount, spell, eventType}: Hit): numbe
 	else target.health.damage(-amount)
 	const landed = Math.abs(target.health.current - before)
 
-	fct(amount >= 0 ? `+${amount}` : `-${-amount}`)
+	fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`)
 
 	const actors = {
 		sourceId: source.id,

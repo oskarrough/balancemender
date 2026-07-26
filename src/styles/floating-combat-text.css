@@ -4,7 +4,6 @@
 	It'll pop in and then fade up and away
 */
 floating-combat-text {
-	--easing: cubic-bezier(0.23, 1, 0.32, 1);
 	--duration: 2000ms;
 
 	display: inline-block;
@@ -25,17 +24,13 @@ floating-combat-text {
 	animation-duration: var(--duration);
 	animation-fill-mode: both;
 	transform-origin: center;
+	white-space: nowrap;
 }
 
 floating-combat-text.damage {
 	color: var(--darkred);
 	text-shadow: none;
 	text-shadow: 0.1rem 0.1rem 0px var(--red);
-}
-
-floating-combat-text.crit {
-	top: 1rem;
-	animation: fct-crit calc(1.5 * var(--duration)) var(--easing);
 }
 
 @keyframes fct-up {
@@ -50,31 +45,5 @@ floating-combat-text.crit {
 	100% {
 		transform: translateY(-300%);
 		opacity: 0;
-	}
-}
-
-@keyframes fct-crit {
-	0% {
-		transform: scale(0.5);
-		opacity: 0;
-	}
-
-	5% {
-		opacity: 1;
-		transform: scale(1.1);
-	}
-
-	10% {
-		transform: scale(1);
-	}
-
-	66% {
-		opacity: 1;
-		transform: scale(1);
-	}
-
-	100% {
-		opacity: 0;
-		transform: scale(0.98);
 	}
 }
