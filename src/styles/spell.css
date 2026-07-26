@@ -101,6 +101,54 @@
 	background: conic-gradient(hsla(0 0% 90% / 0.2) var(--progress), transparent var(--progress));
 }
 
+/*
+	Three ways a spell can be unavailable, and they have to read differently, because what the
+	player should do about each one differs: wait a moment (cooldown), wait longer or spend less
+	(no mana), or fix something else (no target).
+
+	None of them set `disabled`. The button stays pressable so that pressing it can say why —
+	see the comment in spell-icon.ts.
+
+	The global cooldown is deliberately absent: it is up for a fraction of a second after every
+	cast and applies to every icon at once, so drawn here it would strobe the whole bar. It has
+	the `.Spell-gcd` sweep, which is a clock and not a state.
+*/
+.Spell[data-state='unaffordable'] .Spell-image,
+.Spell[data-state='blocked'] .Spell-image {
+	filter: saturate(0.1) contrast(0.8) brightness(0.5);
+}
+
+/* Out of mana reads blue, the same colour the mana bar uses, so the link needs no explaining. */
+.Spell[data-state='unaffordable'] {
+	border-color: hsl(0, 0%, 40%);
+	box-shadow: inset 0 0 0.8rem hsla(210, 60%, 50%, 0.35);
+}
+
+.Spell[data-state='unaffordable'] .Spell-inner h3,
+.Spell[data-state='blocked'] .Spell-inner h3 {
+	opacity: 0.5;
+}
+
+/* A cooldown is the one unavailability with a known end, so it gets the countdown and a sweep. */
+.Spell-cooldown {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	pointer-events: none;
+	display: grid;
+	place-items: center;
+	border-radius: var(--radius);
+	background: conic-gradient(hsla(0 0% 0% / 0.65) var(--progress), hsla(0 0% 0% / 0.15) var(--progress));
+}
+
+.Spell-cooldown strong {
+	font-size: 1.6rem;
+	color: var(--white);
+	text-shadow:
+		0 0 3px black,
+		0 0 6px black;
+}
+
 .Spell-shortcut {
 	position: absolute;
 	top: 0.5em;
