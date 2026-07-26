@@ -8,12 +8,16 @@ import type {Character} from './character'
  * Something that lands in instalments — a heal over time, a poison, a bleed.
  *
  * There is deliberately no separate HOT and DoT class: once the health change itself moved
- * into `applyHit`, the only thing left that differed between them was the sign of `amount`.
+ * into `applyHit`, the only thing left that differed between them was the sign of `total`.
  */
 export class PeriodicEffect extends Task {
 	name = 'Periodic'
-	/** Total over the whole effect; each tick applies `amount / repeat`. Negative hurts. */
-	amount = 0
+	/**
+	 * What the effect lands over its whole life, not per tick — each tick applies
+	 * `total / repeat`. Negative hurts. Named for the whole because reading it as a
+	 * per-tick number is exactly how Renew came to heal a fifth of what it claimed.
+	 */
+	total = 0
 	interval = 3000
 	repeat = 5
 
@@ -21,23 +25,23 @@ export class PeriodicEffect extends Task {
 	casterId = ''
 
 	static name = 'Periodic'
-	static amount = 0
+	static total = 0
 	static interval = 3000
 	static repeat = 5
 
 	/**
-	 * `parent` is the unit it lands on; `caster` is who to credit it to. `amount` overrides the
-	 * class default, so a spell can own its own total — see `Renew`, which keeps the number on
-	 * the spell where the balance lab can reach it.
+	 * `parent` is the unit it lands on; `caster` is who to credit it to. `total` overrides the
+	 * class default, so a spell can own its own number — see `Renew`, which keeps it on the
+	 * spell where the balance lab can reach it.
 	 */
 	constructor(
 		public parent: Character,
 		public caster: Character,
-		amount?: number,
+		total?: number,
 	) {
 		super(parent)
-		applyStatics(this, 'name', 'amount', 'interval', 'repeat')
-		if (amount !== undefined) this.amount = amount
+		applyStatics(this, 'name', 'total', 'interval', 'repeat')
+		if (total !== undefined) this.total = total
 		this.casterName = caster.name
 		this.casterId = caster.id
 	}
@@ -51,9 +55,9 @@ export class PeriodicEffect extends Task {
 		applyHit({
 			source: this.caster,
 			target: this.parent,
-			amount: this.amount / this.repeat,
+			amount: this.total / this.repeat,
 			spell: this.name,
-			eventType: this.amount >= 0 ? 'SPELL_PERIODIC_HEAL' : 'SPELL_PERIODIC_DAMAGE',
+			eventType: this.total >= 0 ? 'SPELL_PERIODIC_HEAL' : 'SPELL_PERIODIC_DAMAGE',
 		})
 	}
 

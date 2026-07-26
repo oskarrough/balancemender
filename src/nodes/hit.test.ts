@@ -76,7 +76,7 @@ describe('PeriodicEffect', () => {
 
 		class Poison extends PeriodicEffect {
 			static name = 'Poison'
-			static amount = -50
+			static total = -50
 			static interval = 1
 			static repeat = 5
 		}
@@ -95,8 +95,8 @@ describe('PeriodicEffect', () => {
 	})
 
 	/**
-	 * `amount` is the total over the whole effect, but it reads like a per-tick number, and
-	 * Renew sat at 30 for years meaning 6 a tick — a fifth of what the number implied, and
+	 * The effect's number is a total over its whole life, not a per-tick one, and Renew sat
+	 * at 30 for years meaning 6 a tick — a fifth of what the number implied, and
 	 * less healing than Heal for more mana. Pin the total the spell advertises to the total
 	 * that lands, so the two cannot drift apart again.
 	 */

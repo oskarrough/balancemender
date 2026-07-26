@@ -113,8 +113,10 @@ Getting logged is not left to the caller: **every change to a health bar goes th
 `applyHit()`** in [`hit.ts`](../src/nodes/hit.ts), which applies it, floats the number, records
 the event and announces the death. Spells, attacks and periodic effects all call it and do
 nothing else about it. `PeriodicEffect` is the one class for both heals over time and damage
-over time — a negative `amount` hurts — because once the health change moved into `applyHit`,
-nothing else about them differed.
+over time — a negative `total` hurts — because once the health change moved into `applyHit`,
+nothing else about them differed. That `total` is what lands over the effect's whole life, not
+per tick; a spell can pass its own, which is how `Renew` keeps its number where the balance lab
+can tune it.
 
 ## Fights without a browser
 
