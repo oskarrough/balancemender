@@ -3,6 +3,8 @@ import Pino from 'pino'
 // Combat event format inspired by WoW
 export interface CombatLogEvent {
 	timestamp: number
+	/** Milliseconds into the fight. Filled in from the clock — see `setCombatClock`. */
+	time?: number
 	eventType: CombatEventType
 	sourceId?: string
 	sourceName?: string
@@ -11,6 +13,8 @@ export interface CombatLogEvent {
 	spellId?: string
 	spellName?: string
 	value?: number
+	/** Portion of `value` that healed a full health bar and did nothing. */
+	overheal?: number
 	extraInfo?: string
 	isAOE?: boolean
 	groupId?: string
@@ -41,6 +45,20 @@ export type CombatEventType =
 	| 'GAME_RESUME'
 
 export const combatLogs: CombatLogEvent[] = []
+
+/**
+ * Where `time` comes from. The GameLoop points this at its own `elapsedTime` when it mounts,
+ * so events are stamped with fight time rather than wall time — a simulated fight runs far
+ * faster than real time, and `Date.now()` would squash the whole fight into a few hundred ms.
+ */
+let clock: () => number = () => 0
+
+/** Returns the clock it replaced, so a temporary swap can put it back. */
+export function setCombatClock(fn: () => number) {
+	const previous = clock
+	clock = fn
+	return previous
+}
 
 const formatter = new Intl.DateTimeFormat('de', {
 	hour: '2-digit',
@@ -82,13 +100,6 @@ export const logger = Pino({
 	},
 	serializers: {
 		err: Pino.stdSerializers.err,
-		combat: (event: CombatLogEvent) => {
-			combatLogs.push(event)
-			if (typeof document !== 'undefined') {
-				document.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
-			}
-			return event
-		},
 	},
 })
 
@@ -98,8 +109,17 @@ export function createLogger(logLevel = 'info') {
 	return childLogger
 }
 
+/**
+ * Record a combat event. Collecting happens here rather than in a pino serializer so the
+ * log survives silencing the logger (simulations do exactly that).
+ */
 export function logCombat(event: CombatLogEvent) {
 	if (!event.timestamp) event.timestamp = Date.now()
+	if (event.time === undefined) event.time = clock()
+	combatLogs.push(event)
+	if (typeof document !== 'undefined') {
+		document.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
+	}
 	logger.info({combat: event})
 }
 

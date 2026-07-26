@@ -1,6 +1,7 @@
 import {Task} from 'vroum'
 import {Character} from './character'
 import {Tank} from './party-characters'
+import {random} from '../rng'
 
 /** Base targeting framework */
 export class Targeting extends Task {
@@ -52,7 +53,7 @@ export class RandomTargeting extends TargetOppositeFaction {
 		const targets = this.getPotentialTargets()
 		if (targets.length === 0) return undefined
 
-		const randomIndex = Math.floor(Math.random() * targets.length)
+		const randomIndex = Math.floor(random() * targets.length)
 		return targets[randomIndex]
 	}
 }
