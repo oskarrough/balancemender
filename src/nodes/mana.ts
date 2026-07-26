@@ -47,10 +47,13 @@ export class Mana extends Resource {
  * Mana comes back a second at a time, but only after five seconds without spending any.
  *
  * The rule is the interesting part: casting suppresses your own regeneration, so a lull is worth
- * something and topping everyone off during one has a price. That only reads as a decision if the
- * amount is large enough to notice — at 3/s it was about 7% of what a fight costs, which is
- * decoration. See #39, and `fiveSecondRule` is deliberately *not* tunable: measurement showed the
- * gaps between casts already run past five seconds, so the threshold was never the thing binding.
+ * something and topping everyone off during one has a price.
+ *
+ * Two numbers set how much a lull pays — this rate, and the threshold below it. A healer's pauses
+ * run about 6-8s, so the threshold eats most of each one and only the tail pays out; widening the
+ * threshold and raising the rate reach the same place. The rate is the one tuned, because it is
+ * what a character can plausibly differ on later (#31's spirit stat) while the rule is the same
+ * for everyone. See #39.
  */
 export class ManaRegen extends Task {
 	repeat = Infinity
