@@ -135,6 +135,13 @@ way down the tree — so start such a file with:
 
 Pure code (the combat log, the report analyzer) runs in the default node environment.
 
+**Components cannot be render-tested.** happy-dom is enough to _import_ the game, but uhtml
+cannot interpolate an attribute in it — `` html`<div data-type=${x}>` `` throws
+`Cannot read properties of null`, while static attributes and interpolated text render fine.
+That rules out asserting on rendered markup, which is why a bug like a unit-frame selector
+matching nothing has to be caught in the browser (see below) and not in vitest. Test the nodes
+and `perform()`; drive the DOM with `agent-browser`.
+
 ## Driving the real game
 
 ```
