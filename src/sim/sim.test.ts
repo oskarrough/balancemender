@@ -96,8 +96,12 @@ describe('healing changes the outcome', () => {
 	// Nakroth's spike used to be 500-700 against a 300hp tank, so the boss was unwinnable no
 	// matter how well you healed. Pin both ends: a retune that puts it back out of reach, or
 	// one that makes it win itself, should fail here.
-	it('makes the boss winnable by healing and only by healing', async () => {
-		const spec = {enemies: ['Nakroth'] as never, seed: 1}
+	//
+	// Several seeds, because one seed cannot tell a balanced fight from a lucky roll. A 25-seed
+	// sweep has this at 25/25 either way, so a retune that makes the boss merely *usually*
+	// winnable is a real change and should fail here rather than hide behind seed 1.
+	it.each([1, 2, 3, 4, 5])('makes the boss winnable by healing and only by healing (seed %i)', async (seed) => {
+		const spec = {enemies: ['Nakroth'] as never, seed}
 		const unhealed = await runFight({...spec, policy: 'idle'})
 		const healed = await runFight({...spec, policy: 'triage'})
 
