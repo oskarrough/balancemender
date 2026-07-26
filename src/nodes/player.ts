@@ -4,15 +4,29 @@ import {Spell} from './spell'
 import {spellRegistry} from './registry'
 import {SpellCast} from './spell-cast'
 import type {GlobalCooldown} from './global-cooldown'
+import type {Encounter} from './encounter'
 
 export class Player extends Character {
 	static maxHealth = 160
 	static maxMana = 600
+	/**
+	 * Mana per second, once the five-second rule lets it start. Worth roughly a Heal per lull,
+	 * which is what makes banking mana during a quiet stretch a real choice rather than a rounding
+	 * error — see the note on `ManaRegen`.
+	 */
+	static manaRegen = 9
 	static faction = FACTION.PARTY
 	name = 'Player'
 	image = '/assets/generated/characters/player.png'
 
-	mana: Mana = new Mana(this, (this.constructor as typeof Player).maxMana)
+	mana: Mana
+
+	/** Same reason `Character` builds `health` here: a field initializer would orphan a second one. */
+	constructor(public parent: Encounter) {
+		super(parent)
+		const stats = this.constructor as typeof Player
+		this.mana = new Mana(this, stats.maxMana, stats.manaRegen)
+	}
 
 	spellbook: Record<string, typeof Spell> = spellRegistry
 

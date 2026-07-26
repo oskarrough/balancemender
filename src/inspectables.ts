@@ -56,6 +56,7 @@ const ATTACK_LABEL: Record<AttackKey, string> = {
 const UNIT_LABEL: Record<UnitKey, string> = {
 	maxHealth: 'Max health',
 	maxMana: 'Max mana',
+	manaRegen: 'Mana regen (per second)',
 }
 
 export function spellInspectables(game: GameLoop): Inspectable[] {

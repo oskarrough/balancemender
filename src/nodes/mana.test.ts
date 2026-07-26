@@ -1,0 +1,65 @@
+// @vitest-environment happy-dom
+import {describe, it, expect} from 'vitest'
+import {GameLoop} from './game-loop'
+import {Player} from './player'
+import {runFight} from '../sim/run'
+import {analyze} from '../sim/report'
+
+/**
+ * The five-second rule is the whole mechanic: casting suppresses your own regeneration, so a lull
+ * is worth something. #39 claimed regen never fired at all, reasoning that a Nakroth win spent
+ * exactly the 600-point pool "and not one point more". That inference was wrong — it only holds if
+ * the pool ends at zero, and it ended at 45. Regen was firing; it was just too small to matter.
+ * These tests pin the mechanic and the size separately, because those are the two ways it breaks.
+ */
+describe('mana regeneration', () => {
+	it('waits five seconds after a cast, then pays out once a second', () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		const mana = game.player.mana
+		// Regen also refuses to run on a full pool, so make room before asking about the rule.
+		mana.set(100)
+		mana.lastCastTime = 0
+
+		game.elapsedTime = 4999
+		expect(mana.regen.shouldTick()).toBe(false)
+		game.elapsedTime = 5000
+		expect(mana.regen.shouldTick()).toBe(true)
+
+		mana.regen.tick()
+		expect(mana.current).toBe(100 + Player.manaRegen)
+
+		game.disconnect()
+	})
+
+	it('takes its rate from the unit, so the Balance Lab can tune it', () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		// Captured before the tune, because the tune rewrites the static this came from.
+		const shipped = Player.manaRegen
+		expect(game.player.mana.regen.regenRate).toBe(shipped)
+
+		expect(game.perform({type: 'tune', of: 'unit', name: 'Player', key: 'manaRegen', value: 40}).ok).toBe(true)
+		// Read at construction, not per tick, so the fight you are in keeps the rate it started with
+		// — the same rule the rest of balance follows.
+		expect(game.player.mana.regen.regenRate).toBe(shipped)
+
+		const next = new GameLoop({party: ['Tank'], enemies: []})
+		expect(next.player.mana.regen.regenRate).toBe(40)
+
+		next.perform({type: 'resetBalance'})
+		next.disconnect()
+		game.disconnect()
+	})
+
+	/**
+	 * The guard against regen quietly going back to decorative. Spending more than the pool holds
+	 * is only possible if regeneration paid for the difference, so this is the arithmetic #39 got
+	 * backwards, turned into an assertion.
+	 */
+	it('lets the healer spend more than one poolful over a boss fight', async () => {
+		const fight = await runFight({enemies: ['Nakroth'], policy: 'triage', seed: 1})
+		expect(fight.outcome).toBe('victory')
+
+		const player = analyze(fight.events, fight).actors.find((actor) => actor.name === 'Player')
+		expect(player!.manaSpent).toBeGreaterThan(Player.maxMana)
+	})
+})

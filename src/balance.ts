@@ -4,7 +4,7 @@ import {unitRegistry} from './nodes/unit-registry'
 
 export const SPELL_KEYS = ['cost', 'heal', 'castTime', 'cooldown'] as const
 export const ATTACK_KEYS = ['minDamage', 'maxDamage', 'interval', 'delay'] as const
-export const UNIT_KEYS = ['maxHealth', 'maxMana'] as const
+export const UNIT_KEYS = ['maxHealth', 'maxMana', 'manaRegen'] as const
 
 export type SpellKey = (typeof SPELL_KEYS)[number]
 export type AttackKey = (typeof ATTACK_KEYS)[number]
@@ -14,7 +14,8 @@ type NumberDict = Record<string, number>
 
 type SpellClass = {cost: number; heal: number; castTime: number; cooldown: number}
 type AttackClass = {minDamage: number; maxDamage: number; interval: number; delay: number}
-type UnitClass = {maxHealth: number; maxMana?: number}
+/** Only the player has a mana pool today, so both mana keys are optional. */
+type UnitClass = {maxHealth: number; maxMana?: number; manaRegen?: number}
 
 export const spellClasses: Record<string, SpellClass> = {
 	Heal,
