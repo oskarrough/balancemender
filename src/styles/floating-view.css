@@ -45,6 +45,13 @@ floating-view[minimized] :is(main, footer) {
 	display: none;
 }
 
+/* Until the element upgrades, every panel sits at 0,0 — applyDefaultLayout() runs in the same
+   task as the upgrade, so hiding until then costs no time. `visibility`, not `display`: that
+   layout pass measures offsetWidth/offsetHeight. */
+floating-view:not(:defined) {
+	visibility: hidden;
+}
+
 /* Only intrinsic sizes here — position comes from applyDefaultLayout(), which then persists per panel.
    A `transform` in this file would be dead code: GSAP Draggable writes an inline transform on init. */
 floating-view:has(combat-log-viewer) {
@@ -53,6 +60,11 @@ floating-view:has(combat-log-viewer) {
 
 floating-view:has(animation-debugger) {
 	width: 22rem;
+}
+
+/* Wide enough that the prompt input isn't clipped — the 200px min-width is not. */
+floating-view:has(dev-console) {
+	width: 17.5rem;
 }
 
 animation-debugger {

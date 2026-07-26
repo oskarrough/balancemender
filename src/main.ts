@@ -14,7 +14,6 @@ import './components/fight-report'
 import './components/color-palette.js'
 import './components/balance-monitor.js'
 import './components/balance-lab'
-import './style.css'
 
 /**
  * Main entry point for the game.
