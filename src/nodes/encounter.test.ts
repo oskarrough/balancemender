@@ -1,6 +1,9 @@
 // @vitest-environment happy-dom
 import {describe, it, expect} from 'vitest'
 import {GameLoop} from './game-loop'
+import {rosterOf} from '../sim/run'
+import {PeriodicEffect} from './periodic'
+import type {TinyWolf} from './enemies'
 
 /**
  * One spawn door. Whatever adds a unit — boot, a roster, the dev console, a simulation —
@@ -56,6 +59,108 @@ describe('Encounter.spawn', () => {
 		const result = game.perform({type: 'spawn', unit: 'Nakroth'})
 		expect(result.ok).toBe(true)
 		expect(game.enemies.map((u) => u.unitId)).toEqual(['Nakroth'])
+		game.disconnect()
+	})
+})
+
+/**
+ * One death door. `Character` routes every death to `Encounter.onDeath()`, which stops the unit
+ * without taking it out of the fight — see the comment there for why the dead stay in the arrays.
+ */
+describe('death', () => {
+	/** vroum defers connect/disconnect to a microtask; two flushes settle a death. */
+	const settle = async () => {
+		await Promise.resolve()
+		await Promise.resolve()
+	}
+
+	it('keeps the fallen in the fight, so the report can still draw them', async () => {
+		const game = new GameLoop({party: [], enemies: ['TinyWolf', 'TinyWolf']})
+		await settle()
+		const [first, second] = game.enemies
+
+		first.health.set(0)
+		await settle()
+		expect(first.alive).toBe(false)
+		expect(game.enemies).toHaveLength(2)
+		expect(rosterOf(game).map((unit) => unit.name)).toContain(first.name)
+		expect(game.encounter.isEnemiesDefeated()).toBe(false)
+
+		second.health.set(0)
+		await settle()
+		expect(game.encounter.isEnemiesDefeated()).toBe(true)
+		game.disconnect()
+	})
+
+	/**
+	 * Dying used to detach the unit from the tree, and `UnitFrame` calls `player.getTarget()`
+	 * for every unit every frame — which reaches back up through `parent`. So the moment the
+	 * player died, every render threw, the Game Over screen included.
+	 */
+	it('leaves the dead attached to the encounter, so the UI can still read them', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		await settle()
+
+		for (const member of game.party) member.health.set(0)
+		await settle()
+
+		expect(game.encounter.isPartyDefeated()).toBe(true)
+		expect(game.player.parent).toBe(game.encounter)
+		expect(() => game.player.getTarget()).not.toThrow()
+		game.disconnect()
+	})
+
+	it('takes the dead out of targeting', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		await settle()
+		const wolf = game.enemies[0] as TinyWolf
+		wolf.currentTarget = game.tank
+
+		game.tank.health.set(0)
+		await settle()
+
+		expect(wolf.getTarget()).toBeUndefined()
+		expect(wolf.targetingTask.getPotentialTargets()).toEqual([game.player])
+		game.disconnect()
+	})
+
+	it('stops what the dying unit was doing — its cast, its target, the effects on it', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		await settle()
+		const tank = game.tank
+
+		new PeriodicEffect(tank, game.player)
+		await settle()
+		expect(tank.effects.size).toBe(1)
+
+		expect(game.perform({type: 'cast', spell: 'Heal', target: tank.id}).ok).toBe(true)
+		expect(game.player.spell).toBeDefined()
+
+		game.player.health.set(0)
+		await settle()
+		expect(game.player.spell).toBeUndefined()
+		expect(game.player.currentTarget).toBeUndefined()
+
+		tank.health.set(0)
+		await settle()
+		expect(tank.effects.size).toBe(0)
+		game.disconnect()
+	})
+
+	it('lets the fallen come back, rather than refilling an inert corpse', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		await settle()
+		const wolf = game.enemies[0] as TinyWolf
+
+		game.tank.health.set(0)
+		await settle()
+		expect(wolf.targetingTask.getPotentialTargets()).not.toContain(game.tank)
+
+		game.perform({type: 'healParty'})
+		await settle()
+		expect(game.tank.alive).toBe(true)
+		expect(game.tank.parent).toBe(game.encounter)
+		expect(wolf.targetingTask.getPotentialTargets()).toContain(game.tank)
 		game.disconnect()
 	})
 })

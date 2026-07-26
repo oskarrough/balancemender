@@ -26,7 +26,7 @@ export class Autopilot extends Task {
 
 	shouldTick() {
 		const player = this.parent
-		return player.health.current > 0 && !player.spell && !player.gcd
+		return player.alive && !player.spell && !player.gcd
 	}
 
 	tick() {
@@ -45,14 +45,13 @@ export interface Decision {
 /** Given the player, decide what to cast right now (or nothing). */
 export type Policy = (player: Player) => Decision | undefined
 
-const alive = (c: Character) => c.health.current > 0
 const ratio = (c: Character) => c.health.current / c.health.max
 const affordable = (player: Player, spell: SpellId) => spellRegistry[spell].cost <= (player.mana?.current ?? 0)
 const hasEffect = (target: Character, name: string) => [...target.effects].some((effect) => effect.name === name)
 
-/** The party member in the most trouble, ties broken by lowest absolute health. */
+/** The party member in the most trouble, ties broken by lowest absolute health. Never a corpse. */
 function mostHurt(player: Player): Character | undefined {
-	const candidates = player.parent.party.filter(alive)
+	const candidates = player.parent.party.filter((member) => member.alive)
 	if (!candidates.length) return undefined
 	return candidates.sort((a, b) => ratio(a) - ratio(b) || a.health.current - b.health.current)[0]
 }

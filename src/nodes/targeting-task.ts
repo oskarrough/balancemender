@@ -15,8 +15,9 @@ export class Targeting extends Task {
 		}
 	}
 
+	/** A corpse picks no targets. Death leaves the unit connected, so this is what stops it. */
 	shouldTick() {
-		return this.parent.health.current > 0
+		return this.parent.alive
 	}
 
 	needsTarget() {
@@ -43,7 +44,7 @@ export class TargetOppositeFaction extends Targeting {
 	getPotentialTargets(): Character[] {
 		const targets = this.parent.faction === 'party' ? this.parent.parent.enemies : this.parent.parent.party
 
-		return targets.filter((target) => target.health && target.health.current > 0)
+		return targets.filter((target) => target.alive)
 	}
 }
 

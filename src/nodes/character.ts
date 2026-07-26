@@ -34,9 +34,16 @@ export class Character extends Node {
 	faction: Faction = (this.constructor as typeof Character).faction
 	currentTarget?: Character
 
+	/**
+	 * Still standing. This — not membership of `encounter.party`/`enemies` — is who is in the
+	 * fight: the dead stay in those arrays. See `Encounter.onDeath()`.
+	 */
+	get alive() {
+		return this.health.current > 0
+	}
+
 	getTarget(): Character | undefined {
-		if (this.currentTarget && this.currentTarget.health.current > 0) return this.currentTarget
-		return undefined
+		return this.currentTarget?.alive ? this.currentTarget : undefined
 	}
 
 	constructor(public parent: Encounter) {
@@ -46,9 +53,15 @@ export class Character extends Node {
 		this.health.on(HEALTH_EVENTS.EMPTY, this.onHealthEmpty)
 	}
 
+	/**
+	 * Dying is the encounter's business, not the unit's. This used to call `this.disconnect()`,
+	 * which left the corpse half in and half out: vroum's teardown nulls `parent`, but the unit
+	 * stayed in `encounter.party`, so anything that walked that array and reached back up the
+	 * tree — `Player.getTarget()` reads `this.parent.tank` — threw from the first death onwards.
+	 */
 	private onHealthEmpty = () => {
-		log(`${this.constructor.name} is dead`)
-		this.disconnect()
+		log(`${this.name} is dead`)
+		this.parent.onDeath(this)
 	}
 
 	damage(amount: number) {

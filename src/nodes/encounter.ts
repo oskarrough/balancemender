@@ -6,8 +6,6 @@ import {FACTION} from './types'
 import type {GameLoop} from './game-loop'
 import type {Character} from './character'
 
-const alive = (c: {health?: {current: number}}) => !!c.health && c.health.current > 0
-
 /** Who is in a fight. This is the only way to describe one — there are no encounter subclasses. */
 export interface Roster {
 	/** Allies besides the player, who is always added. */
@@ -79,6 +77,30 @@ export class Encounter extends Node {
 	}
 
 	/**
+	 * A unit's health reached zero. The one death path — a `Character` hands over here instead
+	 * of tearing itself off the tree.
+	 *
+	 * The dead are not removed. `party` and `enemies` are who *joined* the fight, and three
+	 * things read them that way: `rosterOf()` walks them after the last blow to rebuild every
+	 * health bar in the fight report, the Fight report panel re-simulates the composition from
+	 * them (a won fight would otherwise replay against no enemies at all), and a healer has to
+	 * go on seeing — and one day resurrecting — a fallen party member. Who is still standing is
+	 * `unit.alive`, which is already what targeting, the autopilot, casting, the win/lose check
+	 * and the simulator's survivor count all ask.
+	 *
+	 * So death is not removal, it is stopping. Every task on a unit already skips itself while
+	 * `alive` is false; what is cancelled here is the rest — the target it was holding, the
+	 * effects ticking on it, and a cast it was halfway through, none of which watch health.
+	 * Leaving the unit connected is also what lets it come back: heal a corpse and it simply
+	 * resumes, where a disconnected one would stay inert at full health.
+	 */
+	onDeath(unit: Character) {
+		unit.currentTarget = undefined
+		for (const effect of unit.effects) effect.disconnect()
+		if (unit instanceof Player) unit.spell?.disconnect()
+	}
+
+	/**
 	 * Two wolves both called "Tiny wolf" make an unreadable report, so number them.
 	 * Runs after every spawn/remove, which is why it works off `baseName` — renaming
 	 * an already-renamed unit would otherwise give you "Tiny wolf 1 2".
@@ -103,11 +125,12 @@ export class Encounter extends Node {
 		}
 	}
 
+	/** Defeat is nobody left standing, not an empty array — the dead stay in it. */
 	isPartyDefeated() {
-		return !this.party.some(alive)
+		return !this.party.some((unit) => unit.alive)
 	}
 
 	isEnemiesDefeated() {
-		return !this.enemies.some(alive)
+		return !this.enemies.some((unit) => unit.alive)
 	}
 }
