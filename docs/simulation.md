@@ -65,10 +65,11 @@ seed 1 · triage · defeat in 20.0s
 ```
 5 fights · Tank + Player vs TinyWolf*3 · triage
 
-  victory 0 (0%)   defeat 5 (100%)   timeout 0 (0%)
-  duration  avg 47.2s  min 45.8s  max 52.8s
-  healing   avg 16.0 hps  overheal 16%
-  deaths    Tiny wolf 1 5/5   Player 5/5   Tank 5/5
+  victory 5 (100%)   defeat 0 (0%)   timeout 0 (0%)
+  duration  avg 87.9s  min 84.0s  max 91.2s
+  healing   avg 10.6 hps  overheal 23%
+  damage    avg 21.7 dps
+  deaths    Tiny wolf 1 5/5   Tiny wolf 2 5/5   Tiny wolf 3 5/5   Player 1/5
 ```
 
 ### Sweeping the whole curve
@@ -85,17 +86,20 @@ bun run sweep --json > sweep.json
 
 ```
 roster      policy  win%  timeout%  median  hps   overheal%  mana/s  casts
-TinyWolf*3  idle    0%    0%        15.4s   0.0   0%         0.0     0.0
-TinyWolf*3  triage  0%    0%        45.8s   16.0  21%        12.8    11.0
+TinyWolf*3  idle    0%    0%        23.0s   0.0   0%         0.0     0.0
+TinyWolf*3  triage  84%   0%        88.8s   10.4  28%        9.0     15.4
+TinyWolf*5  triage  0%    0%        40.0s   19.7  17%        15.1    10.9
 Nakroth     idle    0%    0%        32.0s   0.0   0%         0.0     0.0
-Nakroth     triage  100%  0%        60.0s   13.6  12%        10.1    9.1
+Nakroth     triage  100%  0%        60.0s   14.8  13%        11.1    10.0
 ```
 
 Read the `idle` rows first — they are the control group. A retune that lifts a win rate by making
 the healer irrelevant shows up as `idle` climbing alongside `triage` instead of staying at 0%.
 
-This is how the inverted difficulty curve in the table above was found: three trash mobs are
-unwinnable while the boss is a guaranteed win.
+This is how the difficulty curve got its shape checked. It used to be inverted — three trash mobs
+were unwinnable while the boss was a guaranteed win — because the tank kills enemies one at a time,
+so each wolf added both raises incoming damage and lengthens the fight (#40). It is still quadratic
+on purpose: `TinyWolf*5` has to stay a wall, and a flat curve cannot give you one.
 
 ## From the browser
 

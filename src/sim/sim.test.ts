@@ -109,6 +109,25 @@ describe('healing changes the outcome', () => {
 		expect(healed.outcome).toBe('victory')
 	})
 
+	/**
+	 * The difficulty ramp was inverted: three trash mobs were unwinnable while the boss was a
+	 * guaranteed win, because the tank kills one enemy at a time, so an extra wolf raises incoming
+	 * damage *and* lengthens the fight. #40 moved the cliff rather than flattening the curve —
+	 * five wolves is still meant to be a wall, which a flat curve could not give you.
+	 *
+	 * Both ends pinned, because either one can regress on its own: a wolf buff puts three back out
+	 * of reach, and a wolf nerf turns five into a fight you can win by out-sustaining.
+	 */
+	it.each([1, 2, 3, 4, 5])('makes three wolves hard and five a wall (seed %i)', async (seed) => {
+		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
+		expect((await runFight({enemies: three, policy: 'triage', seed})).outcome).toBe('victory')
+		// Still not a fight healing is irrelevant to — the control group has to keep losing it.
+		expect((await runFight({enemies: three, policy: 'idle', seed})).outcome).toBe('defeat')
+
+		const five = ['TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf'] as never
+		expect((await runFight({enemies: five, policy: 'triage', seed})).outcome).toBe('defeat')
+	})
+
 	it('spamming the expensive heal overheals more than triaging', async () => {
 		const spec = {enemies: ['TinyWolf', 'TinyWolf'] as never, seed: 5, maxDuration: 40_000}
 		const overheal = async (policy: 'panic' | 'triage') => {

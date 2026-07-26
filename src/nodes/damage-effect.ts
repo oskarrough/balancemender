@@ -98,8 +98,8 @@ export class DamageEffect extends Task {
  */
 export class SmallAttack extends DamageEffect {
 	static interval = 1600
-	static minDamage = 7
-	static maxDamage = 11
+	static minDamage = 5
+	static maxDamage = 7
 	static sound = 'combat_air_hit'
 	static name = 'Quick Stab'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
@@ -119,13 +119,18 @@ export class MediumAttack extends DamageEffect {
 /**
  * The wolf's own bite, split off `MediumAttack` because the boss swings that too — and a pack and
  * a boss want tuning in opposite directions, so a shared class made every wolf nerf a boss nerf.
- * Paired with Quick Stab, which only wolves use, this makes the whole pack tunable on its own (#40).
+ * Paired with Quick Stab, which only wolves use, this makes the whole pack tunable on its own.
+ *
+ * The two together land about 6.8 dps per wolf, down from 10.2 (#40). The pack still gets harder
+ * than linearly — the tank kills one enemy at a time, so each wolf added both raises incoming
+ * damage and lengthens the fight — which is deliberate, since a flat curve cannot give you a wall
+ * at five. All that moved is where the cliff falls; see docs/simulation.md.
  */
 export class WolfBite extends DamageEffect {
 	static delay = 4000
 	static interval = 3800
-	static minDamage = 15
-	static maxDamage = 20
+	static minDamage = 10
+	static maxDamage = 13
 	static sound = 'combat_strong_punch'
 	static name = 'Savage Bite'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
