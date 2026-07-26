@@ -40,11 +40,31 @@ export class SpellCast {
 		return {ok: true, value: spell}
 	}
 
+	/** The two halves below, in the order they always refused in. */
 	static validate(player: Player, SpellClass?: SpellClass): CastFailure | undefined {
+		return this.whyNotAct(player) ?? this.whyNotCast(player, SpellClass)
+	}
+
+	/**
+	 * What stops the player acting at all, whatever they meant to cast. True of the whole action
+	 * bar at once, and it flickers — the global cooldown is up for a moment after every cast.
+	 */
+	static whyNotAct(player: Player): CastFailure | undefined {
 		if (player.health.current <= 0) return 'dead'
 		if (player.gcd) return 'global-cooldown'
 		if (player.spell) return 'already-casting'
-		if (!player.getTarget()) return 'missing-target'
+		return undefined
+	}
+
+	/**
+	 * What stops this spell landing on this target. `target` is the cast being *considered*, not
+	 * always the one the player has selected — the Autopilot picks who to heal and hands the target
+	 * over with the cast, and `getTarget()` would answer about a different cast than it meant.
+	 */
+	static whyNotCast(player: Player, SpellClass?: SpellClass, target = player.getTarget()): CastFailure | undefined {
+		// `alive` and not just presence: the default `getTarget()` already filters corpses, so
+		// only an explicitly passed target could be a dead one, and healing a corpse is not a cast.
+		if (!target?.alive) return 'missing-target'
 		if (!SpellClass) return 'missing-spell'
 		if (SpellClass.cost && player.mana && player.mana.current < SpellClass.cost) return 'missing-mana'
 		return undefined

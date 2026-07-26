@@ -2,6 +2,7 @@ import {Task} from 'vroum'
 import type {Character} from './character'
 import type {Player} from './player'
 import {spellRegistry, SpellId} from './registry'
+import {SpellCast} from './spell-cast'
 import type {GameLoop} from './game-loop'
 
 /**
@@ -46,7 +47,15 @@ export interface Decision {
 export type Policy = (player: Player) => Decision | undefined
 
 const ratio = (c: Character) => c.health.current / c.health.max
-const affordable = (player: Player, spell: SpellId) => spellRegistry[spell].cost <= (player.mana?.current ?? 0)
+
+/**
+ * The same question the action bar asks, so a policy cannot decide to cast something the game
+ * would then refuse. This used to compare `cost` to current mana here, which meant the
+ * simulator's idea of a castable spell and the game's could drift apart — and would have, the
+ * moment spells grew their own cooldowns.
+ */
+const castable = (player: Player, spell: SpellId, target: Character) =>
+	!SpellCast.whyNotCast(player, spellRegistry[spell], target)
 const hasEffect = (target: Character, name: string) => [...target.effects].some((effect) => effect.name === name)
 
 /** The party member in the most trouble, ties broken by lowest absolute health. Never a corpse. */
@@ -63,9 +72,9 @@ export const idle: Policy = () => undefined
 export const triage: Policy = (player) => {
 	const target = mostHurt(player)
 	if (!target || ratio(target) > 0.9) return undefined
-	if (ratio(target) < 0.4 && affordable(player, 'Flash Heal')) return {spell: 'Flash Heal', target}
-	if (ratio(target) < 0.7 && affordable(player, 'Greater Heal')) return {spell: 'Greater Heal', target}
-	if (affordable(player, 'Heal')) return {spell: 'Heal', target}
+	if (ratio(target) < 0.4 && castable(player, 'Flash Heal', target)) return {spell: 'Flash Heal', target}
+	if (ratio(target) < 0.7 && castable(player, 'Greater Heal', target)) return {spell: 'Greater Heal', target}
+	if (castable(player, 'Heal', target)) return {spell: 'Heal', target}
 	return undefined
 }
 
@@ -73,8 +82,8 @@ export const triage: Policy = (player) => {
 export const renew: Policy = (player) => {
 	const target = mostHurt(player)
 	if (!target || ratio(target) > 0.95) return undefined
-	if (!hasEffect(target, 'Renew') && affordable(player, 'Renew')) return {spell: 'Renew', target}
-	if (ratio(target) < 0.6 && affordable(player, 'Heal')) return {spell: 'Heal', target}
+	if (!hasEffect(target, 'Renew') && castable(player, 'Renew', target)) return {spell: 'Renew', target}
+	if (ratio(target) < 0.6 && castable(player, 'Heal', target)) return {spell: 'Heal', target}
 	return undefined
 }
 
@@ -82,7 +91,7 @@ export const renew: Policy = (player) => {
 export const panic: Policy = (player) => {
 	const target = mostHurt(player)
 	if (!target || ratio(target) > 0.95) return undefined
-	if (affordable(player, 'Flash Heal')) return {spell: 'Flash Heal', target}
+	if (castable(player, 'Flash Heal', target)) return {spell: 'Flash Heal', target}
 	return undefined
 }
 
