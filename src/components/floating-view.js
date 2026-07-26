@@ -39,12 +39,15 @@ class FloatingView extends HTMLElement {
 
 	restoreLayout() {
 		const viewId = this.id || this.getAttribute('data-view-id')
+		// getRow() returns {} for a missing row, so ask hasRow() whether this panel was ever saved.
+		if (!store.hasRow('floating-views', viewId)) return
 		const row = store.getRow('floating-views', viewId)
-		if (!row) return
 		const {minWidth, minHeight} = FloatingView.config
 		const width = Math.max(minWidth, Math.min(row.width, window.innerWidth))
 		const height = Math.max(minHeight, Math.min(row.height, window.innerHeight))
-		const x = Math.max(0, Math.min(row.x, window.innerWidth - minWidth))
+		// Clamp against the panel's own size, not minWidth, so a panel saved near the right edge
+		// of a wide screen doesn't restore mostly off-screen on a smaller one.
+		const x = Math.max(0, Math.min(row.x, window.innerWidth - width))
 		const y = Math.max(0, Math.min(row.y, window.innerHeight - minHeight))
 		if (this.hasAttribute('minimized')) {
 			gsap.set(this, {x, y})
@@ -127,10 +130,7 @@ class FloatingView extends HTMLElement {
 		const x = matrix.m41
 		const y = matrix.m42
 
-		console.log('saveLayout', viewId, {width, height, x, y})
-
-		const existingRow = store.getRow('floating-views', viewId)
-		if (existingRow) {
+		if (store.hasRow('floating-views', viewId)) {
 			store.setPartialRow('floating-views', viewId, {width, height, x, y})
 		} else {
 			store.setRow('floating-views', viewId, {width, height, x, y, type: 'view'})
@@ -144,3 +144,64 @@ class FloatingView extends HTMLElement {
 }
 
 customElements.define('floating-view', FloatingView)
+
+const LAYOUT = {
+	gap: 8,
+	/** Rails start below the in-game menu (.IngameMenu) */
+	railTop: 48,
+	/** Under this width there is no room beside the game column, so everything shares one rail */
+	narrow: 900,
+	/** Width to leave clear down the middle for the party frames (.PartyMember is max-width 20rem) */
+	gameColumn: 360,
+	/** Height to leave clear at the bottom for .ActionBar */
+	actionBar: 104,
+}
+
+/**
+ * Position panels that the user has never moved.
+ *
+ * On a wide screen the game owns the center column (party frames, cast bar, action bar), so panels
+ * dock into rails down the left and right edges. Narrow screens have no room beside the column, so
+ * everything collapses to title bars in one rail stacked up from above the action bar — the empty
+ * strip there is the only space that doesn't cover the frames you need to click.
+ *
+ * Panels with a saved layout are left alone; this only decides where things land on a fresh visit
+ * or after a resize you haven't customised.
+ */
+export function applyDefaultLayout() {
+	const wide = window.innerWidth >= LAYOUT.narrow
+	const railY = {left: LAYOUT.railTop, right: LAYOUT.railTop}
+	// A rail may not grow into the game column, so panels never cover the party frames.
+	const maxWidth = wide
+		? (window.innerWidth - LAYOUT.gameColumn) / 2 - LAYOUT.gap * 2
+		: window.innerWidth - LAYOUT.gap * 2
+
+	// Narrow screens stack upward from just above the action bar instead of down from the top.
+	let narrowY = window.innerHeight - LAYOUT.actionBar
+
+	for (const view of document.querySelectorAll('floating-view')) {
+		const viewId = view.id || view.getAttribute('data-view-id')
+		if (store.hasRow('floating-views', viewId)) continue
+
+		const rail = wide ? view.getAttribute('data-dock') || 'left' : 'left'
+		if (!wide) {
+			view.setAttribute('minimized', '')
+			// Collapse to the title bar — a markup `height` would otherwise keep the panel full-size.
+			view.style.height = 'auto'
+		}
+
+		const width = Math.max(FloatingView.config.minWidth, Math.min(view.offsetWidth, maxWidth))
+		const x = rail === 'right' ? window.innerWidth - width - LAYOUT.gap : LAYOUT.gap
+		let y
+		if (wide) {
+			y = railY[rail]
+			railY[rail] += view.offsetHeight + LAYOUT.gap
+		} else {
+			narrowY -= view.offsetHeight + LAYOUT.gap
+			y = Math.max(LAYOUT.railTop, narrowY)
+		}
+		gsap.set(view, {x, y, width})
+	}
+}
+
+window.addEventListener('resize', applyDefaultLayout)

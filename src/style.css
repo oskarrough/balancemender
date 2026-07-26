@@ -112,7 +112,7 @@ h3 {
 	}
 
 	&:hover {
-		background: color-mix(in oklch, var(--white), transparent 80%);
+		background: color-mix(in oklch, var(--c-snow-white), var(--c-black) 12%);
 	}
 
 	&:active {

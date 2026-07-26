@@ -7,6 +7,7 @@ import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
 import './components/dev-console'
 import './components/animation-debugger'
+import {applyDefaultLayout} from './components/floating-view.js'
 import './components/floating-view.js'
 import './components/combat-log-viewer.js'
 import './components/color-palette.js'
@@ -19,6 +20,10 @@ import './style.css'
  * Renders two components, the splash "menu" and the "game" itself.
  */
 function main() {
+	// Panels upgrade synchronously when floating-view.js defines the element, so they have
+	// their intrinsic size by now and the rails can stack them.
+	applyDefaultLayout()
+
 	// Wait for web fonts before animating the splash — otherwise "Rubik 80s Fade" swaps in mid-tween
 	// and re-rasterizes the giant title, which reads as jank no matter what GSAP does.
 	let splashIntro: ReturnType<typeof buildSplashIntro> | null = null

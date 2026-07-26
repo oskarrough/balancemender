@@ -33,35 +33,36 @@
 			<div class="Frame-game" id="balancemender"></div>
 		</div>
 
-		<floating-view data-view-id="balance-lab" minimized style="width: 26rem">
+		<!-- data-dock picks which edge rail a panel lands in on a fresh visit; see applyDefaultLayout() -->
+		<floating-view data-view-id="balance-lab" data-dock="left" minimized style="width: 26rem">
 			<header>Balance Lab</header>
 			<main>
 				<balance-lab></balance-lab>
 			</main>
 		</floating-view>
 
-		<floating-view data-view-id="dev-console" minimized>
+		<floating-view data-view-id="dev-console" data-dock="left" minimized>
 			<header>Console</header>
 			<main>
 				<dev-console></dev-console>
 			</main>
 		</floating-view>
 
-		<floating-view data-view-id="combat-log" style="height: 11rem">
+		<floating-view data-view-id="combat-log" data-dock="right" style="height: 11rem">
 			<header>Combat log</header>
 			<main>
 				<combat-log-viewer></combat-log-viewer>
 			</main>
 		</floating-view>
 
-		<floating-view data-view-id="animation-debugger">
+		<floating-view data-view-id="animation-debugger" data-dock="left">
 			<header>Animation</header>
 			<main>
 				<animation-debugger></animation-debugger>
 			</main>
 		</floating-view>
 
-		<!-- <floating-view data-view-id="color-palette" minimized> -->
+		<!-- <floating-view data-view-id="color-palette" data-dock="left" minimized> -->
 		<!-- 	<header>Color Palette</header> -->
 		<!-- 	<main> -->
 		<!-- 		<color-palette></color-palette> -->

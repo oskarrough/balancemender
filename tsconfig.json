@@ -6,6 +6,7 @@
 		"lib": ["ESNext", "DOM"],
 		"moduleResolution": "Bundler",
 		"strict": true,
+		"allowJs": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"esModuleInterop": true,
