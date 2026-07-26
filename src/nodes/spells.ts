@@ -29,11 +29,11 @@ export class Renew extends Spell {
 	static cost = 60
 	static castTime = 0
 
-	tick() {
+	cast() {
 		const player = this.parent
 		const target = player.getTarget()
 		if (target) {
-			new RenewHOT(target)
+			new RenewHOT(target, player)
 			AudioPlayer.play('spell_rejuvenation')
 		}
 	}

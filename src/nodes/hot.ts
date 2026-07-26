@@ -10,14 +10,23 @@ export class HOT extends Task {
 	interval = 3000
 	repeat = 5
 
+	casterName = ''
+	casterId = ''
+
 	static name = 'Periodic Heal'
 	static heal = 0
 	static interval = 3000
 	static repeat = 5
 
-	constructor(public parent: Character) {
+	/** `parent` is the unit being healed; `caster` is who to credit the healing to. */
+	constructor(
+		public parent: Character,
+		public caster: Character,
+	) {
 		super(parent)
 		applyStatics(this, 'name', 'heal', 'interval', 'repeat')
+		this.casterName = caster.name
+		this.casterId = caster.id
 	}
 
 	mount() {
@@ -30,20 +39,23 @@ export class HOT extends Task {
 		const character = this.parent
 		const heal = this.heal / this.repeat
 
+		const before = character.health.current
 		character.health.heal(heal)
+		const overheal = heal - (character.health.current - before)
 
 		fct(`+${heal}`)
 
 		logCombat({
 			timestamp: Date.now(),
 			eventType: 'SPELL_PERIODIC_HEAL',
-			sourceId: this.parent.id,
-			sourceName: this.parent.name,
+			sourceId: this.casterId,
+			sourceName: this.casterName,
 			targetId: this.parent.id,
 			targetName: this.parent.name || 'Unknown',
 			spellId: this.name,
 			spellName: this.name,
 			value: heal,
+			overheal,
 		})
 	}
 
