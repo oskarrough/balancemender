@@ -1,5 +1,5 @@
 import {Heal, FlashHeal, GreaterHeal, Renew} from './nodes/spells'
-import {SmallAttack, MediumAttack, HugeAttack, TankAttack} from './nodes/damage-effect'
+import {SmallAttack, MediumAttack, WolfBite, HugeAttack, TankAttack} from './nodes/damage-effect'
 import {unitRegistry} from './nodes/unit-registry'
 
 export const SPELL_KEYS = ['cost', 'heal', 'castTime', 'cooldown'] as const
@@ -27,6 +27,7 @@ export const spellClasses: Record<string, SpellClass> = {
 export const attackClasses: Record<string, AttackClass> = {
 	SmallAttack,
 	MediumAttack,
+	WolfBite,
 	HugeAttack,
 	TankAttack,
 }

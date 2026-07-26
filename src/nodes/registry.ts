@@ -1,5 +1,5 @@
 import {Heal, FlashHeal, GreaterHeal, Renew} from './spells'
-import {SmallAttack, MediumAttack, HugeAttack, TankAttack} from './damage-effect'
+import {SmallAttack, MediumAttack, WolfBite, HugeAttack, TankAttack} from './damage-effect'
 
 // Units live in `./unit-registry` — see the note there about the import cycle through player.ts.
 
@@ -13,6 +13,7 @@ export const spellRegistry = {
 export const attackRegistry = {
 	SmallAttack,
 	MediumAttack,
+	WolfBite,
 	HugeAttack,
 	TankAttack,
 } as const

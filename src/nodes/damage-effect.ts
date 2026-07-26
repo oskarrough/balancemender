@@ -92,7 +92,10 @@ export class DamageEffect extends Task {
 	}
 }
 
-/** Small, frequent attack with low damage */
+/**
+ * Small, frequent attack with low damage. Only wolves use it, so it is tuned as part of the pack
+ * budget below rather than on its own.
+ */
 export class SmallAttack extends DamageEffect {
 	static interval = 1600
 	static minDamage = 7
@@ -110,6 +113,21 @@ export class MediumAttack extends DamageEffect {
 	static maxDamage = 20
 	static sound = 'combat_strong_punch'
 	static name = 'Heavy Blow'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
+}
+
+/**
+ * The wolf's own bite, split off `MediumAttack` because the boss swings that too — and a pack and
+ * a boss want tuning in opposite directions, so a shared class made every wolf nerf a boss nerf.
+ * Paired with Quick Stab, which only wolves use, this makes the whole pack tunable on its own (#40).
+ */
+export class WolfBite extends DamageEffect {
+	static delay = 4000
+	static interval = 3800
+	static minDamage = 15
+	static maxDamage = 20
+	static sound = 'combat_strong_punch'
+	static name = 'Savage Bite'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
 

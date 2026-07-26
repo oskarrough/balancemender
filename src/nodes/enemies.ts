@@ -1,7 +1,7 @@
 import {Character} from './character'
 import {FACTION} from './types'
 import {TankTargeting, RandomTargeting} from './targeting-task'
-import {SmallAttack, MediumAttack, HugeAttack} from './damage-effect'
+import {SmallAttack, MediumAttack, WolfBite, HugeAttack} from './damage-effect'
 
 export class Nakroth extends Character {
 	static maxHealth = 500
@@ -18,6 +18,6 @@ export class TinyWolf extends Character {
 	name = 'Tiny wolf'
 	image = '/assets/generated/characters/tiny-wolf.png'
 	targetingTask = new RandomTargeting(this)
-	mainhand = new MediumAttack(this)
+	mainhand = new WolfBite(this)
 	offhand = new SmallAttack(this)
 }
