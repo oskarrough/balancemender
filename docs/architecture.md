@@ -54,6 +54,12 @@ Mana, cast time, GCD and cooldown are opt-in data. An ability with cast time or 
 cadence tick, spends no mana and ignores a concurrent cast. This distinction is data, not a Spell
 versus Attack inheritance branch.
 
+What an ability does when it lands is an ordered list of effects it declares —
+[`effects.ts`](../src/nodes/effects.ts) holds `Damage`, `Heal` and `ApplyAura`. Nothing overrides
+the lifecycle to add an outcome, and an effect reads its magnitude off the ability at landing time
+so tuning still reaches it. They are plain objects rather than nodes: a vroum child cannot run in
+the frame it is constructed, and everything instantaneous has nothing to gain from a lifecycle.
+
 What is _not_ shared is who decides. The player has a keyboard and an `Autopilot` weighing the
 fight; a fixed schedule has a `Cadence`. A unit wanting real decisions overrides
 `Cadence.chooses()` rather than growing a policy system.

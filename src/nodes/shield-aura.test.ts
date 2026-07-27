@@ -205,7 +205,7 @@ describe('Power Word: Shield', () => {
 		game.player.currentTarget = game.tank
 		game.tank.health.set(50)
 
-		new PowerWordShield(game.player).effect()
+		new PowerWordShield(game.player).land()
 		await flush()
 
 		expect(game.tank.health.current).toBe(50)

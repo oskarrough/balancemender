@@ -26,12 +26,12 @@ describe('stack rule', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.player.currentTarget = game.tank
 
-		new Renew(game.player).effect()
+		new Renew(game.player).land()
 		await Promise.resolve()
 		const first = aurasNamed(game.tank, 'Renew')[0]
 		first.tick()
 
-		new Renew(game.player).effect()
+		new Renew(game.player).land()
 		await Promise.resolve()
 		const after = aurasNamed(game.tank, 'Renew')
 
@@ -78,9 +78,9 @@ describe('stack rule', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.player.currentTarget = game.tank
 
-		new Renew(game.player).effect()
+		new Renew(game.player).land()
 		await Promise.resolve()
-		new Renew(game.player).effect()
+		new Renew(game.player).land()
 		await Promise.resolve()
 
 		expect(auraEvents('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])

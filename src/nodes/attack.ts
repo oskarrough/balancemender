@@ -1,7 +1,7 @@
 import type {CombatEventType} from '../combatlog'
 import {Ability} from './ability'
+import {ApplyAura, Damage} from './effects'
 import {PeriodicAura} from './periodic-aura'
-import type {Unit} from './unit'
 
 export class SmallAttack extends Ability {
 	static id = 'SmallAttack'
@@ -13,6 +13,7 @@ export class SmallAttack extends Ability {
 	static maxDamage = 7
 	static sound = 'combat_air_hit'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
+	static effects = [new Damage()]
 }
 
 export class MediumAttack extends Ability {
@@ -25,6 +26,22 @@ export class MediumAttack extends Ability {
 	static maxDamage = 20
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
+	static effects = [new Damage()]
+}
+
+/**
+ * The bleed keeps the bite's id-independent report identity (`Rend`) and waits one full interval
+ * before its first tick, so refreshing it does not turn half the wound into immediate damage.
+ *
+ * Declared before the bite that plants it: `static effects` runs when the class is defined.
+ */
+export class WolfBleed extends PeriodicAura {
+	static id = 'Rend'
+	static name = 'Rend'
+	static total = -8
+	static interval = 1000
+	static repeat = 4
+	static delay = 1000
 }
 
 /** The wolf's bite: one immediate hit followed by a short, refreshing wound. */
@@ -38,24 +55,8 @@ export class WolfBite extends Ability {
 	static maxDamage = 7
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-
-	protected afterUse(target: Unit) {
-		// The hit may have killed the target and cancelled its auras. Do not plant one afterwards.
-		if (target.alive) new WolfBleed(target, this.parent)
-	}
-}
-
-/**
- * The bleed keeps the bite's id-independent report identity (`Rend`) and waits one full interval
- * before its first tick, so refreshing it does not turn half the wound into immediate damage.
- */
-export class WolfBleed extends PeriodicAura {
-	static id = 'Rend'
-	static name = 'Rend'
-	static total = -8
-	static interval = 1000
-	static repeat = 4
-	static delay = 1000
+	// The bite lands first, and the wound only if it left something alive to bleed.
+	static effects = [new Damage(), new ApplyAura(WolfBleed)]
 }
 
 export class HugeAttack extends Ability {
@@ -68,6 +69,7 @@ export class HugeAttack extends Ability {
 	static maxDamage = 180
 	static sound = 'combat_arrow'
 	static eventType: CombatEventType = 'RANGE_DAMAGE'
+	static effects = [new Damage()]
 }
 
 export class TankAttack extends Ability {
@@ -80,4 +82,5 @@ export class TankAttack extends Ability {
 	static maxDamage = 24
 	static sound = 'combat_sword_hit'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
+	static effects = [new Damage()]
 }

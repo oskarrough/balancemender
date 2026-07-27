@@ -1,10 +1,10 @@
 import {Task} from 'vroum'
 import type {CombatEventType} from '../combatlog'
-import {applyStatics, naturalizeNumber, randomIntFromInterval} from '../utils'
-import {applyHit} from './hit'
+import {applyStatics, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
 import {AbilityUse} from './ability-use'
 import {eligible, type TargetRule} from './target-rule'
+import type {Effect} from './effects'
 import type {Unit} from './unit'
 
 export const ABILITY_TAGS = ['spell', 'attack', 'healing', 'melee', 'ranged'] as const
@@ -33,7 +33,11 @@ export class Ability extends Task {
 	maxDamage?: number
 	sound = ''
 	eventType: CombatEventType = 'SPELL_DAMAGE'
-	targetId = ''
+	/**
+	 * What this ability does when it lands, in order. Everything an ability does to the world is in
+	 * here — no subclass reaches into the lifecycle to add an outcome of its own.
+	 */
+	effects: readonly Effect[] = []
 	private used = false
 
 	static id = ''
@@ -42,6 +46,7 @@ export class Ability extends Task {
 	static school: AbilitySchool = 'physical'
 	static targetRule: TargetRule = 'enemy'
 	static icon = ''
+	static effects: readonly Effect[] = []
 	declare static cost?: number
 	declare static heal?: number
 	declare static castTime?: number
@@ -62,6 +67,7 @@ export class Ability extends Task {
 			'school',
 			'targetRule',
 			'icon',
+			'effects',
 			'cost',
 			'heal',
 			'cooldown',
@@ -82,7 +88,7 @@ export class Ability extends Task {
 		if (this.used) return
 		this.used = true
 		AbilityUse.succeed(this)
-		this.effect()
+		this.land()
 		AbilityUse.complete(this)
 	}
 
@@ -99,43 +105,24 @@ export class Ability extends Task {
 		return target && eligible(this.parent, this.targetRule).includes(target) ? target : undefined
 	}
 
-	/** Current implementation style: concrete abilities may still perform effects imperatively. */
-	effect() {
+	/** Run what this ability does, in the order it declares it, and then say it out loud. */
+	land() {
 		const target = this.target
-
-		if (target && this.heal) {
-			applyHit({
-				source: this.parent,
-				target,
-				amount: naturalizeNumber(this.heal),
-				abilityId: this.id,
-				abilityName: this.name,
-				eventType: 'SPELL_HEAL',
-			})
-		}
-
-		if (target && this.minDamage !== undefined && this.maxDamage !== undefined) {
-			this.targetId = target.id
-			applyHit({
-				source: this.parent,
-				target,
-				amount: -randomIntFromInterval(this.minDamage, this.maxDamage),
-				abilityId: this.id,
-				abilityName: this.name,
-				eventType: this.eventType,
-			})
-			if (this.sound) AudioPlayer.play(this.sound)
-			this.shakeTarget()
-			this.afterUse(target)
-		}
-
-		if (AbilityUse.usesCastRules(this.constructor as AbilityClass)) {
-			AudioPlayer.stopOwned(this)
-			AudioPlayer.play('spell_cast', {owner: this})
-		}
+		if (!target) return
+		for (const effect of this.effects) effect.apply(this, target)
+		this.playLandingSound()
 	}
 
-	protected afterUse(_target: Unit) {}
+	/**
+	 * One sound as the ability lands. An ability with a `sound` of its own plays that — an attack's
+	 * impact, Renew's chime — and a cast without one falls back to the generic cast chime, which is
+	 * also the moment to stop the looping precast it has been playing.
+	 */
+	private playLandingSound() {
+		AudioPlayer.stopOwned(this)
+		const sound = this.sound || (AbilityUse.usesCastRules(this.constructor as AbilityClass) ? 'spell_cast' : '')
+		if (sound) AudioPlayer.play(sound, {owner: this})
+	}
 
 	stopSounds() {
 		AudioPlayer.stopOwned(this)
@@ -145,8 +132,9 @@ export class Ability extends Task {
 		AbilityUse.finish(this)
 	}
 
-	private shakeTarget() {
-		const element = document.querySelector(`[data-unit-id="${this.targetId}"] .Unit-avatar`)
+	/** The flinch a hit draws on its target. Public because the Damage effect is what lands the hit. */
+	shakeTarget(target: Unit) {
+		const element = document.querySelector(`[data-unit-id="${target.id}"] .Unit-avatar`)
 		if (!element) return
 		element.classList.add('is-takingDamage')
 		const animation = element.animate(
