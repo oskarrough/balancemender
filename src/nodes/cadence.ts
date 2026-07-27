@@ -13,9 +13,11 @@ import {Character} from './character'
  * are genuinely different in kind — the player has a keyboard and an `Autopilot` weighing the
  * fight, an enemy has a clock.
  *
- * That mirrors how attacking already works. A `DamageEffect` is a swing on an interval that
- * nothing chooses; this is a cast on an interval that nothing chooses. A unit wanting real
- * decisions overrides `chooses()` rather than growing a policy system it does not need.
+ * That mirrors how attacking already works, except that an attack carries its own interval and a
+ * cast cannot: `DamageEffect` is a swing and its schedule welded together, while this is the
+ * schedule on its own. Unwelding the two is what would let one driver run both — see the glossary.
+ * A unit wanting real decisions overrides `chooses()` rather than growing a policy system it does
+ * not need.
  *
  * Named for the interval and not for the casting, because `caster` already means "whoever is
  * casting" everywhere else — this class holds no casting logic at all.

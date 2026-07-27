@@ -84,8 +84,10 @@ export class Character extends Node {
 	}
 
 	/**
-	 * What this unit can cast. Empty for most of them — a wolf bites, and biting is a
-	 * `DamageEffect` that ticks rather than a spell anything decides to use.
+	 * What this unit can cast. Empty for most of them — a wolf's abilities are attacks, and an
+	 * attack is a `DamageEffect` with its own timing welded in rather than a spellbook entry
+	 * something has to choose. Nothing about biting being physical keeps it out of here; the weld
+	 * does.
 	 *
 	 * Deliberately not the spell registry: that is the *player's* spellbook, and reading it from
 	 * here would close the import loop `character → registry → spells → spell → character`. Each

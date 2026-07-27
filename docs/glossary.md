@@ -28,7 +28,8 @@ unit is a character.
 on without spawning one.
 
 **Encounter** — one fight: a party and a set of enemies. **Roster** is the description it is
-built from, `{party: ['Tank'], enemies: ['TinyWolf']}`.
+built from, `{party: ['Tank'], enemies: ['TinyWolf']}` — a request, never a record. Who actually
+fought is the report's `units`.
 
 **Spawn** — the one way a unit joins a fight. `Encounter.spawn(unitId)` routes it to a side by
 the class's own faction, so nothing picks the array itself.
@@ -50,13 +51,27 @@ general synonyms for "unit" — reach for them only when the relationship is the
 **Player** the one at the keyboard · **caster** whoever is casting · **attacker** whoever is
 swinging · **source** and **target** the two ends of a hit · **ally** a unit of your own faction.
 
-**Target** — `currentTarget`, and a unit has exactly one. Attacking and casting both read it,
-which is why nothing in the game both hits and heals. `getTarget()` filters the dead; the
-player's also falls back to the tank, so the healer always has someone to heal.
+**Target** — who a use of an ability lands on. An argument, not a possession: `whyNotCast(caster,
+SpellClass, target)` already takes it as one, and the Autopilot already hands one over. Today it
+also exists as a stored slot, `currentTarget`, and a unit has exactly one — which is why nothing
+in the game both hits and heals, and why the player's `getTarget()` falls back to the tank. That
+slot is [drift](#drift-worth-fixing).
 
-**Targeting** — the Task that picks a target. `TargetOppositeFaction` for anything that hits,
-`TargetOwnFaction` for anything that helps; `prefers()` chooses and `reconsiders()` decides
-whether to look again once it has one.
+Picking one is two separate questions, and they are two words:
+
+**Target rule** — which units an ability may land on at all: `enemy`, `ally`, `self`. A property
+of the ability, because it never changes with who is using it or when. No field carries it yet;
+`getPotentialTargets()` computes it, and which subclass a unit was given is the only place it is
+written down.
+
+**Preference** — which of the eligible units to pick. A property of the _driver_, not the unit and
+not the ability: the keyboard, an `Autopilot` weighing the fight, or a standing rule like "always
+the most hurt". `prefers()` is the method, and `reconsiders()` decides whether to look again once
+it has one. Both live on the `Targeting` Task, which holds the rule as well and so is named for
+only half of what it does — drift, and the reason there was one word for two things.
+
+**Selected target** — the one the player clicked. UI state, kept because a player needs to see
+what they are aiming at; not what an ability reads.
 
 ## Doing things
 
@@ -66,13 +81,38 @@ event.
 **Event** — a record of something that happened, in the combat log. Never refused, never a
 request. Keep the two words apart.
 
-**Cast** — a spell in progress. **Cast time** is how long it takes; **GCD** (global cooldown) is
-the shared pause after any cast; **cooldown** is one spell's own wait.
+**Ability** — something a unit can use: what it requires and what it does, with no opinion about
+when. One live use is a one-shot Task; a driver decides when to create it. **Use** is the verb
+covering the whole category. There is no `Ability` class yet — a spell is a `Spell`, an attack is
+a `DamageEffect`, and they share no base — but the umbrella already exists in the combat log
+under the wrong name, since `Hit.spellId` is set by swings and auras too. See
+[drift](#drift-worth-fixing).
 
-**Id** and **name** — every spell, attack and aura has both. The **id** is what everything files
-it under: registry, spellbook, balance, `--tune`, the log's `spellId`, cooldowns, stack keys. The
+**Spell** — a magical ability. **Attack** — an ability that strikes or otherwise directly harms
+a target. They are tags, not subclasses, and may overlap: Flash Heal is a spell, Savage Bite is
+an attack, and Fireball is both. Neither who triggered an ability nor whether it repeats decides
+its tags. Renew is instant and still a spell; Nasty arrow has a wind-up and is still an attack.
+
+**Tag** — a classification an ability may share with any number of others: `spell`, `attack`,
+`healing`, `melee`, `ranged`. Tags let rules and equipment ask what an ability counts as without
+choosing its execution path. No field carries them yet.
+
+**School** — the flavour of an ability's power or damage: `physical`, `holy`, `fire`, and so on.
+Orthogonal to tags: Fireball can be a spell and an attack of the fire school; Savage Bite is an
+attack of the physical school. No field carries it yet.
+
+**Effect** — one thing an ability does when it lands: heal, damage, or apply an aura. An ability
+may have several, so it is a list rather than a field. Not the thing left sitting on the unit
+afterwards — that is an aura.
+
+**Cast** — a spell in progress. **Cast time** is how long it takes; **GCD** (global cooldown) is
+the shared pause after any cast; **cooldown** is one ability's own wait. A unit **casts** a spell
+and **swings** an attack; it **uses** either.
+
+**Id** and **name** — every ability and aura has both. The **id** is what everything files it
+under: registry, spellbook, balance, `--tune`, the log's `spellId`, cooldowns, stack keys. The
 **name** is what a player reads and is used for nothing else. Conventionally the id is the class
-name (`FlashHeal`), the name is prose (`Flash Heal`). Renaming a spell should touch one line.
+name (`FlashHeal`), the name is prose (`Flash Heal`). Renaming an ability should touch one line.
 
 **Spellbook** — what one unit can cast, keyed by spell id. The player's is the whole spell
 registry; most units have none. Not every castable spell is registered — `Mend` is a wolf's.
@@ -80,23 +120,28 @@ registry; most units have none. Not every castable spell is registered — `Mend
 **Busy** — time a unit was committed to a cast or its GCD, and so unable to act. Logged per cast
 as `busyFor` so the report never has to know how long a GCD lasts.
 
-**Spell** — something a caster decides to use. **Attack** — a swing on an interval that nothing
-decides (`DamageEffect`). The difference is who chooses, not what it does.
-
-**Driver** — what decides to use a spell: the keyboard, an `Autopilot` policy, or a `Cadence`
-ticking on an interval. Casting itself is shared — `SpellCast` refuses for the same seven reasons
+**Driver** — what decides when an ability is used: the keyboard, an `Autopilot` policy, or a
+`Cadence` ticking on an interval. Using is shared — `SpellCast` refuses for the same seven reasons
 whoever is asking, and skips the mana check for a caster with no pool. Only deciding differs.
 
-**Cadence** — the driver that casts at a fixed interval, and the whole of what the `Cadence` class
-does: it holds no casting logic, only _when_. Say "a boss ability on a 12s cadence". Not a
-"caster" — that is the role word for whoever is casting, and every unit that casts is one.
+**Cadence** — the driver that uses an ability at a fixed interval, and the whole of what the
+`Cadence` class does: it holds no casting logic, only _when_. Say "a boss ability on a 12s
+cadence". Repetition belongs to the cadence and never to the ability. Not a "caster" — that is the
+role word for whoever is casting, and every unit that casts is one.
 
-**Effect** — something that sits on a unit for a while. Today that is `PeriodicEffect`, one class
-for both heal-over-time and damage-over-time; a negative `total` hurts. **Aura** is the same
-thing seen from the combat log, which is where the WoW-shaped event names come from.
+**Aura** — something that sits on a unit for a while: it has a source, a lifetime, and it lives in
+the unit's `effects` set until it expires. What an apply-aura effect leaves behind. **Buff** and
+**debuff** are the same thing by polarity, helpful or harmful — prose words, because nothing in
+the code branches on which. `SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the
+combat log. The class is `PeriodicEffect`, which is drift.
 
-**Total** — what an effect lands over its whole life, not per tick. **Stacks** — how many copies
-of an effect one unit carries; `maxStacks` caps it.
+**Periodic aura** — an aura that lands an instalment on a cadence. Heal-over-time and
+damage-over-time are one class, and a negative `total` is the whole of what makes it a DoT. It is
+the only shape an aura can take today; an always-on stat change or an absorb pool has nowhere to
+live yet (#34, #47).
+
+**Total** — what an aura lands over its whole life, not per tick. **Stacks** — how many copies of
+one aura a unit carries; `maxStacks` caps it.
 
 **Hit** — one change to a health bar, applied through `applyHit()`. **Overheal** is the part of
 a heal that landed on a full bar and did nothing.
@@ -110,11 +155,13 @@ is worth something.
 Everything in the game is a vroum `Task`, and four fields say when it runs. They mean the same
 thing everywhere, so read them before inventing a timing word.
 
-**`delay`** how long before the first tick — a spell's cast time, an attack's opening wait ·
-**`interval`** the gap _between_ ticks, never before the first · **`repeat`** how many ticks
-(`1` is one-shot, `Infinity` is standing) · **`duration`** how long it lives.
+**`delay`** how long before the first tick — an ability's wind-up, a cadence's opening wait, or
+an aura's wait before its first instalment · **`interval`** the gap _between_ ticks, never before
+the first · **`repeat`** how many ticks (`1` is one-shot, `Infinity` is standing) · **`duration`**
+how long it lives.
 
-Whether something repeats is a dial, not a category. A one-tick `PeriodicEffect` is a direct hit.
+One use of an ability is one-shot. Repetition belongs to its driver; an aura may repeat because
+its persistence is the behavior the Task represents.
 
 ## Tuning and measuring
 
@@ -147,7 +194,7 @@ way), `defeat`, or `timeout`.
 **Report** — what `analyze()` makes of a combat log: per-unit and per-spell totals, deaths,
 health over time. Pure, so the terminal and the in-game panel agree by construction.
 
-**Seed** — one deterministic run. **Sweep** — every roster against every policy over many seeds.
+**Seed** — one deterministic run. **Sweep** — every enemy group against every policy over many seeds.
 
 **±** — half the 95% interval on a win rate, in points. At 10 seeds it is about ±23, wider than
 most retunes; comparing two candidates takes roughly 200.
@@ -165,8 +212,10 @@ drift.
 
 **Combatant, entity, mob, creature, fighter** — all mean unit. Say unit.
 
-**Effect** as a bare noun in prose — it means three different things in the code today (see
-below), so name which one.
+**Effect** — never for the thing sitting on a unit. That is an **aura**. Here `effect` means
+exactly one thing: what an ability does when it lands.
+
+**Skill** — never for an ability. `skill` is the progression word (#15, #31), kept free for it.
 
 ## Drift worth fixing
 
@@ -175,17 +224,19 @@ real collision found while writing this down.
 
 ### The plan (temporary — delete when done)
 
-Mechanical first, design after: 4 changes what 5 and 6 should look like, and `DamageEffect` should
-only be renamed once.
+The words are settled; what is left is renaming. Do the mechanical ones first — they are safe in
+any order — and let the two structural ones wait for the issues that teach us what the base needs.
 
-| #   | Do                                           | Size | Status     |
-| --- | -------------------------------------------- | ---- | ---------- |
-| 1   | Give spells a real id, split from the name   | M    | **done**   |
-| 2   | Report's `roster: UnitInfo[]` → its own word | S    | next       |
-| 3   | `Character`→`Unit`, `ActorStats`→`UnitStats` | L    | quiet tree |
-| 4   | Settle effect / aura / attack                | —    | decide     |
-| 5   | `HugeAttack` → a spell                       | M    | after 4    |
-| 6   | Unweld ability from driver (#42)             | L    | after 5    |
+| #   | Do                                                | Size | Status      |
+| --- | ------------------------------------------------- | ---- | ----------- |
+| 1   | Give spells a real id, split from the name        | M    | **done**    |
+| 2   | Settle ability / spell / attack / aura            | —    | **decided** |
+| 3   | `roster` → `units` / `--enemies`                  | S    | **done**    |
+| 4   | The aura renames (table below)                    | M    | ready       |
+| 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | quiet tree  |
+| 6   | Extract the `Aura` base                           | M    | with #47    |
+| 7   | Split `Targeting` into rule + preference          | M    | ready       |
+| 8   | Unweld ability from driver; `Ability` class (#42) | L    | after 6, 7  |
 
 **`Character` should be `Unit`.** One thing, three words: `unit` (234 uses — spawning, the
 registry, balance, `--tune`, the CLI), `Character` / `character` (160), `actor` (26). The word is
@@ -199,30 +250,85 @@ class is the base every unit shares. Once `Unit` is the base class, `Character` 
 what it should — the thing `Nakroth` is and `TinyWolf` is not. `ActorStats` becomes `UnitStats`
 in the same sweep.
 
-**"Effect" means three unrelated things.** `DamageEffect` is a swing (already called an attack by
-`attackRegistry`, `ATTACK_KEYS` and the `attack` balance kind); `PeriodicEffect` is something
-carried by a unit (already called an aura by every `SPELL_AURA_*` event); the `effect` balance
-kind means only "an aura nothing casts", because one a spell owns keeps its number on the spell.
-Under discussion. The leading candidate is to retire `effect` as a standalone noun — attack for
-the swing, aura for the carried thing — and reserve `SpellEffect`, unused, for the day a spell
-needs to declare more than one thing it does. WoW's own model is worth knowing here: a spell has
-N _effects_ (heal, damage, apply-aura), and an _aura_ is the runtime result of the apply-aura
-kind. Buff, debuff, HoT and DoT are all auras; they differ in what they do while attached.
+**"Effect" meant three unrelated things. Decided, not yet done.** The word now means one thing —
+what an ability does when it lands — and the other two take names the codebase was already using
+behind our backs. `DamageEffect` is a swing, and `attackRegistry`, `ATTACK_KEYS` and the `attack`
+balance kind have called it an attack all along; `PeriodicEffect` is carried by a unit, and every
+`SPELL_AURA_*` event has called that an aura all along. This is WoW's model, which is worth
+knowing because our combat log already inherited it: an ability has N _effects_ (heal, damage,
+apply-aura), and an _aura_ is what the apply-aura kind leaves behind. Buff, debuff, HoT and DoT
+are all auras and differ only in what they do while attached. The table is plan item 4; extracting
+the `Aura` base the third row assumes is item 6, and waits for #47.
 
-**`HugeAttack` is misfiled.** "Nasty arrow" is a boss ability on a 12s cadence, which is exactly
-what `Cadence` does — but it predates `Cadence` and is a `DamageEffect` instead. So there
-are two mechanisms for "a thing on a cadence", and `enemies.ts` says so out loud. Making it a
-spell would leave `DamageEffect` meaning purely "the swing" and the naming would follow.
+| Today                 | Becomes        | Because                                         |
+| --------------------- | -------------- | ----------------------------------------------- |
+| `DamageEffect`        | `Attack`       | `attackRegistry` already keys it that way       |
+| `PeriodicEffect`      | `PeriodicAura` | `SPELL_AURA_*` already logs it that way         |
+| `CharacterEffect`     | `Aura`         | it is `= PeriodicEffect`; the base #47 extracts |
+| `RenewEffect`         | `RenewAura`    | follows its base                                |
+| `unit.effects`        | `unit.auras`   | frees `effects` for an ability's own list       |
+| `Tank.attackEffect`   | `mainhand`     | what `TinyWolf` already calls it                |
+| balance kind `effect` | `aura`         | it only ever meant "an aura nothing casts"      |
+| `Hit.spellId`         | `abilityId`    | swings and auras set it too                     |
 
-**Ability, cast and driver are three layers, and `DamageEffect` welds two of them.** `WolfBite` is
-both _what happens_ (4-7 damage, plant a Rend) and _when_ (every 3800ms, forever). A `Spell`
-carries only the first; the timing comes from a driver. That weld is the reason Savage Bite can't
-go on the action bar — not that it's an attack. Unwelding it would also need a spell to declare
-whether it wants a friend or an enemy, since a unit has one target and the player's falls back to
-the tank (#42).
+`Hit.spellId` is the load-bearing one: its own comment reads _"the spell, attack or aura it came
+from"_ — three things sharing a field named after one. That field is the `Ability` umbrella,
+already present and misnamed. The `SPELL_*` event names stay as they are: renaming those would
+break every log already recorded, and WoW lives with the same wart.
 
-**"Roster" means three things.** `{party, enemies}` in `Encounter`; enemies only in
-`sweep --rosters`; and "the units that fought" (`UnitInfo[]`) in the report.
+**`HugeAttack` is misfiled, but not in the way we thought.** "Nasty arrow" is a boss ability on a
+12s cadence, and there are two mechanisms for that — `Cadence`, and a `DamageEffect` with a long
+`interval`, which is what this is. Under the old "a spell is what someone chooses" rule the fix
+looked like converting it to a spell. It is not: it is fired from a bow, it logs `RANGE_DAMAGE`,
+and it is an **attack**. What it needs is a `Cadence` driving it, which is plan item 8 and not a
+rename.
+
+**Ability and driver are two layers, and `DamageEffect` welds them.** `WolfBite` is both _what
+happens_ (4-7 damage, plant a Rend) and _when_ (every 3800ms, forever). A `Spell` carries only the
+first. That weld — not the fact that it is an attack — is the reason Savage Bite cannot go on the
+action bar, and it is why we had no word for the umbrella: with timing baked in, a spell and an
+attack looked like different things. Unwelded, they share one execution path, so the endpoint is
+one `Ability` class whose effects are child nodes and whose classifications are data:
+
+```ts
+FlashHeal   tags [spell, healing]         school holy      effects [Heal(100)]
+SavageBite  tags [attack, melee]          school physical  effects [Damage(4, 7), ApplyAura(Rend)]
+Fireball    tags [spell, attack, ranged]  school fire      effects [Damage(80)]
+```
+
+Two things have to arrive with it. `targets` — the target rule — becomes a field on `Ability`, for
+the same reason `tags` and `school` do: it is a fact about what the ability is. The shared parts
+of `SPELL_KEYS` and `ATTACK_KEYS` merge. An attack's current `interval` does not become an ability
+cooldown: it moves to the cadence that drives it, while cooldown remains a restriction on the
+ability itself.
+
+**One target slot, doing three jobs.** `Character.currentTarget` is the rule, the preference and
+the player's selection at once, and a unit gets one. That is the whole reason `WolfShaman` carries
+no attacks — it spends its single target on the ally it heals — and the reason `Player.getTarget()`
+falls back to the tank while nothing else does. Two identical `prefers()` bodies (`LowestHealth`
+and `MostHurtAlly`) are the visible symptom: `Targeting` crosses rule and preference into one
+inheritance chain, so the same preference had to be written twice to reach two different rules.
+
+The endpoint is that a target is **passed to a use**, not stored on a unit. Half the code already
+works this way — `whyNotCast(caster, SpellClass, target)` takes it as an argument with the slot as
+a mere default, and the Autopilot validates against an explicit target, then routes it through
+`currentTarget` (`perform({type: 'cast', target})`) purely so `applyHeal()` can read it back out.
+The slot is a round trip. What survives it is a **selected target** for the UI, one **preference**
+per driver, and the rule on the ability.
+
+The rule cannot move until there is an `Ability` to hold it: putting `targets` on `Spell` and
+`DamageEffect` separately — they share no base — would duplicate the rule exactly as `prefers()` is
+duplicated today, one layer up. So this is part of plan item 8, not before it. Decomposing
+`Targeting` into a rule and a preference is safe to do first, and makes the move a smaller one.
+
+**~~"Roster" meant three things.~~** Fixed. A roster is the _request_ — what to spawn — and only
+`Encounter`'s `{party, enemies}` is one. The other two were a record and a half: `FightResult.roster`
+is now `units`, since it is a record of who fought, carrying the live names, `maxHealth` and
+factions the request never had — calling it by the request's name was the action/event mistake in
+different clothes. `report(log, {roster})` followed, becoming `{units}`. `sweep --rosters` became
+`--enemies`: it was only half a roster — its own help text at `sweep.ts:48` already called the
+argument "enemy groups" — and `sim` already spelled it `--enemies`, so this was two CLIs agreeing
+rather than a new word.
 
 **~~`spellId` is a name.~~** Fixed. Every spell, attack and aura now carries `static id` alongside
 `static name`, and the id is what everything keys on — see
