@@ -1,7 +1,7 @@
-.Character {
-	--character-bg: var(--c-snow-white);
-	--character-hover-bg: color-mix(in oklch, var(--c-snow-white), var(--c-linden-green));
-	--character-targeted-bg: var(--c-linden-green);
+.Unit {
+	--unit-bg: var(--c-snow-white);
+	--unit-hover-bg: color-mix(in oklch, var(--c-snow-white), var(--c-linden-green));
+	--unit-targeted-bg: var(--c-linden-green);
 
 	position: relative;
 	padding: 0.2rem;
@@ -14,69 +14,69 @@
 		background 100ms,
 		border-color 250ms,
 		box-shadow 250ms;
-	background: var(--character-bg);
+	background: var(--unit-bg);
 	max-width: 100%;
 	width: 20rem;
 }
 
-.Character:not(.Character--targeted):hover {
-	background: var(--character-hover-bg);
+.Unit:not(.Unit--targeted):hover {
+	background: var(--unit-hover-bg);
 }
 
 /* Styles for the selected target */
-.Character--targeted {
-	background: var(--character-targeted-bg);
+.Unit--targeted {
+	background: var(--unit-targeted-bg);
 }
 
-.Character.PartyMember {
+.Unit.PartyMember {
 }
 
 /**
  * How a unit is doing, at a glance. A border rather than a background, because `.Enemy` and
  * `--targeted` already own the background and a unit is both of those things at once.
  */
-.Character[data-condition='injured'] {
+.Unit[data-condition='injured'] {
 	border-color: var(--c-vermilion);
 	box-shadow: 0 0 0 2px color-mix(in oklch, transparent, var(--c-vermilion) 45%);
 }
 
-.Character[data-condition='healthy'] {
+.Unit[data-condition='healthy'] {
 	border-color: var(--c-imperial-green);
 }
 
 /* Corpses stay in the party and keep rendering, and 0% health reads as `injured` — so without
    this the dead wear the loudest frame on the screen. Doubled up to outweigh the attribute
    selector above it, which is one class heavier than a bare modifier. */
-.Character.Character--dead {
+.Unit.Unit--dead {
 	opacity: 0.45;
 	filter: grayscale(1);
 	box-shadow: none;
 }
 
-.Character.Enemy {
+.Unit.Enemy {
 	--health: var(--c-crimson-lake);
-	--character-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
-	--character-hover-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
-	--character-targeted-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
+	--unit-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
+	--unit-hover-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
+	--unit-targeted-bg: color-mix(in oklch, var(--c-snow-white) 50%, var(--c-crimson-lake));
 }
 
-.Character-row {
+.Unit-row {
 	display: flex;
 }
 
-.Character-bars {
+.Unit-bars {
 	flex: 1;
 	min-width: 0;
 }
 
-.Character-avatar {
+.Unit-avatar {
 	position: relative;
 	margin: 0;
 	font-weight: bold;
 	user-select: none;
 }
 
-.Character-avatar img {
+.Unit-avatar img {
 	display: block;
 	width: 3rem;
 	height: 3rem;
@@ -84,11 +84,11 @@
 	border-radius: var(--radius);
 }
 
-.Character-health {
+.Unit-health {
 	position: relative;
 }
 
-.Character-name {
+.Unit-name {
 	position: absolute;
 	inset: 0;
 	display: flex;
@@ -109,7 +109,7 @@
  * this is what an enemy cast looks like — small, under the health bar, and the only warning you
  * get that a shaman is about to undo your work.
  */
-.Character-cast {
+.Unit-cast {
 	display: flex;
 	align-items: center;
 	gap: 0.4rem;
@@ -118,12 +118,12 @@
 	opacity: 0.9;
 }
 
-.Character-cast small {
+.Unit-cast small {
 	flex: none;
 	white-space: nowrap;
 }
 
-.Character-cast .Meter,
-.Character-cast .Bar {
+.Unit-cast .Meter,
+.Unit-cast .Bar {
 	flex: 1;
 }

@@ -1,9 +1,9 @@
-import {Character} from './character'
+import {Unit} from './unit'
 import {TankAttack} from './attack'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
 
-export class Tank extends Character {
+export class Tank extends Unit {
 	static maxHealth = 300
 	static faction = FACTION.PARTY
 	targeting = new Targeting(this, 'enemy', prefer.first)
@@ -12,7 +12,7 @@ export class Tank extends Character {
 	image = '/assets/generated/characters/tank.png'
 }
 
-// export class Warrior extends Character {
+// export class Warrior extends Unit {
 // 	faction = FACTION.PARTY
 // 	health = new Health(this, 600)
 // 	targeting = new Targeting(this, 'enemy', prefer.first)
@@ -20,7 +20,7 @@ export class Tank extends Character {
 // 	name = 'Bobowarr'
 // }
 
-// export class Rogue extends Character {
+// export class Rogue extends Unit {
 // 	faction = FACTION.PARTY
 // 	health = new Health(this, 300)
 // 	targeting = new Targeting(this, 'enemy', prefer.first)

@@ -1,5 +1,5 @@
 import type {GameLoop} from './nodes/game-loop'
-import type {Character} from './nodes/character'
+import type {Unit} from './nodes/unit'
 import {balance, SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, RULE_KEYS, SpellKey, AttackKey, UnitKey, RuleKey} from './balance'
 import {spellRegistry, attackRegistry} from './nodes/registry'
 import type {UnitId} from './nodes/unit-registry'
@@ -174,11 +174,11 @@ export function unitInspectables(game: GameLoop): Inspectable[] {
 export function liveInspectables(game: GameLoop): Inspectable[] {
 	const party = game.party ?? []
 	const enemies = game.encounter?.enemies ?? []
-	const characters: Character[] = [...party, ...enemies]
-	return characters.map((c) => liveInspectable(game, c))
+	const units: Unit[] = [...party, ...enemies]
+	return units.map((c) => liveInspectable(game, c))
 }
 
-function liveInspectable(game: GameLoop, c: Character): Inspectable {
+function liveInspectable(game: GameLoop, c: Unit): Inspectable {
 	const fields: Field[] = [
 		{
 			kind: 'number',

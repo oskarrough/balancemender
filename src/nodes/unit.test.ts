@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
-import {CONDITION_THRESHOLDS} from './character'
+import {CONDITION_THRESHOLDS} from './unit'
 import {applyHit} from './hit'
 import {combatLogs, clearLogs} from '../combatlog'
 import {resetBalance, setRuleValue} from '../balance'
@@ -11,7 +11,7 @@ import {resetBalance, setRuleValue} from '../balance'
  * of it. What they pin down is the boundary: "injured below 35%" and "healthy above 80%" are
  * exclusive, so a unit sitting exactly on a line is in neither band.
  */
-describe('Character.condition', () => {
+describe('Unit.condition', () => {
 	const tank = () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		return {game, unit: game.tank}

@@ -1,7 +1,7 @@
 import {Task} from 'vroum'
 import {Resource} from './resource'
 import type {GameLoop} from './game-loop'
-import {Character} from './character'
+import {Unit} from './unit'
 /**
  * Events emitted by the Mana node
  */
@@ -23,7 +23,7 @@ export class Mana extends Resource {
 	 * whoever owns the pool, so it is tunable per unit and read once at construction. Retuning it
 	 * mid-fight leaves the fight you are in alone, which is the rule the rest of balance follows.
 	 */
-	constructor(parent: Character, max = 100, regenRate = 3) {
+	constructor(parent: Unit, max = 100, regenRate = 3) {
 		super(parent, max, MANA_EVENTS)
 		this.regen = new ManaRegen(this, regenRate)
 	}
@@ -52,7 +52,7 @@ export class Mana extends Resource {
  * Two numbers set how much a lull pays — this rate, and the threshold below it. A healer's pauses
  * run about 6-8s, so the threshold eats most of each one and only the tail pays out; widening the
  * threshold and raising the rate reach the same place. The rate is the one tuned, because it is
- * what a character can plausibly differ on later (#31's spirit stat) while the rule is the same
+ * what a unit can plausibly differ on later (#31's spirit stat) while the rule is the same
  * for everyone. See #39.
  */
 export class ManaRegen extends Task {

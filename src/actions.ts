@@ -2,7 +2,7 @@ import {log} from './utils'
 import {AudioPlayer} from './nodes/audio'
 import {setBalanceValue, resetBalance, SpellKey, AttackKey, AuraKey, UnitKey, RuleKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
-import type {Character} from './nodes/character'
+import type {Unit} from './nodes/unit'
 import type {Roster} from './nodes/encounter'
 import type {UnitId} from './nodes/unit-registry'
 
@@ -19,9 +19,9 @@ import type {UnitId} from './nodes/unit-registry'
 export type GameAction =
 	/** Add a unit to the fight. It joins the side its class belongs to. */
 	| {type: 'spawn'; unit: UnitId}
-	/** Take a unit out of the fight, by character id. */
+	/** Take a unit out of the fight, by unit id. */
 	| {type: 'remove'; unit: string}
-	/** Point the player at a character id. */
+	/** Point the player at a unit id. */
 	| {type: 'target'; unit: string}
 	/** Cast, optionally switching target first — the pair every caller used to duplicate. */
 	| {type: 'cast'; spell: string; target?: string}
@@ -110,17 +110,17 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 	}
 }
 
-const findUnit = (game: GameLoop, id: string): Character | undefined =>
+const findUnit = (game: GameLoop, id: string): Unit | undefined =>
 	[...game.party, ...game.enemies].find((unit) => unit.id === id)
 
 /**
  * A retuned unit type applies to the ones already fighting, matched by `unitId` — never by
  * class name, which the production build minifies into nonsense.
  */
-function retuneLiveUnits(game: GameLoop, unit: string, key: UnitKey, value: number) {
-	for (const character of [...game.party, ...game.enemies]) {
-		if (character.unitId !== unit) continue
-		const resource = key === 'maxHealth' ? character.health : character.mana
+function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: number) {
+	for (const unit of [...game.party, ...game.enemies]) {
+		if (unit.unitId !== unitId) continue
+		const resource = key === 'maxHealth' ? unit.health : unit.mana
 		if (!resource) continue
 		resource.max = value
 		if (resource.current > value) resource.set(value)

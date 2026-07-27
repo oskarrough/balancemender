@@ -9,9 +9,9 @@ rename given a free afternoon is at the [bottom](#drift-worth-fixing).
 
 ## The fight
 
-**Unit** — anyone in a fight, player or otherwise. The class is
-[`Character`](../src/nodes/character.ts); "unit" is the word for one in play. Prefer it in prose
-and in log messages.
+**Unit** — anyone in a fight, player or otherwise. Both the class,
+[`Unit`](../src/nodes/unit.ts), and the word for one in play. Prefer it in prose and in log
+messages.
 
 **Unit id** — the registry key a unit is spawned from (`'TinyWolf'`, `'Tank'`). Distinct from a
 unit's `id`, which is unique per spawned instance. Anything keyed across a fight uses the
@@ -215,14 +215,13 @@ most retunes; comparing two candidates takes roughly 200.
 Each is a word to reach past, not a word that means nothing. Where a class still carries one, that
 is [drift](#drift-worth-fixing) with a plan against it, not a second opinion.
 
-**Actor** — never for a unit. `ActorStats` is the last holdout, and becomes `UnitStats` with the
-report's `actors` becoming `units`. The one other use is unrelated and stays: `hit.ts` bundles the
-two ends of a hit as `actors` before spreading them into a log event, which is log fields and not
-units.
+**Actor** — never for a unit. What a fight did to each one is `UnitStats`, in `report.units`. The
+one remaining use is unrelated and stays: `hit.ts` bundles the two ends of a hit as `actors`
+before spreading them into a log event, which is log fields and not units.
 
 **Character** — never for a unit _in general_: it means a named unit specifically (above), and
-using it for a wolf throws that distinction away. The class still covers everyone, which is the
-drift.
+using it for a wolf throws that distinction away. No class claims the word now that the base is
+`Unit`, which is the point — it is held open for the thing `Nakroth` is.
 
 **Combatant, entity, mob, creature, fighter** — all mean unit. Say unit.
 
@@ -247,24 +246,18 @@ any order — and let the two structural ones wait for the issues that teach us 
 | 2   | Settle ability / spell / attack / aura            | —    | **decided** |
 | 3   | `roster` → `units` / `--enemies`                  | S    | **done**    |
 | 4   | The aura renames                                  | M    | **done**    |
-| 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | ready       |
+| 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | **done**    |
 | 6   | Extract the `Aura` base                           | M    | with #47    |
 | 7   | Split `Targeting` into rule + preference          | S    | **done**    |
 | 8   | Unweld ability from driver; `Ability` class (#42) | L    | after 6, 7  |
 | 9   | Stop the prose calling an encounter a fight       | S    | **done**    |
 | 10  | `report.spells` → `abilities`, keyed as it is     | S    | **done**    |
 
-**`Character` should be `Unit`.** One thing, three words: `unit` (234 uses — spawning, the
-registry, balance, `--tune`, the CLI), `Character` / `character` (160), `actor` (26). The word is
-settled — unit — but the class, `character.ts` and `data-character-id` have not caught up.
-`character.id` already means something else, which is part of why the rename is worth doing
-rather than the reverse. Plan item 5, not started — it touches nearly every file, so it wants a
-quiet tree.
-
-The rename does not retire `Character`, it narrows it: a character is a _named_ unit, and the
-class is the base every unit shares. Once `Unit` is the base class, `Character` is free to mean
-what it should — the thing `Nakroth` is and `TinyWolf` is not. `ActorStats` becomes `UnitStats`
-in the same sweep, and the report's `actors` field becomes `units`.
+**The asset pipeline still says `character`,** and item 5 deliberately left it: `AssetType` in
+`asset-prompts.ts`, `"type": "character"` in `image-assets.json`, and the generated files under
+`public/assets/generated/characters/`. Renaming those means moving images on disk and rewriting the
+manifest that names them, which is not the same job as renaming a class, and every path is already
+committed. It is the only place the word survives outside its narrow meaning.
 
 **`HugeAttack` is misfiled, but not in the way we thought.** "Nasty arrow" is a boss ability on a
 12s cadence, and there are two mechanisms for that — `Cadence`, and an `Attack` with a long

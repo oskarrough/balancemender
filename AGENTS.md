@@ -14,7 +14,7 @@ Read [docs/architecture.md](./docs/architecture.md) first — it is the map of t
 covers the vroum lifecycle rules that are easy to get wrong.
 
 - `src/main.ts` boots the splash, then builds a `GameLoop` on the first keypress
-- `src/nodes/` is the game: loop, encounter, characters, spells, attacks, resources
+- `src/nodes/` is the game: loop, encounter, units, spells, attacks, resources
 - `src/components/` is the UI (plain custom elements + uhtml), re-rendered by the loop each frame
 - `src/combatlog.ts` is the event stream every fight writes to
 - `src/sim/` runs fights without a browser and turns combat logs into reports

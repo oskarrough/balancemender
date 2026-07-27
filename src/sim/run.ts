@@ -4,7 +4,7 @@ import {Autopilot, Policy, PolicyName} from '../nodes/autopilot'
 import {combatLogs, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
 import {setSeed} from '../rng'
 import {DEMO_ROSTER, Roster} from '../nodes/encounter'
-import type {Character} from '../nodes/character'
+import type {Unit} from '../nodes/unit'
 
 export type Outcome = 'victory' | 'defeat' | 'timeout'
 
@@ -41,7 +41,7 @@ export interface FightResult {
 /**
  * Run one fight to the end and hand back its combat log.
  *
- * This is the real game — the real GameLoop, characters, spells and combat log — with two
+ * This is the real game — the real GameLoop, units, spells and combat log — with two
  * substitutions: the browser's frame clock is replaced by a fixed step, so a two-minute
  * fight resolves in milliseconds, and the healer is played by an `Autopilot`.
  */
@@ -135,7 +135,7 @@ if (typeof (GameLoop.prototype as unknown as {_requestNextFrame?: unknown})._req
 }
 Object.assign(SimLoop.prototype, {_requestNextFrame() {}})
 
-const isAlive = (c: Character) => c.health.current > 0
+const isAlive = (c: Unit) => c.health.current > 0
 
 /** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
 export function unitsOf(game: GameLoop): UnitInfo[] {

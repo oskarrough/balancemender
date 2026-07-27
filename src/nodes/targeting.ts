@@ -1,13 +1,13 @@
 import {Task} from 'vroum'
-import {Character} from './character'
-import {Tank} from './party-characters'
+import {Unit} from './unit'
+import {Tank} from './party-units'
 import {random} from '../rng'
 
 /** Which units an ability may land on at all. A fact about the ability, not about who is using it. */
 export type TargetRule = 'enemy' | 'ally' | 'self'
 
 /** The units a rule allows this one to pick from right now. A corpse is never eligible. */
-export function eligible(unit: Character, rule: TargetRule): Character[] {
+export function eligible(unit: Unit, rule: TargetRule): Unit[] {
 	if (rule === 'self') return unit.alive ? [unit] : []
 	const own = unit.faction === 'party' ? unit.parent.party : unit.parent.enemies
 	const other = unit.faction === 'party' ? unit.parent.enemies : unit.parent.party
@@ -21,21 +21,21 @@ export function eligible(unit: Character, rule: TargetRule): Character[] {
  * that never looks again keeps healing someone already topped up.
  */
 export interface Preference {
-	prefers(candidates: Character[]): Character | undefined
+	prefers(candidates: Unit[]): Unit | undefined
 	/** Whether to pick again while still holding a live target. */
-	reconsiders(current: Character, candidates: Character[]): boolean
+	reconsiders(current: Unit, candidates: Unit[]): boolean
 }
 
 export const prefer = {
 	/** Whoever comes first. Stays with them until they die. */
 	first: {
-		prefers: (candidates: Character[]) => candidates[0],
+		prefers: (candidates: Unit[]) => candidates[0],
 		reconsiders: () => false,
 	},
 
 	/** Uses the seeded `random()`, never `Math.random` — a fight replayed from a seed must pick the same. */
 	atRandom: {
-		prefers: (candidates: Character[]) => {
+		prefers: (candidates: Unit[]) => {
 			if (candidates.length === 0) return undefined
 			return candidates[Math.floor(random() * candidates.length)]
 		},
@@ -46,14 +46,14 @@ export const prefer = {
 	lowestHealth: {
 		// Copies before sorting: `prefers` is handed an array, and sorting it in place would reorder
 		// the caller's.
-		prefers: (candidates: Character[]) => [...candidates].sort((a, b) => a.health.ratio - b.health.ratio)[0],
+		prefers: (candidates: Unit[]) => [...candidates].sort((a, b) => a.health.ratio - b.health.ratio)[0],
 		reconsiders: () => true,
 	},
 
 	/** A tank if there is one, and it switches over the moment one shows up. */
 	tankFirst: {
-		prefers: (candidates: Character[]) => candidates.find((c) => c instanceof Tank) ?? candidates[0],
-		reconsiders: (current: Character, candidates: Character[]) =>
+		prefers: (candidates: Unit[]) => candidates.find((c) => c instanceof Tank) ?? candidates[0],
+		reconsiders: (current: Unit, candidates: Unit[]) =>
 			!(current instanceof Tank) && candidates.some((c) => c instanceof Tank),
 	},
 } satisfies Record<string, Preference>
@@ -61,7 +61,7 @@ export const prefer = {
 /** Keeps a unit's `currentTarget` filled, from a rule and a preference it is handed. */
 export class Targeting extends Task {
 	constructor(
-		public parent: Character,
+		public parent: Unit,
 		public rule: TargetRule,
 		public preference: Preference,
 	) {

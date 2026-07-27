@@ -1,13 +1,13 @@
 import {Task} from 'vroum'
 import {applyStatics, randomIntFromInterval} from '../utils'
 import {AudioPlayer} from './audio'
-import {Character} from './character'
+import {Unit} from './unit'
 import type {CombatEventType} from '../combatlog'
 import {applyHit} from './hit'
 import {PeriodicAura} from './periodic-aura'
 
 /**
- * Base class for every attack (a swing from one character at another).
+ * Base class for every attack (a swing from one unit at another).
  * Subclasses declare static balance fields; construction snapshots them onto the
  * instance so balance edits only affect newly spawned attacks.
  */
@@ -35,7 +35,7 @@ export class Attack extends Task {
 	static maxDamage = 0
 	static eventType: CombatEventType = 'SPELL_DAMAGE'
 
-	constructor(public attacker: Character) {
+	constructor(public attacker: Unit) {
 		super(attacker)
 		applyStatics(this, 'delay', 'interval', 'sound', 'id', 'name', 'minDamage', 'maxDamage', 'eventType')
 	}
@@ -78,11 +78,11 @@ export class Attack extends Task {
 
 	/**
 	 * The hit reaction on the unit frame, which is this attack's own to draw. Keyed on the
-	 * character id alone — it is unique, and scoping to `.PartyMember` meant the Tank's own
+	 * unit id alone — it is unique, and scoping to `.PartyMember` meant the Tank's own
 	 * Shield Bash never found its target, so enemies took every hit without flinching.
 	 */
 	shakeTarget() {
-		const element = document.querySelector(`[data-character-id="${this.targetId}"] .Character-avatar`)
+		const element = document.querySelector(`[data-unit-id="${this.targetId}"] .Unit-avatar`)
 		if (element) this.animateHit(element)
 	}
 

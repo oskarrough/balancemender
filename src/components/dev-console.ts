@@ -5,7 +5,7 @@ import {balanceCategories} from '../balance'
 import type {BalanceKind} from '../balance'
 import {unitIds, UnitId} from '../nodes/unit-registry'
 import type {GameAction} from '../actions'
-import type {Character} from '../nodes/character'
+import type {Unit} from '../nodes/unit'
 
 export interface Command {
 	name: string
@@ -132,9 +132,7 @@ export class DevConsole extends HTMLElement {
 						const unit = args[1] as UnitId
 						if (!unit || !known.includes(unit)) return this.logToConsole(`Unknown enemy type. Known: ${types}`)
 						const result = game.perform({type: 'spawn', unit})
-						this.logToConsole(
-							result.ok ? `Spawned ${unit} (${(result.value as Character).id.slice(-6)})` : result.error,
-						)
+						this.logToConsole(result.ok ? `Spawned ${unit} (${(result.value as Unit).id.slice(-6)})` : result.error)
 					} else if (args[0] === 'remove') {
 						const id = args[1]
 						if (!id) return this.logToConsole('Usage: /enemy remove <id>')

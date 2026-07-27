@@ -1,10 +1,10 @@
-import {Character, FACTION} from './character'
+import {Unit, FACTION} from './unit'
 import {Mana} from './mana'
 import type {Spell} from './spell'
 import {spellRegistry} from './registry'
 import type {Encounter} from './encounter'
 
-export class Player extends Character {
+export class Player extends Unit {
 	static maxHealth = 160
 	static maxMana = 600
 	/**
@@ -19,14 +19,14 @@ export class Player extends Character {
 
 	mana: Mana
 
-	/** Same reason `Character` builds `health` here: a field initializer would orphan a second one. */
+	/** Same reason `Unit` builds `health` here: a field initializer would orphan a second one. */
 	constructor(public parent: Encounter) {
 		super(parent)
 		const stats = this.constructor as typeof Player
 		this.mana = new Mana(this, stats.maxMana, stats.manaRegen)
 	}
 
-	/** The player is the one unit that knows every spell. See `Character.spellbook`. */
+	/** The player is the one unit that knows every spell. See `Unit.spellbook`. */
 	spellbook: Record<string, typeof Spell> = spellRegistry
 
 	/**

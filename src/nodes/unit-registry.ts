@@ -1,7 +1,7 @@
-import type {Character} from './character'
+import type {Unit} from './unit'
 import type {Faction} from './types'
 import {TinyWolf, WolfShaman, Nakroth} from './enemies'
-import {Tank} from './party-characters'
+import {Tank} from './party-units'
 import {Player} from './player'
 
 /**
@@ -29,5 +29,5 @@ export type UnitId = keyof typeof unitRegistry
 export function unitIds(faction?: Faction): UnitId[] {
 	const ids = Object.keys(unitRegistry) as UnitId[]
 	if (!faction) return ids
-	return ids.filter((id) => (unitRegistry[id] as unknown as typeof Character).faction === faction)
+	return ids.filter((id) => (unitRegistry[id] as unknown as typeof Unit).faction === faction)
 }

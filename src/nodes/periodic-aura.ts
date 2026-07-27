@@ -2,8 +2,8 @@ import {Task} from 'vroum'
 import {applyStatics, log} from '../utils'
 import {logCombat} from '../combatlog'
 import {applyHit} from './hit'
-// Type-only both ways: character.ts names this class for its `auras` set.
-import type {Character} from './character'
+// Type-only both ways: unit.ts names this class for its `auras` set.
+import type {Unit} from './unit'
 
 /**
  * Something that lands in instalments — a heal over time, a poison, a bleed.
@@ -89,8 +89,8 @@ export class PeriodicAura extends Task {
 	 * spell where the balance lab can reach it.
 	 */
 	constructor(
-		public parent: Character,
-		public caster: Character,
+		public parent: Unit,
+		public caster: Unit,
 		total?: number,
 	) {
 		super(parent)

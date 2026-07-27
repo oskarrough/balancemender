@@ -17,11 +17,11 @@ export {CONDITION_THRESHOLDS} from './types'
 export type {Condition} from './types'
 
 /**
- * Base character class. Subclasses declare `static maxHealth = N` and the
+ * Base unit class. Subclasses declare `static maxHealth = N` and the
  * base constructor wires up the Health node — defining `health` as a field
  * initializer in a subclass would create (and orphan) a second one.
  */
-export class Character extends Node {
+export class Unit extends Node {
 	readonly id: string
 	static maxHealth = 100
 	/** Which side this unit fights on. Static so the registry can be read without spawning anyone. */
@@ -36,8 +36,8 @@ export class Character extends Node {
 	health: Health
 	mana?: Mana
 	auras = new Set<Aura>()
-	faction: Faction = (this.constructor as typeof Character).faction
-	currentTarget?: Character
+	faction: Faction = (this.constructor as typeof Unit).faction
+	currentTarget?: Unit
 
 	/**
 	 * Still standing. This — not membership of `encounter.party`/`enemies` — is who is in the
@@ -79,7 +79,7 @@ export class Character extends Node {
 		return this.condition === 'healthy'
 	}
 
-	getTarget(): Character | undefined {
+	getTarget(): Unit | undefined {
 		return this.currentTarget?.alive ? this.currentTarget : undefined
 	}
 
@@ -90,7 +90,7 @@ export class Character extends Node {
 	 * does.
 	 *
 	 * Deliberately not the spell registry: that is the *player's* spellbook, and reading it from
-	 * here would close the import loop `character → registry → spells → spell → character`. Each
+	 * here would close the import loop `unit → registry → spells → spell → unit`. Each
 	 * caster names its own; `Player` assigns `spellRegistry`.
 	 *
 	 * Keyed by each spell's `id`, never its display name — `{Mend}` shorthand is only correct
@@ -99,7 +99,7 @@ export class Character extends Node {
 	spellbook: Record<string, typeof Spell> = {}
 
 	/**
-	 * Casting state. On `Character` rather than `Player` because nothing about it is the player's:
+	 * Casting state. On `Unit` rather than `Player` because nothing about it is the player's:
 	 * a cast is a thing with a cast time, a mana cost and a global cooldown, and an enemy that
 	 * casts needs every one of them. What stays player-only is *deciding* — the keyboard and the
 	 * autopilot on one side, a `Cadence` task on the other.
@@ -128,7 +128,7 @@ export class Character extends Node {
 	constructor(public parent: Encounter) {
 		super(parent)
 		this.id = createId()
-		this.health = new Health(this, (this.constructor as typeof Character).maxHealth)
+		this.health = new Health(this, (this.constructor as typeof Unit).maxHealth)
 		this.health.on(HEALTH_EVENTS.EMPTY, this.onHealthEmpty)
 	}
 

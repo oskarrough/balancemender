@@ -1,5 +1,5 @@
 import {Task} from 'vroum'
-import type {Character} from './character'
+import type {Unit} from './unit'
 import type {Player} from './player'
 import {spellRegistry, SpellId} from './registry'
 import {SpellCast} from './spell-cast'
@@ -40,7 +40,7 @@ export class Autopilot extends Task {
 
 export interface Decision {
 	spell: SpellId
-	target: Character
+	target: Unit
 }
 
 /** Given the player, decide what to cast right now (or nothing). */
@@ -52,12 +52,12 @@ export type Policy = (player: Player) => Decision | undefined
  * simulator's idea of a castable spell and the game's could drift apart — and would have, the
  * moment spells grew their own cooldowns.
  */
-const castable = (player: Player, spell: SpellId, target: Character) =>
+const castable = (player: Player, spell: SpellId, target: Unit) =>
 	!SpellCast.whyNotCast(player, spellRegistry[spell], target)
-const hasAura = (target: Character, id: string) => [...target.auras].some((aura) => aura.id === id)
+const hasAura = (target: Unit, id: string) => [...target.auras].some((aura) => aura.id === id)
 
 /** The party member in the most trouble, ties broken by lowest absolute health. Never a corpse. */
-function mostHurt(player: Player): Character | undefined {
+function mostHurt(player: Player): Unit | undefined {
 	const candidates = player.parent.party.filter((member) => member.alive)
 	if (!candidates.length) return undefined
 	return candidates.sort((a, b) => a.health.ratio - b.health.ratio || a.health.current - b.health.current)[0]
@@ -69,7 +69,7 @@ export const idle: Policy = () => undefined
 /**
  * Match the heal to the emergency, and don't top off people who are nearly full.
  *
- * The numbers below are close to `Character.condition`'s bands and are deliberately not them.
+ * The numbers below are close to `Unit.condition`'s bands and are deliberately not them.
  * These policies are the measuring instrument — every win rate in a sweep is quoted against
  * them — so folding them into a threshold that spells also read makes the sweep circular and
  * silently moves every number we have already recorded. Leave them be.

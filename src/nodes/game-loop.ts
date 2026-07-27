@@ -1,7 +1,7 @@
 import {Loop} from 'vroum'
 import {log, render} from '../utils'
 import type {Player} from './player'
-import type {Tank} from './party-characters'
+import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
 import {Encounter, DEMO_ROSTER, Roster} from './encounter'
 import {UI} from '../components/ui'

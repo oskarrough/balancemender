@@ -1,11 +1,11 @@
-import {Character} from './character'
+import {Unit} from './unit'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
 import {SmallAttack, MediumAttack, WolfBite, HugeAttack} from './attack'
 import {Spell} from './spell'
 import {Cadence} from './cadence'
 
-export class Nakroth extends Character {
+export class Nakroth extends Unit {
 	static maxHealth = 500
 	static faction = FACTION.ENEMY
 	name = 'Nakroth the Destroyer'
@@ -14,7 +14,7 @@ export class Nakroth extends Character {
 	hugeAttack = new HugeAttack(this)
 }
 
-export class TinyWolf extends Character {
+export class TinyWolf extends Unit {
 	static maxHealth = 240
 	static faction = FACTION.ENEMY
 	name = 'Tiny wolf'
@@ -52,7 +52,7 @@ export class Mend extends Spell {
  * Until then the answer is to kill it first, which is a targeting decision the player does not
  * currently get to make — see #42.
  */
-export class WolfShaman extends Character {
+export class WolfShaman extends Unit {
 	static maxHealth = 180
 	static faction = FACTION.ENEMY
 	name = 'Wolf shaman'

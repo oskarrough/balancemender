@@ -1,11 +1,11 @@
 import {logCombat, CombatEventType} from '../combatlog'
 import {fct} from '../components/floating-combat-text'
-import type {Character} from './character'
+import type {Unit} from './unit'
 
 export interface Hit {
 	/** Who to credit it to. */
-	source: Character
-	target: Character
+	source: Unit
+	target: Unit
 	/** Positive heals, negative damages. */
 	amount: number
 	/** The spell, attack or aura it came from: its stable `id` and its display `name`. */

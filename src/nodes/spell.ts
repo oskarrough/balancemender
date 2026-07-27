@@ -1,7 +1,7 @@
 import {Task} from 'vroum'
 import {AudioPlayer} from './audio'
 import {applyStatics, log, naturalizeNumber} from '../utils'
-import type {Character} from './character'
+import type {Unit} from './unit'
 import {applyHit} from './hit'
 import {SpellCast} from './spell-cast'
 
@@ -38,7 +38,7 @@ export class Spell extends Task {
 	static cooldown = 0
 	static icon = ''
 
-	constructor(public parent: Character) {
+	constructor(public parent: Unit) {
 		super(parent)
 		applyStatics(this, 'id', 'name', 'cost', 'heal', 'cooldown')
 		this.delay = (this.constructor as typeof Spell).castTime

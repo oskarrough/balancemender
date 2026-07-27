@@ -11,7 +11,7 @@ index.html
   └── src/main.ts            splash → on first keypress, builds the game
         └── GameLoop         (vroum Loop) the clock and the root of everything
               ├── Encounter  owns the party + enemies
-              │     └── Character…        Player, Tank, TinyWolf, WolfShaman, Nakroth
+              │     └── Unit…             Player, Tank, TinyWolf, WolfShaman, Nakroth
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   (Task) a rule + a preference → currentTarget
               │           ├── Attack      (Task) swings on an interval
@@ -40,12 +40,12 @@ These three are the ones that bite here and are not in that doc:
   clock. Everything time-based (the five-second mana rule, cast bookkeeping, the combat log's
   `time` field) reads it. It resets when an encounter is loaded.
 - **`connect()`/`disconnect()` are deferred to a microtask.** A node is not mounted on the line
-  after you construct it, and a dead character is still in `encounter.party` until the
+  after you construct it, and a dead unit is still in `encounter.party` until the
   microtask runs. Tests and simulations `await Promise.resolve()` to let this settle.
 
-## Casting belongs to Character, deciding does not
+## Casting belongs to Unit, deciding does not
 
-Everything a cast needs lives on `Character`: the `spellbook`, the `gcd`, the `cooldowns` stamps,
+Everything a cast needs lives on `Unit`: the `spellbook`, the `gcd`, the `cooldowns` stamps,
 the cast in progress. `SpellCast` refuses for the same seven reasons whoever is asking, and a
 caster with no `mana` skips the mana check — which is how enemies cast for free, paced by an
 interval instead.
@@ -100,7 +100,7 @@ spawning one. That is the only reason there is no separate enemy registry.
 
 ## How hurt someone is
 
-`Character.condition` is a pure function of `health.ratio` with no memory — no hysteresis, no
+`Unit.condition` is a pure function of `health.ratio` with no memory — no hysteresis, no
 latch. That is what keeps it safe to ask anywhere, and what would break if a threshold `--tune`
 can move mid-fight were compared against a latched state. No spell reads it yet; the fight report
 does.
@@ -167,7 +167,7 @@ display name, so the pair looked like it followed this rule while carrying one s
 
 Log enough that the analyzer needs no game constants. `SPELL_CAST_START` carries a `busyFor` —
 the cast time or the global cooldown, whichever is longer — which is how the report can say what
-share of a fight an actor spent unable to act without importing `GlobalCooldown` to find out how
+share of a fight a unit spent unable to act without importing `GlobalCooldown` to find out how
 long one lasts. Anything the analysis would otherwise have to assume belongs in the event.
 
 Getting logged is not left to the caller: **every change to a health bar goes through

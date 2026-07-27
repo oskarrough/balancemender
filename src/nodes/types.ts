@@ -1,5 +1,5 @@
 /**
- * Represents the faction a character belongs to
+ * Represents the faction a unit belongs to
  */
 export type Faction = 'party' | 'enemy'
 
@@ -9,13 +9,13 @@ export const FACTION = {
 	ENEMY: 'enemy' as Faction,
 } as const
 
-/** How hurt a unit is. See `Character.condition`. */
+/** How hurt a unit is. See `Unit.condition`. */
 export type Condition = 'injured' | 'steady' | 'healthy'
 
 /**
  * Where those bands sit, in percent of the health bar. Tunable as `rule:Condition.injured=30`.
  *
- * Here rather than on `Character` so `balance.ts` can register it without importing a class.
+ * Here rather than on `Unit` so `balance.ts` can register it without importing a class.
  * This module has no imports at all, and a value import that reaches back into a node is how
  * `balance.ts` ends up snapshotting a half-built one — see architecture.md.
  *

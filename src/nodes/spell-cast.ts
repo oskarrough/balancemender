@@ -3,7 +3,7 @@ import {logCombat} from '../combatlog'
 import {AudioPlayer} from './audio'
 import type {GameLoop} from './game-loop'
 import {GlobalCooldown} from './global-cooldown'
-import type {Character} from './character'
+import type {Unit} from './unit'
 import type {Spell} from './spell'
 // Type-only: a value import here would close the loop `actions → balance → spells → spell-cast`
 // and leave the balance snapshot reading half-built spell classes.
@@ -32,7 +32,7 @@ const failureMessage: Record<CastFailure, string> = {
 
 export class SpellCast {
 	/** Refusals come back as `{ok: false, error}` rather than a warning nobody reads. */
-	static cast(caster: Character, spellId: string): ActionResult<Spell> {
+	static cast(caster: Unit, spellId: string): ActionResult<Spell> {
 		log(`cast:${spellId}`)
 
 		const SpellClass = caster.spellbook[spellId]
@@ -49,7 +49,7 @@ export class SpellCast {
 	}
 
 	/** The two halves below, in the order they always refused in. */
-	static validate(caster: Character, SpellClass?: SpellClass): CastFailure | undefined {
+	static validate(caster: Unit, SpellClass?: SpellClass): CastFailure | undefined {
 		return this.whyNotAct(caster) ?? this.whyNotCast(caster, SpellClass)
 	}
 
@@ -57,7 +57,7 @@ export class SpellCast {
 	 * What stops this caster acting at all, whatever they meant to cast. True of the player's whole
 	 * action bar at once, and it flickers — the global cooldown is up for a moment after every cast.
 	 */
-	static whyNotAct(caster: Character): CastFailure | undefined {
+	static whyNotAct(caster: Unit): CastFailure | undefined {
 		if (caster.health.current <= 0) return 'dead'
 		if (caster.gcd) return 'global-cooldown'
 		if (caster.spell) return 'already-casting'
@@ -69,7 +69,7 @@ export class SpellCast {
 	 * always the one the caster has selected — the Autopilot picks who to heal and hands the target
 	 * over with the cast, and `getTarget()` would answer about a different cast than it meant.
 	 */
-	static whyNotCast(caster: Character, SpellClass?: SpellClass, target = caster.getTarget()): CastFailure | undefined {
+	static whyNotCast(caster: Unit, SpellClass?: SpellClass, target = caster.getTarget()): CastFailure | undefined {
 		// `alive` and not just presence: the default `getTarget()` already filters corpses, so
 		// only an explicitly passed target could be a dead one, and healing a corpse is not a cast.
 		if (!target?.alive) return 'missing-target'
@@ -82,7 +82,7 @@ export class SpellCast {
 	}
 
 	/** How much longer this spell is on its own cooldown, in ms. Zero when it is ready. */
-	static cooldownRemaining(caster: Character, SpellClass: SpellClass): number {
+	static cooldownRemaining(caster: Unit, SpellClass: SpellClass): number {
 		const until = caster.cooldowns.get(SpellClass.id)
 		if (until === undefined) return 0
 		return Math.max(0, until - (caster.root as GameLoop).elapsedTime)

@@ -23,27 +23,27 @@ export function register() {
 }
 
 /**
- * One FCT container per unit frame, cached by character id — hits land many times a second
+ * One FCT container per unit frame, cached by unit id — hits land many times a second
  * and each would otherwise cost a DOM query. uhtml patches the frames in place, so a cached
  * container survives re-renders; it only goes stale when the frame leaves the DOM (a unit
  * died, the encounter reloaded), which `isConnected` catches.
  */
 const containers = new Map<string, Element>()
 
-function containerFor(characterId: string) {
-	const cached = containers.get(characterId)
+function containerFor(unitId: string) {
+	const cached = containers.get(unitId)
 	if (cached?.isConnected) return cached
-	const container = document.querySelector(`[data-character-id="${characterId}"] .FloatingCombatText`)
-	if (container) containers.set(characterId, container)
-	else containers.delete(characterId)
+	const container = document.querySelector(`[data-unit-id="${unitId}"] .FloatingCombatText`)
+	if (container) containers.set(unitId, container)
+	else containers.delete(unitId)
 	return container
 }
 
 /**
- * Floats a number over the frame of the character it happened to.
+ * Floats a number over the frame of the unit it happened to.
  */
-export function fct(characterId: string, text: string | number) {
-	const container = containerFor(characterId)
+export function fct(unitId: string, text: string | number) {
+	const container = containerFor(unitId)
 	if (!container) return
 	container.appendChild(html`<floating-combat-text>${text}</floating-combat-text>`.toDOM())
 }

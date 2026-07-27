@@ -65,7 +65,7 @@ describe('Encounter.spawn', () => {
 })
 
 /**
- * One death door. `Character` routes every death to `Encounter.onDeath()`, which stops the unit
+ * One death door. `Unit` routes every death to `Encounter.onDeath()`, which stops the unit
  * without taking it out of the fight — see the comment there for why the dead stay in the arrays.
  */
 describe('death', () => {

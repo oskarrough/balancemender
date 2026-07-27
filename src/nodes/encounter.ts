@@ -1,10 +1,10 @@
 import {Node} from 'vroum'
 import {Player} from './player'
-import {Tank} from './party-characters'
+import {Tank} from './party-units'
 import {unitRegistry, UnitId} from './unit-registry'
 import {FACTION} from './types'
 import type {GameLoop} from './game-loop'
-import type {Character} from './character'
+import type {Unit} from './unit'
 
 /** Who is in an encounter. This is the only way to describe one — there are no encounter subclasses. */
 export interface Roster {
@@ -26,8 +26,8 @@ export const DEMO_ROSTER: Roster = {party: ['Tank'], enemies: ['TinyWolf']}
  * them every render, so a per-access `find()` was wasteful.
  */
 export class Encounter extends Node {
-	party: Character[] = []
-	enemies: Character[] = []
+	party: Unit[] = []
+	enemies: Unit[] = []
 	player!: Player
 	tank!: Tank
 
@@ -52,12 +52,12 @@ export class Encounter extends Node {
 	 * Add a unit to the encounter. The class's own `faction` decides which side it joins,
 	 * so callers never pick the array themselves.
 	 */
-	spawn(id: UnitId): Character {
+	spawn(id: UnitId): Unit {
 		const Klass = unitRegistry[id]
 		if (!Klass) {
 			throw new Error(`Unknown unit: "${id}". Known: ${Object.keys(unitRegistry).join(', ')}`)
 		}
-		const unit = new Klass(this) as Character
+		const unit = new Klass(this) as Unit
 		unit.unitId = id
 		if (unit.faction === FACTION.PARTY) this.party.push(unit)
 		else this.enemies.push(unit)
@@ -77,7 +77,7 @@ export class Encounter extends Node {
 	}
 
 	/**
-	 * A unit's health reached zero. The one death path — a `Character` hands over here instead
+	 * A unit's health reached zero. The one death path — a `Unit` hands over here instead
 	 * of tearing itself off the tree.
 	 *
 	 * The dead are not removed. `party` and `enemies` are who *joined* the encounter, and three
@@ -94,7 +94,7 @@ export class Encounter extends Node {
 	 * Leaving the unit connected is also what lets it come back: heal a corpse and it simply
 	 * resumes, where a disconnected one would stay inert at full health.
 	 */
-	onDeath(unit: Character) {
+	onDeath(unit: Unit) {
 		unit.currentTarget = undefined
 		for (const aura of unit.auras) aura.disconnect()
 		unit.spell?.disconnect()

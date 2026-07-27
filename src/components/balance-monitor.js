@@ -51,8 +51,8 @@ export class BalanceMonitor extends HTMLElement {
 			damageEvents: 0,
 			healingEvents: 0,
 
-			// Per-character stats
-			characters: new Map(),
+			// Per-unit stats
+			units: new Map(),
 		}
 
 		this.render()
@@ -75,9 +75,9 @@ export class BalanceMonitor extends HTMLElement {
 		}
 	}
 
-	getCharacterMetrics(id, name) {
-		if (!this.metrics.characters.has(id)) {
-			this.metrics.characters.set(id, {
+	getUnitMetrics(id, name) {
+		if (!this.metrics.units.has(id)) {
+			this.metrics.units.set(id, {
 				id,
 				name,
 				faction: null, // Will be populated based on game state
@@ -88,7 +88,7 @@ export class BalanceMonitor extends HTMLElement {
 				healingEvents: 0,
 			})
 		}
-		return this.metrics.characters.get(id)
+		return this.metrics.units.get(id)
 	}
 
 	updateMetrics() {
@@ -101,21 +101,21 @@ export class BalanceMonitor extends HTMLElement {
 		this.metrics.totalManaSpent = 0
 		this.metrics.damageEvents = 0
 		this.metrics.healingEvents = 0
-		this.metrics.characters.clear()
+		this.metrics.units.clear()
 
 		// Update faction info if balancemender is available
 		if (window.balancemender) {
-			window.balancemender.party.forEach((character) => {
-				if (character.id) {
-					const charMetrics = this.getCharacterMetrics(character.id, character.name || 'Party Member')
-					charMetrics.faction = 'party'
+			window.balancemender.party.forEach((unit) => {
+				if (unit.id) {
+					const unitMetrics = this.getUnitMetrics(unit.id, unit.name || 'Party Member')
+					unitMetrics.faction = 'party'
 				}
 			})
 
 			window.balancemender.enemies.forEach((enemy) => {
 				if (enemy.id) {
-					const charMetrics = this.getCharacterMetrics(enemy.id, enemy.name || 'Enemy')
-					charMetrics.faction = 'enemy'
+					const unitMetrics = this.getUnitMetrics(enemy.id, enemy.name || 'Enemy')
+					unitMetrics.faction = 'enemy'
 				}
 			})
 		}
@@ -124,7 +124,7 @@ export class BalanceMonitor extends HTMLElement {
 		for (const log of recentLogs) {
 			// Track per-source stats (who's doing the damage/healing)
 			if (log.sourceId && log.sourceName) {
-				const sourceMetrics = this.getCharacterMetrics(log.sourceId, log.sourceName)
+				const sourceMetrics = this.getUnitMetrics(log.sourceId, log.sourceName)
 
 				if (
 					log.eventType === 'SPELL_DAMAGE' ||
@@ -261,13 +261,13 @@ export class BalanceMonitor extends HTMLElement {
 		const hpm = this.metrics.totalManaSpent > 0 ? roundOne(this.metrics.totalHealing / this.metrics.totalManaSpent) : 0
 		const mps = roundOne(this.metrics.totalManaSpent / period)
 
-		// Sort characters by faction and then by name
-		const partyMembers = [...this.metrics.characters.values()]
-			.filter((char) => char.faction === 'party')
+		// Sort units by faction and then by name
+		const partyMembers = [...this.metrics.units.values()]
+			.filter((unit) => unit.faction === 'party')
 			.sort((a, b) => a.name.localeCompare(b.name))
 
-		const enemies = [...this.metrics.characters.values()]
-			.filter((char) => char.faction === 'enemy')
+		const enemies = [...this.metrics.units.values()]
+			.filter((unit) => unit.faction === 'enemy')
 			.sort((a, b) => a.name.localeCompare(b.name))
 
 		render(

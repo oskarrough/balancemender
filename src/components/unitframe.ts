@@ -1,4 +1,4 @@
-import {Character} from '../nodes/character'
+import {Unit} from '../nodes/unit'
 import {Player} from '../nodes/player'
 import type {GameLoop} from '../nodes/game-loop'
 import type {PeriodicAura} from '../nodes/periodic-aura'
@@ -7,14 +7,14 @@ import {Meter} from './bar'
 import {AuraIcon} from './aura-icon'
 import {html} from 'uhtml'
 
-export function UnitFrame(character: Character, spell: Spell | undefined, player: Player) {
-	const id = character.id
-	const isEnemy = character.faction === 'enemy'
-	const health = character.health.current
-	const maxHealth = character.health.max
-	const isCurrentTarget = player.getTarget() === character
-	const displayName = character.name || character.constructor.name
-	const auras: PeriodicAura[] = character.auras ? Array.from(character.auras) : []
+export function UnitFrame(unit: Unit, spell: Spell | undefined, player: Player) {
+	const id = unit.id
+	const isEnemy = unit.faction === 'enemy'
+	const health = unit.health.current
+	const maxHealth = unit.health.max
+	const isCurrentTarget = player.getTarget() === unit
+	const displayName = unit.name || unit.constructor.name
+	const auras: PeriodicAura[] = unit.auras ? Array.from(unit.auras) : []
 
 	/**
 	 * What this unit is casting, if anything. Not the `spell` argument above — that is the
@@ -25,22 +25,20 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 	 * the combat log, but a telegraph nobody can see is not a telegraph, and it is what makes a
 	 * caster something to react to rather than a health bar that refills.
 	 */
-	const casting = character === player ? undefined : character.spell
-	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - character.lastCastTime : 0
+	const casting = unit === player ? undefined : unit.spell
+	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - unit.lastCastTime : 0
 
 	return html`
 		<div
-			class=${`Character ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Character--targeted' : ''} ${character.alive ? '' : 'Character--dead'}`}
-			data-character-id=${id}
-			data-condition=${character.condition}
+			class=${`Unit ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Unit--targeted' : ''} ${unit.alive ? '' : 'Unit--dead'}`}
+			data-unit-id=${id}
+			data-condition=${unit.condition}
 			onclick=${() => (player.root as GameLoop).perform({type: 'target', unit: id})}
 		>
-			<div class="Character-row">
-				<figure class="Character-avatar">
-					${character.image ? html`<img src=${character.image} alt=${displayName} />` : null}
-				</figure>
-				<div class="Character-bars">
-					<div class="Character-health">
+			<div class="Unit-row">
+				<figure class="Unit-avatar">${unit.image ? html`<img src=${unit.image} alt=${displayName} />` : null}</figure>
+				<div class="Unit-bars">
+					<div class="Unit-health">
 						${Meter({
 							type: 'health',
 							value: health,
@@ -49,13 +47,13 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 							potentialValue: isCurrentTarget && !isEnemy && spell ? spell.heal : 0,
 							spell: !isEnemy ? spell : undefined,
 						})}
-						<div class="Character-name">${displayName} ${isCurrentTarget ? '✓' : ''}</div>
+						<div class="Unit-name">${displayName} ${isCurrentTarget ? '✓' : ''}</div>
 					</div>
-					${'mana' in character && character.mana
+					${'mana' in unit && unit.mana
 						? Meter({
 								type: 'mana',
-								value: character.mana.current,
-								max: character.mana.max,
+								value: unit.mana.current,
+								max: unit.mana.max,
 								potentialValue: 0,
 								spell: undefined,
 							})
@@ -63,7 +61,7 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 				</div>
 			</div>
 			${casting && casting.delay > 0
-				? html`<div class="Character-cast">
+				? html`<div class="Unit-cast">
 						<small>${casting.name}</small>
 						${Meter({type: 'cast', value: castElapsed, max: casting.delay})}
 					</div>`

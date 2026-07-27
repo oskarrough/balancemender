@@ -4,11 +4,11 @@ import {GameLoop} from './game-loop'
 import {WolfShaman, Mend} from './enemies'
 import {Cadence} from './cadence'
 import {SpellCast} from './spell-cast'
-import type {Character} from './character'
+import type {Unit} from './unit'
 import {combatLogs, clearLogs} from '../combatlog'
 
 /**
- * Casting is not a player capability that enemies borrow — it is a `Character` one. What the
+ * Casting is not a player capability that enemies borrow — it is a `Unit` one. What the
  * player has that a wolf does not is a keyboard and an `Autopilot`; the cast itself, its global
  * cooldown, its cast bar and its seven refusals are the same code for both.
  */
@@ -26,7 +26,7 @@ const settle = async () => {
 	await step()
 }
 /** The shaman's targeting is a Task; nudge it rather than waiting a frame for it. */
-const retarget = (unit: Character) => (unit as WolfShaman).targeting.tick()
+const retarget = (unit: Unit) => (unit as WolfShaman).targeting.tick()
 
 describe('an enemy that casts', () => {
 	beforeEach(() => clearLogs())

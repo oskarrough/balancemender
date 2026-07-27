@@ -1,13 +1,13 @@
 import {Task} from 'vroum'
 import {applyStatics, log} from '../utils'
-import {Character} from './character'
+import {Unit} from './unit'
 
 /**
  * Casts a spell at a fixed interval. This is the enemy-side stand-in for the player pressing a
  * key — a driver, and the only thing it contributes is *when*.
  *
  * The split is worth stating, because the obvious reading — that enemies cast differently from
- * the player — is wrong. Casting itself is entirely shared: `Character` owns the spellbook, the
+ * the player — is wrong. Casting itself is entirely shared: `Unit` owns the spellbook, the
  * global cooldown, the cooldown stamps and the cast in progress, and `SpellCast` refuses for the
  * same seven reasons whoever is asking. What differs is only *who decides*, and the two answers
  * are genuinely different in kind — the player has a keyboard and an `Autopilot` weighing the
@@ -34,7 +34,7 @@ export class Cadence extends Task {
 	static delay = 4000
 	static interval = 8000
 
-	constructor(public parent: Character) {
+	constructor(public parent: Unit) {
 		super(parent)
 		applyStatics(this, 'spell', 'delay', 'interval')
 	}
