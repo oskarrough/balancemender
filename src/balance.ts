@@ -102,10 +102,10 @@ interface BalanceCategory {
 }
 
 /**
- * The four kinds of tunable number, in one table.
+ * The five kinds of tunable number, in one table.
  *
  * Everything that tunes reads this: the `tune` action, `resetBalance()`, the dev console, the
- * `--tune` flag. It exists because those all used to hand-list the four kinds, and a hand-listed
+ * `--tune` flag. It exists because those all used to hand-list the kinds, and a hand-listed
  * enumeration drifts — `aura` arrived in the action and the CLI but not in the console, so
  * `Rend` was the one number you could change from a terminal and not from the game.
  */
@@ -149,7 +149,7 @@ export function resetBalance() {
  *
  * The format both `--tune` and the dev console take, so a number worth trying from a terminal is
  * reachable from inside the game with the same spelling. It lives here rather than with the
- * simulator because tuning is not simulation, and because the four kinds it validates against are
+ * simulator because tuning is not simulation, and because the five kinds it validates against are
  * right above it.
  */
 export interface Tune {

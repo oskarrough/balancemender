@@ -21,7 +21,8 @@ instance `id`; names change mid-fight when a duplicate is spawned.
 unique in a fight. `Nakroth the Destroyer` is the only one today; `Diablo` and `Mephisto` are the
 shape of the rest. A wolf is a unit and never a character — you can spawn three and they are
 interchangeable, which is why `renumber()` gives you "Tiny wolf 1" and "Tiny wolf 2". A character
-is never renumbered. Every character is a unit; almost no unit is a character.
+should never be renumbered, and nothing in the code knows the difference. Every character is a
+unit; almost no unit is a character.
 
 **Faction** — `'party'` or `'enemy'`. A static, so the registry can say which side a unit fights
 on without spawning one.
@@ -106,8 +107,9 @@ may have several, so it is a list rather than a field. Not the thing left sittin
 afterwards — that is an aura.
 
 **Cast** — a spell in progress. **Cast time** is how long it takes; **GCD** (global cooldown) is
-the shared pause after any cast; **cooldown** is one ability's own wait. A unit **casts** a spell
-and **swings** an attack; it **uses** either.
+the shared pause every cast starts, running alongside the cast rather than after it, which is why
+a cast costs the longer of the two and not the sum; **cooldown** is one ability's own wait. A unit
+**casts** a spell and **swings** an attack; it **uses** either.
 
 **Id** and **name** — every ability and aura has both. The **id** is what everything files it
 under: registry, spellbook, balance, `--tune`, the log's `abilityId`, cooldowns, stack keys. The
@@ -154,9 +156,12 @@ Everything in the game is a vroum `Task`, and four fields say when it runs. They
 thing everywhere, so read them before inventing a timing word.
 
 **`delay`** how long before the first tick — an ability's wind-up, a cadence's opening wait, or
-an aura's wait before its first instalment · **`interval`** the gap _between_ ticks, never before
-the first · **`repeat`** how many ticks (`1` is one-shot, `Infinity` is standing) · **`duration`**
-how long it lives.
+an aura's wait before its first instalment · **`interval`** the gap _between_ cycles, never before
+the first · **`duration`** how long one cycle lasts · **`repeat`** how many cycles (`1` is
+one-shot, `Infinity` is standing).
+
+A task lives `delay + repeat × (duration + interval)`. Everything in the game leaves `duration` at
+0, so a cycle is a single tick and `repeat` counts ticks — but that is a habit, not the rule.
 
 One use of an ability is one-shot. Repetition belongs to its driver; an aura may repeat because
 its persistence is the behavior the Task represents.
@@ -167,8 +172,8 @@ its persistence is the behavior the Task represents.
 and `--tune`. Five **kinds**: `spell`, `attack`, `aura`, `unit`, `rule`.
 
 **Rule** — a balance number the whole game reads rather than one belonging to a spell or a unit,
-such as where the injured line sits. The only kind read live where it is used, so a retune lands
-on the fight already running.
+such as where the injured line sits. Read live where it is used, so a retune lands on the fight
+already running rather than on the next cast.
 
 **Tune** — changing one balance number: `kind:Name.key=value`, e.g. `rule:Condition.injured=30`.
 

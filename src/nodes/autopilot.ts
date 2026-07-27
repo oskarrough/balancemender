@@ -8,7 +8,7 @@ import type {GameLoop} from './game-loop'
 /**
  * A healer that plays itself.
  *
- * It is an ordinary Task on the player, so it casts through the same `castSpell()` the
+ * It is an ordinary Task on the player, so it casts through the same `perform()` the
  * keyboard does — no special path, no cheating. Attach one to run unattended fights
  * (see `src/sim`), or to watch a policy play in the browser:
  *
