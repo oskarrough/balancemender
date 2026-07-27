@@ -61,7 +61,7 @@ export function bail(message: string): never {
 /**
  * Run something that validates input, and turn its throw into a one-line exit.
  *
- * Everything a script parses — rosters, policies, tunes — reports a bad value by throwing with a
+ * Everything a script parses — enemy groups, policies, tunes — reports a bad value by throwing with a
  * message meant for a person. A stack trace above it helps nobody: the caller typo'd a spell name.
  */
 export function attempt<T>(fn: () => T): T {

@@ -15,7 +15,7 @@ describe('running a fight', () => {
 		expect(fight.outcome).toBe('victory')
 		expect(fight.duration).toBeGreaterThan(1000)
 		expect(fight.events.length).toBeGreaterThan(20)
-		expect(fight.roster.map((unit) => unit.name)).toEqual(['Tank', 'Player', 'Tiny wolf'])
+		expect(fight.units.map((unit) => unit.name)).toEqual(['Tank', 'Player', 'Tiny wolf'])
 	})
 
 	it('replays identically for the same seed', async () => {
@@ -32,8 +32,8 @@ describe('running a fight', () => {
 
 	it('names duplicate units apart so the report can tell them apart', async () => {
 		const fight = await runFight({enemies: ['TinyWolf', 'TinyWolf'], maxDuration: 10_000})
-		expect(fight.roster.map((unit) => unit.name)).toContain('Tiny wolf 1')
-		expect(fight.roster.map((unit) => unit.name)).toContain('Tiny wolf 2')
+		expect(fight.units.map((unit) => unit.name)).toContain('Tiny wolf 1')
+		expect(fight.units.map((unit) => unit.name)).toContain('Tiny wolf 2')
 	})
 
 	it('rejects unknown units with the list of known ones', async () => {

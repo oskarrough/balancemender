@@ -15,7 +15,7 @@ describe('a fight full of Renew', () => {
 	})
 
 	it('credits Renew ticks to the caster, not the unit being healed', () => {
-		const report = analyze(fight.events, {roster: fight.roster})
+		const report = analyze(fight.events, {units: fight.units})
 		const tank = report.actors.find((a) => a.name === 'Tank')!
 		const player = report.actors.find((a) => a.name === 'Player')!
 		const renew = report.spells.find((s) => s.name === 'Renew')!
@@ -30,7 +30,7 @@ describe('a fight full of Renew', () => {
 	})
 
 	it('counts a cast of Renew once, not once per tick', () => {
-		const report = analyze(fight.events, {roster: fight.roster})
+		const report = analyze(fight.events, {units: fight.units})
 		const renew = report.spells.find((s) => s.name === 'Renew')!
 		const cast = fight.events.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.spellName === 'Renew')
 

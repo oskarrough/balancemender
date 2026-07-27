@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import {describe, it, expect} from 'vitest'
 import {GameLoop} from './game-loop'
-import {rosterOf} from '../sim/run'
+import {unitsOf} from '../sim/run'
 import {PeriodicEffect} from './periodic'
 import type {TinyWolf} from './enemies'
 
@@ -83,7 +83,7 @@ describe('death', () => {
 		await settle()
 		expect(first.alive).toBe(false)
 		expect(game.enemies).toHaveLength(2)
-		expect(rosterOf(game).map((unit) => unit.name)).toContain(first.name)
+		expect(unitsOf(game).map((unit) => unit.name)).toContain(first.name)
 		expect(game.encounter.isEnemiesDefeated()).toBe(false)
 
 		second.health.set(0)

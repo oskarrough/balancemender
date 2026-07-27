@@ -102,5 +102,5 @@ function printTunes() {
 }
 
 function summary(result: FightResult) {
-	return {seed: result.seed, outcome: result.outcome, duration: result.duration, roster: result.roster}
+	return {seed: result.seed, outcome: result.outcome, duration: result.duration, units: result.units}
 }

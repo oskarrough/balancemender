@@ -2,7 +2,7 @@ import {html, render} from '../utils'
 import {combatLogs} from '../combatlog'
 import {currentGame, type GameLoop} from '../nodes/game-loop'
 import {analyze, FightReport as Report, Series} from '../sim/report'
-import {rosterOf, runFights} from '../sim/run'
+import {unitsOf, runFights} from '../sim/run'
 import {deathOf, formatAggregate, percentOf as percent} from '../sim/format'
 import {policies, PolicyName} from '../nodes/autopilot'
 
@@ -70,7 +70,7 @@ export class FightReportView extends HTMLElement {
 			render(this, () => html`<p>Waiting for game…</p>`)
 			return
 		}
-		const report = analyze(combatLogs, {roster: rosterOf(game), duration: game.elapsedTime})
+		const report = analyze(combatLogs, {units: unitsOf(game), duration: game.elapsedTime})
 
 		render(
 			this,

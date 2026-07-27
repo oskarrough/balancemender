@@ -34,7 +34,7 @@ export interface FightResult {
 	/** Fight time in ms. */
 	duration: number
 	events: CombatLogEvent[]
-	roster: UnitInfo[]
+	units: UnitInfo[]
 	survivors: {party: number; enemies: number}
 }
 
@@ -76,7 +76,7 @@ export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
 			await flush()
 		}
 
-		const roster = rosterOf(game)
+		const units = unitsOf(game)
 		const survivors = {
 			party: game.party.filter(isAlive).length,
 			enemies: game.enemies.filter(isAlive).length,
@@ -89,7 +89,7 @@ export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
 			outcome,
 			duration: Math.round(game.elapsedTime),
 			events: combatLogs.slice(),
-			roster,
+			units,
 			survivors,
 		}
 	} finally {
@@ -138,7 +138,7 @@ Object.assign(SimLoop.prototype, {_requestNextFrame() {}})
 const isAlive = (c: Character) => c.health.current > 0
 
 /** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
-export function rosterOf(game: GameLoop): UnitInfo[] {
+export function unitsOf(game: GameLoop): UnitInfo[] {
 	return [...game.party, ...game.enemies].map((c) => ({
 		id: c.id,
 		name: c.name || c.constructor.name,

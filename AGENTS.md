@@ -39,12 +39,12 @@ bun run sim --enemies 'TinyWolf*3' --policy triage --repeat 10
 Then read the report. The same numbers show up in the in-game "Fight report" panel while you
 play, because both come from `analyze()` over the same combat log.
 
-One seed cannot tell a balanced fight from a lucky roll, and one roster cannot tell you the
+One seed cannot tell a balanced fight from a lucky roll, and one enemy group cannot tell you the
 shape of the difficulty curve. For that, sweep:
 
 ```
 bun run sweep                                    # the shape of the curve
-bun run sweep --seeds 200 --rosters 'TinyWolf*4' --tune 'effect:Rend.total=-16'
+bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'effect:Rend.total=-16'
 ```
 
 Read the `idle` column first — it is the control group. A retune that lifts a win rate by making
@@ -55,7 +55,7 @@ around ±23 points — wider than most retunes. **Comparing two candidates takes
 has been mistaken for a result here more than once.
 
 Read `hurt%` third — the share of the fight the party's worst-off member spent below the injured
-line. A win at 0% hurt was never in doubt, so a roster where `idle` also sits near 0% is not a
+line. A win at 0% hurt was never in doubt, so an enemy group where `idle` also sits near 0% is not a
 fight worth tuning. Between two retunes that win equally often, the one that leaves `hurt%` alone
 made the healer better and the one that lowered it made the fight easier.
 

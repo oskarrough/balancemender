@@ -95,17 +95,17 @@ control group look like it healed for 6 a second.
 ### Sweeping the whole curve
 
 `--repeat` answers "how does _this_ fight usually go". One level up is "is the difficulty curve
-the shape we think it is", which needs every roster against every policy:
+the shape we think it is", which needs every enemy group against every policy:
 
 ```
-bun run sweep                                       # 10 seeds, the standard rosters
+bun run sweep                                       # 10 seeds, the standard enemy groups
 bun run sweep --seeds 200                           # enough to compare two candidates
-bun run sweep --rosters 'TinyWolf*3; Nakroth' --policies triage,renew
+bun run sweep --enemies 'TinyWolf*3; Nakroth' --policies triage,renew
 bun run sweep --json > sweep.json
 ```
 
 ```
-roster                  policy  win%  ±   timeout%  median  hps   overheal%  mana/s  busy%  casts
+enemies                 policy  win%  ±   timeout%  median  hps   overheal%  mana/s  busy%  casts
 TinyWolf*3              idle    0%    24  0%        24.0s   0.0   0%         0.0     0%     0.0
 TinyWolf*3              triage  75%   33  0%        86.4s   10.5  26%        8.9     37%    15.3
 TinyWolf*4              renew   75%   33  0%        115.2s  13.5  8%         7.9     25%    15.8
@@ -196,7 +196,7 @@ new (await import('/src/nodes/autopilot.ts')).Autopilot(balancemender.player, 't
 | `src/sim/tune.ts`        | `--tune` specs → the `balance.ts` setters                            |
 | `src/nodes/autopilot.ts` | the healer policies                                                  |
 | `scripts/sim.ts`         | the CLI                                                              |
-| `scripts/sweep.ts`       | `bun run sweep` — every roster × every policy, over many seeds       |
+| `scripts/sweep.ts`       | `bun run sweep` — every enemy group × every policy, over many seeds  |
 | `scripts/cli.ts`         | argument parsing both commands share                                 |
 
 `src/rng.ts` is why any of it repeats: seed it and every damage roll and target choice replays
@@ -218,7 +218,7 @@ never means editing a class and remembering to put it back. It works on both com
 and the value it changed is printed under the report:
 
 ```
-bun run sweep --seeds 200 --rosters 'TinyWolf*4' --tune 'effect:Rend.total=-16'
+bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'effect:Rend.total=-16'
 bun run sim --repeat 20 --tune 'spell:FlashHeal.cost=100' --tune 'unit:TinyWolf.maxHealth=200'
 ```
 

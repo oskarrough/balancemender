@@ -76,7 +76,7 @@ export interface FightReport {
 }
 
 export interface AnalyzeOptions {
-	roster?: UnitInfo[]
+	units?: UnitInfo[]
 	outcome?: Outcome
 	duration?: number
 	/** Resolution of the health graph. */
@@ -86,7 +86,7 @@ export interface AnalyzeOptions {
 const at = (event: CombatLogEvent) => event.time ?? event.timestamp
 
 export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}): FightReport {
-	const {roster, outcome, columns = 40} = options
+	const {units, outcome, columns = 40} = options
 	const sorted = [...events].sort((a, b) => at(a) - at(b))
 	const start = sorted.length ? at(sorted[0]) : 0
 	const duration = options.duration ?? (sorted.length ? at(sorted[sorted.length - 1]) - start : 0)
@@ -155,10 +155,10 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 	// last crossing. The fight's end closes the interval.
 	for (const [stats, since] of injuredSince) stats.injuredTime += start + duration - since
 
-	// The roster is the authority on who is who. It also carries the *current* name, which
-	// matters because spawning a second wolf renames the first one halfway through the log.
-	if (roster) {
-		for (const entry of roster) {
+	// The units are the authority on who is who. The list also carries the *current* name,
+	// which matters because spawning a second wolf renames the first one halfway through the log.
+	if (units) {
+		for (const entry of units) {
 			const stats = actor(actors, entry.id, entry.name)
 			stats.name = entry.name
 			stats.faction = entry.faction
@@ -184,29 +184,29 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 		actors: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
 		spells: [...spells.values()].filter((s) => s.id !== 'unknown').sort((a, b) => b.total - a.total),
 		deaths,
-		health: roster ? healthSeries(sorted, roster, start, duration, columns) : [],
+		health: units ? healthSeries(sorted, units, start, duration, columns) : [],
 		totals,
 	}
 }
 
 /**
- * Replay the log against the roster's starting health to get a health graph per unit.
+ * Replay the log against the units' starting health to get a health graph per unit.
  * The log holds every hit and heal, so the bars can be rebuilt without recording them.
  */
 export function healthSeries(
 	events: CombatLogEvent[],
-	roster: UnitInfo[],
+	units: UnitInfo[],
 	start: number,
 	duration: number,
 	columns: number,
 ): Series[] {
-	const current = new Map(roster.map((unit) => [unit.id, unit.maxHealth]))
-	const points = new Map(roster.map((unit) => [unit.id, Array.from<number | null>({length: columns}).fill(null)]))
+	const current = new Map(units.map((unit) => [unit.id, unit.maxHealth]))
+	const points = new Map(units.map((unit) => [unit.id, Array.from<number | null>({length: columns}).fill(null)]))
 	const column = (time: number) => Math.min(columns - 1, Math.floor(((time - start) / (duration || 1)) * columns))
 
 	for (const event of events) {
 		if (!event.targetId || !current.has(event.targetId)) continue
-		const unit = roster.find((u) => u.id === event.targetId)
+		const unit = units.find((u) => u.id === event.targetId)
 		if (!unit) continue
 		const delta = DAMAGE.includes(event.eventType)
 			? -(event.value ?? 0)
@@ -219,7 +219,7 @@ export function healthSeries(
 		points.get(event.targetId)![column(at(event))] = next / unit.maxHealth
 	}
 
-	return roster.map((unit) => ({
+	return units.map((unit) => ({
 		id: unit.id,
 		name: unit.name,
 		faction: unit.faction,
@@ -291,7 +291,7 @@ function spell(spells: Map<string, SpellStats>, id = 'unknown', name = id, value
 /**
  * The actor the policy drives. By name, unusually: `runFight` adds the healer itself and calls it
  * Player, and it is the one unit `Encounter.renumber()` never touches, so the name is stable where
- * an id would have to be looked up from the roster first.
+ * an id would have to be looked up from the unit list first.
  */
 export const healerOf = (report: FightReport) => report.actors.find((actor) => actor.name === 'Player')
 
@@ -301,7 +301,7 @@ export const healerOf = (report: FightReport) => report.actors.find((actor) => a
  *
  * The worst member rather than the sum, so a bigger party does not read as a more dangerous
  * fight, and rather than an overlap-merged union, which would need interval arithmetic to say
- * something no less arbitrary. Needs a roster: `faction` comes from there, not from the log.
+ * something no less arbitrary. Needs the unit list: `faction` comes from there, not from the log.
  */
 export const partyInjuredTime = (report: FightReport) =>
 	Math.max(0, ...report.actors.filter((actor) => actor.faction === 'party').map((actor) => actor.injuredTime))

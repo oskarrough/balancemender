@@ -81,7 +81,7 @@ export class Encounter extends Node {
 	 * of tearing itself off the tree.
 	 *
 	 * The dead are not removed. `party` and `enemies` are who *joined* the fight, and three
-	 * things read them that way: `rosterOf()` walks them after the last blow to rebuild every
+	 * things read them that way: `unitsOf()` walks them after the last blow to rebuild every
 	 * health bar in the fight report, the Fight report panel re-simulates the composition from
 	 * them (a won fight would otherwise replay against no enemies at all), and a healer has to
 	 * go on seeing — and one day resurrecting — a fallen party member. Who is still standing is

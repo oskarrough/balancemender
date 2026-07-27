@@ -4,7 +4,7 @@ import {sparkline} from './format'
 import type {CombatLogEvent} from '../combatlog'
 import type {UnitInfo} from './run'
 
-const roster: UnitInfo[] = [
+const units: UnitInfo[] = [
 	{id: 'tank', name: 'Tank', maxHealth: 100, faction: 'party'},
 	{id: 'wolf', name: 'Wolf', maxHealth: 50, faction: 'enemy'},
 ]
@@ -74,7 +74,7 @@ const fight: CombatLogEvent[] = [
 ]
 
 describe('analyze', () => {
-	const report = analyze(fight, {roster, outcome: 'victory'})
+	const report = analyze(fight, {units, outcome: 'victory'})
 
 	it('splits healing into effective and overhealing', () => {
 		const player = report.actors.find((a) => a.name === 'Player')!
@@ -121,7 +121,7 @@ describe('analyze', () => {
 				event({time: 2000, eventType: 'SWING_DAMAGE', sourceId: 'w1', sourceName: 'Tiny wolf 1', value: 10}),
 			],
 			{
-				roster: [
+				units: [
 					{id: 'w1', name: 'Tiny wolf 1', maxHealth: 50, faction: 'enemy'},
 					{id: 'w2', name: 'Tiny wolf 2', maxHealth: 50, faction: 'enemy'},
 				],
@@ -164,7 +164,7 @@ describe('injuredTime', () => {
 				hurt({time: 6000, condition: 'healthy'}),
 				event({time: 8000, eventType: 'ENCOUNTER_END'}),
 			],
-			{roster},
+			{units},
 		)
 
 		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
@@ -173,7 +173,7 @@ describe('injuredTime', () => {
 
 	it('closes a stretch still open when the fight ends', () => {
 		const report = analyze([event({time: 0, eventType: 'ENCOUNTER_START'}), hurt({time: 2000, condition: 'injured'})], {
-			roster,
+			units,
 			duration: 10_000,
 		})
 
@@ -189,20 +189,20 @@ describe('injuredTime', () => {
 				event({time: 4000, eventType: 'UNIT_DIED', targetId: 'tank', targetName: 'Tank'}),
 				event({time: 9000, eventType: 'ENCOUNTER_END'}),
 			],
-			{roster},
+			{units},
 		)
 
 		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
 	})
 
 	it('counts nobody as hurt in a fight where nobody crossed the line', () => {
-		expect(partyInjuredTime(analyze(fight, {roster}))).toBe(0)
+		expect(partyInjuredTime(analyze(fight, {units}))).toBe(0)
 	})
 })
 
 describe('health series', () => {
 	it('rebuilds health over time from the log alone', () => {
-		const [tank, wolf] = healthSeries(fight, roster, 0, 3000, 3)
+		const [tank, wolf] = healthSeries(fight, units, 0, 3000, 3)
 		expect(tank.endHealth).toBe(100) // 100 - 30 + 30 effective
 		expect(tank.points).toEqual([1, 0.7, 1])
 		expect(wolf.endHealth).toBe(0)

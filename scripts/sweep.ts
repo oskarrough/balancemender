@@ -1,15 +1,15 @@
 /**
- * Sweep every roster against every policy over many seeds, and print one table.
+ * Sweep every enemy group against every policy over many seeds, and print one table.
  *
  *   bun run sweep
  *   bun run sweep --seeds 25
- *   bun run sweep --rosters 'TinyWolf*3, Nakroth' --policies triage,renew
- *   bun run sweep --seeds 200 --rosters 'TinyWolf*4' --tune 'effect:Rend.total=-16'
+ *   bun run sweep --enemies 'TinyWolf*3, Nakroth' --policies triage,renew
+ *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'effect:Rend.total=-16'
  *
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the
  * question above it: is the difficulty curve the shape we think it is? One seed cannot tell a
- * balanced fight from a lucky roll, and a single roster cannot tell you that the boss is easier
- * than three trash mobs — which is exactly what it was, and how #40 was found.
+ * balanced fight from a lucky roll, and a single enemy group cannot tell you that the boss is
+ * easier than three trash mobs — which is exactly what it was, and how #40 was found.
  *
  * Read the `idle` row first. A policy that wins with `idle` is a fight healing does not decide,
  * so a retune that lifts a win rate by making the healer irrelevant shows up here as `idle`
@@ -37,7 +37,7 @@ const {text, num, all, flag} = cli(Bun.argv.slice(2))
  * and the interesting cells are the ones that are neither hopeless nor free — at four wolves
  * `renew` is the only policy still moving, which makes it the row a retune shows up in first.
  */
-const DEFAULT_ROSTERS =
+const DEFAULT_ENEMIES =
 	'TinyWolf; TinyWolf*2; TinyWolf*3; TinyWolf*4; TinyWolf*5; TinyWolf*2, WolfShaman; Nakroth; Nakroth, TinyWolf*2'
 
 if (flag('help')) {
@@ -45,8 +45,8 @@ if (flag('help')) {
 		`
 bun run sweep [options]
 
-  --rosters  <list>    semicolon-separated enemy groups, "Name*3" to repeat
-                       (default: ${DEFAULT_ROSTERS})
+  --enemies  <list>    semicolon-separated enemy groups, "Name*3" to repeat
+                       (default: ${DEFAULT_ENEMIES})
   --policies <list>    comma separated (default all: ${Object.keys(policies).join(', ')})
   --seeds    <n>       how many seeds per combination, starting at 1 (default 10)
   --duration <s>       give up after n seconds of fight time (default 120)
@@ -64,8 +64,8 @@ bun run sweep [options]
 // Throws on an unknown name or key rather than measuring the baseline and calling it a result.
 const tuned = attempt(() => applyTunes(all('tune')).map(formatTune))
 
-const rosters = attempt(() =>
-	(text('rosters') ?? DEFAULT_ROSTERS)
+const enemyGroups = attempt(() =>
+	(text('enemies') ?? DEFAULT_ENEMIES)
 		.split(';')
 		.map((entry) => entry.trim())
 		.filter(Boolean)
@@ -86,7 +86,7 @@ const seeds = num('seeds', 10)
 const maxDuration = num('duration', 120) * 1000
 
 interface Row {
-	roster: string
+	enemies: string
 	policy: string
 	winPercent: number
 	/** Half-width of the 95% interval on `winPercent`, in points. */
@@ -102,8 +102,8 @@ interface Row {
 	/**
 	 * Share of the fight the party's worst-off member spent below the injured line.
 	 *
-	 * Read next to `win%`: a policy that wins at 0% hurt was never tested, and a roster where even
-	 * `idle` stays near 0% is not a fight, it is a waiting room. A retune that raises win rates by
+	 * Read next to `win%`: a policy that wins at 0% hurt was never tested, and an enemy group where
+	 * even `idle` stays near 0% is not a fight, it is a waiting room. A retune that raises win rates by
 	 * lowering this made the fight easier; one that leaves it alone made the healer better.
 	 */
 	hurtPercent: number
@@ -111,8 +111,8 @@ interface Row {
 
 /**
  * One fight, reduced to the numbers the table adds up. The healer's own, not the fight's:
- * `totals.healing` counts every faction, so the moment an enemy healer joined a roster the `idle`
- * control group started reporting 6 hps, and a control group that heals is not one.
+ * `totals.healing` counts every faction, so the moment an enemy healer joined an enemy group the
+ * `idle` control group started reporting 6 hps, and a control group that heals is not one.
  */
 interface Fight {
 	outcome: FightResult['outcome']
@@ -127,13 +127,13 @@ interface Fight {
 
 const rows: Row[] = []
 
-for (const roster of rosters) {
+for (const group of enemyGroups) {
 	for (const policy of policyNames) {
 		const fights: Fight[] = []
 
 		for (let seed = 1; seed <= seeds; seed++) {
 			const result: FightResult = await runFight({
-				enemies: roster.enemies,
+				enemies: group.enemies,
 				policy: policy as keyof typeof policies,
 				seed,
 				maxDuration,
@@ -162,7 +162,7 @@ for (const roster of rosters) {
 		const busy = sum((f) => f.busy)
 		const landed = healing + overhealing
 		rows.push({
-			roster: roster.label,
+			enemies: group.label,
 			policy,
 			winPercent: percent(wins, seeds),
 			winMargin: margin(wins, seeds),
@@ -181,7 +181,7 @@ for (const roster of rosters) {
 				: 0,
 		})
 		// Progress on stderr, so `--json > file` stays valid.
-		console.error(`${roster.label} / ${policy}`)
+		console.error(`${group.label} / ${policy}`)
 	}
 }
 
@@ -196,7 +196,7 @@ process.exit(0)
 
 function table(rows: Row[]) {
 	const header = [
-		'roster',
+		'enemies',
 		'policy',
 		'win%',
 		'±',
@@ -210,7 +210,7 @@ function table(rows: Row[]) {
 		'casts',
 	]
 	const body = rows.map((row) => [
-		row.roster,
+		row.enemies,
 		row.policy,
 		`${row.winPercent}%`,
 		`${row.winMargin}`,
