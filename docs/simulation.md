@@ -174,3 +174,19 @@ identically. Unseeded — how the browser plays — it is just `Math.random`.
   dead, even if the healer died on the way.
 - The simulation steps at 60fps by default. Effects that depend on frame timing will behave
   slightly differently at other rates.
+
+## Trying out a number the CLI cannot reach
+
+To sweep a value the flags do not expose, tune it through [`src/balance.ts`](../src/balance.ts) —
+`setSpellValue`, `setAttackValue`, `setUnitValue` — and `resetBalance()` between candidates. That is
+the same path the Balance Lab uses, so what you measure is what the game would do.
+
+**Do not patch a prototype to do it.** Most tunables are instance fields copied from statics by
+`applyStatics()` at construction, so `SomeClass.prototype.x = 5` is silently overwritten by every
+instance and the sweep returns your baseline. It looks like the dial does nothing. Two separate
+investigations lost a 600-fight sweep and a whole results table to this before spotting it — the
+tell is a table that is identical across every value you tried.
+
+If the field genuinely has no home in `balance.ts` (`ManaRegen.fiveSecondRule` is the current
+example, since `UNIT_KEYS` does not reach it), write it on the instance from inside a method rather
+than on the prototype.
