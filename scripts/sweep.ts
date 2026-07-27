@@ -4,6 +4,7 @@
  *   bun run sweep
  *   bun run sweep --seeds 25
  *   bun run sweep --rosters 'TinyWolf*3, Nakroth' --policies triage,renew
+ *   bun run sweep --seeds 200 --rosters 'TinyWolf*4' --tune 'effect:Rend.total=-16'
  *
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the
  * question above it: is the difficulty curve the shape we think it is? One seed cannot tell a
@@ -14,42 +15,62 @@
  * so a retune that lifts a win rate by making the healer irrelevant shows up here as `idle`
  * climbing alongside `triage` rather than staying at 0%.
  *
+ * Then read `±` before believing any comparison. A win rate is a coin flip counted a few times,
+ * and at the default seed count a five-point difference is nothing at all.
+ *
  * The game is a browser game, so we hand it a DOM before importing it.
  */
 import {GlobalRegistrator} from '@happy-dom/global-registrator'
 // Type-only, so it is erased and does not load the game before the DOM exists.
 import type {FightResult} from '../src/sim'
+import {cli, bail, attempt} from './cli'
 
 GlobalRegistrator.register()
 
-const {runFight, analyze, parseUnits, policies} = await import('../src/sim')
+const {runFight, analyze, healerOf, margin, parseUnits, policies, applyTunes, formatTune} = await import('../src/sim')
 
-const args = parse(Bun.argv.slice(2))
+const {text, num, all, flag} = cli(Bun.argv.slice(2))
 
-if (args.help) {
+/**
+ * The standard grid. Every wolf count from one to five, because the curve is quadratic on purpose
+ * and the interesting cells are the ones that are neither hopeless nor free — at four wolves
+ * `renew` is the only policy still moving, which makes it the row a retune shows up in first.
+ */
+const DEFAULT_ROSTERS =
+	'TinyWolf; TinyWolf*2; TinyWolf*3; TinyWolf*4; TinyWolf*5; TinyWolf*2, WolfShaman; Nakroth; Nakroth, TinyWolf*2'
+
+if (flag('help')) {
 	console.log(
 		`
 bun run sweep [options]
 
   --rosters  <list>    semicolon-separated enemy groups, "Name*3" to repeat
-                       (default: TinyWolf; TinyWolf*2; TinyWolf*3; TinyWolf*5; Nakroth; Nakroth, TinyWolf*2)
+                       (default: ${DEFAULT_ROSTERS})
   --policies <list>    comma separated (default all: ${Object.keys(policies).join(', ')})
   --seeds    <n>       how many seeds per combination, starting at 1 (default 10)
   --duration <s>       give up after n seconds of fight time (default 120)
+  --tune     <spec>    change a balance number first, e.g. 'effect:Rend.total=-16'
+                       kind:Name.key=value — spell, attack, effect or unit. Repeatable.
   --json               print rows as JSON instead of a table
+
+  10 seeds shows a shape; comparing two candidates needs about 200. See the note the
+  table prints under itself.
 `.trim(),
 	)
 	process.exit(0)
 }
 
-const DEFAULT_ROSTERS = 'TinyWolf; TinyWolf*2; TinyWolf*3; TinyWolf*5; Nakroth; Nakroth, TinyWolf*2'
+// Throws on an unknown name or key rather than measuring the baseline and calling it a result.
+const tuned = attempt(() => applyTunes(all('tune')).map(formatTune))
 
-const rosters = (text('rosters') ?? DEFAULT_ROSTERS)
-	.split(';')
-	.map((entry) => entry.trim())
-	.filter(Boolean)
-	// parseUnits validates against the unit registry and throws with the list of known units.
-	.map((entry) => ({label: entry, enemies: parseUnits(entry)}))
+const rosters = attempt(() =>
+	(text('rosters') ?? DEFAULT_ROSTERS)
+		.split(';')
+		.map((entry) => entry.trim())
+		.filter(Boolean)
+		// parseUnits validates against the unit registry and throws with the list of known units.
+		.map((entry) => ({label: entry, enemies: parseUnits(entry)})),
+)
 
 const policyNames = (text('policies') ?? Object.keys(policies).join(','))
 	.split(',')
@@ -67,25 +88,38 @@ interface Row {
 	roster: string
 	policy: string
 	winPercent: number
+	/** Half-width of the 95% interval on `winPercent`, in points. */
+	winMargin: number
 	timeoutPercent: number
 	medianDuration: number
 	hps: number
 	overhealPercent: number
 	manaPerSecond: number
 	castsPerFight: number
+	/** Share of the fight the healer spent committed to a cast or its global cooldown. */
+	busyPercent: number
+}
+
+/**
+ * One fight, reduced to the numbers the table adds up. The healer's own, not the fight's:
+ * `totals.healing` counts every faction, so the moment an enemy healer joined a roster the `idle`
+ * control group started reporting 6 hps, and a control group that heals is not one.
+ */
+interface Fight {
+	outcome: FightResult['outcome']
+	duration: number
+	healing: number
+	overhealing: number
+	mana: number
+	casts: number
+	busy: number
 }
 
 const rows: Row[] = []
 
 for (const roster of rosters) {
 	for (const policy of policyNames) {
-		let victories = 0
-		let timeouts = 0
-		let healing = 0
-		let overhealing = 0
-		let mana = 0
-		let casts = 0
-		const durations: number[] = []
+		const fights: Fight[] = []
 
 		for (let seed = 1; seed <= seeds; seed++) {
 			const result: FightResult = await runFight({
@@ -94,62 +128,88 @@ for (const roster of rosters) {
 				seed,
 				maxDuration,
 			})
-			const report = analyze(result.events, result)
-
-			if (result.outcome === 'victory') victories++
-			if (result.outcome === 'timeout') timeouts++
-			durations.push(result.duration)
-			healing += report.totals.healing
-			overhealing += report.totals.overhealing
-
-			// The healer is the actor the policy drives; everyone else is scenery here.
-			const healer = report.actors.find((actor) => actor.id === result.roster.find((u) => u.name === 'Player')?.id)
-			mana += healer?.manaSpent ?? 0
-			casts += healer?.casts ?? 0
+			const healer = healerOf(analyze(result.events, result))
+			fights.push({
+				outcome: result.outcome,
+				duration: result.duration,
+				healing: healer?.healingDone ?? 0,
+				overhealing: healer?.overhealing ?? 0,
+				mana: healer?.manaSpent ?? 0,
+				casts: healer?.casts ?? 0,
+				busy: healer?.busyTime ?? 0,
+			})
 		}
 
-		const seconds = durations.reduce((a, b) => a + b, 0) / 1000
+		const sum = (pick: (fight: Fight) => number) => fights.reduce((total, fight) => total + pick(fight), 0)
+		const wins = fights.filter((f) => f.outcome === 'victory').length
+		const totalMs = sum((f) => f.duration)
+		const seconds = totalMs / 1000
+		const healing = sum((f) => f.healing)
+		const overhealing = sum((f) => f.overhealing)
+		const busy = sum((f) => f.busy)
 		const landed = healing + overhealing
 		rows.push({
 			roster: roster.label,
 			policy,
-			winPercent: percent(victories, seeds),
-			timeoutPercent: percent(timeouts, seeds),
-			medianDuration: median(durations),
+			winPercent: percent(wins, seeds),
+			winMargin: margin(wins, seeds),
+			timeoutPercent: percent(fights.filter((f) => f.outcome === 'timeout').length, seeds),
+			medianDuration: median(fights.map((f) => f.duration)),
 			hps: seconds ? round(healing / seconds) : 0,
 			overhealPercent: landed ? percent(overhealing, landed) : 0,
-			manaPerSecond: seconds ? round(mana / seconds) : 0,
-			castsPerFight: round(casts / seeds),
+			manaPerSecond: seconds ? round(sum((f) => f.mana) / seconds) : 0,
+			castsPerFight: round(sum((f) => f.casts) / seeds),
+			busyPercent: totalMs ? percent(busy, totalMs) : 0,
 		})
 		// Progress on stderr, so `--json > file` stays valid.
 		console.error(`${roster.label} / ${policy}`)
 	}
 }
 
-if (args.json) {
-	console.log(JSON.stringify({seeds, rows}, null, 2))
+if (flag('json')) {
+	console.log(JSON.stringify({seeds, tuned, rows}, null, 2))
 } else {
 	console.log(table(rows))
+	console.log(note(rows))
 }
 
 process.exit(0)
 
 function table(rows: Row[]) {
-	const header = ['roster', 'policy', 'win%', 'timeout%', 'median', 'hps', 'overheal%', 'mana/s', 'casts']
+	const header = ['roster', 'policy', 'win%', '±', 'timeout%', 'median', 'hps', 'overheal%', 'mana/s', 'busy%', 'casts']
 	const body = rows.map((row) => [
 		row.roster,
 		row.policy,
 		`${row.winPercent}%`,
+		`${row.winMargin}`,
 		`${row.timeoutPercent}%`,
 		`${(row.medianDuration / 1000).toFixed(1)}s`,
 		row.hps.toFixed(1),
 		`${row.overhealPercent}%`,
 		row.manaPerSecond.toFixed(1),
+		`${row.busyPercent}%`,
 		row.castsPerFight.toFixed(1),
 	])
 	const widths = header.map((_, i) => Math.max(header[i].length, ...body.map((cells) => cells[i].length)))
 	const line = (cells: string[]) => cells.map((cell, i) => cell.padEnd(widths[i])).join('  ')
 	return [line(header), widths.map((w) => '-'.repeat(w)).join('  '), ...body.map(line)].join('\n')
+}
+
+/**
+ * The warning label. Printed with the table rather than left in a doc, because the mistake it
+ * prevents is made while reading the table: two runs of the same sweep differ by more than most
+ * retunes do, and a win rate that moved five points at ten seeds has not moved.
+ */
+function note(rows: Row[]) {
+	const widest = Math.max(...rows.map((row) => row.winMargin))
+	const lines = [
+		'',
+		`  ${seeds} seeds per cell. ± is the 95% interval on win%, up to ${widest} points wide here:`,
+		'  two cells whose ranges overlap are not different, however different they look.',
+		'  Comparing candidates needs roughly 200 seeds; 10 is for seeing the shape.',
+	]
+	if (tuned.length) lines.push('', `  tuned  ${tuned.join('  ')}`)
+	return lines.join('\n')
 }
 
 function median(values: number[]) {
@@ -165,41 +225,4 @@ function percent(part: number, whole: number) {
 
 function round(value: number) {
 	return Math.round(value * 10) / 10
-}
-
-function parse(argv: string[]) {
-	const out: Record<string, string | true> = {}
-	for (let i = 0; i < argv.length; i++) {
-		const arg = argv[i]
-		if (!arg.startsWith('--')) continue
-		const key = arg.slice(2)
-		const next = argv[i + 1]
-		if (!next || next.startsWith('--')) out[key] = true
-		else {
-			out[key] = next
-			i++
-		}
-	}
-	return out
-}
-
-/** A flag that needs a value. `--seeds` alone parses as `true`, and `Number(true)` is 1. */
-function text(name: string) {
-	const raw = args[name]
-	if (raw === undefined) return undefined
-	if (raw === true) bail(`--${name} needs a value`)
-	return raw
-}
-
-function num(name: string, fallback: number) {
-	const raw = text(name)
-	if (raw === undefined) return fallback
-	const value = Number(raw)
-	if (!Number.isFinite(value)) bail(`--${name} needs a number, got "${raw}"`)
-	return value
-}
-
-function bail(message: string): never {
-	console.error(message)
-	process.exit(1)
 }

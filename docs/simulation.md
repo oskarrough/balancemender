@@ -26,51 +26,71 @@ bun run sim                                        # the demo fight
 bun run sim --enemies 'TinyWolf*3' --policy panic  # three wolves, a bad healer
 bun run sim --party Tank --enemies Nakroth         # the boss
 bun run sim --repeat 20                            # 20 seeds, summarised
+bun run sim --repeat 20 --tune 'spell:Heal.cost=40'
 bun run sim --json > fight.json                    # every event, for your own analysis
 ```
 
-| flag         | meaning                                                             |
-| ------------ | ------------------------------------------------------------------- |
-| `--party`    | allies besides you, comma separated (default `Tank`)                |
-| `--enemies`  | enemies; `Name*3` repeats one (default `TinyWolf`)                  |
-| `--policy`   | `idle`, `triage`, `renew`, `panic` (default `triage`)               |
-| `--seed`     | the dice; the same seed always plays out the same way (default `1`) |
-| `--repeat`   | run n fights, one seed apart, and summarise                         |
-| `--duration` | give up after n seconds of fight time (default 120)                 |
-| `--json`     | print the report and events as JSON                                 |
+| flag         | meaning                                                                   |
+| ------------ | ------------------------------------------------------------------------- |
+| `--party`    | allies besides you, comma separated (default `Tank`)                      |
+| `--enemies`  | enemies; `Name*3` repeats one (default `TinyWolf`)                        |
+| `--policy`   | `idle`, `triage`, `renew`, `panic` (default `triage`)                     |
+| `--seed`     | the dice; the same seed always plays out the same way (default `1`)       |
+| `--repeat`   | run n fights, one seed apart, and summarise                               |
+| `--duration` | give up after n seconds of fight time (default 120)                       |
+| `--tune`     | change a balance number first — `kind:Name.key=value`, repeatable (below) |
+| `--json`     | print the report and events as JSON                                       |
+
+**Redirect `--json`, never pipe it.** A fight's events run to a few hundred kilobytes, and a pipe
+truncates mid-object at 64KB — what you get back is a JSON parse error that looks like a bug in the
+report. `> fight.json` is fine at any size.
 
 A single fight prints health graphs, per-actor damage and healing, per-spell breakdowns and
 deaths:
 
 ```
-Tank + Player  vs  Nakroth
-seed 1 · triage · defeat in 20.0s
+Tank + Player  vs  TinyWolf + TinyWolf
+seed 1 · triage · victory in 60.0s
 
-  Tank                   ███████████████·························  dead 8.0s
-  Player                 ██████████████████████████████▇▇▇▇█████·  dead 20.0s
-  Nakroth the Destroyer  ████████████████████████████████████████  665/750 (89%)
+  Tank         ██▇██▇██▇██▇██▇▇██▇███▇████▇███▇███▇████  271/300 (90%)
+  Player       ████████████████████████████████████████  160/160 (100%)
+  Tiny wolf 1  █▇▇▇▆▆▅▅▅▄▄▃▃▃▂▁▁▁▁·····················  dead 28.8s
+  Tiny wolf 2  ██████████████████████▇▆▆▆▆▅▄▄▄▃▃▂▂▂▁▁▁·  dead 60.0s
 
-  actor                   dmg   dps  heal  hps  overheal  taken  casts
-  Nakroth the Destroyer  1240  61.9     0  0.0        0%     85      0
-  Tank                     85   4.2     0  0.0        0%    657      0
-  Player                    0   0.0    39  1.9       74%    583      3
+  actor        dmg  dps  heal  hps  overheal  taken  casts  busy
+  Player         0  0.0   562  9.4       30%      0     10   33%
+  Tank         507  8.4     0  0.0        0%    591      0    0%
+  Tiny wolf 2  401  6.7     0  0.0        0%    255      0    0%
 
-  spell        casts  hits  total   avg  overheal
-  Nasty arrow      2     2   1150   575        0%
-  ...
+  spell        casts  hits  total  per s   avg  overheal
+  Heal            10    10    807   13.4  80.7       30%
+  Rend             0    66    132    2.2     2        0%
+  Savage Bite      0    22    121    2.0   5.5        0%
 ```
+
+`busy` is the share of the fight that actor spent committed to a cast or its global cooldown, and
+it is the column that answers "was the healer out of time, or out of mana?". A healer at 33% has
+two thirds of the fight spare, so a policy that loses there is not losing for want of a free
+moment. `per s` is there because a total says nothing about whether a bleed is worth its slot
+next to a bite that swings three times as often.
 
 `--repeat` answers the more useful question — how often does this go badly?
 
 ```
-5 fights · Tank + Player vs TinyWolf*3 · triage
+3 fights · Tank + Player vs TinyWolf + TinyWolf · triage
 
-  victory 5 (100%)   defeat 0 (0%)   timeout 0 (0%)
-  duration  avg 87.9s  min 84.0s  max 91.2s
-  healing   avg 10.6 hps  overheal 23%
-  damage    avg 21.7 dps
-  deaths    Tiny wolf 1 5/5   Tiny wolf 2 5/5   Tiny wolf 3 5/5   Player 1/5
+  victory 3 (100%)   defeat 0 (0%)   timeout 0 (0%)
+  duration  avg 56.8s  min 55.2s  max 57.6s
+  healing   avg 17.9 hps  overheal 23%
+  damage    avg 27.1 dps
+  healer    9.4 hps  busy 33%  mana 167
+  deaths    Tiny wolf 1 3/3   Tiny wolf 2 3/3
 ```
+
+The `healing` and `damage` lines are the whole fight; the `healer` line is only the actor the
+policy drives. They are separate because enemies heal now — a `WolfShaman` in the roster puts its
+own work into the fight's total, and reading that as the player's throughput makes an `idle`
+control group look like it healed for 6 a second.
 
 ### Sweeping the whole curve
 
@@ -79,22 +99,36 @@ the shape we think it is", which needs every roster against every policy:
 
 ```
 bun run sweep                                       # 10 seeds, the standard rosters
-bun run sweep --seeds 25                            # tighter
+bun run sweep --seeds 200                           # enough to compare two candidates
 bun run sweep --rosters 'TinyWolf*3; Nakroth' --policies triage,renew
 bun run sweep --json > sweep.json
 ```
 
 ```
-roster      policy  win%  timeout%  median  hps   overheal%  mana/s  casts
-TinyWolf*3  idle    0%    0%        23.0s   0.0   0%         0.0     0.0
-TinyWolf*3  triage  84%   0%        88.8s   10.4  28%        9.0     15.4
-TinyWolf*5  triage  0%    0%        40.0s   19.7  17%        15.1    10.9
-Nakroth     idle    0%    0%        32.0s   0.0   0%         0.0     0.0
-Nakroth     triage  100%  0%        60.0s   14.8  13%        11.1    10.0
+roster                  policy  win%  ±   timeout%  median  hps   overheal%  mana/s  busy%  casts
+TinyWolf*3              idle    0%    24  0%        24.0s   0.0   0%         0.0     0%     0.0
+TinyWolf*3              triage  75%   33  0%        86.4s   10.5  26%        8.9     37%    15.3
+TinyWolf*4              renew   75%   33  0%        115.2s  13.5  8%         7.9     25%    15.8
+TinyWolf*5              triage  0%    24  0%        41.6s   19.7  14%        14.4    56%    11.5
+TinyWolf*2, WolfShaman  triage  0%    24  0%        116.8s  15.9  27%        7.6     31%    14.8
+Nakroth                 triage  100%  24  0%        60.0s   15.1  12%        11.1    40%    10.3
+
+  4 seeds per cell. ± is the 95% interval on win%, up to 33 points wide here:
+  two cells whose ranges overlap are not different, however different they look.
 ```
 
 Read the `idle` rows first — they are the control group. A retune that lifts a win rate by making
 the healer irrelevant shows up as `idle` climbing alongside `triage` instead of staying at 0%.
+
+Then read `±` before believing any comparison. A win rate is a coin flip counted a few times, and
+at 10 seeds a cell near 80% is worth about ±23 points — so a retune that moved `triage` from 78%
+to 83% moved nothing you can see. This is not hypothetical: exactly that reading was taken as a
+result once, and re-running it at 200 seeds turned 78→83 and 48→43 into 79→80 and 40→38, a wash in
+both directions. **10 seeds is for seeing the shape of the curve; comparing two candidates needs
+around 200.**
+
+`busy%` is the healer's, and it is how #50 was found: it never exceeds 56% even in fights it loses,
+so the healer is short of mana, not of time.
 
 This is how the difficulty curve got its shape checked. It used to be inverted — three trash mobs
 were unwinnable while the boss was a guaranteed win — because the tank kills enemies one at a time,
@@ -159,9 +193,11 @@ new (await import('/src/nodes/autopilot.ts')).Autopilot(balancemender.player, 't
 | `src/sim/run.ts`         | runs the real loop on a stepped clock, returns the log               |
 | `src/sim/report.ts`      | pure analysis of a combat log, including rebuilding health over time |
 | `src/sim/format.ts`      | plain-text reports                                                   |
+| `src/sim/tune.ts`        | `--tune` specs → the `balance.ts` setters                            |
 | `src/nodes/autopilot.ts` | the healer policies                                                  |
 | `scripts/sim.ts`         | the CLI                                                              |
 | `scripts/sweep.ts`       | `bun run sweep` — every roster × every policy, over many seeds       |
+| `scripts/cli.ts`         | argument parsing both commands share                                 |
 
 `src/rng.ts` is why any of it repeats: seed it and every damage roll and target choice replays
 identically. Unseeded — how the browser plays — it is just `Math.random`.
@@ -175,18 +211,29 @@ identically. Unseeded — how the browser plays — it is just `Math.random`.
 - The simulation steps at 60fps by default. Effects that depend on frame timing will behave
   slightly differently at other rates.
 
-## Trying out a number the CLI cannot reach
+## Trying out a number
 
-To sweep a value the flags do not expose, tune it through [`src/balance.ts`](../src/balance.ts) —
-`setSpellValue`, `setAttackValue`, `setUnitValue` — and `resetBalance()` between candidates. That is
-the same path the Balance Lab uses, so what you measure is what the game would do.
+`--tune` takes `kind:Name.key=value` and applies it before the fights run, so measuring a candidate
+never means editing a class and remembering to put it back. It works on both commands, it repeats,
+and the value it changed is printed under the report:
 
-**Do not patch a prototype to do it.** Most tunables are instance fields copied from statics by
-`applyStatics()` at construction, so `SomeClass.prototype.x = 5` is silently overwritten by every
-instance and the sweep returns your baseline. It looks like the dial does nothing. Two separate
-investigations lost a 600-fight sweep and a whole results table to this before spotting it — the
-tell is a table that is identical across every value you tried.
+```
+bun run sweep --seeds 200 --rosters 'TinyWolf*4' --tune 'effect:Rend.total=-16'
+bun run sim --repeat 20 --tune 'spell:Flash Heal.cost=100' --tune 'unit:TinyWolf.maxHealth=200'
+```
 
-If the field genuinely has no home in `balance.ts` (`ManaRegen.fiveSecondRule` is the current
-example, since `UNIT_KEYS` does not reach it), write it on the instance from inside a method rather
-than on the prototype.
+`kind` is `spell`, `attack`, `effect` or `unit` — the four categories in
+[`src/balance.ts`](../src/balance.ts), which is the same path the Balance Lab writes through, so
+what you measure is what the game would do. A name or key it cannot reach is an error, not a
+shrug: a tune that quietly misses returns a table identical to the baseline, and that reads as
+"this dial does nothing".
+
+Which is the trap to know about if you tune by hand instead. **Do not patch a prototype.** Most
+tunables are instance fields copied from statics by `applyStatics()` at construction, so
+`SomeClass.prototype.x = 5` is silently overwritten by every instance and the sweep returns your
+baseline. Two separate investigations lost a 600-fight sweep and a whole results table to this — the
+tell is a table identical across every value you tried.
+
+If a field has no home in `balance.ts` (`ManaRegen.fiveSecondRule` is the current example, since
+`UNIT_KEYS` does not reach it), the fix is to give it one. Failing that, write it on the instance
+from inside a method rather than on the prototype.

@@ -36,8 +36,17 @@ One seed cannot tell a balanced fight from a lucky roll, and one roster cannot t
 shape of the difficulty curve. For that, sweep:
 
 ```
-bun run sweep --seeds 25
+bun run sweep                                    # the shape of the curve
+bun run sweep --seeds 200 --rosters 'TinyWolf*4' --tune 'effect:Rend.total=-16'
 ```
 
 Read the `idle` column first — it is the control group. A retune that lifts a win rate by making
 the healer irrelevant shows up as `idle` climbing too.
+
+Read `±` second. It is the 95% interval on that win rate, and at the default 10 seeds it is
+around ±23 points — wider than most retunes. **Comparing two candidates takes ~200 seeds.** Fewer
+has been mistaken for a result here more than once.
+
+`--tune 'kind:Name.key=value'` changes a balance number for the run, so a candidate never needs a
+source edit you have to remember to undo. Redirect `--json` to a file rather than piping it; a
+pipe truncates at 64KB and the parse error looks like a bug in the report.

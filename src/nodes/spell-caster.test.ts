@@ -14,6 +14,17 @@ import {combatLogs, clearLogs} from '../combatlog'
  */
 
 const step = () => Promise.resolve()
+/**
+ * Enough microtasks for a cast to finish arriving. A `Spell` mounts on one, and the
+ * `GlobalCooldown` it creates mounts on the next — so a test that casts and then tears the game
+ * down one step later leaves the cooldown mounting into a tree whose `root` has already been
+ * reset. It throws outside any test, as an unhandled rejection vitest reports separately from
+ * the passing run it came from.
+ */
+const settle = async () => {
+	await step()
+	await step()
+}
 /** The shaman's targeting is a Task; nudge it rather than waiting a frame for it. */
 const retarget = (unit: Character) => (unit as WolfShaman).targetingTask.tick()
 
@@ -127,6 +138,7 @@ describe('an enemy that casts', () => {
 		expect(caster.shouldTick()).toBe(true)
 		shaman.castSpell('Mend')
 		expect(caster.shouldTick()).toBe(false)
+		await settle()
 		game.disconnect()
 	})
 })

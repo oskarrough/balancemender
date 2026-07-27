@@ -1,7 +1,8 @@
 import {GameLoop} from '../nodes/game-loop'
 import {html, render} from '../utils'
 import {createLogger} from '../combatlog'
-import {SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, SpellKey, AttackKey, UnitKey} from '../balance'
+import {SPELL_KEYS, ATTACK_KEYS, EFFECT_KEYS, UNIT_KEYS} from '../balance'
+import type {SpellKey, AttackKey, EffectKey, UnitKey, BalanceKind} from '../balance'
 import {unitIds, UnitId} from '../nodes/unit-registry'
 import type {GameAction} from '../actions'
 import type {Character} from '../nodes/character'
@@ -26,7 +27,7 @@ export class DevConsole extends HTMLElement {
 	}
 
 	/** Parse `<Name> <key> <value>` and hand it to the interpreter. All three tune commands are this. */
-	private tuneCommand<K extends string>(of: 'spell' | 'attack' | 'unit', keys: readonly K[]): Command {
+	private tuneCommand<K extends string>(of: BalanceKind, keys: readonly K[]): Command {
 		const log = (msg: string) => this.logToConsole(msg)
 		return {
 			name: of,
@@ -146,6 +147,7 @@ export class DevConsole extends HTMLElement {
 			},
 			this.tuneCommand<SpellKey>('spell', SPELL_KEYS),
 			this.tuneCommand<AttackKey>('attack', ATTACK_KEYS),
+			this.tuneCommand<EffectKey>('effect', EFFECT_KEYS),
 			this.tuneCommand<UnitKey>('unit', UNIT_KEYS),
 			{
 				name: 'balance',

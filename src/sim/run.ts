@@ -1,8 +1,7 @@
 import {GameLoop} from '../nodes/game-loop'
 import {AudioPlayer} from '../nodes/audio'
 import {Autopilot, Policy, PolicyName} from '../nodes/autopilot'
-import {combatLogs, logger, setCombatClock, setCombatNotify, CombatLogEvent} from '../combatlog'
-import {logger as gameLogger} from '../utils'
+import {combatLogs, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
 import {setSeed} from '../rng'
 import {DEMO_ROSTER, Roster} from '../nodes/encounter'
 import type {Character} from '../nodes/character'
@@ -55,13 +54,11 @@ export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
 	// a frozen clock and someone else's combat log.
 	const restoreLog = borrowCombatLog()
 	// A simulated fight logs thousands of lines in a second — keep it to the combat log.
-	const levels = {combat: logger.level, game: gameLogger.level}
+	const level = setLogLevel('silent')
 	// A second GameLoop claims AudioPlayer.global, so give the live game its speaker back after.
 	const liveAudio = AudioPlayer.global
 	let game: SimLoop | undefined
 	try {
-		logger.level = 'silent'
-		gameLogger.level = 'silent'
 		setSeed(seed)
 
 		game = new SimLoop(lineup)
@@ -99,8 +96,7 @@ export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
 		game?.disconnect()
 		await flush()
 		AudioPlayer.global = liveAudio
-		logger.level = levels.combat
-		gameLogger.level = levels.game
+		setLogLevel(level)
 		setSeed(null)
 		restoreLog()
 	}

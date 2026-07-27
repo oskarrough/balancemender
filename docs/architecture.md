@@ -138,6 +138,11 @@ Log both an id and a name for whoever an event touches. The analyzer keys on the
 only a label, and it changes mid-fight — spawning a second wolf renames the first one to
 "Tiny wolf 1", so anything keyed by name splits that unit in two.
 
+Log enough that the analyzer needs no game constants. `SPELL_CAST_START` carries a `busyFor` —
+the cast time or the global cooldown, whichever is longer — which is how the report can say what
+share of a fight an actor spent unable to act without importing `GlobalCooldown` to find out how
+long one lasts. Anything the analysis would otherwise have to assume belongs in the event.
+
 Getting logged is not left to the caller: **every change to a health bar goes through
 `applyHit()`** in [`hit.ts`](../src/nodes/hit.ts), which applies it, floats the number, records
 the event and announces the death. Spells, attacks and periodic effects all call it and do
@@ -174,6 +179,12 @@ way down the tree — so start such a file with:
 ```
 
 Pure code (the combat log, the report analyzer) runs in the default node environment.
+
+The run is quiet: `src/test-setup.ts` calls `setLogLevel('silent')` so a failing assertion is not
+buried under a few hundred lines of pino. Call `setLogLevel('info')` at the top of one file to
+watch a fight happen. That setup file runs before _every_ test file including the node-environment
+ones, so it must not import anything that reaches uhtml — which is why the level lives in
+`combatlog.ts` rather than in `utils.ts` next to `log()`.
 
 **Components cannot be render-tested.** happy-dom is enough to _import_ the game, but uhtml
 cannot interpolate an attribute in it — `` html`<div data-type=${x}>` `` throws

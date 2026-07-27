@@ -101,6 +101,9 @@ export class SpellCast {
 			spellId: spell.name,
 			spellName: spell.name,
 			value: spell.delay,
+			// An instant cast still costs the global cooldown, so the longer of the two is what the
+			// caster actually loses. This is where "the healer is never busier than 40%" comes from.
+			busyFor: Math.max(spell.delay, caster.gcd.delay),
 		})
 
 		if (spell.delay) {

@@ -1,16 +1,6 @@
 import {log} from './utils'
 import {AudioPlayer} from './nodes/audio'
-import {
-	setSpellValue,
-	setAttackValue,
-	setEffectValue,
-	setUnitValue,
-	resetBalance,
-	SpellKey,
-	AttackKey,
-	EffectKey,
-	UnitKey,
-} from './balance'
+import {setBalanceValue, resetBalance, SpellKey, AttackKey, EffectKey, UnitKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Character} from './nodes/character'
 import type {Roster} from './nodes/encounter'
@@ -87,15 +77,9 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			return interrupt(game)
 
 		case 'tune': {
-			const applied =
-				action.of === 'spell'
-					? setSpellValue(action.name, action.key, action.value)
-					: action.of === 'attack'
-						? setAttackValue(action.name, action.key, action.value)
-						: action.of === 'effect'
-							? setEffectValue(action.name, action.key, action.value)
-							: setUnitValue(action.name, action.key, action.value) &&
-								retuneLiveUnits(game, action.name, action.key, action.value)
+			const applied = setBalanceValue(action.of, action.name, action.key, action.value)
+			// Classes are the template; the units already fighting need telling separately.
+			if (applied && action.of === 'unit') retuneLiveUnits(game, action.name, action.key, action.value)
 			return applied ? ok(action.value) : fail(`Unknown ${action.of}: ${action.name}`)
 		}
 

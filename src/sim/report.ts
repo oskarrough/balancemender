@@ -24,6 +24,13 @@ export interface ActorStats {
 	casts: number
 	hits: number
 	manaSpent: number
+	/**
+	 * Milliseconds this actor spent committed to a cast or its global cooldown. Against the
+	 * fight's duration it answers the question a cast count cannot: was this healer out of time
+	 * or out of mana? A healer at 40% with an empty mana bar is mana-capped, and no amount of
+	 * cheaper decision-making will help it.
+	 */
+	busyTime: number
 	deathTime?: number
 }
 
@@ -98,6 +105,10 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			healer.overhealing += overheal
 			target(event).healingTaken += value - overheal
 			spell(spells, event.spellName, value, overheal)
+		} else if (event.eventType === 'SPELL_CAST_START') {
+			// Counted at the start, not the success: an interrupted cast still cost the caster the
+			// time it spent casting.
+			source(event).busyTime += event.busyFor ?? 0
 		} else if (event.eventType === 'SPELL_CAST_SUCCESS') {
 			source(event).casts++
 			const stats = spell(spells, event.spellName, 0, 0)
@@ -214,6 +225,7 @@ function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
 			casts: 0,
 			hits: 0,
 			manaSpent: 0,
+			busyTime: 0,
 		}
 		actors.set(key, stats)
 	}
@@ -235,6 +247,28 @@ function spell(spells: Map<string, SpellStats>, name = 'unknown', value: number,
 		stats.avg = round(stats.total / stats.hits)
 	}
 	return stats
+}
+
+/**
+ * The actor the policy drives. By name, unusually: `runFight` adds the healer itself and calls it
+ * Player, and it is the one unit `Encounter.renumber()` never touches, so the name is stable where
+ * an id would have to be looked up from the roster first.
+ */
+export const healerOf = (report: FightReport) => report.actors.find((actor) => actor.name === 'Player')
+
+/**
+ * Half the 95% interval on `part/whole`, in points — how far a rate this size could have landed
+ * from the truth by luck alone.
+ *
+ * Wilson rather than the textbook `sqrt(p(1-p)/n)`, which collapses to ±0 at a clean sweep and so
+ * claims certainty from five wins in five. 0 out of 25 comes out ±7, which is the honest answer.
+ */
+export function margin(part: number, whole: number) {
+	if (whole <= 0) return 0
+	const z = 1.96
+	const p = part / whole
+	const half = (z / (1 + (z * z) / whole)) * Math.sqrt((p * (1 - p)) / whole + (z * z) / (4 * whole * whole))
+	return Math.round(half * 100)
 }
 
 const sum = <T>(items: T[], get: (item: T) => number) => items.reduce((total, item) => total + get(item), 0)

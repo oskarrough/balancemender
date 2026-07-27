@@ -29,6 +29,16 @@ const fight: CombatLogEvent[] = [
 		value: 30,
 	}),
 	event({
+		time: 500,
+		eventType: 'SPELL_CAST_START',
+		sourceId: 'player',
+		sourceName: 'Player',
+		spellName: 'Heal',
+		value: 1500,
+		// The cast time or the global cooldown, whichever is longer — see `logCombat`.
+		busyFor: 1500,
+	}),
+	event({
 		time: 2000,
 		eventType: 'SPELL_CAST_SUCCESS',
 		sourceId: 'player',
@@ -67,6 +77,16 @@ describe('analyze', () => {
 		expect(player.healingDone).toBe(30)
 		expect(player.overhealing).toBe(10)
 		expect(player.casts).toBe(1)
+	})
+
+	/**
+	 * Against the duration this is the answer to "was the healer out of time or out of mana",
+	 * which a cast count cannot give — and it was the question behind #50.
+	 */
+	it('adds up how long an actor was committed to casting', () => {
+		const player = report.actors.find((a) => a.name === 'Player')!
+		expect(player.busyTime).toBe(1500)
+		expect(report.actors.find((a) => a.name === 'Tank')!.busyTime).toBe(0)
 	})
 
 	it('tracks damage from both sides', () => {

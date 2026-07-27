@@ -19,6 +19,7 @@ export type UnitKey = (typeof UNIT_KEYS)[number]
 export type EffectKey = (typeof EFFECT_KEYS)[number]
 
 type NumberDict = Record<string, number>
+type PartialDict = Record<string, number | undefined>
 
 type SpellClass = {cost: number; heal: number; castTime: number; cooldown: number}
 type AttackClass = {minDamage: number; maxDamage: number; interval: number; delay: number}
@@ -71,13 +72,35 @@ const defaults = {
 
 export const balance = structuredClone(defaults)
 
-function writeBack(
-	classes: Record<string, NumberDict>,
-	state: Record<string, Partial<NumberDict>>,
-	name: string,
-	key: string,
-	value: number,
-) {
+export type BalanceKind = 'spell' | 'attack' | 'effect' | 'unit'
+
+interface BalanceCategory {
+	keys: readonly string[]
+	/** The classes themselves. Writing here is what changes the game. */
+	classes: Record<string, NumberDict>
+	/** What the Balance Lab reads. */
+	state: Record<string, PartialDict>
+	defaults: Record<string, PartialDict>
+}
+
+/**
+ * The four kinds of tunable number, in one table.
+ *
+ * Everything that tunes reads this: the `tune` action, `resetBalance()`, the dev console, the
+ * `--tune` flag. It exists because those all used to hand-list the four kinds, and a hand-listed
+ * enumeration drifts — `effect` arrived in the action and the CLI but not in the console, so
+ * `Rend` was the one number you could change from a terminal and not from the game.
+ */
+export const balanceCategories: Record<BalanceKind, BalanceCategory> = {
+	spell: {keys: SPELL_KEYS, classes: spellClasses, state: balance.spells, defaults: defaults.spells},
+	attack: {keys: ATTACK_KEYS, classes: attackClasses, state: balance.attacks, defaults: defaults.attacks},
+	effect: {keys: EFFECT_KEYS, classes: effectClasses, state: balance.effects, defaults: defaults.effects},
+	unit: {keys: UNIT_KEYS, classes: unitClasses, state: balance.units, defaults: defaults.units},
+} as Record<BalanceKind, BalanceCategory>
+
+/** False when the name is unknown or the class has no such field — never a silent no-op. */
+export function setBalanceValue(kind: BalanceKind, name: string, key: string, value: number) {
+	const {classes, state} = balanceCategories[kind]
 	const cls = classes[name]
 	if (!cls || !(key in cls)) return false
 	cls[key] = value
@@ -85,42 +108,82 @@ function writeBack(
 	return true
 }
 
-export function setSpellValue(name: string, key: SpellKey, value: number) {
-	return writeBack(spellClasses as Record<string, NumberDict>, balance.spells, name, key, value)
-}
-export function setAttackValue(name: string, key: AttackKey, value: number) {
-	return writeBack(attackClasses as Record<string, NumberDict>, balance.attacks, name, key, value)
-}
-export function setEffectValue(name: string, key: EffectKey, value: number) {
-	return writeBack(effectClasses as Record<string, NumberDict>, balance.effects, name, key, value)
-}
-export function setUnitValue(name: string, key: UnitKey, value: number) {
-	return writeBack(unitClasses as Record<string, NumberDict>, balance.units, name, key, value)
-}
+export const setSpellValue = (name: string, key: SpellKey, value: number) => setBalanceValue('spell', name, key, value)
+export const setAttackValue = (name: string, key: AttackKey, value: number) =>
+	setBalanceValue('attack', name, key, value)
+export const setEffectValue = (name: string, key: EffectKey, value: number) =>
+	setBalanceValue('effect', name, key, value)
+export const setUnitValue = (name: string, key: UnitKey, value: number) => setBalanceValue('unit', name, key, value)
 
 export function resetBalance() {
-	for (const [name, def] of Object.entries(defaults.spells)) {
-		for (const k of SPELL_KEYS) {
-			const v = def[k]
-			if (v !== undefined) setSpellValue(name, k, v)
-		}
-	}
-	for (const [name, def] of Object.entries(defaults.attacks)) {
-		for (const k of ATTACK_KEYS) {
-			const v = def[k]
-			if (v !== undefined) setAttackValue(name, k, v)
-		}
-	}
-	for (const [name, def] of Object.entries(defaults.effects)) {
-		for (const k of EFFECT_KEYS) {
-			const v = def[k]
-			if (v !== undefined) setEffectValue(name, k, v)
-		}
-	}
-	for (const [name, def] of Object.entries(defaults.units)) {
-		for (const k of UNIT_KEYS) {
-			const v = def[k]
-			if (v !== undefined) setUnitValue(name, k, v)
+	for (const kind of Object.keys(balanceCategories) as BalanceKind[]) {
+		for (const [name, row] of Object.entries(balanceCategories[kind].defaults)) {
+			for (const [key, value] of Object.entries(row)) {
+				if (value !== undefined) setBalanceValue(kind, name, key, value)
+			}
 		}
 	}
 }
+
+/**
+ * `effect:Rend.total=-8` — one balance number, named as a string.
+ *
+ * The format both `--tune` and the dev console take, so a number worth trying from a terminal is
+ * reachable from inside the game with the same spelling. It lives here rather than with the
+ * simulator because tuning is not simulation, and because the four kinds it validates against are
+ * right above it.
+ */
+export interface Tune {
+	kind: BalanceKind
+	name: string
+	key: string
+	value: number
+}
+
+/** Split from the outside in, so a name with a dot or a spell called "Flash Heal" survives. */
+export function parseTune(spec: string): Tune {
+	const colon = spec.indexOf(':')
+	const equals = spec.lastIndexOf('=')
+	if (colon < 1 || equals < colon) {
+		throw new Error(`Bad tune "${spec}". Expected kind:Name.key=value, e.g. spell:Heal.cost=40`)
+	}
+
+	const kind = spec.slice(0, colon) as BalanceKind
+	const target = spec.slice(colon + 1, equals)
+	const dot = target.lastIndexOf('.')
+	const kinds = Object.keys(balanceCategories)
+	if (!kinds.includes(kind)) throw new Error(`Unknown tune kind "${kind}". Known: ${kinds.join(', ')}`)
+	if (dot < 1) throw new Error(`Bad tune "${spec}". Expected ${kind}:Name.key=value`)
+
+	const {keys, classes} = balanceCategories[kind]
+	const name = target.slice(0, dot)
+	const key = target.slice(dot + 1)
+	const value = Number(spec.slice(equals + 1))
+	const names = Object.keys(classes)
+
+	if (!names.includes(name)) throw new Error(`Unknown ${kind} "${name}". Known: ${names.join(', ')}`)
+	if (!keys.includes(key)) throw new Error(`Unknown ${kind} key "${key}". Known: ${keys.join(', ')}`)
+	if (!Number.isFinite(value)) throw new Error(`Tune "${spec}" needs a number, got "${spec.slice(equals + 1)}"`)
+
+	return {kind, name, key, value}
+}
+
+/**
+ * Applies each in order, throwing on the first one that does not land.
+ *
+ * Loud on purpose: a tune that silently misses returns a sweep identical to the baseline, which
+ * reads as "this dial does nothing" and has cost two investigations a full run already.
+ */
+export function applyTunes(specs: string[]): Tune[] {
+	return specs.map((spec) => {
+		const tune = parseTune(spec)
+		// The key check above cannot catch this on its own: `maxMana` is a real unit key that a
+		// wolf simply has no field for.
+		if (!setBalanceValue(tune.kind, tune.name, tune.key, tune.value)) {
+			throw new Error(`${tune.kind} "${tune.name}" has no ${tune.key} to tune`)
+		}
+		return tune
+	})
+}
+
+export const formatTune = (tune: Tune) => `${tune.kind}:${tune.name}.${tune.key}=${tune.value}`

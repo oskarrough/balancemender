@@ -96,6 +96,7 @@ export class FightReportView extends HTMLElement {
 								<th>taken</th>
 								<th>casts</th>
 								<th>mana</th>
+								<th>busy</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -109,6 +110,8 @@ export class FightReportView extends HTMLElement {
 										<td>${actor.damageTaken}</td>
 										<td>${actor.casts}</td>
 										<td>${actor.manaSpent}</td>
+										<!-- Share of the fight spent committed to a cast or its global cooldown. -->
+										<td>${percent(actor.busyTime, report.duration)}</td>
 									</tr>
 								`,
 							)}

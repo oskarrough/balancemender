@@ -15,6 +15,15 @@ export interface CombatLogEvent {
 	value?: number
 	/** Portion of `value` that healed a full health bar and did nothing. */
 	overheal?: number
+	/**
+	 * How long this event commits the actor for, in ms — a cast's time or its global cooldown,
+	 * whichever is longer. Logged so the analyzer can say how much of a fight an actor spent
+	 * unable to act without knowing what a GCD is: everything it needs is in the stream.
+	 *
+	 * Not `duration`: an aura has one too, and it is a different thing — how long the effect lasts
+	 * on its target rather than how long its caster stood still.
+	 */
+	busyFor?: number
 	extraInfo?: string
 	isAOE?: boolean
 	groupId?: string
@@ -117,9 +126,32 @@ export const logger = Pino({
 	},
 })
 
-export function createLogger(logLevel = 'info') {
+/**
+ * What a `createLogger()` with no argument gets. A pino child keeps the level it was born with,
+ * so quieting the parent afterwards leaves its children talking — this is how a caller that has
+ * not been imported yet inherits a decision made before it loads. `setLogLevel('silent')` in the
+ * test setup is the one caller that needs it.
+ */
+let defaultLevel: Pino.LevelWithSilent = 'info'
+const children: Pino.Logger[] = []
+
+/**
+ * Set the level now, and for every logger made after this. Returns the level it replaced, so a
+ * caller that only wants quiet for a while can hand it back — the same borrow-and-restore shape as
+ * `setCombatClock` and `setCombatNotify` below.
+ */
+export function setLogLevel(level: Pino.LevelWithSilent) {
+	const previous = defaultLevel
+	defaultLevel = level
+	logger.level = level
+	for (const child of children) child.level = level
+	return previous
+}
+
+export function createLogger(logLevel: Pino.LevelWithSilent = defaultLevel) {
 	const childLogger = logger.child({})
 	childLogger.level = logLevel
+	children.push(childLogger)
 	return childLogger
 }
 

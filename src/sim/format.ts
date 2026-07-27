@@ -1,4 +1,4 @@
-import {analyze, FightReport, Series} from './report'
+import {analyze, healerOf, margin, FightReport, Series} from './report'
 import type {FightResult, Outcome} from './run'
 
 /** Plain-text fight reports. No colours, so they pipe and diff cleanly. */
@@ -36,7 +36,7 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 	lines.push(
 		'',
 		table(
-			['actor', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'taken', 'casts'],
+			['actor', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'taken', 'casts', 'busy'],
 			report.actors.map((a) => [
 				a.name,
 				a.damageDone,
@@ -46,6 +46,7 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 				percentOf(a.overhealing, a.healingDone + a.overhealing),
 				a.damageTaken,
 				a.casts,
+				percentOf(a.busyTime, report.duration),
 			]),
 		),
 	)
@@ -54,8 +55,18 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 		lines.push(
 			'',
 			table(
-				['spell', 'casts', 'hits', 'total', 'avg', 'overheal'],
-				report.spells.map((s) => [s.name, s.casts, s.hits, s.total, s.avg, percentOf(s.overheal, s.total)]),
+				// `per s` rather than only a total, because a total says nothing about whether a bleed
+				// is worth its slot next to a bite that swings three times as often.
+				['spell', 'casts', 'hits', 'total', 'per s', 'avg', 'overheal'],
+				report.spells.map((s) => [
+					s.name,
+					s.casts,
+					s.hits,
+					s.total,
+					perSecond(s.total, report.duration),
+					s.avg,
+					percentOf(s.overheal, s.total),
+				]),
 			),
 		)
 	}
@@ -70,11 +81,14 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 /** How a batch of runs of the same fight turned out. */
 export function formatAggregate(results: FightResult[]): string {
 	const reports = results.map((result) => analyze(result.events, result))
+	const healers = reports.map(healerOf)
 	const durations = results.map((r) => r.duration)
+	const runtime = avg(durations)
 	const outcomes = count(results.map((r) => r.outcome))
 	const deaths = count(reports.flatMap((r) => r.deaths.map((d) => d.name)))
 	const spec = results[0].spec
 	const policy = typeof spec.policy === 'string' ? spec.policy : (spec.policy?.name ?? 'triage')
+	const victories = outcomes.get('victory') ?? 0
 
 	const lines = [
 		`${results.length} fights · ${[...(spec.party ?? ['Tank']), 'Player'].join(' + ')} vs ${(spec.enemies ?? ['TinyWolf']).join(' + ')} · ${policy}`,
@@ -83,16 +97,27 @@ export function formatAggregate(results: FightResult[]): string {
 			OUTCOMES.map(
 				(key) => `${key} ${outcomes.get(key) ?? 0} (${Math.round(((outcomes.get(key) ?? 0) / results.length) * 100)}%)`,
 			).join('   '),
-		`  duration  avg ${seconds(avg(durations))}  min ${seconds(Math.min(...durations))}  max ${seconds(Math.max(...durations))}`,
+		`  duration  avg ${seconds(runtime)}  min ${seconds(Math.min(...durations))}  max ${seconds(Math.max(...durations))}`,
 		`  healing   avg ${avg(reports.map((r) => r.totals.hps)).toFixed(1)} hps  overheal ${percentOf(
 			avg(reports.map((r) => r.totals.overhealing)),
 			avg(reports.map((r) => r.totals.overhealing + r.totals.healing)),
 		)}`,
 		`  damage    avg ${avg(reports.map((r) => r.totals.dps)).toFixed(1)} dps`,
+		// The healer's own row, because the two lines above are fight-wide — an enemy healer's work
+		// lands in `totals.healing` too. `busy` is how much of the fight it was locked into a cast:
+		// low with mana to spare means the policy is timid, low with an empty bar means mana is the
+		// wall and no amount of cleverer decision-making gets past it.
+		`  healer    ${perSecond(avg(healers.map((h) => h?.healingDone ?? 0)), runtime)} hps  busy ${percentOf(
+			avg(healers.map((h) => h?.busyTime ?? 0)),
+			runtime,
+		)}  mana ${Math.round(avg(healers.map((h) => h?.manaSpent ?? 0)))}`,
 	]
 	if (deaths.size) {
 		lines.push(`  deaths    ${[...deaths].map(([name, n]) => `${name} ${n}/${results.length}`).join('   ')}`)
 	}
+	// The same warning the sweep prints, for the same reason: a handful of fights is a handful of
+	// coin flips, and the win rate above moves by more than most retunes do.
+	lines.push('', `  win rate ±${margin(victories, results.length)} points at ${results.length} fights (95%)`)
 	return lines.join('\n')
 }
 

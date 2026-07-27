@@ -36,7 +36,8 @@ export function naturalizeNumber(num = 0, percentage = 0.05) {
 	return randomIntFromInterval(min, max)
 }
 
-export const logger = createLogger('info')
+/** No level of its own, so `setLogLevel()` reaches it even when it loads afterwards. */
+export const logger = createLogger()
 
 // @ts-ignore
 export const log = (...args) => logger.info(...args)
