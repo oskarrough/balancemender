@@ -87,8 +87,9 @@ spawning one. That is the only reason there is no separate enemy registry.
 
 ## Numbers and tuning
 
-`src/balance.ts` snapshots the tunable statics of every spell, attack and unit, and writes
-changes back to the classes. Everything reaches it through `perform({type: 'tune', …})`;
+`src/balance.ts` snapshots the tunable statics of every spell, attack, periodic effect and unit,
+and writes changes back to the classes. An effect only needs its own entry when nothing casts it —
+one a spell owns keeps its magnitude on the spell (see `Renew`), where it is already tunable. Everything reaches it through `perform({type: 'tune', …})`;
 `src/inspectables.ts` is what the Balance Lab panel lists. `balance.units` is keyed by the same
 unit ids you spawn with, and retuning reaches live units by `unitId` — never by class name.
 
@@ -122,6 +123,12 @@ How many copies of an effect a unit can carry is `maxStacks`, and it defaults to
 replaces what is there and the duration starts over. Raise it for a spell that is _meant_ to
 stack; unbounded is not a design. Effects log `SPELL_AURA_APPLIED`/`REFRESH`/`REMOVED`, so an
 effect coming and going reads from the same stream as the hits it lands.
+
+`interval` is the gap **between** ticks, not before the first one, so by default an effect lands
+an instalment the frame it is applied. That is free damage for anything reapplied faster than it
+expires — a wolf's bleed refreshed every bite would arrive half as a lump. Set `delay` to
+`interval` for the Classic behaviour of waiting a full tick. Renew still front-loads; changing it
+is a balance question, not a bug fix (#48).
 
 ## Fights without a browser
 

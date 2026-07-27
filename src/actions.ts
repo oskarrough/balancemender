@@ -1,6 +1,16 @@
 import {log} from './utils'
 import {AudioPlayer} from './nodes/audio'
-import {setSpellValue, setAttackValue, setUnitValue, resetBalance, SpellKey, AttackKey, UnitKey} from './balance'
+import {
+	setSpellValue,
+	setAttackValue,
+	setEffectValue,
+	setUnitValue,
+	resetBalance,
+	SpellKey,
+	AttackKey,
+	EffectKey,
+	UnitKey,
+} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Character} from './nodes/character'
 import type {Roster} from './nodes/encounter'
@@ -29,6 +39,7 @@ export type GameAction =
 	| {type: 'interrupt'}
 	| {type: 'tune'; of: 'spell'; name: string; key: SpellKey; value: number}
 	| {type: 'tune'; of: 'attack'; name: string; key: AttackKey; value: number}
+	| {type: 'tune'; of: 'effect'; name: string; key: EffectKey; value: number}
 	| {type: 'tune'; of: 'unit'; name: string; key: UnitKey; value: number}
 	| {type: 'resetBalance'}
 	| {type: 'healParty'}
@@ -81,8 +92,10 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 					? setSpellValue(action.name, action.key, action.value)
 					: action.of === 'attack'
 						? setAttackValue(action.name, action.key, action.value)
-						: setUnitValue(action.name, action.key, action.value) &&
-							retuneLiveUnits(game, action.name, action.key, action.value)
+						: action.of === 'effect'
+							? setEffectValue(action.name, action.key, action.value)
+							: setUnitValue(action.name, action.key, action.value) &&
+								retuneLiveUnits(game, action.name, action.key, action.value)
 			return applied ? ok(action.value) : fail(`Unknown ${action.of}: ${action.name}`)
 		}
 

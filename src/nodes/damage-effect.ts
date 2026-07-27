@@ -4,6 +4,7 @@ import {AudioPlayer} from './audio'
 import {Character} from './character'
 import type {CombatEventType} from '../combatlog'
 import {applyHit} from './hit'
+import {PeriodicEffect} from './periodic'
 
 /**
  * Base class for all damage effects (attacks from any character to any character).
@@ -129,11 +130,59 @@ export class MediumAttack extends DamageEffect {
 export class WolfBite extends DamageEffect {
 	static delay = 4000
 	static interval = 3800
-	static minDamage = 10
-	static maxDamage = 13
+	static minDamage = 4
+	static maxDamage = 7
 	static sound = 'combat_strong_punch'
 	static name = 'Savage Bite'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
+
+	/**
+	 * The bite lands, and leaves a wound behind. Half the bite's damage moved into the bleed
+	 * rather than being added on top: this is meant to change the *shape* of the pack's damage,
+	 * not its size, so the cliff #40 put past three wolves stays where it is.
+	 */
+	tick() {
+		const target = this.target
+		if (!target) return
+		super.tick()
+		// Check `alive` again after the hit, not before: this bite may have been the killing blow,
+		// and `onDeath` has just cancelled the effects a fresh wound would be joining. Planting one
+		// anyway leaves a Task on a corpse that outlives the tree it was mounted into.
+		if (target.alive) new WolfBleed(target, this.attacker)
+	}
+}
+
+/**
+ * The steady half of a wolf's damage, and the reason Renew has anything to answer.
+ *
+ * Bites land in lumps you cannot see coming, so pre-healing them is a guess and the patient
+ * spell is pure downside. A bleed is the opposite: already ticking, visible on the frame, and
+ * costed in advance — which is the damage pattern a heal-over-time was written for.
+ *
+ * Every bite refreshes it, so while a wolf is alive this never expires and its throughput is just
+ * one tick per `interval` — `total` and `repeat` do not set the damage, they set the *tail*: what
+ * goes on draining after the wolf that opened the wound is dead.
+ *
+ * That tail is why `repeat` is 4 and not 40. Killing a wolf is how the party wins, and effects
+ * outlive the unit that applied them (`Encounter.onDeath` cancels what is *on* a corpse, not what
+ * it put on others). A long wound therefore charges for a wolf the tank has already dealt with,
+ * which does not show up in damage-per-wolf at all — it is invisible until win rates drop. Four
+ * ticks is just longer than the 3800ms refresh gap, so uptime is unbroken and the debt is small.
+ *
+ * Not keyed to the pack: `stackKey` is name-and-caster, so three wolves mean three wounds, and
+ * bleed damage scales with pack size exactly as the bites it was taken from do.
+ */
+export class WolfBleed extends PeriodicEffect {
+	static name = 'Rend'
+	static total = -8
+	static interval = 1000
+	static repeat = 4
+	/**
+	 * A full tick, so no instalment lands at the moment of the bite. Without it a wound refreshed
+	 * every 3800ms pays out immediately on every reapplication, and half the bleed would arrive
+	 * as part of the lump it is supposed to be the alternative to.
+	 */
+	static delay = 1000
 }
 
 /**

@@ -2,6 +2,7 @@
 import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
 import {PeriodicEffect} from './periodic'
+import {WolfBite} from './damage-effect'
 import {Renew} from './spells'
 import {combatLogs, clearLogs} from '../combatlog'
 
@@ -100,6 +101,65 @@ describe('stack rule', () => {
 		await Promise.resolve()
 
 		expect(auras('Sunder').map((event) => event.extraInfo)).toEqual([undefined, '2 stacks'])
+		game.disconnect()
+	})
+
+	/**
+	 * vroum's `disconnect()` queues `_runDestroy` unconditionally, so a second call runs teardown
+	 * on a node whose `root` has already been reset to itself and throws out of `Task.destroy`.
+	 * Effects are the node type several unrelated callers can reach — see `detached`.
+	 */
+	it('survives being disconnected twice', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		const effect = new PeriodicEffect(game.tank, game.player, -10)
+		await Promise.resolve()
+
+		expect(() => {
+			effect.disconnect()
+			effect.disconnect()
+		}).not.toThrow()
+		await Promise.resolve()
+		game.disconnect()
+	})
+})
+
+describe('the wolf bleed', () => {
+	beforeEach(() => clearLogs())
+
+	it('opens a wound that later bites refresh rather than stack', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const wolf = game.enemies[0]
+		wolf.currentTarget = game.tank
+		const bite = new WolfBite(wolf)
+		await Promise.resolve()
+
+		bite.tick()
+		await Promise.resolve()
+		bite.tick()
+		await Promise.resolve()
+
+		expect(effectsNamed(game.tank, 'Rend')).toHaveLength(1)
+		expect(auras('Rend').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
+		game.disconnect()
+	})
+
+	/**
+	 * A bite can be the killing blow, and `Encounter.onDeath` has already cancelled the effects a
+	 * fresh wound would be joining. Planting one anyway leaves a Task mounted on a corpse.
+	 */
+	it('does not wound a target the same bite just killed', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const wolf = game.enemies[0]
+		wolf.currentTarget = game.tank
+		const bite = new WolfBite(wolf)
+		await Promise.resolve()
+
+		game.tank.health.set(1)
+		bite.tick()
+		await Promise.resolve()
+
+		expect(game.tank.alive).toBe(false)
+		expect(effectsNamed(game.tank, 'Rend')).toHaveLength(0)
 		game.disconnect()
 	})
 })

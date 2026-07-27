@@ -26,6 +26,17 @@ export class PeriodicEffect extends Task {
 	interval = 3000
 	repeat = 5
 	/**
+	 * How long before the first tick. Zero means the next frame — `interval` is the gap *between*
+	 * ticks, so by default an effect lands one instalment the moment it is applied and its last
+	 * one an interval before its life is up.
+	 *
+	 * Set it to `interval` for the Classic behaviour, where a freshly applied effect waits a full
+	 * tick before doing anything. That matters most for an effect refreshed faster than it
+	 * expires: with no delay, every reapplication buys an immediate instalment, so a rapidly
+	 * refreshed effect is partly a direct hit wearing a periodic's name.
+	 */
+	delay = 0
+	/**
 	 * How many copies of this effect one target can carry at once. `1` is a refresh: recasting
 	 * replaces what is there and the duration starts over, which is Classic Renew and Classic
 	 * Shadow Word: Pain. Higher stacks — each cast adds a copy, and past the cap the one closest
@@ -46,10 +57,22 @@ export class PeriodicEffect extends Task {
 	/** Replaced by a fresh copy rather than run out. See `supersede`. */
 	superseded = false
 
+	/**
+	 * Already torn down. vroum's `disconnect()` is not idempotent — it queues `_runDestroy`
+	 * unconditionally, and the second run finds `root` reset to the node itself and throws from
+	 * `Task.destroy`'s `this.root._kill(this)`.
+	 *
+	 * Effects are the one node type several unrelated callers can reach: `supersede()` when a
+	 * fresh copy lands, `Encounter.onDeath()` when the unit carrying it falls. Neither can know
+	 * about the other, so the guard belongs here rather than at every call site.
+	 */
+	private detached = false
+
 	static name = 'Periodic'
 	static total = 0
 	static interval = 3000
 	static repeat = 5
+	static delay = 0
 	static maxStacks = 1
 
 	/**
@@ -63,7 +86,7 @@ export class PeriodicEffect extends Task {
 		total?: number,
 	) {
 		super(parent)
-		applyStatics(this, 'name', 'total', 'interval', 'repeat', 'maxStacks')
+		applyStatics(this, 'name', 'total', 'interval', 'repeat', 'delay', 'maxStacks')
 		if (total !== undefined) this.total = total
 		this.casterName = caster.name
 		this.casterId = caster.id
@@ -101,6 +124,13 @@ export class PeriodicEffect extends Task {
 		this.parent.effects.delete(this)
 		this.pause()
 		this.disconnect()
+	}
+
+	/** Idempotent, unlike the base — see `detached`. */
+	disconnect() {
+		if (this.detached) return
+		this.detached = true
+		super.disconnect()
 	}
 
 	tick() {

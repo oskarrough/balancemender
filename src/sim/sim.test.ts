@@ -117,11 +117,26 @@ describe('healing changes the outcome', () => {
 	 *
 	 * Both ends pinned, because either one can regress on its own: a wolf buff puts three back out
 	 * of reach, and a wolf nerf turns five into a fight you can win by out-sustaining.
+	 *
+	 * The winnable end is a rate, not a per-seed certainty — triage takes three wolves about four
+	 * times in five. Asserting five hand-picked seeds all win was a 0.8^5 coin flip that passed on
+	 * luck, and any balance-neutral change could flip one; giving the wolves a bleed did, without
+	 * moving the rate at all (79% before, 80% after, n=200). The other two ends are 0% and 100%
+	 * events, so those stay per-seed where a single counterexample is real information.
 	 */
-	it.each([1, 2, 3, 4, 5])('makes three wolves hard and five a wall (seed %i)', async (seed) => {
+	const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
+	it('makes three wolves winnable but not a formality', async () => {
 		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
-		expect((await runFight({enemies: three, policy: 'triage', seed})).outcome).toBe('victory')
+		const outcomes = await Promise.all(SEEDS.map((seed) => runFight({enemies: three, policy: 'triage', seed})))
+		const wins = outcomes.filter((fight) => fight.outcome === 'victory').length / SEEDS.length
+		expect(wins).toBeGreaterThan(0.55)
+		expect(wins).toBeLessThan(0.95)
+	})
+
+	it.each([1, 2, 3, 4, 5])('makes three wolves need a healer and five a wall (seed %i)', async (seed) => {
 		// Still not a fight healing is irrelevant to — the control group has to keep losing it.
+		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
 		expect((await runFight({enemies: three, policy: 'idle', seed})).outcome).toBe('defeat')
 
 		const five = ['TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf'] as never
