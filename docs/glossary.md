@@ -66,18 +66,17 @@ slot is [drift](#drift-worth-fixing).
 Picking one is two separate questions, and they are two words:
 
 **Target rule** — which units an ability may land on at all: `enemy`, `ally`, `self`. A property
-of the ability, because it never changes with who is using it or when. No field carries it yet;
-`getPotentialTargets()` computes it, and which subclass a unit was given is the only place it is
-written down.
+of the ability, because it never changes with who is using it or when. `TargetRule` is the type and
+`eligible(unit, rule)` answers it. No ability carries one yet — the unit's `Targeting` holds it,
+which is as close as it gets until item 8 gives abilities somewhere to put it.
 
 **Preference** — which of the eligible units to pick. A property of the _driver_, not the unit and
 not the ability: the keyboard, an `Autopilot` weighing the fight, or a standing rule like "always
 the most hurt". One object with two methods: `prefers()` picks, `reconsiders()` decides whether to
 look again once it has one. They stay together because they have to agree — a preference for the
 most hurt ally that does not re-pick heals someone already topped up. The four are `prefer.first`,
-`prefer.atRandom`, `prefer.lowestHealth` and `prefer.tankFirst`. Today they are `Targeting`
-subclasses, and `Targeting` holds the rule as well, so it is named for only half of what it does —
-[drift](#drift-worth-fixing), and the reason there was one word for two things.
+`prefer.atRandom`, `prefer.lowestHealth` and `prefer.tankFirst`, and a unit is handed one alongside
+a rule: `new Targeting(this, 'ally', prefer.lowestHealth)`.
 
 **Selected target** — the one the player clicked. UI state, kept because a player needs to see
 what they are aiming at; not what an ability reads.
@@ -250,7 +249,7 @@ any order — and let the two structural ones wait for the issues that teach us 
 | 4   | The aura renames                                  | M    | **done**    |
 | 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | ready       |
 | 6   | Extract the `Aura` base                           | M    | with #47    |
-| 7   | Split `Targeting` into rule + preference          | S    | **decided** |
+| 7   | Split `Targeting` into rule + preference          | S    | **done**    |
 | 8   | Unweld ability from driver; `Ability` class (#42) | L    | after 6, 7  |
 | 9   | Stop the prose calling an encounter a fight       | S    | **done**    |
 | 10  | `report.spells` → `abilities`, keyed as it is     | S    | **done**    |
@@ -293,14 +292,10 @@ of `SPELL_KEYS` and `ATTACK_KEYS` merge. An attack's current `interval` does not
 cooldown: it moves to the cadence that drives it, while cooldown remains a restriction on the
 ability itself.
 
-**One target slot, doing three jobs.** `Character.currentTarget` is the rule, the preference and
-the player's selection at once, and a unit gets one. That is the whole reason `WolfShaman` carries
-no attacks — it spends its single target on the ally it heals — and the reason `Player.getTarget()`
-falls back to the tank while nothing else does. Two byte-identical `prefers()` bodies
-(`LowestHealth` and `MostHurtAlly`) are the visible symptom: `Targeting` crosses rule and
-preference into one inheritance chain, so the same preference had to be written twice to reach two
-different rules. Nothing constructs `LowestHealth` — which is what becomes of a class you can only
-reach by also inheriting a rule you did not want.
+**One target slot, doing two jobs.** `Character.currentTarget` holds both what the unit's
+`Targeting` picked and what the player clicked, and a unit gets one of it. That is the whole reason
+`WolfShaman` carries no attacks — it spends its single target on the ally it heals — and the reason
+`Player.getTarget()` falls back to the tank while nothing else does.
 
 The endpoint is that a target is **passed to a use**, not stored on a unit. Half the code already
 works this way — `whyNotCast(caster, SpellClass, target)` takes it as an argument with the slot as
@@ -309,7 +304,6 @@ a mere default, and the Autopilot validates against an explicit target, then rou
 The slot is a round trip. What survives it is a **selected target** for the UI, one **preference**
 per driver, and the rule on the ability.
 
-The rule cannot move until there is an `Ability` to hold it: putting `targets` on `Spell` and
-`Attack` separately — they share no base — would duplicate the rule exactly as `prefers()` is
-duplicated today, one layer up. So this is part of plan item 8, not before it. Decomposing
-`Targeting` into a rule and a preference is safe to do first, and makes the move a smaller one.
+The rule cannot move onto abilities until there is an `Ability` to hold it: putting it on `Spell`
+and `Attack` separately — they share no base — would write it twice, which is the shape item 7 just
+undid one layer down. So it waits for item 8.
