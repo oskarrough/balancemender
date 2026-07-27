@@ -97,7 +97,7 @@ export class Encounter extends Node {
 	onDeath(unit: Unit) {
 		unit.currentTarget = undefined
 		for (const aura of unit.auras) aura.disconnect()
-		unit.spell?.disconnect()
+		unit.currentAbility?.disconnect()
 	}
 
 	/**

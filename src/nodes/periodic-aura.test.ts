@@ -26,12 +26,12 @@ describe('stack rule', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.player.currentTarget = game.tank
 
-		new Renew(game.player).cast()
+		new Renew(game.player).effect()
 		await Promise.resolve()
 		const first = aurasNamed(game.tank, 'Renew')[0]
 		first.tick()
 
-		new Renew(game.player).cast()
+		new Renew(game.player).effect()
 		await Promise.resolve()
 		const after = aurasNamed(game.tank, 'Renew')
 
@@ -78,9 +78,9 @@ describe('stack rule', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.player.currentTarget = game.tank
 
-		new Renew(game.player).cast()
+		new Renew(game.player).effect()
 		await Promise.resolve()
-		new Renew(game.player).cast()
+		new Renew(game.player).effect()
 		await Promise.resolve()
 
 		expect(auraEvents('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
@@ -131,12 +131,9 @@ describe('the wolf bleed', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		wolf.currentTarget = game.tank
-		const bite = new WolfBite(wolf)
+		new WolfBite(wolf).executeNow()
 		await Promise.resolve()
-
-		bite.tick()
-		await Promise.resolve()
-		bite.tick()
+		new WolfBite(wolf).executeNow()
 		await Promise.resolve()
 
 		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(1)
@@ -152,11 +149,8 @@ describe('the wolf bleed', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		wolf.currentTarget = game.tank
-		const bite = new WolfBite(wolf)
-		await Promise.resolve()
-
 		game.tank.health.set(1)
-		bite.tick()
+		new WolfBite(wolf).executeNow()
 		await Promise.resolve()
 
 		expect(game.tank.alive).toBe(false)

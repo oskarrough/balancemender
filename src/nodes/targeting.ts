@@ -1,18 +1,10 @@
 import {Task} from 'vroum'
-import {Unit} from './unit'
+import type {Unit} from './unit'
 import {Tank} from './party-units'
 import {random} from '../rng'
+import {eligible, type TargetRule} from './target-rule'
 
-/** Which units an ability may land on at all. A fact about the ability, not about who is using it. */
-export type TargetRule = 'enemy' | 'ally' | 'self'
-
-/** The units a rule allows this one to pick from right now. A corpse is never eligible. */
-export function eligible(unit: Unit, rule: TargetRule): Unit[] {
-	if (rule === 'self') return unit.alive ? [unit] : []
-	const own = unit.faction === 'party' ? unit.parent.party : unit.parent.enemies
-	const other = unit.faction === 'party' ? unit.parent.enemies : unit.parent.party
-	return (rule === 'ally' ? own : other).filter((target) => target.alive)
-}
+export {eligible, type TargetRule} from './target-rule'
 
 /**
  * Which of the eligible units to take. A property of the driver, not of the ability.

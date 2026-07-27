@@ -14,8 +14,8 @@ index.html
               │     └── Unit…             Player, Tank, TinyWolf, WolfShaman, Nakroth
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   (Task) a rule + a preference → currentTarget
-              │           ├── Attack      (Task) swings on an interval
-              │           ├── Cadence     (Task) casts on an interval
+              │           ├── abilities   stable id → one-shot Ability class
+              │           ├── Cadence     (Task) requests an ability on an interval
               │           └── auras       HOT / DoT (Tasks)
               ├── AudioPlayer
               └── tick() → renders components/ui.ts into `game.element`
@@ -43,16 +43,20 @@ These three are the ones that bite here and are not in that doc:
   after you construct it, and a dead unit is still in `encounter.party` until the
   microtask runs. Tests and simulations `await Promise.resolve()` to let this settle.
 
-## Casting belongs to Unit, deciding does not
+## Using belongs to Unit, deciding does not
 
-Everything a cast needs lives on `Unit`: the `spellbook`, the `gcd`, the `cooldowns` stamps,
-the cast in progress. `SpellCast` refuses for the same seven reasons whoever is asking, and a
-caster with no `mana` skips the mana check — which is how enemies cast for free, paced by an
-interval instead.
+Every unit owns one `abilities` collection, keyed by stable ability id. `AbilityUse` is the one
+lookup, validation and execution boundary: the player's transitional `{type: 'cast'}` action,
+`Autopilot` and every `Cadence` all call `Unit.useAbility(id)`. A use is a one-shot `Ability` Task.
+
+Mana, cast time, GCD and cooldown are opt-in data. An ability with cast time or GCD occupies
+`Unit.currentAbility` and uses the cast lifecycle; an ordinary attack executes synchronously in its
+cadence tick, spends no mana and ignores a concurrent cast. This distinction is data, not a Spell
+versus Attack inheritance branch.
 
 What is _not_ shared is who decides. The player has a keyboard and an `Autopilot` weighing the
-fight; an enemy has a `Cadence` casting on an interval, the way an `Attack` swings on one. A
-unit wanting real decisions overrides `Cadence.chooses()` rather than growing a policy system.
+fight; a fixed schedule has a `Cadence`. A unit wanting real decisions overrides
+`Cadence.chooses()` rather than growing a policy system.
 
 A unit has **one** `currentTarget`, and both attacking and casting read it. `WolfShaman` therefore
 carries no attacks — it spends its target on the ally it is healing (`Targeting(this, 'ally',
@@ -72,10 +76,10 @@ dev console, the Balance Lab, the Autopilot, tests and agents all hand the same 
 ```js
 balancemender.perform({type: 'cast', spell: 'Heal', target: someId})
 balancemender.perform({type: 'spawn', unit: 'Nakroth'})
-balancemender.perform({type: 'tune', of: 'spell', name: 'Heal', key: 'cost', value: 40})
+balancemender.perform({type: 'tune', of: 'ability', name: 'Heal', key: 'cost', value: 40})
 ```
 
-The dev console is a text adapter over this and nothing more: it parses `/spell Heal cost 40`,
+The dev console is a text adapter over this and nothing more: it parses `/ability Heal cost 40`,
 performs the action and prints the result. Adding a capability means adding one case to the
 union, not a new command plus a new panel button plus a new test helper.
 
@@ -92,7 +96,7 @@ Unit ids live in [`unit-registry.ts`](../src/nodes/unit-registry.ts), deliberate
 `actions.ts` or `balance.ts` back into `src/nodes/` closes a loop, and the snapshot those modules
 take at initialisation then reads a half-built class. Nothing throws — you get a registry entry
 with no value. Type-only imports are erased, so `import type` is the fix. It has happened for
-real: `audio.ts` merely naming the `GameLoop` class was enough to leave `balance.spells` empty.
+real: `audio.ts` merely naming the `GameLoop` class was enough to leave `balance.abilities` empty.
 `registry.test.ts` asserts every entry has a value precisely because the failure is invisible.
 
 `faction` is a static too, so `unitIds('enemy')` answers which side a unit fights on without
@@ -121,29 +125,30 @@ the numbers would move every win rate already recorded and make the sweep circul
 
 ## Numbers and tuning
 
-`src/balance.ts` snapshots the tunable statics of every spell, attack, periodic aura and unit,
-and writes changes back to the classes. An aura only needs its own entry when nothing casts it —
-one a spell owns keeps its magnitude on the spell (see `Renew`), where it is already tunable.
+`src/balance.ts` snapshots the tunable statics of every ability, cadence, periodic aura and unit,
+and writes changes back to the classes. An aura only needs its own entry when nothing applies it —
+one an ability owns keeps its magnitude on the ability (see `Renew`), where it is already tunable.
 Everything reaches it through `perform({type: 'tune', …})`; `src/inspectables.ts` is what the
 Balance Lab panel lists. `balance.units` is keyed by the same unit ids you spawn with, and
 retuning reaches live units by `unitId` — never by class name.
 
-Changes apply to newly constructed spells and attacks, so they take effect on the next cast or
-the next swing — not retroactively. A `rule` is the exception, above.
+Ability changes apply to newly constructed uses, so healing and damage both change on the next use.
+Cadence timing is snapshotted when its unit is constructed; retuning it affects newly spawned
+drivers, not a schedule already running. A `rule` is the exception, above.
 
 ### Ids and names
 
-Every spell, attack and aura carries two strings, and mixing them up is how the last round of drift
-started. `static id` is the identity: the registry key, the spellbook key, the balance key, the
-`--tune` spelling, the cooldown stamp, the stack key and the log's `abilityId`. `static name` is the
-label a player reads, and it is used for nothing else — the log's `abilityName`, the icon filename,
-a Balance Lab title, a report row.
+Every ability and aura carries two strings, and mixing them up is how the last round of drift
+started. `static id` is the identity: the registry key, the unit collection key, the balance key,
+the `--tune` spelling, the cooldown stamp, the stack key and the log's `abilityId`. `static name` is
+the label a player reads, and it is used for nothing else — the log's `abilityName`, the icon
+filename, a Balance Lab title, a report row.
 
-The point is that renaming what a player reads is a one-line change. Spells used to be keyed by
-their display name, so it was a find-and-replace across eight systems, and a wolf's spellbook
-already had a latent bug waiting for the first spell whose class name and display name differed.
+The point is that renaming what a player reads is a one-line change. Abilities used to be split
+between display-name-sensitive spell collections and a separate attack registry, so renaming crossed
+systems unnecessarily.
 
-By convention the id is the class name, as `attackRegistry` and `unitRegistry` have always done.
+By convention the id is the class name, as `abilityRegistry` and `unitRegistry` do.
 Two deliberate exceptions: `RenewAura` takes `Renew`'s id so the cast and the ticks it plants
 report as one spell, and `WolfBleed` keeps `Rend`. Both are commented where they are declared.
 

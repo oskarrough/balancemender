@@ -1,4 +1,4 @@
-import {Spell} from '../nodes/spell'
+import type {Ability} from '../nodes/ability'
 import {html} from '../utils'
 import {toPercent} from '../utils'
 
@@ -23,7 +23,7 @@ export function Bar({value, max, type}: BarProps) {
  */
 interface MeterProps extends BarProps {
 	potentialValue?: number
-	spell?: Spell
+	spell?: Ability
 }
 
 export function Meter({value, max, type, potentialValue = 0, spell}: MeterProps) {

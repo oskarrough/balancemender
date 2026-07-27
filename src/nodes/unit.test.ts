@@ -71,7 +71,7 @@ describe('the condition thresholds are balance numbers', () => {
 	beforeEach(() => resetBalance())
 
 	/**
-	 * The reason a rule is its own balance kind: the other four are class statics copied onto an
+	 * The reason a rule is its own balance kind: the other five are class statics copied onto an
 	 * instance when it is built, so a retune waits for the next cast. A threshold is read where it
 	 * is used, so moving it re-reads every unit already fighting.
 	 */

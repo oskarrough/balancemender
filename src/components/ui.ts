@@ -33,7 +33,7 @@ export function UI(game: GameLoop) {
 		}
 	}
 
-	const spell = player.spell
+	const spell = player.currentAbility
 	const timeSinceCast = game.elapsedTime - player.lastCastTime
 
 	/**
@@ -72,8 +72,8 @@ export function UI(game: GameLoop) {
 			</div>
 
 			<div class="ActionBar">
-				${Object.keys(player.spellbook).length > 0
-					? Object.keys(player.spellbook).map((name, index) => SpellIcon(game, name, index + 1))
+				${Object.keys(player.abilities).length > 0
+					? Object.keys(player.abilities).map((name, index) => SpellIcon(game, name, index + 1))
 					: ''}
 			</div>
 

@@ -1,72 +1,70 @@
-import {Spell} from './spell'
+import {Ability} from './ability'
 import {PeriodicAura} from './periodic-aura'
 import {ShieldAura} from './shield-aura'
 import {AudioPlayer} from './audio'
 
-/**
- * Healing per mana is the ladder these four are tuned on, not healing per second:
- * Renew 2.00, Heal 1.60, Greater Heal 1.45, Flash Heal 1.25. The patient spell is the
- * efficient one, so throughput is always bought with mana you will want later.
- */
-
-/** The workhorse. Nothing heals more per mana except a Renew you had time to plant. */
-export class Heal extends Spell {
+/** Magical healing abilities opt into mana, cast timing and the global cooldown independently. */
+export class Heal extends Ability {
 	static id = 'Heal'
 	static name = 'Heal'
+	static tags = ['spell', 'healing'] as const
+	static school = 'holy' as const
+	static targetRule = 'ally' as const
 	static cost = 50
 	static heal = 80
 	static castTime = 2000
+	static cooldown = 0
+	static gcd = true
 }
 
-/** The panic button: lands in a second, and wastes the most mana doing it. */
-export class FlashHeal extends Spell {
+export class FlashHeal extends Ability {
 	static id = 'FlashHeal'
 	static name = 'Flash Heal'
+	static tags = ['spell', 'healing'] as const
+	static school = 'holy' as const
+	static targetRule = 'ally' as const
 	static cost = 80
 	static heal = 100
 	static castTime = 1000
+	static cooldown = 0
+	static gcd = true
 }
 
-/** Throughput. The only answer to a big deficit, and you pay for it. */
-export class GreaterHeal extends Spell {
+export class GreaterHeal extends Ability {
 	static id = 'GreaterHeal'
 	static name = 'Greater Heal'
+	static tags = ['spell', 'healing'] as const
+	static school = 'holy' as const
+	static targetRule = 'ally' as const
 	static cost = 100
 	static heal = 145
 	static castTime = 3000
+	static cooldown = 0
+	static gcd = true
 }
 
-/**
- * The one you plant before you need it. Renew heals indirectly, by leaving a periodic
- * aura on the target, so `heal` is the total it lands over five ticks rather than a
- * lump — the aura divides it. Keeping the number here and handing it to the aura is
- * what lets the balance lab tune Renew alongside the other three.
- *
- * Note this overrides `cast()` outright: the base class heals when `heal` is set, and
- * calling `super.cast()` from here would land the whole total twice over.
- */
-export class Renew extends Spell {
+export class Renew extends Ability {
 	static id = 'Renew'
 	static name = 'Renew'
+	static tags = ['spell', 'healing'] as const
+	static school = 'holy' as const
+	static targetRule = 'ally' as const
 	static cost = 60
 	static heal = 120
 	static castTime = 0
+	static cooldown = 0
+	static gcd = true
 
-	cast() {
-		const player = this.parent
-		const target = player.getTarget()
+	effect() {
+		const target = this.target
 		if (target) {
-			new RenewAura(target, player, this.heal)
+			new RenewAura(target, this.parent, this.heal)
 			AudioPlayer.play('spell_rejuvenation')
 		}
 	}
 }
 
-/**
- * Shares `Renew`'s id deliberately, so the cast and the five ticks it produces report as one
- * spell rather than two things that happen to be spelled the same. This is the one place the
- * "id is the class name" convention is meant to be broken.
- */
+/** Shares the cast's id so its ticks report as the same ability. */
 class RenewAura extends PeriodicAura {
 	static id = 'Renew'
 	static name = 'Renew'
@@ -74,39 +72,44 @@ class RenewAura extends PeriodicAura {
 	static repeat = 5
 }
 
-/**
- * The other half of healing: spend a global cooldown *before* the hit so the hit costs less.
- *
- * It is off the healing-per-mana ladder above on purpose — `heal` here is a pool of absorption
- * rather than health restored, and 150 for 60 mana only looks like the best rate in the game
- * while every point of it is spent. A shield planted on nobody in danger is worth nothing at all,
- * which is the trade the spell is actually made of. It lasts 15s — `ShieldAura.lifetime`.
- *
- * Overrides `cast()` outright for the same reason `Renew` does: the base class heals when `heal`
- * is set, so calling `super.cast()` here would land 150 direct healing alongside the shield.
- */
-export class PowerWordShield extends Spell {
+export class PowerWordShield extends Ability {
 	static id = 'PowerWordShield'
 	static name = 'Power Word: Shield'
+	static tags = ['spell', 'healing'] as const
+	static school = 'holy' as const
+	static targetRule = 'ally' as const
 	static cost = 60
 	static heal = 150
 	static castTime = 0
-	// TODO no shield art yet — this wants `public/assets/generated/spells/power-word-shield.png`,
-	// which is the slug `SpellIcon` derives from the name. Renew's stands in until it exists.
+	static cooldown = 0
+	static gcd = true
 	static icon = 'renew'
 
-	cast() {
-		const player = this.parent
-		const target = player.getTarget()
+	effect() {
+		const target = this.target
 		if (target) {
-			new PowerWordShieldAura(target, player, this.heal)
+			new PowerWordShieldAura(target, this.parent, this.heal)
 			AudioPlayer.play('spell_cast')
 		}
 	}
 }
 
-/** Shares the spell's id, so the cast and every absorb it pays for report as one thing — see `RenewAura`. */
+/** Shares the cast's id so absorption reports as the same ability. */
 class PowerWordShieldAura extends ShieldAura {
 	static id = 'PowerWordShield'
 	static name = 'Power Word: Shield'
+}
+
+/** The shaman's own ability. It is registered like every other ability but not owned by the player. */
+export class Mend extends Ability {
+	static id = 'Mend'
+	static name = 'Mend'
+	static tags = ['spell', 'healing'] as const
+	static school = 'holy' as const
+	static targetRule = 'ally' as const
+	static cost = 0
+	static heal = 80
+	static castTime = 2500
+	static cooldown = 0
+	static gcd = true
 }

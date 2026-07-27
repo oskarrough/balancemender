@@ -112,19 +112,21 @@ a cast costs the longer of the two and not the sum; **cooldown** is one ability'
 **casts** a spell and **swings** an attack; it **uses** either.
 
 **Id** and **name** — every ability and aura has both. The **id** is what everything files it
-under: registry, spellbook, balance, `--tune`, the log's `abilityId`, cooldowns, stack keys. The
+under: registry, a unit's ability collection, balance, `--tune`, the log's `abilityId`, cooldowns,
+stack keys. The
 **name** is what a player reads and is used for nothing else. Conventionally the id is the class
 name (`FlashHeal`), the name is prose (`Flash Heal`). Renaming an ability should touch one line.
 
-**Spellbook** — what one unit can cast, keyed by spell id. The player's is the whole spell
-registry; most units have none. Not every castable spell is registered — `Mend` is a wolf's.
+**Ability collection** — what one unit may use, keyed by stable ability id. Every driver looks up
+through this collection; the global ability registry is only the catalog. The player's contains
+healing spells, a wolf's contains its attacks, and the shaman's contains Mend.
 
 **Busy** — time a unit was committed to a cast or its GCD, and so unable to act. Logged per cast
 as `busyFor` so the report never has to know how long a GCD lasts.
 
 **Driver** — what decides when an ability is used: the keyboard, an `Autopilot` policy, or a
-`Cadence` ticking on an interval. Using is shared — `SpellCast` refuses for the same seven reasons
-whoever is asking, and skips the mana check for a caster with no pool. Only deciding differs.
+`Cadence` ticking on an interval. Using is shared through `AbilityUse`; mana, cast time, GCD and
+cooldown restrictions apply only when the ability opts into them. Only deciding differs.
 
 **Cadence** — the driver that uses an ability at a fixed interval, and the whole of what the
 `Cadence` class does: it holds no casting logic, only _when_. Say "a boss ability on a 12s
@@ -169,7 +171,7 @@ its persistence is the behavior the Task represents.
 ## Tuning and measuring
 
 **Balance number** — a number the game plays by, reachable from the Balance Lab, the dev console
-and `--tune`. Five **kinds**: `spell`, `attack`, `aura`, `unit`, `rule`.
+and `--tune`. Five **kinds**: `ability`, `cadence`, `aura`, `unit`, `rule`.
 
 **Rule** — a balance number the whole game reads rather than one belonging to a spell or a unit,
 such as where the injured line sits. Read live where it is used, so a retune lands on the fight
@@ -178,8 +180,9 @@ already running rather than on the next cast.
 **Tune** — changing one balance number: `kind:Name.key=value`, e.g. `rule:Condition.injured=30`.
 
 **Statics are the template, instance fields are the state.** A class declares `static heal`;
-`applyStatics()` copies it onto the instance at construction. So a retune reaches the next cast
-and the next swing, never the one already in flight — and patching a prototype does nothing.
+`applyStatics()` copies it onto the instance at construction. So a retune reaches the next cast or
+blow, never the one already in flight; cadence timing reaches the next driver spawned, never a
+schedule already running — and patching a prototype does nothing.
 
 **Policy** — a rule for what the autopilot casts next: `idle`, `triage`, `renew`, `panic`. The
 fake player's personality. Which ability, never which target — choosing among the units an ability

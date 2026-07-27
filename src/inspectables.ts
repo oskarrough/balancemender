@@ -1,7 +1,17 @@
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
-import {balance, SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, RULE_KEYS, SpellKey, AttackKey, UnitKey, RuleKey} from './balance'
-import {spellRegistry, attackRegistry} from './nodes/registry'
+import {
+	balance,
+	ABILITY_KEYS,
+	CADENCE_KEYS,
+	UNIT_KEYS,
+	RULE_KEYS,
+	type AbilityKey,
+	type CadenceKey,
+	type UnitKey,
+	type RuleKey,
+} from './balance'
+import {abilityRegistry} from './nodes/registry'
 import type {UnitId} from './nodes/unit-registry'
 
 export type NumberField = {
@@ -32,25 +42,25 @@ export type Action = {
 
 export type Inspectable = {
 	id: string
-	kind: 'spell' | 'attack' | 'unit' | 'rule' | 'live' | 'globals'
+	kind: 'ability' | 'cadence' | 'unit' | 'rule' | 'live' | 'globals'
 	title: string
 	subtitle?: string
 	fields: Field[]
 	actions?: Action[]
 }
 
-const SPELL_LABEL: Record<SpellKey, string> = {
+const ABILITY_LABEL: Record<AbilityKey, string> = {
 	cost: 'Mana cost',
 	heal: 'Heal amount',
 	castTime: 'Cast time (ms)',
 	cooldown: 'Cooldown (ms)',
-}
-
-const ATTACK_LABEL: Record<AttackKey, string> = {
 	minDamage: 'Min damage',
 	maxDamage: 'Max damage',
-	interval: 'Interval (ms)',
+}
+
+const CADENCE_LABEL: Record<CadenceKey, string> = {
 	delay: 'Initial delay (ms)',
+	interval: 'Interval (ms)',
 }
 
 const UNIT_LABEL: Record<UnitKey, string> = {
@@ -64,44 +74,41 @@ const RULE_LABEL: Record<RuleKey, string> = {
 	healthy: 'Healthy above (% health)',
 }
 
-/**
- * Titled by display name, keyed by id — the panel would otherwise read "FlashHeal". The subtitle
- * carries the id, so what you see in the lab is also what you type after `--tune`.
- */
-export function spellInspectables(game: GameLoop): Inspectable[] {
-	return Object.entries(spellRegistry).map(([name, SpellClass]) => ({
-		id: `spell:${name}`,
-		kind: 'spell',
-		title: SpellClass.name,
-		subtitle: `spell:${name}`,
-		fields: SPELL_KEYS.map(
+/** One panel per stable ability id; tags and school are labels, not execution paths. */
+export function abilityInspectables(game: GameLoop): Inspectable[] {
+	return Object.entries(abilityRegistry).map(([name, AbilityClass]) => ({
+		id: `ability:${name}`,
+		kind: 'ability',
+		title: AbilityClass.name,
+		subtitle: `ability:${name} · ${AbilityClass.tags.join(', ')} · ${AbilityClass.school}`,
+		fields: ABILITY_KEYS.filter((key) => key in balance.abilities[name]).map(
 			(key): NumberField => ({
 				kind: 'number',
 				key,
-				label: SPELL_LABEL[key],
-				get: () => balance.spells[name][key] ?? 0,
+				label: ABILITY_LABEL[key],
+				get: () => balance.abilities[name][key] ?? 0,
 				set: (value) => {
-					game.perform({type: 'tune', of: 'spell', name, key, value})
+					game.perform({type: 'tune', of: 'ability', name, key, value})
 				},
 			}),
 		),
 	}))
 }
 
-export function attackInspectables(game: GameLoop): Inspectable[] {
-	return Object.entries(attackRegistry).map(([name, AttackClass]) => ({
-		id: `attack:${name}`,
-		kind: 'attack',
-		title: AttackClass.name,
-		subtitle: `attack:${name}`,
-		fields: ATTACK_KEYS.map(
+export function cadenceInspectables(game: GameLoop): Inspectable[] {
+	return Object.keys(balance.cadences).map((name) => ({
+		id: `cadence:${name}`,
+		kind: 'cadence',
+		title: name,
+		subtitle: `cadence:${name}`,
+		fields: CADENCE_KEYS.map(
 			(key): NumberField => ({
 				kind: 'number',
 				key,
-				label: ATTACK_LABEL[key],
-				get: () => balance.attacks[name][key] ?? 0,
+				label: CADENCE_LABEL[key],
+				get: () => balance.cadences[name][key] ?? 0,
 				set: (value) => {
-					game.perform({type: 'tune', of: 'attack', name, key, value})
+					game.perform({type: 'tune', of: 'cadence', name, key, value})
 				},
 			}),
 		),
@@ -332,9 +339,9 @@ export function allInspectables(game: GameLoop): InspectableSection[] {
 	return [
 		{section: 'Live', items: liveInspectables(game)},
 		{section: 'Game', items: [globalsInspectable(game)]},
-		{section: 'Spells', items: spellInspectables(game)},
+		{section: 'Abilities', items: abilityInspectables(game)},
 		{section: 'Units', items: unitInspectables(game)},
-		{section: 'Attacks', items: attackInspectables(game)},
+		{section: 'Cadences', items: cadenceInspectables(game)},
 		{section: 'Rules', items: ruleInspectables(game)},
 	]
 }

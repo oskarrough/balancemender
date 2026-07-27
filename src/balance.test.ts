@@ -1,63 +1,78 @@
-// @vitest-environment happy-dom — `balance.ts` reaches the game's classes, and the game needs a DOM
-import {describe, it, expect, afterEach} from 'vitest'
-import {parseTune, applyTunes, balance, balanceCategories, resetBalance, type BalanceKind} from './balance'
-
-/**
- * A tune spec exists so measuring a candidate number does not mean editing a class and putting it
- * back. What it must never do is quietly succeed at nothing: a tune that misses leaves a sweep
- * identical to the baseline, which reads as "the dial does nothing" rather than "you typo'd".
- */
+// @vitest-environment happy-dom
+import {afterEach, describe, expect, it} from 'vitest'
+import {
+	applyTunes,
+	balance,
+	balanceCategories,
+	cadenceClasses,
+	parseTune,
+	resetBalance,
+	type BalanceKind,
+} from './balance'
+import {GameLoop} from './nodes/game-loop'
 
 describe('parsing a tune', () => {
-	it('reads kind, name, key and value', () => {
-		expect(parseTune('aura:Rend.total=-8')).toEqual({kind: 'aura', name: 'Rend', key: 'total', value: -8})
-	})
-
-	// Names used to be display names, so this guarded "Flash Heal" surviving the split. They are
-	// ids now — bare words — and what is left to guard is that the key comes off the *last* dot.
-	it('takes the name from between the colon and the last dot', () => {
-		expect(parseTune('spell:FlashHeal.cost=100')).toMatchObject({name: 'FlashHeal', key: 'cost'})
+	it('reads kind, stable id, key and value', () => {
+		expect(parseTune('ability:FlashHeal.cost=100')).toEqual({
+			kind: 'ability',
+			name: 'FlashHeal',
+			key: 'cost',
+			value: 100,
+		})
 	})
 
 	it('refuses what it cannot reach', () => {
 		expect(() => parseTune('Rend.total=-8')).toThrow(/kind:Name.key=value/)
-		expect(() => parseTune('potion:Rend.total=-8')).toThrow(/Unknown tune kind/)
-		expect(() => parseTune('aura:Bleed.total=-8')).toThrow(/Known: Rend/)
-		expect(() => parseTune('spell:Heal.damage=5')).toThrow(/Unknown spell key/)
-		expect(() => parseTune('spell:Heal.cost=lots')).toThrow(/needs a number/)
+		expect(() => parseTune('spell:Heal.cost=40')).toThrow(/Unknown tune kind/)
+		expect(() => parseTune('ability:Fireball.cost=1')).toThrow(/Unknown ability/)
+		expect(() => parseTune('ability:Heal.damage=5')).toThrow(/Unknown ability key/)
+		expect(() => parseTune('ability:Heal.cost=lots')).toThrow(/needs a number/)
 	})
 })
 
 describe('applying a tune', () => {
 	afterEach(() => resetBalance())
 
-	it('writes through to the balance the game reads', () => {
-		applyTunes(['aura:Rend.total=-40', 'spell:Heal.cost=10'])
-		expect(balance.auras.Rend.total).toBe(-40)
-		expect(balance.spells.Heal.cost).toBe(10)
+	it('writes spell- and attack-tagged abilities through one surface', () => {
+		applyTunes(['ability:Heal.cost=10', 'ability:WolfBite.minDamage=2', 'cadence:WolfBiteCadence.interval=5000'])
+		expect(balance.abilities.Heal.cost).toBe(10)
+		expect(balance.abilities.WolfBite.minDamage).toBe(2)
+		expect(balance.cadences.WolfBiteCadence.interval).toBe(5000)
 	})
 
-	/** A real key on the wrong class — a wolf has no mana pool for `maxMana` to mean anything. */
-	it('refuses a key the class does not declare', () => {
-		expect(() => applyTunes(['unit:TinyWolf.maxMana=100'])).toThrow(/no maxMana to tune/)
+	it('keeps opt-in keys absent and refuses tuning them', () => {
+		expect(balance.abilities.WolfBite.cost).toBeUndefined()
+		expect(() => applyTunes(['ability:WolfBite.cost=10'])).toThrow(/has no cost to tune/)
+	})
+
+	it('snapshots cadence tuning onto newly spawned drivers', () => {
+		applyTunes(['cadence:WolfBiteCadence.delay=123'])
+		const game = new GameLoop({party: [], enemies: ['TinyWolf']})
+		expect(game.enemies[0]).toMatchObject({wolfBiteCadence: {delay: 123}})
+		game.disconnect()
 	})
 
 	it('puts every category back where it started', () => {
-		const bite = balance.attacks.WolfBite.interval
-		const wolf = balance.units.TinyWolf.maxHealth
-		applyTunes(['attack:WolfBite.interval=100', 'unit:TinyWolf.maxHealth=1'])
+		const bite = balance.cadences.WolfBiteCadence.interval
+		applyTunes(['cadence:WolfBiteCadence.interval=100'])
 		resetBalance()
-		expect(balance.attacks.WolfBite.interval).toBe(bite)
-		expect(balance.units.TinyWolf.maxHealth).toBe(wolf)
+		expect(balance.cadences.WolfBiteCadence.interval).toBe(bite)
 	})
 })
 
-/**
- * The table is what stops the four kinds drifting apart — `aura` reached the tune action and the
- * CLI but not the dev console back when each surface hand-listed them.
- */
 describe('the categories', () => {
-	it('names a class and a snapshot row for every kind', () => {
+	it('keeps cadence timing separate', () => {
+		expect(Object.keys(cadenceClasses)).toEqual([
+			'SmallAttackCadence',
+			'MediumAttackCadence',
+			'WolfBiteCadence',
+			'HugeAttackCadence',
+			'TankAttackCadence',
+			'MendCadence',
+		])
+	})
+
+	it('names a class and snapshot row for every kind', () => {
 		for (const kind of Object.keys(balanceCategories) as BalanceKind[]) {
 			const {keys, classes, state} = balanceCategories[kind]
 			expect(keys.length, kind).toBeGreaterThan(0)

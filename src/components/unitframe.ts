@@ -2,12 +2,12 @@ import {Unit} from '../nodes/unit'
 import {Player} from '../nodes/player'
 import type {GameLoop} from '../nodes/game-loop'
 import type {Aura} from '../nodes/aura'
-import {Spell} from '../nodes/spell'
+import type {Ability} from '../nodes/ability'
 import {Meter} from './bar'
 import {AuraIcon} from './aura-icon'
 import {html} from 'uhtml'
 
-export function UnitFrame(unit: Unit, spell: Spell | undefined, player: Player) {
+export function UnitFrame(unit: Unit, spell: Ability | undefined, player: Player) {
 	const id = unit.id
 	const isEnemy = unit.faction === 'enemy'
 	const health = unit.health.current
@@ -25,7 +25,7 @@ export function UnitFrame(unit: Unit, spell: Spell | undefined, player: Player) 
 	 * the combat log, but a telegraph nobody can see is not a telegraph, and it is what makes a
 	 * caster something to react to rather than a health bar that refills.
 	 */
-	const casting = unit === player ? undefined : unit.spell
+	const casting = unit === player ? undefined : unit.currentAbility
 	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - unit.lastCastTime : 0
 
 	return html`

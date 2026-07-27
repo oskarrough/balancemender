@@ -1,6 +1,6 @@
 import {log} from './utils'
 import {AudioPlayer} from './nodes/audio'
-import {setBalanceValue, resetBalance, SpellKey, AttackKey, AuraKey, UnitKey, RuleKey} from './balance'
+import {setBalanceValue, resetBalance, AbilityKey, CadenceKey, AuraKey, UnitKey, RuleKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
 import type {Roster} from './nodes/encounter'
@@ -27,8 +27,8 @@ export type GameAction =
 	| {type: 'cast'; spell: string; target?: string}
 	/** Stop the cast in progress. */
 	| {type: 'interrupt'}
-	| {type: 'tune'; of: 'spell'; name: string; key: SpellKey; value: number}
-	| {type: 'tune'; of: 'attack'; name: string; key: AttackKey; value: number}
+	| {type: 'tune'; of: 'ability'; name: string; key: AbilityKey; value: number}
+	| {type: 'tune'; of: 'cadence'; name: string; key: CadenceKey; value: number}
 	| {type: 'tune'; of: 'aura'; name: string; key: AuraKey; value: number}
 	| {type: 'tune'; of: 'unit'; name: string; key: UnitKey; value: number}
 	/** A number the whole game reads rather than one spell — the condition thresholds, so far. */
@@ -72,7 +72,7 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 				const targeted = perform(game, {type: 'target', unit: action.target})
 				if (!targeted.ok) return targeted
 			}
-			return game.player.castSpell(action.spell)
+			return game.player.useAbility(action.spell)
 		}
 
 		case 'interrupt':
@@ -131,13 +131,13 @@ function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: nu
 function interrupt(game: GameLoop): ActionResult<void> {
 	log('interrupt')
 	const player = game.player
-	if (!player.spell) return fail('Nothing to interrupt')
+	if (!player.currentAbility) return fail('Nothing to interrupt')
 
-	AudioPlayer.stopOwned(player.spell)
+	AudioPlayer.stopOwned(player.currentAbility)
 	AudioPlayer.play('spell_fizzle')
-	player.spell.disconnect()
+	player.currentAbility.disconnect()
 	player.gcd?.disconnect()
-	player.spell = undefined
+	player.currentAbility = undefined
 	player.gcd = undefined
 	return ok(undefined)
 }

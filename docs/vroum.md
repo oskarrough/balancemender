@@ -42,7 +42,7 @@ When extending Task or Node for game entities (like spells, bosses, or effects),
 - **Instance Properties** hold the runtime state:
 
   ```typescript
-  class Spell extends Task {
+  class Ability extends Task {
   	name = '' // Will be set from static
   	cost = 0 // Will be set from static
   	delay = 0 // Task's timing property
@@ -55,7 +55,7 @@ When extending Task or Node for game entities (like spells, bosses, or effects),
   ```typescript
   constructor(parent: Node) {
       super(parent)
-      const constructor = this.constructor as typeof Spell
+      const constructor = this.constructor as typeof Ability
       this.name = constructor.name
       this.cost = constructor.cost
   }

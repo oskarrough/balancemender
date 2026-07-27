@@ -2,7 +2,7 @@
 
 > What happens if a tank and a healer take on three wolves? Run it ten times and find out.
 
-There is one game. A simulated fight is the same `GameLoop`, the same units, spells and
+There is one game. A simulated fight is the same `GameLoop`, the same units, abilities and
 combat log you get in the browser, with two things swapped:
 
 - the browser's animation frames are replaced by a fixed step, so two minutes of fight
@@ -26,7 +26,7 @@ bun run sim                                        # the demo fight
 bun run sim --enemies 'TinyWolf*3' --policy panic  # three wolves, a bad healer
 bun run sim --party Tank --enemies Nakroth         # the boss
 bun run sim --repeat 20                            # 20 seeds, summarised
-bun run sim --repeat 20 --tune 'spell:Heal.cost=40'
+bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
 bun run sim --json > fight.json                    # every event, for your own analysis
 ```
 
@@ -229,10 +229,10 @@ and the value it changed is printed under the report:
 
 ```
 bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
-bun run sim --repeat 20 --tune 'spell:FlashHeal.cost=100' --tune 'unit:TinyWolf.maxHealth=200'
+bun run sim --repeat 20 --tune 'ability:FlashHeal.cost=100' --tune 'unit:TinyWolf.maxHealth=200'
 ```
 
-`kind` is `spell`, `attack`, `aura` or `unit` — the four categories in
+`kind` is `ability`, `cadence`, `aura`, `unit` or `rule` — the five categories in
 [`src/balance.ts`](../src/balance.ts), which is the same path the Balance Lab writes through, so
 what you measure is what the game would do. A name or key it cannot reach is an error, not a
 shrug: a tune that quietly misses returns a table identical to the baseline, and that reads as

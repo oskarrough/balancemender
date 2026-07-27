@@ -4,7 +4,7 @@
  *   bun run sim
  *   bun run sim --enemies TinyWolf*3 --policy panic
  *   bun run sim --party Tank --enemies Nakroth --repeat 20
- *   bun run sim --repeat 20 --tune 'spell:Heal.cost=40'
+ *   bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
  *   bun run sim --json > fight.json
  *
  * The game is a browser game, so we hand it a DOM before importing it. Nothing is drawn —
@@ -33,8 +33,8 @@ bun run sim [options]
   --seed     <n>       dice seed; the same seed always plays out the same (default 1)
   --repeat   <n>       run n fights and summarise them
   --duration <s>       give up after n seconds of fight time (default 120)
-  --tune     <spec>    change a balance number first, e.g. 'spell:Heal.cost=40'
-                       kind:Name.key=value — spell, attack, aura or unit. Repeatable.
+  --tune     <spec>    change a balance number first, e.g. 'ability:Heal.cost=40'
+                       kind:Name.key=value — ability, cadence, aura, unit or rule. Repeatable.
   --json               print the report as JSON instead
 
   Redirect --json to a file rather than piping it. A fight's events run to hundreds of

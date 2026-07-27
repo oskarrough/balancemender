@@ -2,8 +2,8 @@ import {Task} from 'vroum'
 import type {Unit} from './unit'
 import type {Player} from './player'
 import {Tank} from './party-units'
-import {spellRegistry, SpellId} from './registry'
-import {SpellCast} from './spell-cast'
+import {playerAbilities, type PlayerAbilityId} from './registry'
+import {AbilityUse} from './ability-use'
 import type {GameLoop} from './game-loop'
 
 /**
@@ -28,7 +28,7 @@ export class Autopilot extends Task {
 
 	shouldTick() {
 		const player = this.parent
-		return player.alive && !player.spell && !player.gcd
+		return player.alive && !player.currentAbility && !player.gcd
 	}
 
 	tick() {
@@ -40,7 +40,7 @@ export class Autopilot extends Task {
 }
 
 export interface Decision {
-	spell: SpellId
+	spell: PlayerAbilityId
 	target: Unit
 }
 
@@ -53,8 +53,8 @@ export type Policy = (player: Player) => Decision | undefined
  * simulator's idea of a castable spell and the game's could drift apart — and would have, the
  * moment spells grew their own cooldowns.
  */
-const castable = (player: Player, spell: SpellId, target: Unit) =>
-	!SpellCast.whyNotCast(player, spellRegistry[spell], target)
+const castable = (player: Player, spell: PlayerAbilityId, target: Unit) =>
+	!AbilityUse.whyNotUse(player, playerAbilities[spell], target)
 const hasAura = (target: Unit, id: string) => [...target.auras].some((aura) => aura.id === id)
 
 /** The party member in the most trouble, ties broken by lowest absolute health. Never a corpse. */

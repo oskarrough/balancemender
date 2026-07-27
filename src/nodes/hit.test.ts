@@ -120,7 +120,7 @@ describe('PeriodicAura', () => {
 		game.tank.health.set(1)
 		game.player.currentTarget = game.tank
 
-		new Renew(game.player).cast()
+		new Renew(game.player).effect()
 		await Promise.resolve()
 
 		const renew = [...game.tank.auras].find(

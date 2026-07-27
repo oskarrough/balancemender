@@ -197,15 +197,15 @@ describe('Power Word: Shield', () => {
 	beforeEach(() => clearLogs())
 
 	/**
-	 * `Spell.cast()` heals whenever `heal` is set, so a shield that called `super.cast()` would
-	 * land its whole pool as direct healing *as well*. Renew has the same trap and the same guard.
+	 * The base effect heals whenever `heal` is set, so a shield that called it would land its
+	 * whole pool as direct healing as well. Renew has the same trap and the same guard.
 	 */
 	it('leaves a pool rather than healing', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game.player.currentTarget = game.tank
 		game.tank.health.set(50)
 
-		new PowerWordShield(game.player).cast()
+		new PowerWordShield(game.player).effect()
 		await flush()
 
 		expect(game.tank.health.current).toBe(50)

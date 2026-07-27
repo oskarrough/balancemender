@@ -26,7 +26,7 @@ export class DevConsole extends HTMLElement {
 		this.render()
 	}
 
-	/** Parse `<Name> <key> <value>` and hand it to the interpreter. All three tune commands are this. */
+	/** Parse `<Name> <key> <value>` and hand every tune command to the interpreter. */
 	private tuneCommand<K extends string>(of: BalanceKind, keys: readonly K[]): Command {
 		const log = (msg: string) => this.logToConsole(msg)
 		return {
@@ -170,12 +170,12 @@ export class DevConsole extends HTMLElement {
 			},
 			{
 				name: 'cast',
-				description: 'Cast a spell: /cast <Spell_Name>',
+				description: 'Cast a player ability: /cast <Ability_Id>',
 				execute: (game, args) => {
-					if (!args?.length) return this.logToConsole('Usage: /cast <Spell_Name>')
-					const spell = args.join(' ').replaceAll('_', ' ')
-					const result = game.perform({type: 'cast', spell})
-					this.logToConsole(result.ok ? `Casting ${spell}` : result.error)
+					if (!args?.length) return this.logToConsole('Usage: /cast <Ability_Id>')
+					const abilityId = args.join('')
+					const result = game.perform({type: 'cast', spell: abilityId})
+					this.logToConsole(result.ok ? `Casting ${abilityId}` : result.error)
 				},
 			},
 			{

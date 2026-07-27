@@ -51,7 +51,7 @@ bun run sweep [options]
   --seeds    <n>       how many seeds per combination, starting at 1 (default 10)
   --duration <s>       give up after n seconds of fight time (default 120)
   --tune     <spec>    change a balance number first, e.g. 'aura:Rend.total=-16'
-                       kind:Name.key=value — spell, attack, cadence, aura, unit or rule. Repeatable.
+                       kind:Name.key=value — ability, cadence, aura, unit or rule. Repeatable.
   --json               print rows as JSON instead of a table
 
   10 seeds shows a shape; comparing two candidates needs about 200. See the note the

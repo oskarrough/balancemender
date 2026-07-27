@@ -6,9 +6,9 @@ import type {Aura} from './aura'
 import {createId, log} from '../utils'
 import {Faction, FACTION, Condition, CONDITION_THRESHOLDS} from './types'
 import type {UnitId} from './unit-registry'
-import type {Spell} from './spell'
+import type {Ability, AbilityClass} from './ability'
 import type {GlobalCooldown} from './global-cooldown'
-import {SpellCast} from './spell-cast'
+import {AbilityUse} from './ability-use'
 
 export type {Aura} from './aura'
 export type {Faction} from './types'
@@ -83,46 +83,21 @@ export class Unit extends Node {
 		return this.currentTarget?.alive ? this.currentTarget : undefined
 	}
 
-	/**
-	 * What this unit can cast. Empty for most of them — a wolf's abilities are attacks, and an
-	 * attack is an `Attack` with its own timing welded in rather than a spellbook entry
-	 * something has to choose. Nothing about biting being physical keeps it out of here; the weld
-	 * does.
-	 *
-	 * Deliberately not the spell registry: that is the *player's* spellbook, and reading it from
-	 * here would close the import loop `unit → registry → spells → spell → unit`. Each
-	 * caster names its own; `Player` assigns `spellRegistry`.
-	 *
-	 * Keyed by each spell's `id`, never its display name — `{Mend}` shorthand is only correct
-	 * because that is what the key means.
-	 */
-	spellbook: Record<string, typeof Spell> = {}
+	/** Every ability this unit may use, keyed by stable ability id. Display names never enter lookup. */
+	abilities: Record<string, AbilityClass> = {}
 
-	/**
-	 * Casting state. On `Unit` rather than `Player` because nothing about it is the player's:
-	 * a cast is a thing with a cast time, a mana cost and a global cooldown, and an enemy that
-	 * casts needs every one of them. What stays player-only is *deciding* — the keyboard and the
-	 * autopilot on one side, a `Cadence` task on the other.
-	 */
+	/** Only abilities opting into cast time or GCD occupy this slot; ordinary attacks never do. */
 	lastCastTime = 0
 	lastCastCompletedTime = 0
-	spell: Spell | undefined
+	currentAbility: Ability | undefined
 	gcd: GlobalCooldown | undefined
 
-	/**
-	 * When each spell comes off its own cooldown, in fight-clock ms, keyed by spell id.
-	 *
-	 * Expiry stamps rather than a Task per spell: vroum defers `connect()` to a microtask, so a
-	 * cooldown Task started during a cast is not mounted yet when something asks about it in the
-	 * same tick. Storing when it ends also means retuning a cooldown mid-fight leaves the one
-	 * already running alone, as the rest of balance does. A fight gets fresh units, so there is
-	 * nothing to reset between them.
-	 */
+	/** Cooldown expiry stamps in fight-clock ms, keyed by stable ability id. */
 	cooldowns = new Map<string, number>()
 
-	/** The primitive `perform({type: 'cast'})` composes. Returns why it refused, if it did. */
-	castSpell(spellId: string) {
-		return SpellCast.cast(this, spellId)
+	/** The neutral primitive every driver uses, including Cadence and the transitional cast action. */
+	useAbility(abilityId: string) {
+		return AbilityUse.use(this, abilityId)
 	}
 
 	constructor(public parent: Encounter) {

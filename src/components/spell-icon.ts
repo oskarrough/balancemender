@@ -1,67 +1,47 @@
 import {html} from '../utils'
-import {GameLoop} from '../nodes/game-loop'
-import {Spell} from '../nodes/spell'
-import {SpellCast} from '../nodes/spell-cast'
+import type {GameLoop} from '../nodes/game-loop'
+import type {AbilityClass} from '../nodes/ability'
+import {AbilityUse} from '../nodes/ability-use'
 
-/** From the display name, not the id: the files on disk are `flash-heal.png`. */
-function spellIconPath(SpellClass: typeof Spell) {
-	const slug = SpellClass.icon || SpellClass.name.toLowerCase().replaceAll(' ', '-')
+function spellIconPath(AbilityClass: AbilityClass) {
+	const slug = AbilityClass.icon || AbilityClass.name.toLowerCase().replaceAll(' ', '-')
 	return `/assets/generated/spells/${slug}.png`
 }
 
-export function SpellIcon(game: GameLoop, spellId: string, shortcut: string | number) {
+/** Transitional spell-shaped UI over the player's neutral ability collection. */
+export function SpellIcon(game: GameLoop, abilityId: string, shortcut: string | number) {
 	const player = game.player
-	const SpellClass = player.spellbook[spellId] as typeof Spell
+	const AbilityClass = player.abilities[abilityId]
+	if (!AbilityClass) throw new Error(`no ability ${abilityId}`)
 
-	if (!SpellClass) throw new Error('no spell' + spellId)
-
-	// Readable cast time
-	/* const beingCast = player.lastCastSpell instanceof spells.Spell */
-	const realCastTime = (game?.elapsedTime || 0) - player.lastCastTime
-	/* const castTime = beingCast */
-	/* 	? roundOne(realCastTime / 1000) */
-	/* 	: roundOne(spell.delay / 1000) */
-
-	// Circular-progress UI
+	const realCastTime = (game.elapsedTime || 0) - player.lastCastTime
 	const gcdPercentage = realCastTime / game.gcd
 	const angle = gcdPercentage ? (1 - gcdPercentage) * 360 : 0
-
-	/**
-	 * `whyNotCast` and deliberately not `validate`: the other half is about the player, not the
-	 * spell, so it is the same for every icon and turns over within a second of every cast. Drawing
-	 * it here would strobe the whole bar and tell the player nothing.
-	 */
-	const refusal = SpellCast.whyNotCast(player, SpellClass)
-	const cooldownLeft = SpellCast.cooldownRemaining(player, SpellClass)
-	// Guarded, because tuning a cooldown to 0 while one is already running would divide by it.
-	const cooldownSweep = SpellClass.cooldown ? (cooldownLeft / SpellClass.cooldown) * 360 : 0
+	const refusal = AbilityUse.whyNotUse(player, AbilityClass)
+	const cooldownLeft = AbilityUse.cooldownRemaining(player, AbilityClass)
+	const cooldown = AbilityClass.cooldown ?? 0
+	const cooldownSweep = cooldown ? (cooldownLeft / cooldown) * 360 : 0
 
 	let state = ''
 	if (cooldownLeft > 0) state = 'cooldown'
 	else if (refusal === 'missing-mana') state = 'unaffordable'
 	else if (refusal) state = 'blocked'
 
-	/**
-	 * Not `disabled` — that is the trap this issue set for itself. A disabled button swallows the
-	 * click, and the click is what produces the refusal message that says *why* nothing happened.
-	 * So an unavailable spell looks unavailable and stays pressable, and pressing it explains
-	 * itself. Only game over truly disables anything.
-	 */
 	return html`
 		<button
 			class="Spell"
 			data-state=${state}
-			onclick=${() => game.perform({type: 'cast', spell: spellId})}
+			onclick=${() => game.perform({type: 'cast', spell: abilityId})}
 			.disabled=${game.gameOver}
 		>
-			<img class="Spell-image" src=${spellIconPath(SpellClass)} alt="" />
+			<img class="Spell-image" src=${spellIconPath(AbilityClass)} alt="" />
 			<div class="Spell-inner">
-				<h3>${SpellClass.name}</h3>
+				<h3>${AbilityClass.name}</h3>
 				<p>
-					<span>🔵 ${SpellClass.cost} </span>
-					<span>🟢 ${SpellClass.heal}</span>
-					<span>⏲ ${SpellClass.castTime / 1000}s</span>
-					${SpellClass.cooldown ? html`<span>⏳ ${SpellClass.cooldown / 1000}s</span>` : null}
+					<span>🔵 ${AbilityClass.cost ?? 0} </span>
+					<span>🟢 ${AbilityClass.heal ?? 0}</span>
+					<span>⏲ ${(AbilityClass.castTime ?? 0) / 1000}s</span>
+					${cooldown ? html`<span>⏳ ${cooldown / 1000}s</span>` : null}
 				</p>
 			</div>
 			<div class="Spell-gcd" style=${`--progress: ${angle}deg`}></div>

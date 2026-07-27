@@ -135,11 +135,11 @@ describe('death', () => {
 		expect(tank.auras.size).toBe(1)
 
 		expect(game.perform({type: 'cast', spell: 'Heal', target: tank.id}).ok).toBe(true)
-		expect(game.player.spell).toBeDefined()
+		expect(game.player.currentAbility).toBeDefined()
 
 		game.player.health.set(0)
 		await settle()
-		expect(game.player.spell).toBeUndefined()
+		expect(game.player.currentAbility).toBeUndefined()
 		expect(game.player.currentTarget).toBeUndefined()
 
 		tank.health.set(0)

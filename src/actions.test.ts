@@ -2,7 +2,7 @@
 import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './nodes/game-loop'
 import {SimLoop} from './sim/run'
-import {spellRegistry} from './nodes/registry'
+import {playerAbilities} from './nodes/registry'
 import {combatLogs, clearLogs} from './combatlog'
 
 /**
@@ -18,13 +18,13 @@ describe('perform', () => {
 		const game = new GameLoop({party: [], enemies: []})
 		expect(game.perform({type: 'cast', spell: 'Fireball'})).toEqual({
 			ok: false,
-			error: 'Spell Fireball not found in spellbook',
+			error: 'Ability Fireball not found in abilities',
 		})
 		expect(game.perform({type: 'remove', unit: 'nope'})).toMatchObject({ok: false})
 		expect(game.perform({type: 'target', unit: 'nope'})).toMatchObject({ok: false})
-		expect(game.perform({type: 'tune', of: 'spell', name: 'Fireball', key: 'cost', value: 1})).toMatchObject({
+		expect(game.perform({type: 'tune', of: 'ability', name: 'Fireball', key: 'cost', value: 1})).toMatchObject({
 			ok: false,
-			error: 'Unknown spell: Fireball',
+			error: 'Unknown ability: Fireball',
 		})
 		game.disconnect()
 	})
@@ -36,7 +36,7 @@ describe('perform', () => {
 
 		expect(game.perform({type: 'cast', spell: 'Heal', target: tank.id}).ok).toBe(true)
 		expect(game.player.currentTarget).toBe(tank)
-		expect(game.player.spell?.name).toBe('Heal')
+		expect(game.player.currentAbility?.name).toBe('Heal')
 		// Let the spell finish mounting before tearing the loop down — its global cooldown
 		// mounts in a microtask, and a node that mounts into a disconnected root throws.
 		await flush()
@@ -46,7 +46,7 @@ describe('perform', () => {
 	it('does not start a cast when the target is bad', () => {
 		const game = new GameLoop({party: [], enemies: []})
 		expect(game.perform({type: 'cast', spell: 'Heal', target: 'nope'}).ok).toBe(false)
-		expect(game.player.spell).toBeUndefined()
+		expect(game.player.currentAbility).toBeUndefined()
 		game.disconnect()
 	})
 
@@ -56,7 +56,7 @@ describe('perform', () => {
 
 		game.perform({type: 'cast', spell: 'Heal'})
 		expect(game.perform({type: 'interrupt'}).ok).toBe(true)
-		expect(game.player.spell).toBeUndefined()
+		expect(game.player.currentAbility).toBeUndefined()
 		await flush()
 		game.disconnect()
 	})
@@ -110,7 +110,7 @@ describe('refusals', () => {
 		game.elapsedTime = 5000
 		game.perform({type: 'cast', spell: 'Fireball'})
 
-		expect(game.lastRefusal).toEqual({error: 'Spell Fireball not found in spellbook', at: 5000})
+		expect(game.lastRefusal).toEqual({error: 'Ability Fireball not found in abilities', at: 5000})
 		game.disconnect()
 	})
 
@@ -147,13 +147,13 @@ describe('refusals', () => {
 	})
 })
 
-describe('every spell in the spellbook', () => {
+describe('every player ability', () => {
 	beforeEach(() => clearLogs())
 
 	// Renew once healed without ever logging a cast, because it overrode `tick()` instead of
 	// `cast()`. Nothing but this stops the next spell doing the same.
 	// An enemy has to be present, or the fight is already won and the loop stops before the cast lands.
-	it.each(Object.keys(spellRegistry))('logs a completed cast: %s', async (spell) => {
+	it.each(Object.keys(playerAbilities))('logs a completed cast: %s', async (spell) => {
 		const game = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		await flush()
 		game.tank.health.set(1)
