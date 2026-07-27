@@ -13,7 +13,7 @@ index.html
               ├── Encounter  owns the party + enemies
               │     └── Character…        Player, Tank, TinyWolf, WolfShaman, Nakroth
               │           ├── Health/Mana (Resource nodes, emit change events)
-              │           ├── Targeting   (Task) picks currentTarget
+              │           ├── Targeting   (Task) a rule + a preference → currentTarget
               │           ├── Attack      (Task) swings on an interval
               │           ├── Cadence     (Task) casts on an interval
               │           └── auras       HOT / DoT (Tasks)
@@ -55,9 +55,9 @@ fight; an enemy has a `Cadence` casting on an interval, the way an `Attack` swin
 unit wanting real decisions overrides `Cadence.chooses()` rather than growing a policy system.
 
 A unit has **one** `currentTarget`, and both attacking and casting read it. `WolfShaman` therefore
-carries no attacks — it spends its target on the ally it is healing (`MostHurtAlly`, the
-same-faction mirror of the attacking tasks). A unit that both hit and healed would need two
-targets, and nothing does yet.
+carries no attacks — it spends its target on the ally it is healing (`Targeting(this, 'ally',
+prefer.lowestHealth)`, where the attackers take the `'enemy'` rule). A unit that both hit and
+healed would need two targets, and nothing does yet.
 
 Enemy casts are drawn on the caster's own unit frame; the player's has its own `CastingInfo`
 panel. An unseen telegraph is not one.

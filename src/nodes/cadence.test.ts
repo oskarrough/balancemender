@@ -26,7 +26,7 @@ const settle = async () => {
 	await step()
 }
 /** The shaman's targeting is a Task; nudge it rather than waiting a frame for it. */
-const retarget = (unit: Character) => (unit as WolfShaman).targetingTask.tick()
+const retarget = (unit: Character) => (unit as WolfShaman).targeting.tick()
 
 describe('an enemy that casts', () => {
 	beforeEach(() => clearLogs())

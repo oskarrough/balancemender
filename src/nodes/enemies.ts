@@ -1,6 +1,6 @@
 import {Character} from './character'
 import {FACTION} from './types'
-import {TankTargeting, RandomTargeting, MostHurtAlly} from './targeting-task'
+import {Targeting, prefer} from './targeting'
 import {SmallAttack, MediumAttack, WolfBite, HugeAttack} from './attack'
 import {Spell} from './spell'
 import {Cadence} from './cadence'
@@ -9,7 +9,7 @@ export class Nakroth extends Character {
 	static maxHealth = 500
 	static faction = FACTION.ENEMY
 	name = 'Nakroth the Destroyer'
-	targetingTask = new TankTargeting(this)
+	targeting = new Targeting(this, 'enemy', prefer.tankFirst)
 	mediumAttack = new MediumAttack(this)
 	hugeAttack = new HugeAttack(this)
 }
@@ -19,7 +19,7 @@ export class TinyWolf extends Character {
 	static faction = FACTION.ENEMY
 	name = 'Tiny wolf'
 	image = '/assets/generated/characters/tiny-wolf.png'
-	targetingTask = new RandomTargeting(this)
+	targeting = new Targeting(this, 'enemy', prefer.atRandom)
 	mainhand = new WolfBite(this)
 	offhand = new SmallAttack(this)
 }
@@ -56,7 +56,7 @@ export class WolfShaman extends Character {
 	static maxHealth = 180
 	static faction = FACTION.ENEMY
 	name = 'Wolf shaman'
-	targetingTask = new MostHurtAlly(this)
+	targeting = new Targeting(this, 'ally', prefer.lowestHealth)
 	spellbook = {Mend}
 	cadence = new MendCadence(this)
 }

@@ -4,6 +4,7 @@ import {GameLoop} from './game-loop'
 import {unitsOf} from '../sim/run'
 import {PeriodicAura} from './periodic-aura'
 import type {TinyWolf} from './enemies'
+import {eligible} from './targeting'
 
 /**
  * One spawn door. Whatever adds a unit — boot, a roster, the dev console, a simulation —
@@ -120,7 +121,7 @@ describe('death', () => {
 		await settle()
 
 		expect(wolf.getTarget()).toBeUndefined()
-		expect(wolf.targetingTask.getPotentialTargets()).toEqual([game.player])
+		expect(eligible(wolf, wolf.targeting.rule)).toEqual([game.player])
 		game.disconnect()
 	})
 
@@ -154,13 +155,13 @@ describe('death', () => {
 
 		game.tank.health.set(0)
 		await settle()
-		expect(wolf.targetingTask.getPotentialTargets()).not.toContain(game.tank)
+		expect(eligible(wolf, wolf.targeting.rule)).not.toContain(game.tank)
 
 		game.perform({type: 'healParty'})
 		await settle()
 		expect(game.tank.alive).toBe(true)
 		expect(game.tank.parent).toBe(game.encounter)
-		expect(wolf.targetingTask.getPotentialTargets()).toContain(game.tank)
+		expect(eligible(wolf, wolf.targeting.rule)).toContain(game.tank)
 		game.disconnect()
 	})
 })
