@@ -9,10 +9,11 @@ index.html
   └── src/main.ts            splash → on first keypress, builds the game
         └── GameLoop         (vroum Loop) the clock and the root of everything
               ├── Encounter  owns one fight: party + enemies
-              │     └── Character…        Player, Tank, TinyWolf, Nakroth
+              │     └── Character…        Player, Tank, TinyWolf, WolfShaman, Nakroth
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   (Task) picks currentTarget
               │           ├── DamageEffect(Task) swings on an interval
+              │           ├── SpellCaster (Task) casts on an interval
               │           └── effects     HOT / DoT (Tasks)
               ├── AudioPlayer
               └── tick() → renders components/ui.ts into `game.element`
@@ -44,6 +45,26 @@ knowing before you debug something strange (see also [vroum.md](./vroum.md)):
   `static interval` and so on, and `applyStatics()` copies them onto the instance at
   construction. This is what lets the Balance Lab retune a spell without touching spells that
   are already in flight.
+
+## Casting belongs to Character, deciding does not
+
+Everything a cast needs lives on `Character`: the `spellbook`, the `gcd`, the `cooldowns` stamps,
+the cast in progress. `SpellCast` refuses for the same seven reasons whoever is asking, and a
+caster with no `mana` simply skips the mana check — which is how enemies cast for free, limited by
+a cadence the way a `DamageEffect`'s interval limits a swing.
+
+What is _not_ shared is who decides. The player has a keyboard and an `Autopilot` weighing the
+fight; an enemy has a `SpellCaster`, a Task that casts on an interval. That mirrors attacking
+exactly — a `DamageEffect` is a swing nothing chooses. A unit wanting real decisions overrides
+`SpellCaster.chooses()` rather than growing a policy system.
+
+One catch worth knowing: a unit has **one** `currentTarget`, and both attacking and casting read
+it. `WolfShaman` therefore carries no attacks — it spends its target on the ally it is healing
+(`MostHurtAlly`, the same-faction mirror of the attacking tasks). A unit that both hit and healed
+would need two targets, and nothing does yet.
+
+Casts other than the player's are drawn on the caster's own unit frame. The player's has its own
+`CastingInfo` panel, but an enemy cast is otherwise invisible, and an unseen telegraph is not one.
 
 ## One way to change the game
 
@@ -82,6 +103,12 @@ The same trap catches the registries generally: a **value** import from `actions
 classes. Type-only imports are erased, so they are always safe; `import type` is the fix, and
 the symptom is a registry entry that exists with no value.
 
+It is a long loop, and it has been closed for real: `audio.ts` naming the `GameLoop` class was
+enough, because `game-loop.ts` imports `actions.ts` which imports `balance.ts` which snapshots
+spell statics at module-initialisation time. Importing `registry.ts` before `balance.ts` then
+gave an empty `balance.spells`. Nothing threw. `registry.test.ts` asserts every entry has a value
+precisely because this failure is silent.
+
 `faction` is a static too, so `unitIds('enemy')` answers which side a unit fights on without
 spawning one. That is the only reason there is no separate enemy registry.
 
@@ -89,7 +116,8 @@ spawning one. That is the only reason there is no separate enemy registry.
 
 `src/balance.ts` snapshots the tunable statics of every spell, attack, periodic effect and unit,
 and writes changes back to the classes. An effect only needs its own entry when nothing casts it —
-one a spell owns keeps its magnitude on the spell (see `Renew`), where it is already tunable. Everything reaches it through `perform({type: 'tune', …})`;
+one a spell owns keeps its magnitude on the spell (see `Renew`), where it is already tunable.
+Everything reaches it through `perform({type: 'tune', …})`;
 `src/inspectables.ts` is what the Balance Lab panel lists. `balance.units` is keyed by the same
 unit ids you spawn with, and retuning reaches live units by `unitId` — never by class name.
 

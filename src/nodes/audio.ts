@@ -1,6 +1,6 @@
-import {Node} from 'vroum'
+import {Node, Loop, Task} from 'vroum'
 import {logger} from '../utils'
-import {GameLoop} from './game-loop'
+import type {GameLoop} from './game-loop'
 
 type SoundCategory = 'spell' | 'combat' | 'ui'
 
@@ -61,16 +61,23 @@ export class AudioPlayer extends Node {
 	constructor(parent?: Node) {
 		super(parent)
 
-		if (parent instanceof GameLoop) {
+		// `Loop` and `Task`, not `GameLoop`, though the parent is always one: naming the concrete
+		// class here is a *value* import of game-loop.ts, which value-imports actions.ts and so
+		// balance.ts — and balance snapshots spell statics at module-initialisation time. That
+		// closes `spells → audio → game-loop → actions → balance → spells` and leaves the snapshot
+		// reading a half-built module. PAUSE and PLAY are vroum `Task` statics that `GameLoop`
+		// only inherits, so this listens for exactly the same events.
+		if (parent instanceof Loop) {
+			const loop = parent as GameLoop
 			AudioPlayer.global = this
-			this.muted = parent.muted
+			this.muted = loop.muted
 
-			parent.on(GameLoop.PAUSE, () => {
+			loop.on(Task.PAUSE, () => {
 				this.paused = true
 				this.stop()
 			})
 
-			parent.on(GameLoop.PLAY, () => {
+			loop.on(Task.PLAY, () => {
 				this.paused = false
 			})
 		}

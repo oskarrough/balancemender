@@ -77,6 +77,35 @@ export class TankTargeting extends TargetOppositeFaction {
 	}
 }
 
+/**
+ * Targets alive characters on the caster's own side — what anything that helps rather than hits
+ * needs. The mirror of `TargetOppositeFaction`, and the reason it is worth having is that a unit
+ * carries one `currentTarget`: a healer picks from here, an attacker from there, and a unit that
+ * did both would need two, which nothing does yet.
+ */
+export class TargetOwnFaction extends Targeting {
+	getPotentialTargets(): Character[] {
+		const targets = this.parent.faction === 'party' ? this.parent.parent.party : this.parent.parent.enemies
+		return targets.filter((target) => target.alive)
+	}
+}
+
+/**
+ * The most hurt ally, re-evaluated every tick. Unlike the attacking tasks it never settles —
+ * a healer that stuck with its first pick would keep healing someone already topped up.
+ */
+export class MostHurtAlly extends TargetOwnFaction {
+	prefers(): Character | undefined {
+		const targets = this.getPotentialTargets()
+		if (targets.length === 0) return undefined
+		return targets.sort((a, b) => a.health.current / a.health.max - b.health.current / b.health.max)[0]
+	}
+
+	reconsiders() {
+		return true
+	}
+}
+
 /** Targets character with lowest health percentage */
 export class LowestHealth extends TargetOppositeFaction {
 	prefers(): Character | undefined {

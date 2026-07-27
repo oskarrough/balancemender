@@ -76,3 +76,27 @@
 		0 0 2px black;
 	color: white;
 }
+
+/**
+ * A unit's own cast bar, on its frame. The player's lives in the `CastingInfo` panel instead, so
+ * this is what an enemy cast looks like — small, under the health bar, and the only warning you
+ * get that a shaman is about to undo your work.
+ */
+.Character-cast {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-top: 0.15rem;
+	font-size: 0.7rem;
+	opacity: 0.9;
+}
+
+.Character-cast small {
+	flex: none;
+	white-space: nowrap;
+}
+
+.Character-cast .Meter,
+.Character-cast .Bar {
+	flex: 1;
+}

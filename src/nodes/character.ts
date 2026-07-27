@@ -6,6 +6,9 @@ import type {PeriodicEffect} from './periodic'
 import {createId, log} from '../utils'
 import {Faction, FACTION} from './types'
 import type {UnitId} from './unit-registry'
+import type {Spell} from './spell'
+import type {GlobalCooldown} from './global-cooldown'
+import {SpellCast} from './spell-cast'
 
 export type CharacterEffect = PeriodicEffect
 export type {Faction} from './types'
@@ -44,6 +47,43 @@ export class Character extends Node {
 
 	getTarget(): Character | undefined {
 		return this.currentTarget?.alive ? this.currentTarget : undefined
+	}
+
+	/**
+	 * What this unit can cast. Empty for most of them — a wolf bites, and biting is a
+	 * `DamageEffect` that ticks rather than a spell anything decides to use.
+	 *
+	 * Deliberately not the spell registry: that is the *player's* spellbook, and reading it from
+	 * here would close the import loop `character → registry → spells → spell → character`. Each
+	 * caster names its own; `Player` assigns `spellRegistry`.
+	 */
+	spellbook: Record<string, typeof Spell> = {}
+
+	/**
+	 * Casting state. On `Character` rather than `Player` because nothing about it is the player's:
+	 * a cast is a thing with a cast time, a mana cost and a global cooldown, and an enemy that
+	 * casts needs every one of them. What stays player-only is *deciding* — the keyboard and the
+	 * autopilot on one side, a `SpellCaster` task on the other.
+	 */
+	lastCastTime = 0
+	lastCastCompletedTime = 0
+	spell: Spell | undefined
+	gcd: GlobalCooldown | undefined
+
+	/**
+	 * When each spell comes off its own cooldown, in fight-clock ms, keyed by spell name.
+	 *
+	 * Expiry stamps rather than a Task per spell: vroum defers `connect()` to a microtask, so a
+	 * cooldown Task started during a cast is not mounted yet when something asks about it in the
+	 * same tick. Storing when it ends also means retuning a cooldown mid-fight leaves the one
+	 * already running alone, as the rest of balance does. A fight gets fresh units, so there is
+	 * nothing to reset between them.
+	 */
+	cooldowns = new Map<string, number>()
+
+	/** The primitive `perform({type: 'cast'})` composes. Returns why it refused, if it did. */
+	castSpell(spellName: string) {
+		return SpellCast.cast(this, spellName)
 	}
 
 	constructor(public parent: Encounter) {

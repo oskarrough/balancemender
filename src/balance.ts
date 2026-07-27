@@ -1,5 +1,6 @@
 import {Heal, FlashHeal, GreaterHeal, Renew} from './nodes/spells'
 import {SmallAttack, MediumAttack, WolfBite, WolfBleed, HugeAttack, TankAttack} from './nodes/damage-effect'
+import {Mend} from './nodes/enemies'
 import {unitRegistry} from './nodes/unit-registry'
 
 export const SPELL_KEYS = ['cost', 'heal', 'castTime', 'cooldown'] as const
@@ -30,6 +31,8 @@ export const spellClasses: Record<string, SpellClass> = {
 	'Flash Heal': FlashHeal,
 	'Greater Heal': GreaterHeal,
 	Renew,
+	// Not in `spellRegistry` — that is the player's spellbook. Tunable all the same.
+	Mend,
 }
 
 export const attackClasses: Record<string, AttackClass> = {

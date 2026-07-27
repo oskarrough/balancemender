@@ -97,7 +97,7 @@ export class Encounter extends Node {
 	onDeath(unit: Character) {
 		unit.currentTarget = undefined
 		for (const effect of unit.effects) effect.disconnect()
-		if (unit instanceof Player) unit.spell?.disconnect()
+		unit.spell?.disconnect()
 	}
 
 	/**

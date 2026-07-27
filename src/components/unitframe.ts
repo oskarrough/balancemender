@@ -16,6 +16,18 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 	const displayName = character.name || character.constructor.name
 	const effects: PeriodicEffect[] = character.effects ? Array.from(character.effects) : []
 
+	/**
+	 * What this unit is casting, if anything. Not the `spell` argument above — that is the
+	 * *player's* cast, passed in to preview how much of this bar it would fill.
+	 *
+	 * Only for units other than the player, whose own cast bar has a dedicated panel under the
+	 * frames. An enemy cast is otherwise invisible: the shaman's Mend takes 2500ms and says so in
+	 * the combat log, but a telegraph nobody can see is not a telegraph, and it is what makes a
+	 * caster something to react to rather than a health bar that refills.
+	 */
+	const casting = character === player ? undefined : character.spell
+	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - character.lastCastTime : 0
+
 	return html`
 		<div
 			class=${`Character ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Character--targeted' : ''}`}
@@ -49,6 +61,12 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 						: null}
 				</div>
 			</div>
+			${casting && casting.delay > 0
+				? html`<div class="Character-cast">
+						<small>${casting.name}</small>
+						${Meter({type: 'cast', value: castElapsed, max: casting.delay})}
+					</div>`
+				: null}
 			${effects.length > 0
 				? html`<ul class="Effects">
 						${effects.map(EffectIcon)}
