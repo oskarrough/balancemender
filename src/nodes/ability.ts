@@ -1,6 +1,6 @@
 import {Task} from 'vroum'
 import type {CombatEventType} from '../combatlog'
-import {applyStatics, randomIntFromInterval} from '../utils'
+import {applyStatics} from '../utils'
 import {AudioPlayer} from './audio'
 import {AbilityUse} from './ability-use'
 import {eligible, type TargetRule} from './target-rule'
@@ -124,30 +124,7 @@ export class Ability extends Task {
 		if (sound) AudioPlayer.play(sound, {owner: this})
 	}
 
-	stopSounds() {
-		AudioPlayer.stopOwned(this)
-	}
-
 	destroy() {
 		AbilityUse.finish(this)
-	}
-
-	/** The flinch a hit draws on its target. Public because the Damage effect is what lands the hit. */
-	shakeTarget(target: Unit) {
-		const element = document.querySelector(`[data-unit-id="${target.id}"] .Unit-avatar`)
-		if (!element) return
-		element.classList.add('is-takingDamage')
-		const animation = element.animate(
-			[
-				{transform: 'translate(0, 0)', filter: 'none'},
-				{
-					transform: `translate(${randomIntFromInterval(-2, 2)}px, ${randomIntFromInterval(-2, 2)}px)`,
-					filter: 'brightness(0.5)',
-				},
-				{transform: 'translate(0, 0)', filter: 'none'},
-			],
-			{duration: 200, easing: 'ease-in-out'},
-		)
-		animation.onfinish = () => element.classList.remove('is-takingDamage')
 	}
 }

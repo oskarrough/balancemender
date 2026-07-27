@@ -1,5 +1,6 @@
 import {applyHit} from './hit'
 import {naturalizeNumber, randomIntFromInterval} from '../utils'
+import type {CombatEventType} from '../combatlog'
 // Type-only: ability.ts imports the `Effect` type back from here.
 import type {Ability} from './ability'
 import type {Aura} from './aura'
@@ -24,6 +25,18 @@ export interface Effect {
 /** An aura class an effect can plant: `PeriodicAura` and `ShieldAura` both take a magnitude. */
 type AuraClass = new (parent: Unit, caster: Unit, magnitude?: number) => Aura
 
+/** Every health change an effect makes is credited to the ability that declared it. */
+function hit(ability: Ability, target: Unit, amount: number, eventType: CombatEventType) {
+	applyHit({
+		source: ability.parent,
+		target,
+		amount,
+		abilityId: ability.id,
+		abilityName: ability.name,
+		eventType,
+	})
+}
+
 /**
  * Damage in the ability's own range, and the flinch that sells it.
  *
@@ -32,30 +45,17 @@ type AuraClass = new (parent: Unit, caster: Unit, magnitude?: number) => Aura
  */
 export class Damage implements Effect {
 	apply(ability: Ability, target: Unit) {
-		applyHit({
-			source: ability.parent,
-			target,
-			// An ability that declares Damage without a range is a mistake `registry.test.ts` catches.
-			amount: -randomIntFromInterval(ability.minDamage ?? 0, ability.maxDamage ?? 0),
-			abilityId: ability.id,
-			abilityName: ability.name,
-			eventType: ability.eventType,
-		})
-		ability.shakeTarget(target)
+		// An ability that declares Damage without a range is a mistake `registry.test.ts` catches.
+		const amount = randomIntFromInterval(ability.minDamage ?? 0, ability.maxDamage ?? 0)
+		hit(ability, target, -amount, ability.eventType)
+		shake(target)
 	}
 }
 
 /** A direct heal, varied by a few percent so no two land identically. */
 export class Heal implements Effect {
 	apply(ability: Ability, target: Unit) {
-		applyHit({
-			source: ability.parent,
-			target,
-			amount: naturalizeNumber(ability.heal),
-			abilityId: ability.id,
-			abilityName: ability.name,
-			eventType: 'SPELL_HEAL',
-		})
+		hit(ability, target, naturalizeNumber(ability.heal), 'SPELL_HEAL')
 	}
 }
 
@@ -75,4 +75,23 @@ export class ApplyAura implements Effect {
 		if (!target.alive) return
 		new this.auraClass(target, ability.parent, ability.heal)
 	}
+}
+
+/** The flinch a hit draws on its target. Only a direct hit shakes — a bleed ticking does not. */
+function shake(target: Unit) {
+	const element = document.querySelector(`[data-unit-id="${target.id}"] .Unit-avatar`)
+	if (!element) return
+	element.classList.add('is-takingDamage')
+	const animation = element.animate(
+		[
+			{transform: 'translate(0, 0)', filter: 'none'},
+			{
+				transform: `translate(${randomIntFromInterval(-2, 2)}px, ${randomIntFromInterval(-2, 2)}px)`,
+				filter: 'brightness(0.5)',
+			},
+			{transform: 'translate(0, 0)', filter: 'none'},
+		],
+		{duration: 200, easing: 'ease-in-out'},
+	)
+	animation.onfinish = () => element.classList.remove('is-takingDamage')
 }
