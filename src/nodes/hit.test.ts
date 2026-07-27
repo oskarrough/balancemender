@@ -2,7 +2,7 @@
 import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
-import {PeriodicEffect} from './periodic'
+import {PeriodicAura} from './periodic-aura'
 import {Renew} from './spells'
 import {combatLogs, clearLogs} from '../combatlog'
 
@@ -25,8 +25,8 @@ describe('applyHit', () => {
 			source: game.player,
 			target: game.tank,
 			amount: 40,
-			spellId: 'Heal',
-			spellName: 'Heal',
+			abilityId: 'Heal',
+			abilityName: 'Heal',
 			eventType: 'SPELL_HEAL',
 		})
 
@@ -47,8 +47,8 @@ describe('applyHit', () => {
 			source: game.tank,
 			target: game.tank,
 			amount: -5,
-			spellId: 'Test',
-			spellName: 'Test',
+			abilityId: 'Test',
+			abilityName: 'Test',
 			eventType: 'SWING_DAMAGE',
 		})
 
@@ -65,8 +65,8 @@ describe('applyHit', () => {
 				source: game.tank,
 				target: wolf,
 				amount,
-				spellId: 'TankAttack',
-				spellName: 'Shield Bash',
+				abilityId: 'TankAttack',
+				abilityName: 'Shield Bash',
 				eventType: 'SWING_DAMAGE',
 			})
 
@@ -80,7 +80,7 @@ describe('applyHit', () => {
 	})
 })
 
-describe('PeriodicEffect', () => {
+describe('PeriodicAura', () => {
 	beforeEach(() => clearLogs())
 
 	// The old DoT class applied damage without logging anything at all, so a poison was
@@ -89,7 +89,7 @@ describe('PeriodicEffect', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 
-		class Poison extends PeriodicEffect {
+		class Poison extends PeriodicAura {
 			static name = 'Poison'
 			static total = -50
 			static interval = 1
@@ -101,7 +101,7 @@ describe('PeriodicEffect', () => {
 
 		expect(combatLogs.at(-1)).toMatchObject({
 			eventType: 'SPELL_PERIODIC_DAMAGE',
-			spellName: 'Poison',
+			abilityName: 'Poison',
 			sourceId: game.tank.id,
 			targetId: wolf.id,
 			value: 10,
@@ -110,7 +110,7 @@ describe('PeriodicEffect', () => {
 	})
 
 	/**
-	 * The effect's number is a total over its whole life, not a per-tick one, and Renew sat
+	 * The aura's number is a total over its whole life, not a per-tick one, and Renew sat
 	 * at 30 for years meaning 6 a tick — a fifth of what the number implied, and
 	 * less healing than Heal for more mana. Pin the total the spell advertises to the total
 	 * that lands, so the two cannot drift apart again.
@@ -123,7 +123,7 @@ describe('PeriodicEffect', () => {
 		new Renew(game.player).cast()
 		await Promise.resolve()
 
-		const renew = [...game.tank.effects].find((effect) => effect.name === 'Renew')
+		const renew = [...game.tank.auras].find((aura) => aura.name === 'Renew')
 		expect(renew).toBeDefined()
 		for (let i = 0; i < renew!.repeat; i++) renew!.tick()
 

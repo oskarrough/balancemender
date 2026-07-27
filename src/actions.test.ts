@@ -164,7 +164,7 @@ describe('every spell in the spellbook', () => {
 			await flush()
 		}
 
-		const casts = combatLogs.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.spellId === spell)
+		const casts = combatLogs.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.abilityId === spell)
 		expect(casts).toHaveLength(1)
 		game.disconnect()
 		await flush()

@@ -32,7 +32,7 @@ describe('a fight full of Renew', () => {
 	it('counts a cast of Renew once, not once per tick', () => {
 		const report = analyze(fight.events, {units: fight.units})
 		const renew = report.spells.find((s) => s.name === 'Renew')!
-		const cast = fight.events.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.spellName === 'Renew')
+		const cast = fight.events.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.abilityName === 'Renew')
 
 		expect(cast.length).toBeGreaterThan(0)
 		expect(renew.casts).toBe(cast.length)

@@ -54,7 +54,7 @@ export type Policy = (player: Player) => Decision | undefined
  */
 const castable = (player: Player, spell: SpellId, target: Character) =>
 	!SpellCast.whyNotCast(player, spellRegistry[spell], target)
-const hasEffect = (target: Character, id: string) => [...target.effects].some((effect) => effect.id === id)
+const hasAura = (target: Character, id: string) => [...target.auras].some((aura) => aura.id === id)
 
 /** The party member in the most trouble, ties broken by lowest absolute health. Never a corpse. */
 function mostHurt(player: Player): Character | undefined {
@@ -87,7 +87,7 @@ export const triage: Policy = (player) => {
 export const renew: Policy = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
-	if (!hasEffect(target, 'Renew') && castable(player, 'Renew', target)) return {spell: 'Renew', target}
+	if (!hasAura(target, 'Renew') && castable(player, 'Renew', target)) return {spell: 'Renew', target}
 	if (target.health.ratio < 0.6 && castable(player, 'Heal', target)) return {spell: 'Heal', target}
 	return undefined
 }

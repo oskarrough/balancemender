@@ -90,13 +90,13 @@ export class Encounter extends Node {
 	 *
 	 * So death is not removal, it is stopping. Every task on a unit already skips itself while
 	 * `alive` is false; what is cancelled here is the rest — the target it was holding, the
-	 * effects ticking on it, and a cast it was halfway through, none of which watch health.
+	 * auras ticking on it, and a cast it was halfway through, none of which watch health.
 	 * Leaving the unit connected is also what lets it come back: heal a corpse and it simply
 	 * resumes, where a disconnected one would stay inert at full health.
 	 */
 	onDeath(unit: Character) {
 		unit.currentTarget = undefined
-		for (const effect of unit.effects) effect.disconnect()
+		for (const aura of unit.auras) aura.disconnect()
 		unit.spell?.disconnect()
 	}
 

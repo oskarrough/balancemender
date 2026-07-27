@@ -98,8 +98,8 @@ export class SpellCast {
 			eventType: 'SPELL_CAST_START',
 			sourceId: caster.id,
 			sourceName: caster.name,
-			spellId: spell.id,
-			spellName: spell.name,
+			abilityId: spell.id,
+			abilityName: spell.name,
 			value: spell.delay,
 			// An instant cast still costs the global cooldown, so the longer of the two is what the
 			// caster actually loses. This is where "the healer is never busier than 40%" comes from.
@@ -119,8 +119,8 @@ export class SpellCast {
 			eventType: 'SPELL_CAST_SUCCESS',
 			sourceId: caster.id,
 			sourceName: caster.name,
-			spellId: spell.id,
-			spellName: spell.name,
+			abilityId: spell.id,
+			abilityName: spell.name,
 		})
 	}
 
@@ -143,8 +143,8 @@ export class SpellCast {
 				eventType: 'SPELL_CAST_INTERRUPTED',
 				sourceId: caster.id,
 				sourceName: caster.name,
-				spellId: spell.id,
-				spellName: spell.name,
+				abilityId: spell.id,
+				abilityName: spell.name,
 			})
 		}
 

@@ -79,14 +79,14 @@ what they are aiming at; not what an ability reads.
 event.
 
 **Event** — a record of something that happened, in the combat log. Never refused, never a
-request. Keep the two words apart.
+request. Keep the two words apart. The `SPELL_*` event names predate this vocabulary and stay as
+they are: renaming them would break every log already recorded, and WoW lives with the same wart.
 
 **Ability** — something a unit can use: what it requires and what it does, with no opinion about
 when. One live use is a one-shot Task; a driver decides when to create it. **Use** is the verb
 covering the whole category. There is no `Ability` class yet — a spell is a `Spell`, an attack is
-a `DamageEffect`, and they share no base — but the umbrella already exists in the combat log
-under the wrong name, since `Hit.spellId` is set by swings and auras too. See
-[drift](#drift-worth-fixing).
+an `Attack`, and they share no base — but the umbrella already exists in the combat log, in
+`Hit.abilityId`, set by spells, swings and auras alike. See [drift](#drift-worth-fixing).
 
 **Spell** — a magical ability. **Attack** — an ability that strikes or otherwise directly harms
 a target. They are tags, not subclasses, and may overlap: Flash Heal is a spell, Savage Bite is
@@ -110,7 +110,7 @@ the shared pause after any cast; **cooldown** is one ability's own wait. A unit 
 and **swings** an attack; it **uses** either.
 
 **Id** and **name** — every ability and aura has both. The **id** is what everything files it
-under: registry, spellbook, balance, `--tune`, the log's `spellId`, cooldowns, stack keys. The
+under: registry, spellbook, balance, `--tune`, the log's `abilityId`, cooldowns, stack keys. The
 **name** is what a player reads and is used for nothing else. Conventionally the id is the class
 name (`FlashHeal`), the name is prose (`Flash Heal`). Renaming an ability should touch one line.
 
@@ -130,10 +130,12 @@ cadence". Repetition belongs to the cadence and never to the ability. Not a "cas
 role word for whoever is casting, and every unit that casts is one.
 
 **Aura** — something that sits on a unit for a while: it has a source, a lifetime, and it lives in
-the unit's `effects` set until it expires. What an apply-aura effect leaves behind. **Buff** and
+the unit's `auras` set until it expires. What an apply-aura effect leaves behind. **Buff** and
 **debuff** are the same thing by polarity, helpful or harmful — prose words, because nothing in
 the code branches on which. `SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the
-combat log. The class is `PeriodicEffect`, which is drift.
+combat log. `Aura` is the word and the type, but only as an alias for `PeriodicAura` — a real base
+that other shapes (a shield, a stat change) could share is still open, see
+[drift](#drift-worth-fixing).
 
 **Periodic aura** — an aura that lands an instalment on a cadence. Heal-over-time and
 damage-over-time are one class, and a negative `total` is the whole of what makes it a DoT. It is
@@ -166,7 +168,7 @@ its persistence is the behavior the Task represents.
 ## Tuning and measuring
 
 **Balance number** — a number the game plays by, reachable from the Balance Lab, the dev console
-and `--tune`. Five **kinds**: `spell`, `attack`, `effect`, `unit`, `rule`.
+and `--tune`. Five **kinds**: `spell`, `attack`, `aura`, `unit`, `rule`.
 
 **Rule** — a balance number the whole game reads rather than one belonging to a spell or a unit,
 such as where the injured line sits. The only kind read live where it is used, so a retune lands
@@ -232,7 +234,7 @@ any order — and let the two structural ones wait for the issues that teach us 
 | 1   | Give spells a real id, split from the name        | M    | **done**    |
 | 2   | Settle ability / spell / attack / aura            | —    | **decided** |
 | 3   | `roster` → `units` / `--enemies`                  | S    | **done**    |
-| 4   | The aura renames (table below)                    | M    | ready       |
+| 4   | The aura renames                                  | M    | **done**    |
 | 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | quiet tree  |
 | 6   | Extract the `Aura` base                           | M    | with #47    |
 | 7   | Split `Targeting` into rule + preference          | M    | ready       |
@@ -240,50 +242,24 @@ any order — and let the two structural ones wait for the issues that teach us 
 
 **`Character` should be `Unit`.** One thing, three words: `unit` (234 uses — spawning, the
 registry, balance, `--tune`, the CLI), `Character` / `character` (160), `actor` (26). The word is
-settled — unit — but the class, `character.ts`, `CharacterEffect` and `data-character-id` have
-not caught up. `character.id` already means something else, which is part of why the rename is
-worth doing rather than the reverse. Plan item 5, not started — it touches nearly every file, so
-it wants a quiet tree.
+settled — unit — but the class, `character.ts` and `data-character-id` have not caught up.
+`character.id` already means something else, which is part of why the rename is worth doing
+rather than the reverse. Plan item 5, not started — it touches nearly every file, so it wants a
+quiet tree.
 
 The rename does not retire `Character`, it narrows it: a character is a _named_ unit, and the
 class is the base every unit shares. Once `Unit` is the base class, `Character` is free to mean
 what it should — the thing `Nakroth` is and `TinyWolf` is not. `ActorStats` becomes `UnitStats`
 in the same sweep.
 
-**"Effect" meant three unrelated things. Decided, not yet done.** The word now means one thing —
-what an ability does when it lands — and the other two take names the codebase was already using
-behind our backs. `DamageEffect` is a swing, and `attackRegistry`, `ATTACK_KEYS` and the `attack`
-balance kind have called it an attack all along; `PeriodicEffect` is carried by a unit, and every
-`SPELL_AURA_*` event has called that an aura all along. This is WoW's model, which is worth
-knowing because our combat log already inherited it: an ability has N _effects_ (heal, damage,
-apply-aura), and an _aura_ is what the apply-aura kind leaves behind. Buff, debuff, HoT and DoT
-are all auras and differ only in what they do while attached. The table is plan item 4; extracting
-the `Aura` base the third row assumes is item 6, and waits for #47.
-
-| Today                 | Becomes        | Because                                         |
-| --------------------- | -------------- | ----------------------------------------------- |
-| `DamageEffect`        | `Attack`       | `attackRegistry` already keys it that way       |
-| `PeriodicEffect`      | `PeriodicAura` | `SPELL_AURA_*` already logs it that way         |
-| `CharacterEffect`     | `Aura`         | it is `= PeriodicEffect`; the base #47 extracts |
-| `RenewEffect`         | `RenewAura`    | follows its base                                |
-| `unit.effects`        | `unit.auras`   | frees `effects` for an ability's own list       |
-| `Tank.attackEffect`   | `mainhand`     | what `TinyWolf` already calls it                |
-| balance kind `effect` | `aura`         | it only ever meant "an aura nothing casts"      |
-| `Hit.spellId`         | `abilityId`    | swings and auras set it too                     |
-
-`Hit.spellId` is the load-bearing one: its own comment reads _"the spell, attack or aura it came
-from"_ — three things sharing a field named after one. That field is the `Ability` umbrella,
-already present and misnamed. The `SPELL_*` event names stay as they are: renaming those would
-break every log already recorded, and WoW lives with the same wart.
-
 **`HugeAttack` is misfiled, but not in the way we thought.** "Nasty arrow" is a boss ability on a
-12s cadence, and there are two mechanisms for that — `Cadence`, and a `DamageEffect` with a long
+12s cadence, and there are two mechanisms for that — `Cadence`, and an `Attack` with a long
 `interval`, which is what this is. Under the old "a spell is what someone chooses" rule the fix
 looked like converting it to a spell. It is not: it is fired from a bow, it logs `RANGE_DAMAGE`,
 and it is an **attack**. What it needs is a `Cadence` driving it, which is plan item 8 and not a
 rename.
 
-**Ability and driver are two layers, and `DamageEffect` welds them.** `WolfBite` is both _what
+**Ability and driver are two layers, and `Attack` welds them.** `WolfBite` is both _what
 happens_ (4-7 damage, plant a Rend) and _when_ (every 3800ms, forever). A `Spell` carries only the
 first. That weld — not the fact that it is an attack — is the reason Savage Bite cannot go on the
 action bar, and it is why we had no word for the umbrella: with timing baked in, a spell and an
@@ -317,7 +293,7 @@ The slot is a round trip. What survives it is a **selected target** for the UI, 
 per driver, and the rule on the ability.
 
 The rule cannot move until there is an `Ability` to hold it: putting `targets` on `Spell` and
-`DamageEffect` separately — they share no base — would duplicate the rule exactly as `prefers()` is
+`Attack` separately — they share no base — would duplicate the rule exactly as `prefers()` is
 duplicated today, one layer up. So this is part of plan item 8, not before it. Decomposing
 `Targeting` into a rule and a preference is safe to do first, and makes the move a smaller one.
 

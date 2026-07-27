@@ -146,7 +146,7 @@ export class DevConsole extends HTMLElement {
 				},
 			},
 			// Every tunable kind gets a command, from the same table `--tune` reads. Hand-listing
-			// these is how `effect` came to be tunable from a terminal and not from the game.
+			// these is how `aura` came to be tunable from a terminal and not from the game.
 			...Object.entries(balanceCategories).map(([kind, category]) =>
 				this.tuneCommand(kind as BalanceKind, category.keys),
 			),

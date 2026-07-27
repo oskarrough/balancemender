@@ -1,7 +1,7 @@
 import {Character} from './character'
 import {FACTION} from './types'
 import {TankTargeting, RandomTargeting, MostHurtAlly} from './targeting-task'
-import {SmallAttack, MediumAttack, WolfBite, HugeAttack} from './damage-effect'
+import {SmallAttack, MediumAttack, WolfBite, HugeAttack} from './attack'
 import {Spell} from './spell'
 import {Cadence} from './cadence'
 
@@ -28,7 +28,7 @@ export class TinyWolf extends Character {
  * The enemy's own heal, and the first spell in the game nothing on the party's side can cast.
  *
  * Costs nothing because enemies have no mana pool — `SpellCast` skips the mana check when the
- * caster has none, so the limiter is the caster's `interval`, exactly as a `DamageEffect`'s
+ * caster has none, so the limiter is the caster's `interval`, exactly as an `Attack`'s
  * interval limits a swing. Give it a `cost` the day an enemy gets a resource to spend.
  */
 export class Mend extends Spell {

@@ -114,20 +114,20 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			attacker.damageDone += value
 			attacker.hits++
 			target(event).damageTaken += value
-			spell(spells, event.spellId, event.spellName, value, 0)
+			spell(spells, event.abilityId, event.abilityName, value, 0)
 		} else if (HEAL.includes(event.eventType)) {
 			const healer = source(event)
 			healer.healingDone += value - overheal
 			healer.overhealing += overheal
 			target(event).healingTaken += value - overheal
-			spell(spells, event.spellId, event.spellName, value, overheal)
+			spell(spells, event.abilityId, event.abilityName, value, overheal)
 		} else if (event.eventType === 'SPELL_CAST_START') {
 			// Counted at the start, not the success: an interrupted cast still cost the caster the
 			// time it spent casting.
 			source(event).busyTime += event.busyFor ?? 0
 		} else if (event.eventType === 'SPELL_CAST_SUCCESS') {
 			source(event).casts++
-			const stats = spell(spells, event.spellId, event.spellName, 0, 0)
+			const stats = spell(spells, event.abilityId, event.abilityName, 0, 0)
 			stats.casts++
 		} else if (event.eventType === 'RESOURCE_SPENT') {
 			source(event).manaSpent += Math.abs(value)
@@ -267,9 +267,9 @@ function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
 }
 
 /**
- * Keyed by `spellId`, displayed by `spellName` — the same id/name split the actors use, and for
- * the same reason: the id is what stays put. `Renew`'s cast and the ticks its aura lands share an
- * id deliberately, so they total into one row.
+ * Keyed by `abilityId`, displayed by `abilityName` — the same id/name split the actors use, and
+ * for the same reason: the id is what stays put. `Renew`'s cast and the ticks its aura lands share
+ * an id deliberately, so they total into one row.
  */
 function spell(spells: Map<string, SpellStats>, id = 'unknown', name = id, value: number, overheal: number) {
 	let stats = spells.get(id)

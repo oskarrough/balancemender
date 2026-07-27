@@ -36,7 +36,7 @@ describe('the registries survive their import order', () => {
 	it('reaches the tunables a half-built class would have lost', () => {
 		expect(balance.spells.Renew).toMatchObject({heal: 120, cost: 60})
 		expect(balance.attacks.WolfBite).toMatchObject({minDamage: 4, maxDamage: 7})
-		expect(balance.effects.Rend).toMatchObject({total: -8, interval: 1000, repeat: 4, delay: 1000})
+		expect(balance.auras.Rend).toMatchObject({total: -8, interval: 1000, repeat: 4, delay: 1000})
 		expect(balance.units.TinyWolf).toMatchObject({maxHealth: 240})
 	})
 })

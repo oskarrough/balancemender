@@ -1,6 +1,6 @@
 import {log} from './utils'
 import {AudioPlayer} from './nodes/audio'
-import {setBalanceValue, resetBalance, SpellKey, AttackKey, EffectKey, UnitKey, RuleKey} from './balance'
+import {setBalanceValue, resetBalance, SpellKey, AttackKey, AuraKey, UnitKey, RuleKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Character} from './nodes/character'
 import type {Roster} from './nodes/encounter'
@@ -29,7 +29,7 @@ export type GameAction =
 	| {type: 'interrupt'}
 	| {type: 'tune'; of: 'spell'; name: string; key: SpellKey; value: number}
 	| {type: 'tune'; of: 'attack'; name: string; key: AttackKey; value: number}
-	| {type: 'tune'; of: 'effect'; name: string; key: EffectKey; value: number}
+	| {type: 'tune'; of: 'aura'; name: string; key: AuraKey; value: number}
 	| {type: 'tune'; of: 'unit'; name: string; key: UnitKey; value: number}
 	/** A number the whole game reads rather than one spell — the condition thresholds, so far. */
 	| {type: 'tune'; of: 'rule'; name: string; key: RuleKey; value: number}

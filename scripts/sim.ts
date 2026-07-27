@@ -34,7 +34,7 @@ bun run sim [options]
   --repeat   <n>       run n fights and summarise them
   --duration <s>       give up after n seconds of fight time (default 120)
   --tune     <spec>    change a balance number first, e.g. 'spell:Heal.cost=40'
-                       kind:Name.key=value — spell, attack, effect or unit. Repeatable.
+                       kind:Name.key=value — spell, attack, aura or unit. Repeatable.
   --json               print the report as JSON instead
 
   Redirect --json to a file rather than piping it. A fight's events run to hundreds of

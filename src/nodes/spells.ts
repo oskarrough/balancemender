@@ -1,5 +1,5 @@
 import {Spell} from './spell'
-import {PeriodicEffect} from './periodic'
+import {PeriodicAura} from './periodic-aura'
 import {AudioPlayer} from './audio'
 
 /**
@@ -37,8 +37,8 @@ export class GreaterHeal extends Spell {
 
 /**
  * The one you plant before you need it. Renew heals indirectly, by leaving a periodic
- * effect on the target, so `heal` is the total it lands over five ticks rather than a
- * lump — the effect divides it. Keeping the number here and handing it to the effect is
+ * aura on the target, so `heal` is the total it lands over five ticks rather than a
+ * lump — the aura divides it. Keeping the number here and handing it to the aura is
  * what lets the balance lab tune Renew alongside the other three.
  *
  * Note this overrides `cast()` outright: the base class heals when `heal` is set, and
@@ -55,7 +55,7 @@ export class Renew extends Spell {
 		const player = this.parent
 		const target = player.getTarget()
 		if (target) {
-			new RenewEffect(target, player, this.heal)
+			new RenewAura(target, player, this.heal)
 			AudioPlayer.play('spell_rejuvenation')
 		}
 	}
@@ -66,7 +66,7 @@ export class Renew extends Spell {
  * spell rather than two things that happen to be spelled the same. This is the one place the
  * "id is the class name" convention is meant to be broken.
  */
-class RenewEffect extends PeriodicEffect {
+class RenewAura extends PeriodicAura {
 	static id = 'Renew'
 	static name = 'Renew'
 	static interval = 2000

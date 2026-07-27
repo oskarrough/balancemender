@@ -11,8 +11,8 @@ export interface CombatLogEvent {
 	sourceName?: string
 	targetId?: string
 	targetName?: string
-	spellId?: string
-	spellName?: string
+	abilityId?: string
+	abilityName?: string
 	value?: number
 	/** Portion of `value` that healed a full health bar and did nothing. */
 	overheal?: number
@@ -109,7 +109,7 @@ function formatCombatEvent(event: CombatLogEvent): string {
 	const parts = [formatter.format(new Date(event.timestamp)), event.eventType]
 	if (event.sourceName) parts.push(event.sourceName)
 	if (event.targetName) parts.push(event.targetName)
-	if (event.spellName) parts.push(event.spellName)
+	if (event.abilityName) parts.push(event.abilityName)
 	if (event.value !== undefined) parts.push(event.value.toString())
 	if (event.extraInfo) parts.push(event.extraInfo)
 	if (event.isAOE) parts.push('AOE')

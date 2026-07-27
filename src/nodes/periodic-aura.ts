@@ -2,7 +2,7 @@ import {Task} from 'vroum'
 import {applyStatics, log} from '../utils'
 import {logCombat} from '../combatlog'
 import {applyHit} from './hit'
-// Type-only both ways: character.ts names this class for its `effects` set.
+// Type-only both ways: character.ts names this class for its `auras` set.
 import type {Character} from './character'
 
 /**
@@ -11,15 +11,15 @@ import type {Character} from './character'
  * There is deliberately no separate HOT and DoT class: once the health change itself moved
  * into `applyHit`, the only thing left that differed between them was the sign of `total`.
  *
- * The stack rule (`maxStacks`, `stackKey`, `mount`, `supersede`) is about an effect's presence
- * on a unit, not about ticking, so it moves up wholesale the day a non-periodic effect — a
- * shield, a buff — needs an `Effect` base class. Keep it separable.
+ * The stack rule (`maxStacks`, `stackKey`, `mount`, `supersede`) is about an aura's presence
+ * on a unit, not about ticking, so it moves up wholesale the day a non-periodic aura — a
+ * shield, a buff — needs an `Aura` base class. Keep it separable.
  */
-export class PeriodicEffect extends Task {
+export class PeriodicAura extends Task {
 	id = 'Periodic'
 	name = 'Periodic'
 	/**
-	 * What the effect lands over its whole life, not per tick — each tick applies
+	 * What the aura lands over its whole life, not per tick — each tick applies
 	 * `total / repeat`. Negative hurts. Named for the whole because reading it as a
 	 * per-tick number is exactly how Renew came to heal a fifth of what it claimed.
 	 */
@@ -28,17 +28,17 @@ export class PeriodicEffect extends Task {
 	repeat = 5
 	/**
 	 * How long before the first tick. Zero means the next frame — `interval` is the gap *between*
-	 * ticks, so by default an effect lands one instalment the moment it is applied and its last
+	 * ticks, so by default an aura lands one instalment the moment it is applied and its last
 	 * one an interval before its life is up.
 	 *
-	 * Set it to `interval` for the Classic behaviour, where a freshly applied effect waits a full
-	 * tick before doing anything. That matters most for an effect refreshed faster than it
+	 * Set it to `interval` for the Classic behaviour, where a freshly applied aura waits a full
+	 * tick before doing anything. That matters most for an aura refreshed faster than it
 	 * expires: with no delay, every reapplication buys an immediate instalment, so a rapidly
-	 * refreshed effect is partly a direct hit wearing a periodic's name.
+	 * refreshed aura is partly a direct hit wearing a periodic's name.
 	 */
 	delay = 0
 	/**
-	 * How many copies of this effect one target can carry at once. `1` is a refresh: recasting
+	 * How many copies of this aura one target can carry at once. `1` is a refresh: recasting
 	 * replaces what is there and the duration starts over, which is Classic Renew and Classic
 	 * Shadow Word: Pain. Higher stacks — each cast adds a copy, and past the cap the one closest
 	 * to expiring falls off.
@@ -63,14 +63,14 @@ export class PeriodicEffect extends Task {
 	 * unconditionally, and the second run finds `root` reset to the node itself and throws from
 	 * `Task.destroy`'s `this.root._kill(this)`.
 	 *
-	 * Effects are the one node type several unrelated callers can reach: `supersede()` when a
+	 * Auras are the one node type several unrelated callers can reach: `supersede()` when a
 	 * fresh copy lands, `Encounter.onDeath()` when the unit carrying it falls. Neither can know
 	 * about the other, so the guard belongs here rather than at every call site.
 	 */
 	private detached = false
 
 	/**
-	 * Stable key — `balance.effects`, `--tune`, the log's `spellId`, the stack key. See
+	 * Stable key — `balance.auras`, `--tune`, the log's `abilityId`, the stack key. See
 	 * `Spell.id`. An aura a spell owns takes that spell's id (`Renew`) so the cast and the ticks
 	 * report as one thing; a free-standing one keeps its own (`Rend`).
 	 */
@@ -101,38 +101,38 @@ export class PeriodicEffect extends Task {
 	}
 
 	/**
-	 * What counts as the same effect for stacking. Id and caster, so two healers can each keep
+	 * What counts as the same aura for stacking. Id and caster, so two healers can each keep
 	 * a Renew on the tank — moot with one player, but it is the rule that survives a second one.
 	 * Override to widen it: a debuff that should be unique on the target however many enemies
 	 * apply it drops the caster from the key.
 	 *
 	 * The id rather than the display name, so renaming what a player reads cannot silently split
-	 * one effect into two that no longer stack against each other.
+	 * one aura into two that no longer stack against each other.
 	 */
 	get stackKey() {
 		return `${this.id}:${this.casterId}`
 	}
 
 	mount() {
-		const existing = [...this.parent.effects].filter((effect) => effect.stackKey === this.stackKey)
+		const existing = [...this.parent.auras].filter((aura) => aura.stackKey === this.stackKey)
 		// Insertion order is chronological, so the front of the list is closest to expiring.
 		// Collect before removing: `supersede` deletes from the set this walked.
 		for (const stale of existing.slice(0, Math.max(0, existing.length + 1 - this.maxStacks))) stale.supersede()
 
-		this.parent.effects.add(this)
-		const stacks = [...this.parent.effects].filter((effect) => effect.stackKey === this.stackKey).length
+		this.parent.auras.add(this)
+		const stacks = [...this.parent.auras].filter((aura) => aura.stackKey === this.stackKey).length
 		this.logAura(existing.length ? 'SPELL_AURA_REFRESH' : 'SPELL_AURA_APPLIED', stacks)
-		log('effect:mount', this.name)
+		log('aura:mount', this.name)
 	}
 
 	/**
-	 * Pushed off by a fresh copy of itself. Leaves `effects` and stops ticking now rather than on
+	 * Pushed off by a fresh copy of itself. Leaves `auras` and stops ticking now rather than on
 	 * the microtask `disconnect()` defers to, so what the unit frame draws and what `applyHit`
-	 * sees never includes an effect that has already been replaced.
+	 * sees never includes an aura that has already been replaced.
 	 */
 	supersede() {
 		this.superseded = true
-		this.parent.effects.delete(this)
+		this.parent.auras.delete(this)
 		this.pause()
 		this.disconnect()
 	}
@@ -149,8 +149,8 @@ export class PeriodicEffect extends Task {
 			source: this.caster,
 			target: this.parent,
 			amount: this.total / this.repeat,
-			spellId: this.id,
-			spellName: this.name,
+			abilityId: this.id,
+			abilityName: this.name,
 			eventType: this.total >= 0 ? 'SPELL_PERIODIC_HEAL' : 'SPELL_PERIODIC_DAMAGE',
 		})
 	}
@@ -160,14 +160,14 @@ export class PeriodicEffect extends Task {
 	}
 
 	destroy() {
-		this.parent.effects.delete(this)
-		// A superseded effect already logged its replacement as a refresh. Saying it was removed
-		// too would read as the target losing an effect it is still carrying.
+		this.parent.auras.delete(this)
+		// A superseded aura already logged its replacement as a refresh. Saying it was removed
+		// too would read as the target losing an aura it is still carrying.
 		if (!this.superseded) {
-			const stacks = [...this.parent.effects].filter((effect) => effect.stackKey === this.stackKey).length
+			const stacks = [...this.parent.auras].filter((aura) => aura.stackKey === this.stackKey).length
 			this.logAura('SPELL_AURA_REMOVED', stacks)
 		}
-		log('effect:destroy', this.name)
+		log('aura:destroy', this.name)
 	}
 
 	private logAura(eventType: 'SPELL_AURA_APPLIED' | 'SPELL_AURA_REFRESH' | 'SPELL_AURA_REMOVED', stacks: number) {
@@ -178,8 +178,8 @@ export class PeriodicEffect extends Task {
 			sourceName: this.casterName,
 			targetId: this.parent.id,
 			targetName: this.parent.name || 'Unknown',
-			spellId: this.id,
-			spellName: this.name,
+			abilityId: this.id,
+			abilityName: this.name,
 			// Only when there is more than one, so the common case does not read as "(1 stack)".
 			...(stacks > 1 && {extraInfo: `${stacks} stacks`}),
 		})

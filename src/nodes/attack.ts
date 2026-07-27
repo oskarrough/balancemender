@@ -4,14 +4,14 @@ import {AudioPlayer} from './audio'
 import {Character} from './character'
 import type {CombatEventType} from '../combatlog'
 import {applyHit} from './hit'
-import {PeriodicEffect} from './periodic'
+import {PeriodicAura} from './periodic-aura'
 
 /**
- * Base class for all damage effects (attacks from any character to any character).
+ * Base class for every attack (a swing from one character at another).
  * Subclasses declare static balance fields; construction snapshots them onto the
  * instance so balance edits only affect newly spawned attacks.
  */
-export class DamageEffect extends Task {
+export class Attack extends Task {
 	duration = 0
 	repeat = Infinity
 
@@ -27,7 +27,7 @@ export class DamageEffect extends Task {
 	static delay = 0
 	static interval = 1000
 	static sound = ''
-	/** Stable key — `attackRegistry`, `--tune`, the log's `spellId`. See `Spell.id`. */
+	/** Stable key — `attackRegistry`, `--tune`, the log's `abilityId`. See `Spell.id`. */
 	static id = 'GenericAttack'
 	/** Display only. */
 	static name = 'Generic Attack'
@@ -63,8 +63,8 @@ export class DamageEffect extends Task {
 			source: this.attacker,
 			target,
 			amount: -this.damage(),
-			spellId: this.id,
-			spellName: this.name,
+			abilityId: this.id,
+			abilityName: this.name,
 			eventType: this.eventType,
 		})
 
@@ -108,7 +108,7 @@ export class DamageEffect extends Task {
  * Small, frequent attack with low damage. Only wolves use it, so it is tuned as part of the pack
  * budget below rather than on its own.
  */
-export class SmallAttack extends DamageEffect {
+export class SmallAttack extends Attack {
 	static interval = 1600
 	static minDamage = 5
 	static maxDamage = 7
@@ -119,7 +119,7 @@ export class SmallAttack extends DamageEffect {
 }
 
 /** Medium attack with moderate damage and frequency */
-export class MediumAttack extends DamageEffect {
+export class MediumAttack extends Attack {
 	static delay = 4000
 	static interval = 3800
 	static minDamage = 15
@@ -140,7 +140,7 @@ export class MediumAttack extends DamageEffect {
  * damage and lengthens the fight — which is deliberate, since a flat curve cannot give you a wall
  * at five. All that moved is where the cliff falls; see docs/simulation.md.
  */
-export class WolfBite extends DamageEffect {
+export class WolfBite extends Attack {
 	static delay = 4000
 	static interval = 3800
 	static minDamage = 4
@@ -160,7 +160,7 @@ export class WolfBite extends DamageEffect {
 		if (!target) return
 		super.tick()
 		// Check `alive` again after the hit, not before: this bite may have been the killing blow,
-		// and `onDeath` has just cancelled the effects a fresh wound would be joining. Planting one
+		// and `onDeath` has just cancelled the auras a fresh wound would be joining. Planting one
 		// anyway leaves a Task on a corpse that outlives the tree it was mounted into.
 		if (target.alive) new WolfBleed(target, this.attacker)
 	}
@@ -177,7 +177,7 @@ export class WolfBite extends DamageEffect {
  * one tick per `interval` — `total` and `repeat` do not set the damage, they set the *tail*: what
  * goes on draining after the wolf that opened the wound is dead.
  *
- * That tail is why `repeat` is 4 and not 40. Killing a wolf is how the party wins, and effects
+ * That tail is why `repeat` is 4 and not 40. Killing a wolf is how the party wins, and auras
  * outlive the unit that applied them (`Encounter.onDeath` cancels what is *on* a corpse, not what
  * it put on others). A long wound therefore charges for a wolf the tank has already dealt with,
  * which does not show up in damage-per-wolf at all — it is invisible until win rates drop. Four
@@ -186,7 +186,7 @@ export class WolfBite extends DamageEffect {
  * Not keyed to the pack: `stackKey` is id-and-caster, so three wolves mean three wounds, and
  * bleed damage scales with pack size exactly as the bites it was taken from do.
  */
-export class WolfBleed extends PeriodicEffect {
+export class WolfBleed extends PeriodicAura {
 	static id = 'Rend'
 	static name = 'Rend'
 	static total = -8
@@ -204,7 +204,7 @@ export class WolfBleed extends PeriodicEffect {
  * The boss spike: rare, telegraphed by its 12s cadence, and worth about half a tank's
  * health bar — big enough that ignoring it kills, small enough that a heal answers it.
  */
-export class HugeAttack extends DamageEffect {
+export class HugeAttack extends Attack {
 	static delay = 8000
 	static interval = 12000
 	static minDamage = 120
@@ -216,7 +216,7 @@ export class HugeAttack extends DamageEffect {
 }
 
 /** Tank attack - lower damage but consistent */
-export class TankAttack extends DamageEffect {
+export class TankAttack extends Attack {
 	static interval = 2400
 	static minDamage = 16
 	static maxDamage = 24

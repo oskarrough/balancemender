@@ -16,11 +16,11 @@ export class Spell extends Task {
 
 	/**
 	 * What everything files this spell under: the registry, a spellbook, `balance.spells`, a
-	 * `--tune` spec, the combat log's `spellId`, the cooldown stamps. Stable, so renaming the
+	 * `--tune` spec, the combat log's `abilityId`, the cooldown stamps. Stable, so renaming the
 	 * spell a player sees is a one-line change here rather than a find-and-replace.
 	 *
 	 * Conventionally the class name — `attackRegistry` has always keyed attacks that way — but it
-	 * is only a convention: `Renew`'s periodic effect deliberately shares the spell's id, so the
+	 * is only a convention: `Renew`'s periodic aura deliberately shares the spell's id, so the
 	 * cast and its ticks report as one thing.
 	 */
 	static id = ''
@@ -84,8 +84,8 @@ export class Spell extends Task {
 			source: this.parent,
 			target,
 			amount: naturalizeNumber(this.heal),
-			spellId: this.id,
-			spellName: this.name,
+			abilityId: this.id,
+			abilityName: this.name,
 			eventType: 'SPELL_HEAL',
 		})
 	}

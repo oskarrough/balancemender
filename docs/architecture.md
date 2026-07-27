@@ -14,9 +14,9 @@ index.html
               │     └── Character…        Player, Tank, TinyWolf, WolfShaman, Nakroth
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   (Task) picks currentTarget
-              │           ├── DamageEffect(Task) swings on an interval
+              │           ├── Attack      (Task) swings on an interval
               │           ├── Cadence     (Task) casts on an interval
-              │           └── effects     HOT / DoT (Tasks)
+              │           └── auras       HOT / DoT (Tasks)
               ├── AudioPlayer
               └── tick() → renders components/ui.ts into `game.element`
 ```
@@ -51,7 +51,7 @@ caster with no `mana` skips the mana check — which is how enemies cast for fre
 interval instead.
 
 What is _not_ shared is who decides. The player has a keyboard and an `Autopilot` weighing the
-fight; an enemy has a `Cadence` casting on an interval, the way a `DamageEffect` swings on one. A
+fight; an enemy has a `Cadence` casting on an interval, the way an `Attack` swings on one. A
 unit wanting real decisions overrides `Cadence.chooses()` rather than growing a policy system.
 
 A unit has **one** `currentTarget`, and both attacking and casting read it. `WolfShaman` therefore
@@ -121,8 +121,8 @@ the numbers would move every win rate already recorded and make the sweep circul
 
 ## Numbers and tuning
 
-`src/balance.ts` snapshots the tunable statics of every spell, attack, periodic effect and unit,
-and writes changes back to the classes. An effect only needs its own entry when nothing casts it —
+`src/balance.ts` snapshots the tunable statics of every spell, attack, periodic aura and unit,
+and writes changes back to the classes. An aura only needs its own entry when nothing casts it —
 one a spell owns keeps its magnitude on the spell (see `Renew`), where it is already tunable.
 Everything reaches it through `perform({type: 'tune', …})`; `src/inspectables.ts` is what the
 Balance Lab panel lists. `balance.units` is keyed by the same unit ids you spawn with, and
@@ -135,8 +135,8 @@ the next swing — not retroactively. A `rule` is the exception, above.
 
 Every spell, attack and aura carries two strings, and mixing them up is how the last round of drift
 started. `static id` is the identity: the registry key, the spellbook key, the balance key, the
-`--tune` spelling, the cooldown stamp, the stack key and the log's `spellId`. `static name` is the
-label a player reads, and it is used for nothing else — the log's `spellName`, the icon filename,
+`--tune` spelling, the cooldown stamp, the stack key and the log's `abilityId`. `static name` is the
+label a player reads, and it is used for nothing else — the log's `abilityName`, the icon filename,
 a Balance Lab title, a report row.
 
 The point is that renaming what a player reads is a one-line change. Spells used to be keyed by
@@ -144,7 +144,7 @@ their display name, so it was a find-and-replace across eight systems, and a wol
 already had a latent bug waiting for the first spell whose class name and display name differed.
 
 By convention the id is the class name, as `attackRegistry` and `unitRegistry` have always done.
-Two deliberate exceptions: `RenewEffect` takes `Renew`'s id so the cast and the ticks it plants
+Two deliberate exceptions: `RenewAura` takes `Renew`'s id so the cast and the ticks it plants
 report as one spell, and `WolfBleed` keeps `Rend`. Both are commented where they are declared.
 
 ## The combat log is the interface for analysis
@@ -161,8 +161,8 @@ Log both an id and a name for whoever an event touches. The analyzer keys on the
 only a label, and it changes mid-fight — spawning a second wolf renames the first one to
 "Tiny wolf 1", so anything keyed by name splits that unit in two.
 
-The same holds for `spellId`/`spellName`, and for a while it did not: both were set to the display
-name, so the pair looked like it followed this rule while carrying one string twice. See
+The same holds for `abilityId`/`abilityName`, and for a while it did not: both were set to the
+display name, so the pair looked like it followed this rule while carrying one string twice. See
 [Ids and names](#ids-and-names).
 
 Log enough that the analyzer needs no game constants. `SPELL_CAST_START` carries a `busyFor` —
@@ -172,14 +172,14 @@ long one lasts. Anything the analysis would otherwise have to assume belongs in 
 
 Getting logged is not left to the caller: **every change to a health bar goes through
 `applyHit()`** in [`hit.ts`](../src/nodes/hit.ts), which applies it, floats the number, records
-the event and announces the death. Spells, attacks and periodic effects call it and do nothing
-else about it. That is also why `PeriodicEffect` is one class for both heals and damage over time:
+the event and announces the death. Spells, attacks and periodic auras call it and do nothing
+else about it. That is also why `PeriodicAura` is one class for both heals and damage over time:
 once the health change moved into `applyHit`, nothing else about them differed. A spell can pass
 its own `total`, which is how `Renew` keeps its number where the Balance Lab can tune it, and
 `maxStacks` defaults to 1, so recasting replaces what is there — raise it only for a spell that is
 _meant_ to stack, because unbounded is not a design.
 
-`interval` is the gap **between** ticks, not before the first one, so by default an effect lands
+`interval` is the gap **between** ticks, not before the first one, so by default an aura lands
 an instalment the frame it is applied. That is free damage for anything reapplied faster than it
 expires — a wolf's bleed refreshed every bite would arrive half as a lump. Set `delay` to
 `interval` for the Classic behaviour of waiting a full tick. Renew still front-loads; changing it

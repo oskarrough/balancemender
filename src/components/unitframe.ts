@@ -1,10 +1,10 @@
 import {Character} from '../nodes/character'
 import {Player} from '../nodes/player'
 import type {GameLoop} from '../nodes/game-loop'
-import type {PeriodicEffect} from '../nodes/periodic'
+import type {PeriodicAura} from '../nodes/periodic-aura'
 import {Spell} from '../nodes/spell'
 import {Meter} from './bar'
-import {EffectIcon} from './effect-icon'
+import {AuraIcon} from './aura-icon'
 import {html} from 'uhtml'
 
 export function UnitFrame(character: Character, spell: Spell | undefined, player: Player) {
@@ -14,7 +14,7 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 	const maxHealth = character.health.max
 	const isCurrentTarget = player.getTarget() === character
 	const displayName = character.name || character.constructor.name
-	const effects: PeriodicEffect[] = character.effects ? Array.from(character.effects) : []
+	const auras: PeriodicAura[] = character.auras ? Array.from(character.auras) : []
 
 	/**
 	 * What this unit is casting, if anything. Not the `spell` argument above — that is the
@@ -68,9 +68,9 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 						${Meter({type: 'cast', value: castElapsed, max: casting.delay})}
 					</div>`
 				: null}
-			${effects.length > 0
-				? html`<ul class="Effects">
-						${effects.map(EffectIcon)}
+			${auras.length > 0
+				? html`<ul class="Auras">
+						${auras.map(AuraIcon)}
 					</ul>`
 				: null}
 

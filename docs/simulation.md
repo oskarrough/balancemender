@@ -218,11 +218,11 @@ never means editing a class and remembering to put it back. It works on both com
 and the value it changed is printed under the report:
 
 ```
-bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'effect:Rend.total=-16'
+bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
 bun run sim --repeat 20 --tune 'spell:FlashHeal.cost=100' --tune 'unit:TinyWolf.maxHealth=200'
 ```
 
-`kind` is `spell`, `attack`, `effect` or `unit` — the four categories in
+`kind` is `spell`, `attack`, `aura` or `unit` — the four categories in
 [`src/balance.ts`](../src/balance.ts), which is the same path the Balance Lab writes through, so
 what you measure is what the game would do. A name or key it cannot reach is an error, not a
 shrug: a tune that quietly misses returns a table identical to the baseline, and that reads as

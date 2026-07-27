@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
-import {PeriodicEffect} from './periodic'
-import {WolfBite} from './damage-effect'
+import {PeriodicAura} from './periodic-aura'
+import {WolfBite} from './attack'
 import {Renew} from './spells'
 import {combatLogs, clearLogs} from '../combatlog'
 
@@ -12,11 +12,11 @@ import {combatLogs, clearLogs} from '../combatlog'
  * heal-per-mana in the ladder by however fast you can press it.
  */
 
-const effectsNamed = (unit: {effects: Set<PeriodicEffect>}, name: string) =>
-	[...unit.effects].filter((effect) => effect.name === name)
+const aurasNamed = (unit: {auras: Set<PeriodicAura>}, name: string) =>
+	[...unit.auras].filter((aura) => aura.name === name)
 
-const auras = (spell: string) =>
-	combatLogs.filter((event) => event.eventType.startsWith('SPELL_AURA') && event.spellName === spell)
+const auraEvents = (spell: string) =>
+	combatLogs.filter((event) => event.eventType.startsWith('SPELL_AURA') && event.abilityName === spell)
 
 describe('stack rule', () => {
 	beforeEach(() => clearLogs())
@@ -27,12 +27,12 @@ describe('stack rule', () => {
 
 		new Renew(game.player).cast()
 		await Promise.resolve()
-		const first = effectsNamed(game.tank, 'Renew')[0]
+		const first = aurasNamed(game.tank, 'Renew')[0]
 		first.tick()
 
 		new Renew(game.player).cast()
 		await Promise.resolve()
-		const after = effectsNamed(game.tank, 'Renew')
+		const after = aurasNamed(game.tank, 'Renew')
 
 		expect(after).toHaveLength(1)
 		expect(after[0]).not.toBe(first)
@@ -43,7 +43,7 @@ describe('stack rule', () => {
 	it('keeps up to maxStacks copies and drops the one closest to expiring', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 
-		class Lifebloom extends PeriodicEffect {
+		class Lifebloom extends PeriodicAura {
 			static name = 'Lifebloom'
 			static total = 30
 			static maxStacks = 3
@@ -55,7 +55,7 @@ describe('stack rule', () => {
 			await Promise.resolve()
 		}
 
-		const stacks = effectsNamed(game.tank, 'Lifebloom')
+		const stacks = aurasNamed(game.tank, 'Lifebloom')
 		expect(stacks).toHaveLength(3)
 		expect(stacks).toEqual(planted.slice(1))
 		expect(planted[0].superseded).toBe(true)
@@ -65,15 +65,15 @@ describe('stack rule', () => {
 	it('counts casters separately, so two healers can each keep one up', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 
-		new PeriodicEffect(game.tank, game.player, 50)
-		new PeriodicEffect(game.tank, game.tank, 50)
+		new PeriodicAura(game.tank, game.player, 50)
+		new PeriodicAura(game.tank, game.tank, 50)
 		await Promise.resolve()
 
-		expect(effectsNamed(game.tank, 'Periodic')).toHaveLength(2)
+		expect(aurasNamed(game.tank, 'Periodic')).toHaveLength(2)
 		game.disconnect()
 	})
 
-	it('logs a refresh instead of a removal, so the log never says an effect it still has fell off', async () => {
+	it('logs a refresh instead of a removal, so the log never says an aura it still has fell off', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.player.currentTarget = game.tank
 
@@ -82,15 +82,15 @@ describe('stack rule', () => {
 		new Renew(game.player).cast()
 		await Promise.resolve()
 
-		expect(auras('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
-		expect(auras('Renew')[0]).toMatchObject({sourceId: game.player.id, targetId: game.tank.id})
+		expect(auraEvents('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
+		expect(auraEvents('Renew')[0]).toMatchObject({sourceId: game.player.id, targetId: game.tank.id})
 		game.disconnect()
 	})
 
 	it('says how many are up once there is more than one', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 
-		class Sunder extends PeriodicEffect {
+		class Sunder extends PeriodicAura {
 			static name = 'Sunder'
 			static total = -10
 			static maxStacks = 5
@@ -100,23 +100,23 @@ describe('stack rule', () => {
 		new Sunder(game.tank, game.player)
 		await Promise.resolve()
 
-		expect(auras('Sunder').map((event) => event.extraInfo)).toEqual([undefined, '2 stacks'])
+		expect(auraEvents('Sunder').map((event) => event.extraInfo)).toEqual([undefined, '2 stacks'])
 		game.disconnect()
 	})
 
 	/**
 	 * vroum's `disconnect()` queues `_runDestroy` unconditionally, so a second call runs teardown
 	 * on a node whose `root` has already been reset to itself and throws out of `Task.destroy`.
-	 * Effects are the node type several unrelated callers can reach — see `detached`.
+	 * Auras are the node type several unrelated callers can reach — see `detached`.
 	 */
 	it('survives being disconnected twice', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
-		const effect = new PeriodicEffect(game.tank, game.player, -10)
+		const aura = new PeriodicAura(game.tank, game.player, -10)
 		await Promise.resolve()
 
 		expect(() => {
-			effect.disconnect()
-			effect.disconnect()
+			aura.disconnect()
+			aura.disconnect()
 		}).not.toThrow()
 		await Promise.resolve()
 		game.disconnect()
@@ -138,13 +138,13 @@ describe('the wolf bleed', () => {
 		bite.tick()
 		await Promise.resolve()
 
-		expect(effectsNamed(game.tank, 'Rend')).toHaveLength(1)
-		expect(auras('Rend').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
+		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(1)
+		expect(auraEvents('Rend').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
 		game.disconnect()
 	})
 
 	/**
-	 * A bite can be the killing blow, and `Encounter.onDeath` has already cancelled the effects a
+	 * A bite can be the killing blow, and `Encounter.onDeath` has already cancelled the auras a
 	 * fresh wound would be joining. Planting one anyway leaves a Task mounted on a corpse.
 	 */
 	it('does not wound a target the same bite just killed', async () => {
@@ -159,7 +159,7 @@ describe('the wolf bleed', () => {
 		await Promise.resolve()
 
 		expect(game.tank.alive).toBe(false)
-		expect(effectsNamed(game.tank, 'Rend')).toHaveLength(0)
+		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(0)
 		game.disconnect()
 	})
 })

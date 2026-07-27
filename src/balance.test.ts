@@ -10,7 +10,7 @@ import {parseTune, applyTunes, balance, balanceCategories, resetBalance, type Ba
 
 describe('parsing a tune', () => {
 	it('reads kind, name, key and value', () => {
-		expect(parseTune('effect:Rend.total=-8')).toEqual({kind: 'effect', name: 'Rend', key: 'total', value: -8})
+		expect(parseTune('aura:Rend.total=-8')).toEqual({kind: 'aura', name: 'Rend', key: 'total', value: -8})
 	})
 
 	// Names used to be display names, so this guarded "Flash Heal" surviving the split. They are
@@ -22,7 +22,7 @@ describe('parsing a tune', () => {
 	it('refuses what it cannot reach', () => {
 		expect(() => parseTune('Rend.total=-8')).toThrow(/kind:Name.key=value/)
 		expect(() => parseTune('potion:Rend.total=-8')).toThrow(/Unknown tune kind/)
-		expect(() => parseTune('effect:Bleed.total=-8')).toThrow(/Known: Rend/)
+		expect(() => parseTune('aura:Bleed.total=-8')).toThrow(/Known: Rend/)
 		expect(() => parseTune('spell:Heal.damage=5')).toThrow(/Unknown spell key/)
 		expect(() => parseTune('spell:Heal.cost=lots')).toThrow(/needs a number/)
 	})
@@ -32,8 +32,8 @@ describe('applying a tune', () => {
 	afterEach(() => resetBalance())
 
 	it('writes through to the balance the game reads', () => {
-		applyTunes(['effect:Rend.total=-40', 'spell:Heal.cost=10'])
-		expect(balance.effects.Rend.total).toBe(-40)
+		applyTunes(['aura:Rend.total=-40', 'spell:Heal.cost=10'])
+		expect(balance.auras.Rend.total).toBe(-40)
 		expect(balance.spells.Heal.cost).toBe(10)
 	})
 
@@ -53,7 +53,7 @@ describe('applying a tune', () => {
 })
 
 /**
- * The table is what stops the four kinds drifting apart — `effect` reached the tune action and the
+ * The table is what stops the four kinds drifting apart — `aura` reached the tune action and the
  * CLI but not the dev console back when each surface hand-listed them.
  */
 describe('the categories', () => {

@@ -25,7 +25,7 @@ describe('Combat Log System', () => {
 			timestamp: 1625097600000,
 			eventType: 'SPELL_CAST_SUCCESS',
 			sourceName: 'Player',
-			spellName: 'Fireball',
+			abilityName: 'Fireball',
 		}
 
 		// Log the event
@@ -43,7 +43,7 @@ describe('Combat Log System', () => {
 			eventType: 'SPELL_HEAL',
 			sourceName: 'Player',
 			targetName: 'Target',
-			spellName: 'Heal',
+			abilityName: 'Heal',
 			value: 100,
 		}
 
@@ -52,7 +52,7 @@ describe('Combat Log System', () => {
 			eventType: 'SPELL_DAMAGE',
 			sourceName: 'Player',
 			targetName: 'Target',
-			spellName: 'Fireball',
+			abilityName: 'Fireball',
 			value: 100,
 		}
 
@@ -76,7 +76,7 @@ describe('Combat Log System', () => {
 			timestamp: 1625097600000,
 			eventType: 'SPELL_CAST_SUCCESS',
 			sourceName: 'Player',
-			spellName: 'Fireball',
+			abilityName: 'Fireball',
 		})
 
 		// Verify log was added

@@ -4,7 +4,7 @@
  *   bun run sweep
  *   bun run sweep --seeds 25
  *   bun run sweep --enemies 'TinyWolf*3, Nakroth' --policies triage,renew
- *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'effect:Rend.total=-16'
+ *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
  *
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the
  * question above it: is the difficulty curve the shape we think it is? One seed cannot tell a
@@ -50,8 +50,8 @@ bun run sweep [options]
   --policies <list>    comma separated (default all: ${Object.keys(policies).join(', ')})
   --seeds    <n>       how many seeds per combination, starting at 1 (default 10)
   --duration <s>       give up after n seconds of fight time (default 120)
-  --tune     <spec>    change a balance number first, e.g. 'effect:Rend.total=-16'
-                       kind:Name.key=value — spell, attack, effect or unit. Repeatable.
+  --tune     <spec>    change a balance number first, e.g. 'aura:Rend.total=-16'
+                       kind:Name.key=value — spell, attack, aura or unit. Repeatable.
   --json               print rows as JSON instead of a table
 
   10 seeds shows a shape; comparing two candidates needs about 200. See the note the

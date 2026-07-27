@@ -9,8 +9,8 @@ export interface Hit {
 	/** Positive heals, negative damages. */
 	amount: number
 	/** The spell, attack or aura it came from: its stable `id` and its display `name`. */
-	spellId: string
-	spellName: string
+	abilityId: string
+	abilityName: string
 	eventType: CombatEventType
 }
 
@@ -22,7 +22,7 @@ export interface Hit {
  *
  * Returns what actually landed, which is less than `amount` when a heal tops off a full bar.
  */
-export function applyHit({source, target, amount, spellId, spellName, eventType}: Hit): number {
+export function applyHit({source, target, amount, abilityId, abilityName, eventType}: Hit): number {
 	const before = target.health.current
 	const conditionBefore = target.condition
 	if (amount >= 0) target.health.heal(amount)
@@ -36,8 +36,8 @@ export function applyHit({source, target, amount, spellId, spellName, eventType}
 		sourceName: source.name,
 		targetId: target.id,
 		targetName: target.name || 'Unknown',
-		spellId,
-		spellName,
+		abilityId,
+		abilityName,
 	}
 
 	logCombat({

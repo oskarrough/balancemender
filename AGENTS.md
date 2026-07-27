@@ -44,7 +44,7 @@ shape of the difficulty curve. For that, sweep:
 
 ```
 bun run sweep                                    # the shape of the curve
-bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'effect:Rend.total=-16'
+bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
 ```
 
 Read the `idle` column first — it is the control group. A retune that lifts a win rate by making
@@ -60,7 +60,7 @@ fight worth tuning. Between two retunes that win equally often, the one that lea
 made the healer better and the one that lowered it made the fight easier.
 
 `--tune 'kind:Name.key=value'` changes a balance number for the run, so a candidate never needs a
-source edit you have to remember to undo. The kinds are `spell`, `attack`, `effect`, `unit` and
+source edit you have to remember to undo. The kinds are `spell`, `attack`, `aura`, `unit` and
 `rule` — a rule is a number the whole game reads, like where the injured line sits
 (`rule:Condition.injured=30`), and unlike the rest it lands on the fight already running. Redirect `--json` to a file rather than piping it; a
 pipe truncates at 64KB and the parse error looks like a bug in the report.

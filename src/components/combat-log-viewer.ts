@@ -45,13 +45,13 @@ function formatLogEntry(event: CombatLogEvent): string {
 	if (event.eventType === 'UNIT_CONDITION' && event.condition) {
 		return `${event.targetName || 'Unknown entity'} ${CONDITION_PHRASE[event.condition]}`
 	}
-	// Written from the target's side: nobody casts a fade, the effect simply runs out.
+	// Written from the target's side: nobody casts a fade, the aura simply runs out.
 	if (event.eventType === 'SPELL_AURA_REMOVED') {
-		return `${event.spellName} fades from ${event.targetName || 'Unknown entity'}`
+		return `${event.abilityName} fades from ${event.targetName || 'Unknown entity'}`
 	}
 	const {verb = 'used', amountWord} = VERBS[event.eventType] ?? {}
 	const source = event.sourceName ?? ''
-	const spell = event.spellName ? ` ${verb} ${event.spellName}` : ''
+	const spell = event.abilityName ? ` ${verb} ${event.abilityName}` : ''
 	const target =
 		event.targetName && event.targetName !== event.sourceName
 			? ` on ${event.targetName}`
@@ -86,7 +86,7 @@ export class CombatLogViewer extends HTMLElement {
 				(log) =>
 					log.sourceName?.toLowerCase().includes(term) ||
 					log.targetName?.toLowerCase().includes(term) ||
-					log.spellName?.toLowerCase().includes(term) ||
+					log.abilityName?.toLowerCase().includes(term) ||
 					log.extraInfo?.toLowerCase().includes(term),
 			)
 		}

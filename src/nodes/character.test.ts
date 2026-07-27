@@ -108,8 +108,8 @@ describe('UNIT_CONDITION', () => {
 				source: wolf,
 				target: game.tank,
 				amount,
-				spellId: 'WolfBite',
-				spellName: 'Bite',
+				abilityId: 'WolfBite',
+				abilityName: 'Bite',
 				eventType: 'SWING_DAMAGE',
 			})
 
@@ -135,8 +135,8 @@ describe('UNIT_CONDITION', () => {
 			source: game.enemies[0],
 			target: game.tank,
 			amount: -game.tank.health.max,
-			spellId: 'WolfBite',
-			spellName: 'Bite',
+			abilityId: 'WolfBite',
+			abilityName: 'Bite',
 			eventType: 'SWING_DAMAGE',
 		})
 

@@ -2,7 +2,7 @@
 import {describe, it, expect} from 'vitest'
 import {GameLoop} from './game-loop'
 import {unitsOf} from '../sim/run'
-import {PeriodicEffect} from './periodic'
+import {PeriodicAura} from './periodic-aura'
 import type {TinyWolf} from './enemies'
 
 /**
@@ -124,14 +124,14 @@ describe('death', () => {
 		game.disconnect()
 	})
 
-	it('stops what the dying unit was doing — its cast, its target, the effects on it', async () => {
+	it('stops what the dying unit was doing — its cast, its target, the auras on it', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		await settle()
 		const tank = game.tank
 
-		new PeriodicEffect(tank, game.player)
+		new PeriodicAura(tank, game.player)
 		await settle()
-		expect(tank.effects.size).toBe(1)
+		expect(tank.auras.size).toBe(1)
 
 		expect(game.perform({type: 'cast', spell: 'Heal', target: tank.id}).ok).toBe(true)
 		expect(game.player.spell).toBeDefined()
@@ -143,7 +143,7 @@ describe('death', () => {
 
 		tank.health.set(0)
 		await settle()
-		expect(tank.effects.size).toBe(0)
+		expect(tank.auras.size).toBe(0)
 		game.disconnect()
 	})
 

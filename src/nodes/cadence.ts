@@ -14,7 +14,7 @@ import {Character} from './character'
  * fight, an enemy has a clock.
  *
  * That mirrors how attacking already works, except that an attack carries its own interval and a
- * cast cannot: `DamageEffect` is a swing and its schedule welded together, while this is the
+ * cast cannot: `Attack` is a swing and its schedule welded together, while this is the
  * schedule on its own. Unwelding the two is what would let one driver run both — see the glossary.
  * A unit wanting real decisions overrides `chooses()` rather than growing a policy system it does
  * not need.

@@ -2,7 +2,7 @@ import {Node} from 'vroum'
 import {Health, HEALTH_EVENTS} from './health'
 import {Mana} from './mana'
 import type {Encounter} from './encounter'
-import type {PeriodicEffect} from './periodic'
+import type {PeriodicAura} from './periodic-aura'
 import {createId, log} from '../utils'
 import {Faction, FACTION, Condition, CONDITION_THRESHOLDS} from './types'
 import type {UnitId} from './unit-registry'
@@ -10,7 +10,7 @@ import type {Spell} from './spell'
 import type {GlobalCooldown} from './global-cooldown'
 import {SpellCast} from './spell-cast'
 
-export type CharacterEffect = PeriodicEffect
+export type Aura = PeriodicAura
 export type {Faction} from './types'
 export {FACTION} from './types'
 export {CONDITION_THRESHOLDS} from './types'
@@ -35,7 +35,7 @@ export class Character extends Node {
 	baseName?: string
 	health: Health
 	mana?: Mana
-	effects = new Set<CharacterEffect>()
+	auras = new Set<Aura>()
 	faction: Faction = (this.constructor as typeof Character).faction
 	currentTarget?: Character
 
@@ -85,7 +85,7 @@ export class Character extends Node {
 
 	/**
 	 * What this unit can cast. Empty for most of them — a wolf's abilities are attacks, and an
-	 * attack is a `DamageEffect` with its own timing welded in rather than a spellbook entry
+	 * attack is an `Attack` with its own timing welded in rather than a spellbook entry
 	 * something has to choose. Nothing about biting being physical keeps it out of here; the weld
 	 * does.
 	 *

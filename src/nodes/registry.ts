@@ -1,5 +1,5 @@
 import {Heal, FlashHeal, GreaterHeal, Renew} from './spells'
-import {SmallAttack, MediumAttack, WolfBite, HugeAttack, TankAttack} from './damage-effect'
+import {SmallAttack, MediumAttack, WolfBite, HugeAttack, TankAttack} from './attack'
 
 // Units live in `./unit-registry` — see the note there about the import cycle through player.ts.
 
