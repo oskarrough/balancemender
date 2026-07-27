@@ -1,8 +1,8 @@
 # Coding preferences
 
 Use [the glossary](./glossary.md) for domain names and [the architecture guide](./architecture.md)
-for lifecycle and data flow. Where implementation names differ, do not deepen drift recorded in the
-glossary.
+for lifecycle and data flow. The glossary is the vocabulary we want; where the code still says
+something else, do not spread it further.
 
 - Prefer direct, domain-named code over wrappers and generic abstractions.
 - A method should add behavior; otherwise use direct property access.

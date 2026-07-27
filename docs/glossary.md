@@ -4,8 +4,8 @@ What the words mean here. Reach for this before naming a new class or field: a s
 something that already has one is how two halves of the codebase stop being able to read each
 other. Fold new terms in rather than inventing synonyms.
 
-Definitions only — the reasoning lives in [architecture.md](./architecture.md). What we would
-rename given a free afternoon is at the [bottom](#drift-worth-fixing).
+This is the vocabulary we want, so a few of these words name things the code has not grown yet.
+Definitions only — the reasoning lives in [architecture.md](./architecture.md).
 
 ## The fight
 
@@ -21,8 +21,7 @@ instance `id`; names change mid-fight when a duplicate is spawned.
 unique in a fight. `Nakroth the Destroyer` is the only one today; `Diablo` and `Mephisto` are the
 shape of the rest. A wolf is a unit and never a character — you can spawn three and they are
 interchangeable, which is why `renumber()` gives you "Tiny wolf 1" and "Tiny wolf 2". A character
-should never be renumbered, and nothing enforces that yet. Every character is a unit; almost no
-unit is a character.
+is never renumbered. Every character is a unit; almost no unit is a character.
 
 **Faction** — `'party'` or `'enemy'`. A static, so the registry can say which side a unit fights
 on without spawning one.
@@ -34,8 +33,7 @@ record. Who actually fought is the report's `units`.
 **Fight** — one run of an encounter, and the sim layer's word: `FightSpec` is the roster plus how
 to run it (a policy, a seed, a duration), and `FightResult` and `FightReport` are what came of one.
 Say "encounter" for the thing in the tree and "fight" for a run of it. Never "fight" for the object
-itself, however natural it reads — most of the codebase's prose still does, which is
-[drift](#drift-worth-fixing).
+itself, however natural it reads.
 
 **Spawn** — the one way a unit joins a fight. `Encounter.spawn(unitId)` routes it to a side by
 the class's own faction, so nothing picks the array itself.
@@ -57,18 +55,12 @@ general synonyms for "unit" — reach for them only when the relationship is the
 **Player** the one at the keyboard · **caster** whoever is casting · **attacker** whoever is
 swinging · **source** and **target** the two ends of a hit · **ally** a unit of your own faction.
 
-**Target** — who a use of an ability lands on. An argument, not a possession: `whyNotCast(caster,
-SpellClass, target)` already takes it as one, and the Autopilot already hands one over. Today it
-also exists as a stored slot, `currentTarget`, and a unit has exactly one — which is why nothing
-in the game both hits and heals, and why the player's `getTarget()` falls back to the tank. That
-slot is [drift](#drift-worth-fixing).
-
-Picking one is two separate questions, and they are two words:
+**Target** — who a use of an ability lands on. An argument, not a possession: it is passed to a
+use, never stored on the unit. Picking one is two separate questions, and they are two words:
 
 **Target rule** — which units an ability may land on at all: `enemy`, `ally`, `self`. A property
 of the ability, because it never changes with who is using it or when. `TargetRule` is the type and
-`eligible(unit, rule)` answers it. No ability carries one yet — the unit's `Targeting` holds it,
-which is as close as it gets until item 8 gives abilities somewhere to put it.
+`eligible(unit, rule)` answers it.
 
 **Preference** — which of the eligible units to pick. A property of the _driver_, not the unit and
 not the ability: the keyboard, an `Autopilot` weighing the fight, or a standing rule like "always
@@ -87,14 +79,14 @@ what they are aiming at; not what an ability reads.
 event.
 
 **Event** — a record of something that happened, in the combat log. Never refused, never a
-request. Keep the two words apart. The `SPELL_*` event names predate this vocabulary and stay as
-they are: renaming them would break every log already recorded, and WoW lives with the same wart.
+request. Keep the two words apart. The `SPELL_*` event names are the one exception to everything
+here: renaming them would break every log already recorded, so they stay, and WoW lives with the
+same wart.
 
 **Ability** — something a unit can use: what it requires and what it does, with no opinion about
 when. One live use is a one-shot Task; a driver decides when to create it. **Use** is the verb
-covering the whole category. There is no `Ability` class yet — a spell is a `Spell`, an attack is
-an `Attack`, and they share no base — but the umbrella already exists in the combat log, in
-`Hit.abilityId`, set by spells, swings and auras alike. See [drift](#drift-worth-fixing).
+covering the whole category, and the combat log already files everything under it — `Hit.abilityId`
+is set by spells, swings and auras alike.
 
 **Spell** — a magical ability. **Attack** — an ability that strikes or otherwise directly harms
 a target. They are tags, not subclasses, and may overlap: Flash Heal is a spell, Savage Bite is
@@ -103,11 +95,11 @@ its tags. Renew is instant and still a spell; Nasty arrow has a wind-up and is s
 
 **Tag** — a classification an ability may share with any number of others: `spell`, `attack`,
 `healing`, `melee`, `ranged`. Tags let rules and equipment ask what an ability counts as without
-choosing its execution path. No field carries them yet.
+choosing its execution path.
 
 **School** — the flavour of an ability's power or damage: `physical`, `holy`, `fire`, and so on.
 Orthogonal to tags: Fireball can be a spell and an attack of the fire school; Savage Bite is an
-attack of the physical school. No field carries it yet.
+attack of the physical school.
 
 **Effect** — one thing an ability does when it lands: heal, damage, or apply an aura. An ability
 may have several, so it is a list rather than a field. Not the thing left sitting on the unit
@@ -141,14 +133,10 @@ role word for whoever is casting, and every unit that casts is one.
 the unit's `auras` set until it expires. What an apply-aura effect leaves behind. **Buff** and
 **debuff** are the same thing by polarity, helpful or harmful — prose words, because nothing in
 the code branches on which. `SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the
-combat log. `Aura` is the word and the type, but only as an alias for `PeriodicAura` — a real base
-that other shapes (a shield, a stat change) could share is still open, see
-[drift](#drift-worth-fixing).
+combat log.
 
 **Periodic aura** — an aura that lands an instalment on a cadence. Heal-over-time and
-damage-over-time are one class, and a negative `total` is the whole of what makes it a DoT. It is
-the only shape an aura can take today; an always-on stat change or an absorb pool has nowhere to
-live yet (#34, #47).
+damage-over-time are one class, and a negative `total` is the whole of what makes it a DoT.
 
 **Total** — what an aura lands over its whole life, not per tick. **Stacks** — how many copies of
 one aura a unit carries; `maxStacks` caps it.
@@ -212,16 +200,15 @@ most retunes; comparing two candidates takes roughly 200.
 
 ## Words we don't use
 
-Each is a word to reach past, not a word that means nothing. Where a class still carries one, that
-is [drift](#drift-worth-fixing) with a plan against it, not a second opinion.
+Each is a word to reach past, not a word that means nothing.
 
-**Actor** — never for a unit. What a fight did to each one is `UnitStats`, in `report.units`. The
-one remaining use is unrelated and stays: `hit.ts` bundles the two ends of a hit as `actors`
-before spreading them into a log event, which is log fields and not units.
+**Actor** — never for a unit. What a fight did to each one is `UnitStats`, in `report.units`. One
+unrelated use stays: `hit.ts` bundles the two ends of a hit as `actors` before spreading them into
+a log event, which is log fields and not units.
 
 **Character** — never for a unit _in general_: it means a named unit specifically (above), and
-using it for a wolf throws that distinction away. No class claims the word now that the base is
-`Unit`, which is the point — it is held open for the thing `Nakroth` is.
+using it for a wolf throws that distinction away. No class claims the word, which is the point — it
+is held open for the thing `Nakroth` is.
 
 **Combatant, entity, mob, creature, fighter** — all mean unit. Say unit.
 
@@ -229,74 +216,3 @@ using it for a wolf throws that distinction away. No class claims the word now t
 exactly one thing: what an ability does when it lands.
 
 **Skill** — never for an ability. `skill` is the progression word (#15, #31), kept free for it.
-
-## Drift worth fixing
-
-Recorded rather than fixed, and meant to be worked off slowly — these are not issues. Each is a
-real collision found while writing this down.
-
-### The plan (temporary — delete when done)
-
-The words are settled; what is left is renaming. Do the mechanical ones first — they are safe in
-any order — and let the two structural ones wait for the issues that teach us what the base needs.
-
-| #   | Do                                                | Size | Status      |
-| --- | ------------------------------------------------- | ---- | ----------- |
-| 1   | Give spells a real id, split from the name        | M    | **done**    |
-| 2   | Settle ability / spell / attack / aura            | —    | **decided** |
-| 3   | `roster` → `units` / `--enemies`                  | S    | **done**    |
-| 4   | The aura renames                                  | M    | **done**    |
-| 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | **done**    |
-| 6   | Extract the `Aura` base                           | M    | with #47    |
-| 7   | Split `Targeting` into rule + preference          | S    | **done**    |
-| 8   | Unweld ability from driver; `Ability` class (#42) | L    | after 6, 7  |
-| 9   | Stop the prose calling an encounter a fight       | S    | **done**    |
-| 10  | `report.spells` → `abilities`, keyed as it is     | S    | **done**    |
-
-**The asset pipeline still says `character`,** and item 5 deliberately left it: `AssetType` in
-`asset-prompts.ts`, `"type": "character"` in `image-assets.json`, and the generated files under
-`public/assets/generated/characters/`. Renaming those means moving images on disk and rewriting the
-manifest that names them, which is not the same job as renaming a class, and every path is already
-committed. It is the only place the word survives outside its narrow meaning.
-
-**`HugeAttack` is misfiled, but not in the way we thought.** "Nasty arrow" is a boss ability on a
-12s cadence, and there are two mechanisms for that — `Cadence`, and an `Attack` with a long
-`interval`, which is what this is. Under the old "a spell is what someone chooses" rule the fix
-looked like converting it to a spell. It is not: it is fired from a bow, it logs `RANGE_DAMAGE`,
-and it is an **attack**. What it needs is a `Cadence` driving it, which is plan item 8 and not a
-rename.
-
-**Ability and driver are two layers, and `Attack` welds them.** `WolfBite` is both _what
-happens_ (4-7 damage, plant a Rend) and _when_ (every 3800ms, forever). A `Spell` carries only the
-first. That weld — not the fact that it is an attack — is the reason Savage Bite cannot go on the
-action bar, and it is why we had no word for the umbrella: with timing baked in, a spell and an
-attack looked like different things. Unwelded, they share one execution path, so the endpoint is
-one `Ability` class whose effects are child nodes and whose classifications are data:
-
-```ts
-FlashHeal   tags [spell, healing]         school holy      effects [Heal(100)]
-SavageBite  tags [attack, melee]          school physical  effects [Damage(4, 7), ApplyAura(Rend)]
-Fireball    tags [spell, attack, ranged]  school fire      effects [Damage(80)]
-```
-
-Two things have to arrive with it. `targets` — the target rule — becomes a field on `Ability`, for
-the same reason `tags` and `school` do: it is a fact about what the ability is. The shared parts
-of `SPELL_KEYS` and `ATTACK_KEYS` merge. An attack's current `interval` does not become an ability
-cooldown: it moves to the cadence that drives it, while cooldown remains a restriction on the
-ability itself.
-
-**One target slot, doing two jobs.** `Character.currentTarget` holds both what the unit's
-`Targeting` picked and what the player clicked, and a unit gets one of it. That is the whole reason
-`WolfShaman` carries no attacks — it spends its single target on the ally it heals — and the reason
-`Player.getTarget()` falls back to the tank while nothing else does.
-
-The endpoint is that a target is **passed to a use**, not stored on a unit. Half the code already
-works this way — `whyNotCast(caster, SpellClass, target)` takes it as an argument with the slot as
-a mere default, and the Autopilot validates against an explicit target, then routes it through
-`currentTarget` (`perform({type: 'cast', target})`) purely so `applyHeal()` can read it back out.
-The slot is a round trip. What survives it is a **selected target** for the UI, one **preference**
-per driver, and the rule on the ability.
-
-The rule cannot move onto abilities until there is an `Ability` to hold it: putting it on `Spell`
-and `Attack` separately — they share no base — would write it twice, which is the shape item 7 just
-undid one layer down. So it waits for item 8.
