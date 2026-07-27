@@ -23,7 +23,7 @@ const bite = (source: Unit, target: Unit, damage: number) =>
 		source,
 		target,
 		amount: -damage,
-		abilityId: 'WolfBite',
+		abilityId: 'SavageBite',
 		abilityName: 'Savage Bite',
 		eventType: 'SWING_DAMAGE',
 	})
@@ -211,7 +211,7 @@ describe('Power Word: Shield', () => {
 		expect(game.tank.health.current).toBe(50)
 		const [shield] = [...game.tank.auras]
 		expect(shield).toBeInstanceOf(ShieldAura)
-		expect((shield as ShieldAura).pool).toBe(PowerWordShield.heal)
+		expect((shield as ShieldAura).pool).toBe(PowerWordShield.magnitude)
 		// Shares the spell's id, so the cast and every absorb report as one ability.
 		expect(shield.id).toBe('PowerWordShield')
 		game.disconnect()

@@ -3,13 +3,13 @@ import type {GameLoop} from '../nodes/game-loop'
 import type {AbilityClass} from '../nodes/ability'
 import {AbilityUse} from '../nodes/ability-use'
 
-function spellIconPath(AbilityClass: AbilityClass) {
+function iconPath(AbilityClass: AbilityClass) {
 	const slug = AbilityClass.icon || AbilityClass.name.toLowerCase().replaceAll(' ', '-')
 	return `/assets/generated/spells/${slug}.png`
 }
 
-/** Transitional spell-shaped UI over the player's neutral ability collection. */
-export function SpellIcon(game: GameLoop, abilityId: string, shortcut: string | number) {
+/** One button in the action bar: what the ability costs, what it does, and whether it can be used now. */
+export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string | number) {
 	const player = game.player
 	const AbilityClass = player.abilities[abilityId]
 	if (!AbilityClass) throw new Error(`no ability ${abilityId}`)
@@ -29,28 +29,28 @@ export function SpellIcon(game: GameLoop, abilityId: string, shortcut: string | 
 
 	return html`
 		<button
-			class="Spell"
+			class="Ability"
 			data-state=${state}
-			onclick=${() => game.perform({type: 'cast', spell: abilityId})}
+			onclick=${() => game.perform({type: 'use', ability: abilityId})}
 			.disabled=${game.gameOver}
 		>
-			<img class="Spell-image" src=${spellIconPath(AbilityClass)} alt="" />
-			<div class="Spell-inner">
+			<img class="Ability-image" src=${iconPath(AbilityClass)} alt="" />
+			<div class="Ability-inner">
 				<h3>${AbilityClass.name}</h3>
 				<p>
 					<span>🔵 ${AbilityClass.cost ?? 0} </span>
-					<span>🟢 ${AbilityClass.heal ?? 0}</span>
+					<span>🟢 ${AbilityClass.magnitude ?? 0}</span>
 					<span>⏲ ${(AbilityClass.castTime ?? 0) / 1000}s</span>
 					${cooldown ? html`<span>⏳ ${cooldown / 1000}s</span>` : null}
 				</p>
 			</div>
-			<div class="Spell-gcd" style=${`--progress: ${angle}deg`}></div>
+			<div class="Ability-gcd" style=${`--progress: ${angle}deg`}></div>
 			${cooldownLeft > 0
-				? html`<div class="Spell-cooldown" style=${`--progress: ${cooldownSweep}deg`}>
+				? html`<div class="Ability-cooldown" style=${`--progress: ${cooldownSweep}deg`}>
 						<strong>${Math.ceil(cooldownLeft / 1000)}</strong>
 					</div>`
 				: null}
-			${shortcut ? html`<small class="Spell-shortcut">${shortcut}</small>` : html``}
+			${shortcut ? html`<small class="Ability-shortcut">${shortcut}</small>` : html``}
 		</button>
 	`
 }

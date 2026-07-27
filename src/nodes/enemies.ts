@@ -1,18 +1,18 @@
 import {Unit} from './unit'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
-import {HugeAttack, MediumAttack, SmallAttack, WolfBite} from './attack'
+import {NastyArrow, HeavyBlow, QuickStab, SavageBite} from './attack'
 import {Mend} from './spells'
-import {HugeAttackCadence, MediumAttackCadence, MendCadence, SmallAttackCadence, WolfBiteCadence} from './cadence'
+import {NastyArrowCadence, HeavyBlowCadence, MendCadence, QuickStabCadence, SavageBiteCadence} from './cadence'
 
 export class Nakroth extends Unit {
 	static maxHealth = 500
 	static faction = FACTION.ENEMY
 	name = 'Nakroth the Destroyer'
-	abilities = {MediumAttack, HugeAttack}
+	abilities = {HeavyBlow, NastyArrow}
 	targeting = new Targeting(this, 'enemy', prefer.tankFirst)
-	mediumAttackCadence = new MediumAttackCadence(this)
-	hugeAttackCadence = new HugeAttackCadence(this)
+	heavyBlowCadence = new HeavyBlowCadence(this)
+	nastyArrowCadence = new NastyArrowCadence(this)
 }
 
 export class TinyWolf extends Unit {
@@ -20,10 +20,10 @@ export class TinyWolf extends Unit {
 	static faction = FACTION.ENEMY
 	name = 'Tiny wolf'
 	image = '/assets/generated/characters/tiny-wolf.png'
-	abilities = {WolfBite, SmallAttack}
+	abilities = {SavageBite, QuickStab}
 	targeting = new Targeting(this, 'enemy', prefer.atRandom)
-	wolfBiteCadence = new WolfBiteCadence(this)
-	smallAttackCadence = new SmallAttackCadence(this)
+	savageBiteCadence = new SavageBiteCadence(this)
+	quickStabCadence = new QuickStabCadence(this)
 }
 
 /**

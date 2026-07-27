@@ -24,7 +24,8 @@ export class Cadence extends Task {
 		if (!this.abilityId) throw new Error(`${this.constructor.name} needs an ability id to drive`)
 	}
 
-	chooses() {
+	/** Where a unit with real decisions puts them. By default the schedule is the whole decision. */
+	shouldUse() {
 		return true
 	}
 
@@ -37,38 +38,38 @@ export class Cadence extends Task {
 	}
 
 	tick() {
-		if (!this.chooses()) return
+		if (!this.shouldUse()) return
 		const result = this.parent.useAbility(this.abilityId)
 		if (!result.ok) log(`cadence:${this.parent.name}:${this.abilityId}:${result.error}`)
 	}
 }
 
-export class SmallAttackCadence extends Cadence {
-	static abilityId = 'SmallAttack'
+export class QuickStabCadence extends Cadence {
+	static abilityId = 'QuickStab'
 	static delay = 0
 	static interval = 1600
 }
 
-export class MediumAttackCadence extends Cadence {
-	static abilityId = 'MediumAttack'
+export class HeavyBlowCadence extends Cadence {
+	static abilityId = 'HeavyBlow'
 	static delay = 4000
 	static interval = 3800
 }
 
-export class WolfBiteCadence extends Cadence {
-	static abilityId = 'WolfBite'
+export class SavageBiteCadence extends Cadence {
+	static abilityId = 'SavageBite'
 	static delay = 4000
 	static interval = 3800
 }
 
-export class HugeAttackCadence extends Cadence {
-	static abilityId = 'HugeAttack'
+export class NastyArrowCadence extends Cadence {
+	static abilityId = 'NastyArrow'
 	static delay = 8000
 	static interval = 12000
 }
 
-export class TankAttackCadence extends Cadence {
-	static abilityId = 'TankAttack'
+export class ShieldBashCadence extends Cadence {
+	static abilityId = 'ShieldBash'
 	static delay = 0
 	static interval = 2400
 }

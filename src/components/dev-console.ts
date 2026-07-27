@@ -169,13 +169,13 @@ export class DevConsole extends HTMLElement {
 				},
 			},
 			{
-				name: 'cast',
-				description: 'Cast a player ability: /cast <Ability_Id>',
+				name: 'use',
+				description: 'Use a player ability: /use <Ability_Id>',
 				execute: (game, args) => {
-					if (!args?.length) return this.logToConsole('Usage: /cast <Ability_Id>')
+					if (!args?.length) return this.logToConsole('Usage: /use <Ability_Id>')
 					const abilityId = args.join('')
-					const result = game.perform({type: 'cast', spell: abilityId})
-					this.logToConsole(result.ok ? `Casting ${abilityId}` : result.error)
+					const result = game.perform({type: 'use', ability: abilityId})
+					this.logToConsole(result.ok ? `Using ${abilityId}` : result.error)
 				},
 			},
 			{

@@ -7,7 +7,7 @@ import {Meter} from './bar'
 import {AuraIcon} from './aura-icon'
 import {html} from 'uhtml'
 
-export function UnitFrame(unit: Unit, spell: Ability | undefined, player: Player) {
+export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: Player) {
 	const id = unit.id
 	const isEnemy = unit.faction === 'enemy'
 	const health = unit.health.current
@@ -17,7 +17,7 @@ export function UnitFrame(unit: Unit, spell: Ability | undefined, player: Player
 	const auras: Aura[] = unit.auras ? Array.from(unit.auras) : []
 
 	/**
-	 * What this unit is casting, if anything. Not the `spell` argument above — that is the
+	 * What this unit is casting, if anything. Not the `playerCast` argument above — that is the
 	 * *player's* cast, passed in to preview how much of this bar it would fill.
 	 *
 	 * Only for units other than the player, whose own cast bar has a dedicated panel under the
@@ -44,8 +44,8 @@ export function UnitFrame(unit: Unit, spell: Ability | undefined, player: Player
 							value: health,
 							max: maxHealth,
 							// Only show potential healing on the current target for party members
-							potentialValue: isCurrentTarget && !isEnemy && spell ? spell.heal : 0,
-							spell: !isEnemy ? spell : undefined,
+							potentialValue: isCurrentTarget && !isEnemy && playerCast ? playerCast.magnitude : 0,
+							ability: !isEnemy ? playerCast : undefined,
 						})}
 						<div class="Unit-name">${displayName} ${isCurrentTarget ? '✓' : ''}</div>
 					</div>
@@ -55,7 +55,7 @@ export function UnitFrame(unit: Unit, spell: Ability | undefined, player: Player
 								value: unit.mana.current,
 								max: unit.mana.max,
 								potentialValue: 0,
-								spell: undefined,
+								ability: undefined,
 							})
 						: null}
 				</div>

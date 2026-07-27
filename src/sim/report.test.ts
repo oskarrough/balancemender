@@ -66,7 +66,7 @@ const fight: CombatLogEvent[] = [
 		sourceName: 'Tank',
 		targetId: 'wolf',
 		targetName: 'Wolf',
-		abilityId: 'TankAttack',
+		abilityId: 'ShieldBash',
 		abilityName: 'Shield Bash',
 		value: 50,
 	}),

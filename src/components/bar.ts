@@ -23,18 +23,18 @@ export function Bar({value, max, type}: BarProps) {
  */
 interface MeterProps extends BarProps {
 	potentialValue?: number
-	spell?: Ability
+	ability?: Ability
 }
 
-export function Meter({value, max, type, potentialValue = 0, spell}: MeterProps) {
+export function Meter({value, max, type, potentialValue = 0, ability}: MeterProps) {
 	if (!value) value = 0
 	if (!max) max = 0
 
 	const percent = toPercent(value, max)
 	const barStyles = `width: ${percent}%`
 
-	if (spell?.delay === 0) {
-		potentialValue = potentialValue - (potentialValue / spell.repeat) * spell._cycles
+	if (ability?.delay === 0) {
+		potentialValue = potentialValue - (potentialValue / ability.repeat) * ability._cycles
 	}
 	const potentialBarStyles = `left: ${percent}%; width: ${toPercent(potentialValue, max)}%`
 

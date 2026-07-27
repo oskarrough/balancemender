@@ -16,7 +16,7 @@ const flush = () => Promise.resolve()
 describe('perform', () => {
 	it('reports why it refused instead of failing silently', () => {
 		const game = new GameLoop({party: [], enemies: []})
-		expect(game.perform({type: 'cast', spell: 'Fireball'})).toEqual({
+		expect(game.perform({type: 'use', ability: 'Fireball'})).toEqual({
 			ok: false,
 			error: 'Ability Fireball not found in abilities',
 		})
@@ -34,7 +34,7 @@ describe('perform', () => {
 		const tank = game.tank
 		expect(game.player.currentTarget).not.toBe(tank)
 
-		expect(game.perform({type: 'cast', spell: 'Heal', target: tank.id}).ok).toBe(true)
+		expect(game.perform({type: 'use', ability: 'Heal', target: tank.id}).ok).toBe(true)
 		expect(game.player.currentTarget).toBe(tank)
 		expect(game.player.currentAbility?.name).toBe('Heal')
 		// Let the spell finish mounting before tearing the loop down — its global cooldown
@@ -45,7 +45,7 @@ describe('perform', () => {
 
 	it('does not start a cast when the target is bad', () => {
 		const game = new GameLoop({party: [], enemies: []})
-		expect(game.perform({type: 'cast', spell: 'Heal', target: 'nope'}).ok).toBe(false)
+		expect(game.perform({type: 'use', ability: 'Heal', target: 'nope'}).ok).toBe(false)
 		expect(game.player.currentAbility).toBeUndefined()
 		game.disconnect()
 	})
@@ -54,7 +54,7 @@ describe('perform', () => {
 		const game = new GameLoop({party: [], enemies: []})
 		expect(game.perform({type: 'interrupt'})).toMatchObject({ok: false})
 
-		game.perform({type: 'cast', spell: 'Heal'})
+		game.perform({type: 'use', ability: 'Heal'})
 		expect(game.perform({type: 'interrupt'}).ok).toBe(true)
 		expect(game.player.currentAbility).toBeUndefined()
 		await flush()
@@ -108,7 +108,7 @@ describe('refusals', () => {
 		expect(game.lastRefusal).toBeUndefined()
 
 		game.elapsedTime = 5000
-		game.perform({type: 'cast', spell: 'Fireball'})
+		game.perform({type: 'use', ability: 'Fireball'})
 
 		expect(game.lastRefusal).toEqual({error: 'Ability Fireball not found in abilities', at: 5000})
 		game.disconnect()
@@ -118,7 +118,7 @@ describe('refusals', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.player.mana?.set(0)
 
-		game.perform({type: 'cast', spell: 'Heal', target: game.tank.id})
+		game.perform({type: 'use', ability: 'Heal', target: game.tank.id})
 
 		expect(game.lastRefusal?.error).toBe('Not enough mana')
 		game.disconnect()
@@ -126,7 +126,7 @@ describe('refusals', () => {
 
 	it('stays quiet when the action went through', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
-		expect(game.perform({type: 'cast', spell: 'Heal', target: game.tank.id}).ok).toBe(true)
+		expect(game.perform({type: 'use', ability: 'Heal', target: game.tank.id}).ok).toBe(true)
 		expect(game.lastRefusal).toBeUndefined()
 		await flush()
 		game.disconnect()
@@ -137,7 +137,7 @@ describe('refusals', () => {
 	it('forgets the last fight, whose clock no longer applies', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.elapsedTime = 5000
-		game.perform({type: 'cast', spell: 'Fireball'})
+		game.perform({type: 'use', ability: 'Fireball'})
 		expect(game.lastRefusal).toBeDefined()
 
 		game.perform({type: 'restart'})
@@ -151,20 +151,20 @@ describe('every player ability', () => {
 	beforeEach(() => clearLogs())
 
 	// Renew once healed without ever logging a cast, because it overrode `tick()` instead of
-	// `cast()`. Nothing but this stops the next spell doing the same.
+	// `cast()`. Nothing but this stops the next ability doing the same.
 	// An enemy has to be present, or the fight is already won and the loop stops before the cast lands.
-	it.each(Object.keys(playerAbilities))('logs a completed cast: %s', async (spell) => {
+	it.each(Object.keys(playerAbilities))('logs a completed cast: %s', async (ability) => {
 		const game = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		await flush()
 		game.tank.health.set(1)
 
-		expect(game.perform({type: 'cast', spell, target: game.tank.id}).ok).toBe(true)
+		expect(game.perform({type: 'use', ability, target: game.tank.id}).ok).toBe(true)
 		for (let time = 0; time < 5000; time += 16) {
 			game.runFrame(time)
 			await flush()
 		}
 
-		const casts = combatLogs.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.abilityId === spell)
+		const casts = combatLogs.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.abilityId === ability)
 		expect(casts).toHaveLength(1)
 		game.disconnect()
 		await flush()

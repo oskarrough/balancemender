@@ -34,40 +34,40 @@ describe('applying a tune', () => {
 	afterEach(() => resetBalance())
 
 	it('writes spell- and attack-tagged abilities through one surface', () => {
-		applyTunes(['ability:Heal.cost=10', 'ability:WolfBite.minDamage=2', 'cadence:WolfBiteCadence.interval=5000'])
+		applyTunes(['ability:Heal.cost=10', 'ability:SavageBite.minDamage=2', 'cadence:SavageBiteCadence.interval=5000'])
 		expect(balance.abilities.Heal.cost).toBe(10)
-		expect(balance.abilities.WolfBite.minDamage).toBe(2)
-		expect(balance.cadences.WolfBiteCadence.interval).toBe(5000)
+		expect(balance.abilities.SavageBite.minDamage).toBe(2)
+		expect(balance.cadences.SavageBiteCadence.interval).toBe(5000)
 	})
 
 	it('keeps opt-in keys absent and refuses tuning them', () => {
-		expect(balance.abilities.WolfBite.cost).toBeUndefined()
-		expect(() => applyTunes(['ability:WolfBite.cost=10'])).toThrow(/has no cost to tune/)
+		expect(balance.abilities.SavageBite.cost).toBeUndefined()
+		expect(() => applyTunes(['ability:SavageBite.cost=10'])).toThrow(/has no cost to tune/)
 	})
 
 	it('snapshots cadence tuning onto newly spawned drivers', () => {
-		applyTunes(['cadence:WolfBiteCadence.delay=123'])
+		applyTunes(['cadence:SavageBiteCadence.delay=123'])
 		const game = new GameLoop({party: [], enemies: ['TinyWolf']})
-		expect(game.enemies[0]).toMatchObject({wolfBiteCadence: {delay: 123}})
+		expect(game.enemies[0]).toMatchObject({savageBiteCadence: {delay: 123}})
 		game.disconnect()
 	})
 
 	it('puts every category back where it started', () => {
-		const bite = balance.cadences.WolfBiteCadence.interval
-		applyTunes(['cadence:WolfBiteCadence.interval=100'])
+		const bite = balance.cadences.SavageBiteCadence.interval
+		applyTunes(['cadence:SavageBiteCadence.interval=100'])
 		resetBalance()
-		expect(balance.cadences.WolfBiteCadence.interval).toBe(bite)
+		expect(balance.cadences.SavageBiteCadence.interval).toBe(bite)
 	})
 })
 
 describe('the categories', () => {
 	it('keeps cadence timing separate', () => {
 		expect(Object.keys(cadenceClasses)).toEqual([
-			'SmallAttackCadence',
-			'MediumAttackCadence',
-			'WolfBiteCadence',
-			'HugeAttackCadence',
-			'TankAttackCadence',
+			'QuickStabCadence',
+			'HeavyBlowCadence',
+			'SavageBiteCadence',
+			'NastyArrowCadence',
+			'ShieldBashCadence',
 			'MendCadence',
 		])
 	})

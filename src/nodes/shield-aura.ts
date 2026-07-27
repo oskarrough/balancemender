@@ -30,12 +30,12 @@ export class ShieldAura extends Aura {
 	static pool = 0
 	/**
 	 * How long an unspent shield lasts, in ms. Mirrored onto `Task.delay` at construction, the way
-	 * `Spell.castTime` is.
+	 * `Ability.castTime` is.
 	 *
 	 * Deliberately not a balance number: `AURA_KEYS` is `total`/`interval`/`repeat`/`delay`, every
 	 * one of them a periodic aura's dial, and a shield has none of them. Growing the balance schema
 	 * for a single spell before a sweep has asked for it buys nothing — the pool, which is the
-	 * number worth tuning, already rides on the casting spell's `heal`.
+	 * number worth tuning, already rides on the casting spell's `magnitude`.
 	 */
 	static lifetime = 15000
 

@@ -3,7 +3,7 @@ import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
 import type {Aura} from './aura'
 import {PeriodicAura} from './periodic-aura'
-import {WolfBite} from './attack'
+import {SavageBite} from './attack'
 import {Renew} from './spells'
 import {combatLogs, clearLogs} from '../combatlog'
 
@@ -131,9 +131,9 @@ describe('the wolf bleed', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		wolf.currentTarget = game.tank
-		new WolfBite(wolf).executeNow()
+		new SavageBite(wolf).executeNow()
 		await Promise.resolve()
-		new WolfBite(wolf).executeNow()
+		new SavageBite(wolf).executeNow()
 		await Promise.resolve()
 
 		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(1)
@@ -150,7 +150,7 @@ describe('the wolf bleed', () => {
 		const wolf = game.enemies[0]
 		wolf.currentTarget = game.tank
 		game.tank.health.set(1)
-		new WolfBite(wolf).executeNow()
+		new SavageBite(wolf).executeNow()
 		await Promise.resolve()
 
 		expect(game.tank.alive).toBe(false)

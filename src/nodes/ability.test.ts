@@ -25,18 +25,18 @@ describe('abilities', () => {
 			abilityRegistry.FlashHeal.targetRule,
 		]).toEqual([['spell', 'healing'], 'holy', 'ally'])
 		expect([
-			abilityRegistry.WolfBite.tags,
-			abilityRegistry.WolfBite.school,
-			abilityRegistry.WolfBite.targetRule,
+			abilityRegistry.SavageBite.tags,
+			abilityRegistry.SavageBite.school,
+			abilityRegistry.SavageBite.targetRule,
 		]).toEqual([['attack', 'melee'], 'physical', 'enemy'])
 		expect([
-			abilityRegistry.HugeAttack.tags,
-			abilityRegistry.HugeAttack.school,
-			abilityRegistry.HugeAttack.targetRule,
+			abilityRegistry.NastyArrow.tags,
+			abilityRegistry.NastyArrow.school,
+			abilityRegistry.NastyArrow.targetRule,
 		]).toEqual([['attack', 'ranged'], 'physical', 'enemy'])
 	})
 
-	it('looks up Flash Heal, Savage Bite and Nasty arrow through the same unit boundary', async () => {
+	it('looks up Flash Heal, Savage Bite and Nasty Arrow through the same unit boundary', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'Nakroth']})
 		await step()
 		const [wolf, nakroth] = game.enemies
@@ -46,14 +46,14 @@ describe('abilities', () => {
 		expect(heal.ok && heal.value.id).toBe('FlashHeal')
 
 		wolf.currentTarget = game.tank
-		const bite = wolf.useAbility('WolfBite')
-		expect(bite.ok && bite.value.id).toBe('WolfBite')
+		const bite = wolf.useAbility('SavageBite')
+		expect(bite.ok && bite.value.id).toBe('SavageBite')
 		nakroth.currentTarget = game.tank
-		const arrow = nakroth.useAbility('HugeAttack')
-		expect(arrow.ok && arrow.value.id).toBe('HugeAttack')
+		const arrow = nakroth.useAbility('NastyArrow')
+		expect(arrow.ok && arrow.value.id).toBe('NastyArrow')
 
-		expect(combatLogs.some((event) => event.abilityId === 'WolfBite')).toBe(true)
-		expect(combatLogs.some((event) => event.abilityId === 'HugeAttack')).toBe(true)
+		expect(combatLogs.some((event) => event.abilityId === 'SavageBite')).toBe(true)
+		expect(combatLogs.some((event) => event.abilityId === 'NastyArrow')).toBe(true)
 		await step()
 		await step()
 		game.disconnect()
@@ -79,7 +79,7 @@ describe('abilities', () => {
 
 		expect(wolf.useAbility('WindUp').ok).toBe(true)
 		expect(wolf.currentAbility?.id).toBe('WindUp')
-		const attack = wolf.useAbility('SmallAttack')
+		const attack = wolf.useAbility('QuickStab')
 		expect(attack.ok).toBe(true)
 		expect(game.tank.health.current).toBeLessThan(before)
 		expect(wolf.mana).toBeUndefined()

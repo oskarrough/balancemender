@@ -4,7 +4,7 @@ import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {ApplyAura, Damage, Heal} from './effects'
 import {PeriodicAura} from './periodic-aura'
-import {WolfBite, WolfBleed} from './attack'
+import {SavageBite, Rend} from './attack'
 import {combatLogs, clearLogs} from '../combatlog'
 
 /**
@@ -100,7 +100,7 @@ describe('the effects themselves', () => {
 			static id = 'TestMend'
 			static name = 'Test Mend'
 			static targetRule = 'ally' as const
-			static heal = 100
+			static magnitude = 100
 			static effects = [new Heal()]
 		}
 		new Mend(game.player).land()
@@ -121,12 +121,12 @@ describe('the effects themselves', () => {
 		const wolf = game.enemies[0]
 		wolf.currentTarget = game.tank
 
-		new WolfBite(wolf).land()
+		new SavageBite(wolf).land()
 		await flush()
 
 		const [bleed] = [...game.tank.auras]
-		expect(bleed).toBeInstanceOf(WolfBleed)
-		expect((bleed as WolfBleed).total).toBe(WolfBleed.total)
+		expect(bleed).toBeInstanceOf(Rend)
+		expect((bleed as Rend).total).toBe(Rend.total)
 		game.disconnect()
 	})
 })

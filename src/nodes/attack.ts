@@ -3,8 +3,8 @@ import {Ability} from './ability'
 import {ApplyAura, Damage} from './effects'
 import {PeriodicAura} from './periodic-aura'
 
-export class SmallAttack extends Ability {
-	static id = 'SmallAttack'
+export class QuickStab extends Ability {
+	static id = 'QuickStab'
 	static name = 'Quick Stab'
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
@@ -16,8 +16,8 @@ export class SmallAttack extends Ability {
 	static effects = [new Damage()]
 }
 
-export class MediumAttack extends Ability {
-	static id = 'MediumAttack'
+export class HeavyBlow extends Ability {
+	static id = 'HeavyBlow'
 	static name = 'Heavy Blow'
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
@@ -30,12 +30,12 @@ export class MediumAttack extends Ability {
 }
 
 /**
- * The bleed keeps the bite's id-independent report identity (`Rend`) and waits one full interval
- * before its first tick, so refreshing it does not turn half the wound into immediate damage.
+ * The wound a bite leaves. It waits one full interval before its first tick, so refreshing it does
+ * not turn half the wound into immediate damage.
  *
  * Declared before the bite that plants it: `static effects` runs when the class is defined.
  */
-export class WolfBleed extends PeriodicAura {
+export class Rend extends PeriodicAura {
 	static id = 'Rend'
 	static name = 'Rend'
 	static total = -8
@@ -45,8 +45,8 @@ export class WolfBleed extends PeriodicAura {
 }
 
 /** The wolf's bite: one immediate hit followed by a short, refreshing wound. */
-export class WolfBite extends Ability {
-	static id = 'WolfBite'
+export class SavageBite extends Ability {
+	static id = 'SavageBite'
 	static name = 'Savage Bite'
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
@@ -56,12 +56,12 @@ export class WolfBite extends Ability {
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	// The bite lands first, and the wound only if it left something alive to bleed.
-	static effects = [new Damage(), new ApplyAura(WolfBleed)]
+	static effects = [new Damage(), new ApplyAura(Rend)]
 }
 
-export class HugeAttack extends Ability {
-	static id = 'HugeAttack'
-	static name = 'Nasty arrow'
+export class NastyArrow extends Ability {
+	static id = 'NastyArrow'
+	static name = 'Nasty Arrow'
 	static tags = ['attack', 'ranged'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
@@ -72,8 +72,8 @@ export class HugeAttack extends Ability {
 	static effects = [new Damage()]
 }
 
-export class TankAttack extends Ability {
-	static id = 'TankAttack'
+export class ShieldBash extends Ability {
+	static id = 'ShieldBash'
 	static name = 'Shield Bash'
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const

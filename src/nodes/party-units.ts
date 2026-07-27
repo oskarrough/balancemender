@@ -1,15 +1,15 @@
 import {Unit} from './unit'
-import {TankAttack} from './attack'
-import {TankAttackCadence} from './cadence'
+import {ShieldBash} from './attack'
+import {ShieldBashCadence} from './cadence'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
 
 export class Tank extends Unit {
 	static maxHealth = 300
 	static faction = FACTION.PARTY
-	abilities = {TankAttack}
+	abilities = {ShieldBash}
 	targeting = new Targeting(this, 'enemy', prefer.first)
-	tankAttackCadence = new TankAttackCadence(this)
+	shieldBashCadence = new ShieldBashCadence(this)
 	name = 'Tank'
 	image = '/assets/generated/characters/tank.png'
 }

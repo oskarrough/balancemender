@@ -22,7 +22,7 @@ describe('ability use rules', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		expect(AbilityUse.whyNotUse(game.player, Heal, game.tank)).toBeUndefined()
 		expect(AbilityUse.whyNotUse(game.player, Heal, game.enemies[0])).toBe('invalid-target')
-		expect(AbilityUse.whyNotUse(game.enemies[0], abilityRegistry.WolfBite, game.tank)).toBeUndefined()
+		expect(AbilityUse.whyNotUse(game.enemies[0], abilityRegistry.SavageBite, game.tank)).toBeUndefined()
 		game.disconnect()
 	})
 
@@ -47,7 +47,7 @@ describe('ability use rules', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		const player = game.player
 		expect(game.perform({type: 'tune', of: 'ability', name: 'Heal', key: 'cooldown', value: 8000}).ok).toBe(true)
-		expect(game.perform({type: 'cast', spell: 'Heal', target: game.tank.id}).ok).toBe(true)
+		expect(game.perform({type: 'use', ability: 'Heal', target: game.tank.id}).ok).toBe(true)
 		player.currentAbility!._cycles = 1
 		player.currentAbility!.destroy()
 		await Promise.resolve()
@@ -65,7 +65,7 @@ describe('ability use rules', () => {
 		player.mana!.set(Heal.cost)
 		expect(AbilityUse.whyNotUse(player, Heal, game.tank)).toBeUndefined()
 		expect(AbilityUse.whyNotUse(player, abilityRegistry.GreaterHeal, game.tank)).toBe('missing-mana')
-		expect(AbilityUse.whyNotUse(player, abilityRegistry.TankAttack, game.tank)).toBe('invalid-target')
+		expect(AbilityUse.whyNotUse(player, abilityRegistry.ShieldBash, game.tank)).toBe('invalid-target')
 		game.disconnect()
 	})
 })

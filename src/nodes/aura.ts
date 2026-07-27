@@ -49,7 +49,7 @@ export class Aura extends Task {
 
 	/**
 	 * Stable key — `balance.auras`, `--tune`, the log's `abilityId`, the stack key. See
-	 * `Spell.id`. An aura a spell owns takes that spell's id (`Renew`) so the cast and the ticks
+	 * `Ability.id`. An aura a spell owns takes that spell's id (`Renew`) so the cast and the ticks
 	 * report as one thing; a free-standing one keeps its own (`Rend`).
 	 */
 	static id = 'Aura'

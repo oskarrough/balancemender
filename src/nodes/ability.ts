@@ -26,7 +26,7 @@ export class Ability extends Task {
 	targetRule: TargetRule = 'enemy'
 	icon = ''
 	cost?: number
-	heal?: number
+	magnitude?: number
 	cooldown?: number
 	gcd = false
 	minDamage?: number
@@ -48,7 +48,7 @@ export class Ability extends Task {
 	static icon = ''
 	static effects: readonly Effect[] = []
 	declare static cost?: number
-	declare static heal?: number
+	declare static magnitude?: number
 	declare static castTime?: number
 	declare static cooldown?: number
 	declare static gcd?: boolean
@@ -69,7 +69,7 @@ export class Ability extends Task {
 			'icon',
 			'effects',
 			'cost',
-			'heal',
+			'magnitude',
 			'cooldown',
 			'gcd',
 			'minDamage',

@@ -23,8 +23,8 @@ describe('a cadence', () => {
 		const [wolf, shaman] = game.enemies
 		wolf.currentTarget = game.tank
 		shaman.currentTarget = wolf
-		new Cadence(wolf, 'SmallAttack').tick()
-		expect(combatLogs.some((event) => event.abilityId === 'SmallAttack')).toBe(true)
+		new Cadence(wolf, 'QuickStab').tick()
+		expect(combatLogs.some((event) => event.abilityId === 'QuickStab')).toBe(true)
 		new Cadence(shaman, 'Mend').tick()
 		expect(shaman.currentAbility?.id).toBe('Mend')
 		await settle()
@@ -46,21 +46,21 @@ describe('a cadence', () => {
 			unit.health.max = 10_000
 			unit.health.set(10_000)
 		}
-		expect([wolf.smallAttackCadence.delay, wolf.smallAttackCadence.interval]).toEqual([0, 1600])
-		expect([wolf.wolfBiteCadence.delay, wolf.wolfBiteCadence.interval]).toEqual([4000, 3800])
-		expect([nakroth.mediumAttackCadence.delay, nakroth.mediumAttackCadence.interval]).toEqual([4000, 3800])
-		expect([nakroth.hugeAttackCadence.delay, nakroth.hugeAttackCadence.interval]).toEqual([8000, 12000])
+		expect([wolf.quickStabCadence.delay, wolf.quickStabCadence.interval]).toEqual([0, 1600])
+		expect([wolf.savageBiteCadence.delay, wolf.savageBiteCadence.interval]).toEqual([4000, 3800])
+		expect([nakroth.heavyBlowCadence.delay, nakroth.heavyBlowCadence.interval]).toEqual([4000, 3800])
+		expect([nakroth.nastyArrowCadence.delay, nakroth.nastyArrowCadence.interval]).toEqual([8000, 12000])
 		for (let time = 0; time <= 8000; time += 100) {
 			game.runFrame(time)
 			await step()
 		}
 		const times = (id: string) =>
 			combatLogs.filter((event) => event.abilityId === id && 'value' in event).map((event) => event.time)
-		expect(times('SmallAttack')).toEqual([0, 1600, 3200, 4800, 6400, 8000])
-		expect(times('WolfBite')).toEqual([4000, 7800])
-		expect(times('MediumAttack')).toEqual([4000, 7800])
-		expect(times('HugeAttack')).toEqual([8000])
-		expect(times('TankAttack')).toEqual([0, 2400, 4800, 7200])
+		expect(times('QuickStab')).toEqual([0, 1600, 3200, 4800, 6400, 8000])
+		expect(times('SavageBite')).toEqual([4000, 7800])
+		expect(times('HeavyBlow')).toEqual([4000, 7800])
+		expect(times('NastyArrow')).toEqual([8000])
+		expect(times('ShieldBash')).toEqual([0, 2400, 4800, 7200])
 		game.disconnect()
 	})
 })

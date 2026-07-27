@@ -38,7 +38,7 @@ describe('the registries survive their import order', () => {
 					expect(AbilityClass.minDamage, `${id} declares Damage`).toBeTypeOf('number')
 					expect(AbilityClass.maxDamage, `${id} declares Damage`).toBeTypeOf('number')
 				}
-				if (effect instanceof Heal) expect(AbilityClass.heal, `${id} declares Heal`).toBeTypeOf('number')
+				if (effect instanceof Heal) expect(AbilityClass.magnitude, `${id} declares Heal`).toBeTypeOf('number')
 			}
 		}
 	})
@@ -50,9 +50,9 @@ describe('the registries survive their import order', () => {
 	})
 
 	it('reaches representative tunables', () => {
-		expect(balance.abilities.Renew).toMatchObject({heal: 120, cost: 60})
-		expect(balance.abilities.WolfBite).toMatchObject({minDamage: 4, maxDamage: 7})
-		expect(balance.cadences.WolfBiteCadence).toMatchObject({delay: 4000, interval: 3800})
+		expect(balance.abilities.Renew).toMatchObject({magnitude: 120, cost: 60})
+		expect(balance.abilities.SavageBite).toMatchObject({minDamage: 4, maxDamage: 7})
+		expect(balance.cadences.SavageBiteCadence).toMatchObject({delay: 4000, interval: 3800})
 		expect(balance.auras.Rend).toMatchObject({total: -8, interval: 1000, repeat: 4, delay: 1000})
 	})
 })

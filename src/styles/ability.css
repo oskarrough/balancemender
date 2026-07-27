@@ -1,15 +1,15 @@
-.Spell {
+.Ability {
 	--radius: 0.2em;
 	position: relative;
 	flex-basis: 9rem;
-	min-height: 5rem;
+	min-height: 3rem;
 	border-radius: var(--radius);
 	border: 2px outset hsl(0, 0%, 86%);
 	border-right-color: hsl(0, 0%, 70%);
 	border-bottom-color: hsl(0, 0%, 35%);
 	border-left-color: hsl(0, 0%, 73%);
 	/* background: hsl(120, 40%, 14%); */
-	background: conic-gradient(hsl(60, 7%, 10%) 25%, hsl(20, 5%, 15%));
+	background: conic-gradient(hsl(60, 32%, 43%) 25%, hsl(20, 5%, 15%));
 	background-repeat: no-repeat;
 	background-size: cover;
 	box-shadow: 0 1px 4px hsla(0, 0%, 10%, 0.5);
@@ -23,32 +23,26 @@
 		0 0 1px black;
 }
 
-@media (min-height: 760px) {
-	.Spell {
-		min-height: 6rem;
-	}
-}
-
-.Spell:hover {
+.Ability:hover {
 	background: hsl(120, 40%, 16%);
 	background: linear-gradient(hsl(60, 7%, 13%) 25%, hsl(20, 5%, 20%));
 	background: linear-gradient(hsl(170, 35%, 55%) 20%, hsl(170, 30%, 20%));
 	background: conic-gradient(hsl(60, 7%, 15%) 25%, hsl(20, 5%, 20%));
 }
 
-.Spell:hover .Spell-image {
+.Ability:hover .Ability-image {
 	filter: saturate(1) contrast(1);
 }
 
-.Spell:hover .Spell-gcd {
+.Ability:hover .Ability-gcd {
 	border-color: var(--yellow);
 }
 
-.Spell:active .Spell-gcd {
+.Ability:active .Ability-gcd {
 	border-color: initial;
 }
 
-.Spell-image {
+.Ability-image {
 	position: absolute;
 	inset: 0;
 	width: 100%;
@@ -60,23 +54,23 @@
 	pointer-events: none;
 }
 
-.Spell-inner {
+.Ability-inner {
 	position: relative;
 	z-index: 2;
 }
 
-.Spell-inner h3 {
+.Ability-inner h3 {
 	font-size: 14px;
 }
 
-.Spell-inner p {
+.Ability-inner p {
 	font-size: 13px;
-	&:not(.Spell:hover &) {
+	&:not(.Ability:hover &) {
 		opacity: 0;
 	}
 }
 
-.Spell-gcd {
+.Ability-gcd {
 	--color: rgba(200, 220, 270, 1);
 	/* --progress: calc(35 / 100 * 360deg); */
 	position: absolute;
@@ -91,7 +85,7 @@
 	border: 2px groove hsla(0, 0%, 100%, 0.7);
 }
 
-.Spell-gcd::before {
+.Ability-gcd::before {
 	display: block;
 	content: '';
 	width: 100%;
@@ -107,30 +101,30 @@
 	(no mana), or fix something else (no target).
 
 	None of them set `disabled`. The button stays pressable so that pressing it can say why —
-	see the comment in spell-icon.ts.
+	see the comment in ability-icon.ts.
 
 	The global cooldown is deliberately absent: it is up for a fraction of a second after every
 	cast and applies to every icon at once, so drawn here it would strobe the whole bar. It has
-	the `.Spell-gcd` sweep, which is a clock and not a state.
+	the `.Ability-gcd` sweep, which is a clock and not a state.
 */
-.Spell[data-state='unaffordable'] .Spell-image,
-.Spell[data-state='blocked'] .Spell-image {
+.Ability[data-state='unaffordable'] .Ability-image,
+.Ability[data-state='blocked'] .Ability-image {
 	filter: saturate(0.1) contrast(0.8) brightness(0.5);
 }
 
 /* Out of mana reads blue, the same colour the mana bar uses, so the link needs no explaining. */
-.Spell[data-state='unaffordable'] {
+.Ability[data-state='unaffordable'] {
 	border-color: hsl(0, 0%, 40%);
 	box-shadow: inset 0 0 0.8rem hsla(210, 60%, 50%, 0.35);
 }
 
-.Spell[data-state='unaffordable'] .Spell-inner h3,
-.Spell[data-state='blocked'] .Spell-inner h3 {
+.Ability[data-state='unaffordable'] .Ability-inner h3,
+.Ability[data-state='blocked'] .Ability-inner h3 {
 	opacity: 0.5;
 }
 
 /* A cooldown is the one unavailability with a known end, so it gets the countdown and a sweep. */
-.Spell-cooldown {
+.Ability-cooldown {
 	position: absolute;
 	inset: 0;
 	z-index: 3;
@@ -141,7 +135,7 @@
 	background: conic-gradient(hsla(0 0% 0% / 0.65) var(--progress), hsla(0 0% 0% / 0.15) var(--progress));
 }
 
-.Spell-cooldown strong {
+.Ability-cooldown strong {
 	font-size: 1.6rem;
 	color: var(--white);
 	text-shadow:
@@ -149,7 +143,7 @@
 		0 0 6px black;
 }
 
-.Spell-shortcut {
+.Ability-shortcut {
 	position: absolute;
 	top: 0.5em;
 	left: 0.5em;

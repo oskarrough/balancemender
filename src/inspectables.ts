@@ -51,7 +51,7 @@ export type Inspectable = {
 
 const ABILITY_LABEL: Record<AbilityKey, string> = {
 	cost: 'Mana cost',
-	heal: 'Heal amount',
+	magnitude: 'Magnitude (heal or shield)',
 	castTime: 'Cast time (ms)',
 	cooldown: 'Cooldown (ms)',
 	minDamage: 'Min damage',

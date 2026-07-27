@@ -10,7 +10,7 @@ import type {UnitId} from './nodes/unit-registry'
  * Everything that can change a running game.
  *
  * There is one interpreter — `game.perform(action)` — and everything that mutates a fight goes
- * through it: the keyboard, the spell buttons, the dev console, the Balance Lab, the Autopilot,
+ * through it: the keyboard, the ability buttons, the dev console, the Balance Lab, the Autopilot,
  * tests and agents. The console is a text adapter over this, nothing more.
  *
  * Actions go in; combat events come out of the fight separately (see `src/combatlog.ts`). An
@@ -23,15 +23,16 @@ export type GameAction =
 	| {type: 'remove'; unit: string}
 	/** Point the player at a unit id. */
 	| {type: 'target'; unit: string}
-	/** Cast, optionally switching target first — the pair every caller used to duplicate. */
-	| {type: 'cast'; spell: string; target?: string}
+	/** Use one of the player's abilities, optionally switching target first — the pair every caller
+	 * used to duplicate. Casting is one way an ability runs, not a second action. */
+	| {type: 'use'; ability: string; target?: string}
 	/** Stop the cast in progress. */
 	| {type: 'interrupt'}
 	| {type: 'tune'; of: 'ability'; name: string; key: AbilityKey; value: number}
 	| {type: 'tune'; of: 'cadence'; name: string; key: CadenceKey; value: number}
 	| {type: 'tune'; of: 'aura'; name: string; key: AuraKey; value: number}
 	| {type: 'tune'; of: 'unit'; name: string; key: UnitKey; value: number}
-	/** A number the whole game reads rather than one spell — the condition thresholds, so far. */
+	/** A number the whole game reads rather than one ability — the condition thresholds, so far. */
 	| {type: 'tune'; of: 'rule'; name: string; key: RuleKey; value: number}
 	| {type: 'resetBalance'}
 	| {type: 'healParty'}
@@ -67,12 +68,12 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			return ok(unit)
 		}
 
-		case 'cast': {
+		case 'use': {
 			if (action.target) {
 				const targeted = perform(game, {type: 'target', unit: action.target})
 				if (!targeted.ok) return targeted
 			}
-			return game.player.useAbility(action.spell)
+			return game.player.useAbility(action.ability)
 		}
 
 		case 'interrupt':

@@ -16,7 +16,7 @@ export class Heal extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 50
-	static heal = 80
+	static magnitude = 80
 	static castTime = 2000
 	static cooldown = 0
 	static gcd = true
@@ -30,7 +30,7 @@ export class FlashHeal extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 80
-	static heal = 100
+	static magnitude = 100
 	static castTime = 1000
 	static cooldown = 0
 	static gcd = true
@@ -44,7 +44,7 @@ export class GreaterHeal extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 100
-	static heal = 145
+	static magnitude = 145
 	static castTime = 3000
 	static cooldown = 0
 	static gcd = true
@@ -73,7 +73,7 @@ export class Renew extends Ability {
 	static cost = 60
 	// The size of the whole heal-over-time, kept here where the balance lab can reach it. The
 	// apply-aura effect hands it to the aura.
-	static heal = 120
+	static magnitude = 120
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
@@ -95,7 +95,7 @@ export class PowerWordShield extends Ability {
 	static targetRule = 'ally' as const
 	static cost = 60
 	/** The size of the pool, not healing — nothing here moves a health bar. */
-	static heal = 150
+	static magnitude = 150
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
@@ -111,7 +111,7 @@ export class Mend extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 0
-	static heal = 80
+	static magnitude = 80
 	static castTime = 2500
 	static cooldown = 0
 	static gcd = true

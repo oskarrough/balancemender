@@ -1,17 +1,17 @@
 import {abilityRegistry} from './nodes/registry'
-import {WolfBleed} from './nodes/attack'
+import {Rend} from './nodes/attack'
 import {
-	HugeAttackCadence,
-	MediumAttackCadence,
+	NastyArrowCadence,
+	HeavyBlowCadence,
 	MendCadence,
-	SmallAttackCadence,
-	TankAttackCadence,
-	WolfBiteCadence,
+	QuickStabCadence,
+	ShieldBashCadence,
+	SavageBiteCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
 
-export const ABILITY_KEYS = ['cost', 'heal', 'castTime', 'cooldown', 'minDamage', 'maxDamage'] as const
+export const ABILITY_KEYS = ['cost', 'magnitude', 'castTime', 'cooldown', 'minDamage', 'maxDamage'] as const
 export const CADENCE_KEYS = ['delay', 'interval'] as const
 export const UNIT_KEYS = ['maxHealth', 'maxMana', 'manaRegen'] as const
 export const AURA_KEYS = ['total', 'interval', 'repeat', 'delay'] as const
@@ -34,15 +34,15 @@ type UnitClass = {maxHealth: number; maxMana?: number; manaRegen?: number}
 export const abilityClasses = abilityRegistry
 
 export const cadenceClasses: Record<string, CadenceClass> = {
-	SmallAttackCadence,
-	MediumAttackCadence,
-	WolfBiteCadence,
-	HugeAttackCadence,
-	TankAttackCadence,
+	QuickStabCadence,
+	HeavyBlowCadence,
+	SavageBiteCadence,
+	NastyArrowCadence,
+	ShieldBashCadence,
 	MendCadence,
 }
 
-export const auraClasses: Record<string, AuraClass> = {Rend: WolfBleed}
+export const auraClasses: Record<string, AuraClass> = {Rend: Rend}
 export const ruleClasses: Record<string, RuleClass> = {Condition: CONDITION_THRESHOLDS}
 export const unitClasses: Record<string, UnitClass> = unitRegistry
 

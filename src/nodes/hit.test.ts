@@ -65,7 +65,7 @@ describe('applyHit', () => {
 				source: game.tank,
 				target: wolf,
 				amount,
-				abilityId: 'TankAttack',
+				abilityId: 'ShieldBash',
 				abilityName: 'Shield Bash',
 				eventType: 'SWING_DAMAGE',
 			})
@@ -132,7 +132,7 @@ describe('PeriodicAura', () => {
 		const healed = combatLogs
 			.filter((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
 			.reduce((total, event) => total + (event.value ?? 0), 0)
-		expect(healed).toBe(Renew.heal)
+		expect(healed).toBe(Renew.magnitude)
 		game.disconnect()
 	})
 })

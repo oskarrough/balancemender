@@ -1,7 +1,7 @@
 import {html, roundOne} from '../utils'
 import {Meter} from './bar'
 import {Monitor} from './monitor'
-import {SpellIcon} from './spell-icon'
+import {AbilityIcon} from './ability-icon'
 import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
 import {UnitFrame} from './unitframe'
@@ -25,15 +25,15 @@ export function UI(game: GameLoop) {
 	}
 
 	function handleShortcuts({key}: {key: string}) {
-		const spell = SHORTCUTS[key]
-		if (spell) game.perform({type: 'cast', spell})
+		const ability = SHORTCUTS[key]
+		if (ability) game.perform({type: 'use', ability})
 		// Moving cancels your cast.
 		if (key === 'a' || key === 's' || key === 'd' || key === 'w' || key === 'Escape') {
 			game.perform({type: 'interrupt'})
 		}
 	}
 
-	const spell = player.currentAbility
+	const casting = player.currentAbility
 	const timeSinceCast = game.elapsedTime - player.lastCastTime
 
 	/**
@@ -55,16 +55,16 @@ export function UI(game: GameLoop) {
 					</div>`
 				: null}
 
-			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, spell, player))}</div>
+			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>
 
-			<div class="PartyGroup">${game.party.map((member) => UnitFrame(member, spell, player))}</div>
+			<div class="PartyGroup">${game.party.map((member) => UnitFrame(member, casting, player))}</div>
 
 			<div class="CastingInfo">
-				${spell
+				${casting
 					? html`
 							<div class="CastBar" style="min-height: 2.5rem">
-								<p>Casting ${spell.name} ${roundOne(timeSinceCast / 1000)}</p>
-								${Meter({type: 'cast', value: timeSinceCast, max: spell.delay})}
+								<p>Casting ${casting.name} ${roundOne(timeSinceCast / 1000)}</p>
+								${Meter({type: 'cast', value: timeSinceCast, max: casting.delay})}
 							</div>
 						`
 					: null}
@@ -73,7 +73,7 @@ export function UI(game: GameLoop) {
 
 			<div class="ActionBar">
 				${Object.keys(player.abilities).length > 0
-					? Object.keys(player.abilities).map((name, index) => SpellIcon(game, name, index + 1))
+					? Object.keys(player.abilities).map((abilityId, index) => AbilityIcon(game, abilityId, index + 1))
 					: ''}
 			</div>
 

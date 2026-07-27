@@ -55,16 +55,16 @@ export class Damage implements Effect {
 /** A direct heal, varied by a few percent so no two land identically. */
 export class Heal implements Effect {
 	apply(ability: Ability, target: Unit) {
-		hit(ability, target, naturalizeNumber(ability.heal), 'SPELL_HEAL')
+		hit(ability, target, naturalizeNumber(ability.magnitude), 'SPELL_HEAL')
 	}
 }
 
 /**
  * Leave an aura behind.
  *
- * The magnitude is the ability's `heal` when it has one, which is what keeps Renew's size tunable
- * as `ability:Renew.heal` while Rend's stays on the aura as `aura:Rend.total` — an aura only needs
- * its own balance row when no ability owns its number.
+ * The aura is sized by the ability's `magnitude` when it has one, which is what keeps Renew tunable
+ * as `ability:Renew.magnitude` while Rend's size stays on the aura as `aura:Rend.total` — an aura
+ * only needs its own balance row when no ability owns its number.
  */
 export class ApplyAura implements Effect {
 	constructor(private auraClass: AuraClass) {}
@@ -73,7 +73,7 @@ export class ApplyAura implements Effect {
 		// An earlier effect in the same list may have killed the target, and death has already
 		// cancelled its auras. Do not plant one on a corpse afterwards.
 		if (!target.alive) return
-		new this.auraClass(target, ability.parent, ability.heal)
+		new this.auraClass(target, ability.parent, ability.magnitude)
 	}
 }
 
