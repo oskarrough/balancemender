@@ -16,6 +16,7 @@ import type {Character} from './character'
  * shield, a buff — needs an `Effect` base class. Keep it separable.
  */
 export class PeriodicEffect extends Task {
+	id = 'Periodic'
 	name = 'Periodic'
 	/**
 	 * What the effect lands over its whole life, not per tick — each tick applies
@@ -68,6 +69,13 @@ export class PeriodicEffect extends Task {
 	 */
 	private detached = false
 
+	/**
+	 * Stable key — `balance.effects`, `--tune`, the log's `spellId`, the stack key. See
+	 * `Spell.id`. An aura a spell owns takes that spell's id (`Renew`) so the cast and the ticks
+	 * report as one thing; a free-standing one keeps its own (`Rend`).
+	 */
+	static id = 'Periodic'
+	/** Display only. */
 	static name = 'Periodic'
 	static total = 0
 	static interval = 3000
@@ -86,20 +94,23 @@ export class PeriodicEffect extends Task {
 		total?: number,
 	) {
 		super(parent)
-		applyStatics(this, 'name', 'total', 'interval', 'repeat', 'delay', 'maxStacks')
+		applyStatics(this, 'id', 'name', 'total', 'interval', 'repeat', 'delay', 'maxStacks')
 		if (total !== undefined) this.total = total
 		this.casterName = caster.name
 		this.casterId = caster.id
 	}
 
 	/**
-	 * What counts as the same effect for stacking. Name and caster, so two healers can each keep
+	 * What counts as the same effect for stacking. Id and caster, so two healers can each keep
 	 * a Renew on the tank — moot with one player, but it is the rule that survives a second one.
 	 * Override to widen it: a debuff that should be unique on the target however many enemies
 	 * apply it drops the caster from the key.
+	 *
+	 * The id rather than the display name, so renaming what a player reads cannot silently split
+	 * one effect into two that no longer stack against each other.
 	 */
 	get stackKey() {
-		return `${this.name}:${this.casterId}`
+		return `${this.id}:${this.casterId}`
 	}
 
 	mount() {
@@ -138,7 +149,8 @@ export class PeriodicEffect extends Task {
 			source: this.caster,
 			target: this.parent,
 			amount: this.total / this.repeat,
-			spell: this.name,
+			spellId: this.id,
+			spellName: this.name,
 			eventType: this.total >= 0 ? 'SPELL_PERIODIC_HEAL' : 'SPELL_PERIODIC_DAMAGE',
 		})
 	}
@@ -166,7 +178,7 @@ export class PeriodicEffect extends Task {
 			sourceName: this.casterName,
 			targetId: this.parent.id,
 			targetName: this.parent.name || 'Unknown',
-			spellId: this.name,
+			spellId: this.id,
 			spellName: this.name,
 			// Only when there is more than one, so the common case does not read as "(1 stack)".
 			...(stacks > 1 && {extraInfo: `${stacks} stacks`}),

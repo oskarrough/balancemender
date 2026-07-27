@@ -3,10 +3,12 @@ import {SmallAttack, MediumAttack, WolfBite, HugeAttack, TankAttack} from './dam
 
 // Units live in `./unit-registry` — see the note there about the import cycle through player.ts.
 
+// Keyed by `static id`, like the attacks below and like `unitRegistry` — never by display name.
+// A spell's name is what a player reads and nothing more; see `Spell.id`.
 export const spellRegistry = {
 	Heal,
-	'Flash Heal': FlashHeal,
-	'Greater Heal': GreaterHeal,
+	FlashHeal,
+	GreaterHeal,
 	Renew,
 } as const
 

@@ -8,11 +8,23 @@ import {SpellCast} from './spell-cast'
 export class Spell extends Task {
 	repeat = 1
 
+	id = ''
 	name = ''
 	cost = 0
 	heal = 0
 	cooldown = 0
 
+	/**
+	 * What everything files this spell under: the registry, a spellbook, `balance.spells`, a
+	 * `--tune` spec, the combat log's `spellId`, the cooldown stamps. Stable, so renaming the
+	 * spell a player sees is a one-line change here rather than a find-and-replace.
+	 *
+	 * Conventionally the class name — `attackRegistry` has always keyed attacks that way — but it
+	 * is only a convention: `Renew`'s periodic effect deliberately shares the spell's id, so the
+	 * cast and its ticks report as one thing.
+	 */
+	static id = ''
+	/** What a player reads. Display only — never a key. */
 	static name = ''
 	static cost = 0
 	static heal = 0
@@ -28,7 +40,7 @@ export class Spell extends Task {
 
 	constructor(public parent: Character) {
 		super(parent)
-		applyStatics(this, 'name', 'cost', 'heal', 'cooldown')
+		applyStatics(this, 'id', 'name', 'cost', 'heal', 'cooldown')
 		this.delay = (this.constructor as typeof Spell).castTime
 	}
 
@@ -72,7 +84,8 @@ export class Spell extends Task {
 			source: this.parent,
 			target,
 			amount: naturalizeNumber(this.heal),
-			spell: this.name,
+			spellId: this.id,
+			spellName: this.name,
 			eventType: 'SPELL_HEAL',
 		})
 	}

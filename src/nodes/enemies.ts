@@ -3,7 +3,7 @@ import {FACTION} from './types'
 import {TankTargeting, RandomTargeting, MostHurtAlly} from './targeting-task'
 import {SmallAttack, MediumAttack, WolfBite, HugeAttack} from './damage-effect'
 import {Spell} from './spell'
-import {SpellCaster} from './spell-caster'
+import {Cadence} from './cadence'
 
 export class Nakroth extends Character {
 	static maxHealth = 500
@@ -32,6 +32,7 @@ export class TinyWolf extends Character {
  * interval limits a swing. Give it a `cost` the day an enemy gets a resource to spend.
  */
 export class Mend extends Spell {
+	static id = 'Mend'
 	static name = 'Mend'
 	static cost = 0
 	static heal = 80
@@ -57,11 +58,11 @@ export class WolfShaman extends Character {
 	name = 'Wolf shaman'
 	targetingTask = new MostHurtAlly(this)
 	spellbook = {Mend}
-	caster = new MendCaster(this)
+	cadence = new MendCadence(this)
 }
 
 /** Which spell, how often. Statics so the cadence is a tunable like every other number. */
-export class MendCaster extends SpellCaster {
+export class MendCadence extends Cadence {
 	static spell = 'Mend'
 	static delay = 4000
 	static interval = 8000

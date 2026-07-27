@@ -13,8 +13,10 @@ describe('parsing a tune', () => {
 		expect(parseTune('effect:Rend.total=-8')).toEqual({kind: 'effect', name: 'Rend', key: 'total', value: -8})
 	})
 
-	it('keeps the spaces in a name', () => {
-		expect(parseTune('spell:Flash Heal.cost=100')).toMatchObject({name: 'Flash Heal', key: 'cost'})
+	// Names used to be display names, so this guarded "Flash Heal" surviving the split. They are
+	// ids now — bare words — and what is left to guard is that the key comes off the *last* dot.
+	it('takes the name from between the colon and the last dot', () => {
+		expect(parseTune('spell:FlashHeal.cost=100')).toMatchObject({name: 'FlashHeal', key: 'cost'})
 	})
 
 	it('refuses what it cannot reach', () => {

@@ -33,6 +33,7 @@ const fight: CombatLogEvent[] = [
 		eventType: 'SPELL_CAST_START',
 		sourceId: 'player',
 		sourceName: 'Player',
+		spellId: 'Heal',
 		spellName: 'Heal',
 		value: 1500,
 		// The cast time or the global cooldown, whichever is longer — see `logCombat`.
@@ -43,6 +44,7 @@ const fight: CombatLogEvent[] = [
 		eventType: 'SPELL_CAST_SUCCESS',
 		sourceId: 'player',
 		sourceName: 'Player',
+		spellId: 'Heal',
 		spellName: 'Heal',
 	}),
 	event({
@@ -52,6 +54,7 @@ const fight: CombatLogEvent[] = [
 		sourceName: 'Player',
 		targetId: 'tank',
 		targetName: 'Tank',
+		spellId: 'Heal',
 		spellName: 'Heal',
 		value: 40,
 		overheal: 10,
@@ -63,6 +66,7 @@ const fight: CombatLogEvent[] = [
 		sourceName: 'Tank',
 		targetId: 'wolf',
 		targetName: 'Wolf',
+		spellId: 'TankAttack',
 		spellName: 'Shield Bash',
 		value: 50,
 	}),

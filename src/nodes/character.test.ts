@@ -104,7 +104,14 @@ describe('UNIT_CONDITION', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		const hit = (amount: number) =>
-			applyHit({source: wolf, target: game.tank, amount, spell: 'Bite', eventType: 'SWING_DAMAGE'})
+			applyHit({
+				source: wolf,
+				target: game.tank,
+				amount,
+				spellId: 'WolfBite',
+				spellName: 'Bite',
+				eventType: 'SWING_DAMAGE',
+			})
 
 		hit(-game.tank.health.max * 0.5)
 		expect(conditions()).toHaveLength(1)
@@ -128,7 +135,8 @@ describe('UNIT_CONDITION', () => {
 			source: game.enemies[0],
 			target: game.tank,
 			amount: -game.tank.health.max,
-			spell: 'Bite',
+			spellId: 'WolfBite',
+			spellName: 'Bite',
 			eventType: 'SWING_DAMAGE',
 		})
 

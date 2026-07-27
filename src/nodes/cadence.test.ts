@@ -2,7 +2,7 @@
 import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
 import {WolfShaman, Mend} from './enemies'
-import {SpellCaster} from './spell-caster'
+import {Cadence} from './cadence'
 import {SpellCast} from './spell-cast'
 import type {Character} from './character'
 import {combatLogs, clearLogs} from '../combatlog'
@@ -121,7 +121,7 @@ describe('an enemy that casts', () => {
 
 		expect(shaman.mana).toBeUndefined()
 		expect(Mend.cost).toBe(0)
-		expect(shaman.caster.interval).toBeGreaterThan(0)
+		expect(shaman.cadence.interval).toBeGreaterThan(0)
 		game.disconnect()
 	})
 
@@ -131,13 +131,13 @@ describe('an enemy that casts', () => {
 		await step()
 		shaman.currentTarget = wolf
 
-		const caster = new SpellCaster(shaman)
-		caster.spell = 'Mend'
+		const cadence = new Cadence(shaman)
+		cadence.spell = 'Mend'
 		await step()
 
-		expect(caster.shouldTick()).toBe(true)
+		expect(cadence.shouldTick()).toBe(true)
 		shaman.castSpell('Mend')
-		expect(caster.shouldTick()).toBe(false)
+		expect(cadence.shouldTick()).toBe(false)
 		await settle()
 		game.disconnect()
 	})

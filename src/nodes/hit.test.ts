@@ -25,7 +25,8 @@ describe('applyHit', () => {
 			source: game.player,
 			target: game.tank,
 			amount: 40,
-			spell: 'Heal',
+			spellId: 'Heal',
+			spellName: 'Heal',
 			eventType: 'SPELL_HEAL',
 		})
 
@@ -42,7 +43,14 @@ describe('applyHit', () => {
 
 	it('leaves overheal off a hit, so damage does not claim it overhealed nothing', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
-		applyHit({source: game.tank, target: game.tank, amount: -5, spell: 'Test', eventType: 'SWING_DAMAGE'})
+		applyHit({
+			source: game.tank,
+			target: game.tank,
+			amount: -5,
+			spellId: 'Test',
+			spellName: 'Test',
+			eventType: 'SWING_DAMAGE',
+		})
 
 		expect(combatLogs.at(-1)).toMatchObject({eventType: 'SWING_DAMAGE', value: 5})
 		expect(combatLogs.at(-1)).not.toHaveProperty('overheal')
@@ -53,7 +61,14 @@ describe('applyHit', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		const hit = (amount: number) =>
-			applyHit({source: game.tank, target: wolf, amount, spell: 'Shield Bash', eventType: 'SWING_DAMAGE'})
+			applyHit({
+				source: game.tank,
+				target: wolf,
+				amount,
+				spellId: 'TankAttack',
+				spellName: 'Shield Bash',
+				eventType: 'SWING_DAMAGE',
+			})
 
 		hit(-wolf.health.max)
 		expect(deaths()).toHaveLength(1)

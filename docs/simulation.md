@@ -219,7 +219,7 @@ and the value it changed is printed under the report:
 
 ```
 bun run sweep --seeds 200 --rosters 'TinyWolf*4' --tune 'effect:Rend.total=-16'
-bun run sim --repeat 20 --tune 'spell:Flash Heal.cost=100' --tune 'unit:TinyWolf.maxHealth=200'
+bun run sim --repeat 20 --tune 'spell:FlashHeal.cost=100' --tune 'unit:TinyWolf.maxHealth=200'
 ```
 
 `kind` is `spell`, `attack`, `effect` or `unit` — the four categories in

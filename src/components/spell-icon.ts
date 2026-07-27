@@ -3,16 +3,17 @@ import {GameLoop} from '../nodes/game-loop'
 import {Spell} from '../nodes/spell'
 import {SpellCast} from '../nodes/spell-cast'
 
-function spellIconPath(SpellClass: typeof Spell, spellName: string) {
-	const slug = SpellClass.icon || spellName.toLowerCase().replaceAll(' ', '-')
+/** From the display name, not the id: the files on disk are `flash-heal.png`. */
+function spellIconPath(SpellClass: typeof Spell) {
+	const slug = SpellClass.icon || SpellClass.name.toLowerCase().replaceAll(' ', '-')
 	return `/assets/generated/spells/${slug}.png`
 }
 
-export function SpellIcon(game: GameLoop, spellName: string, shortcut: string | number) {
+export function SpellIcon(game: GameLoop, spellId: string, shortcut: string | number) {
 	const player = game.player
-	const SpellClass = player.spellbook[spellName] as typeof Spell
+	const SpellClass = player.spellbook[spellId] as typeof Spell
 
-	if (!SpellClass) throw new Error('no spell' + spellName)
+	if (!SpellClass) throw new Error('no spell' + spellId)
 
 	// Readable cast time
 	/* const beingCast = player.lastCastSpell instanceof spells.Spell */
@@ -50,10 +51,10 @@ export function SpellIcon(game: GameLoop, spellName: string, shortcut: string | 
 		<button
 			class="Spell"
 			data-state=${state}
-			onclick=${() => game.perform({type: 'cast', spell: spellName})}
+			onclick=${() => game.perform({type: 'cast', spell: spellId})}
 			.disabled=${game.gameOver}
 		>
-			<img class="Spell-image" src=${spellIconPath(SpellClass, spellName)} alt="" />
+			<img class="Spell-image" src=${spellIconPath(SpellClass)} alt="" />
 			<div class="Spell-inner">
 				<h3>${SpellClass.name}</h3>
 				<p>

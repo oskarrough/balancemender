@@ -32,13 +32,13 @@ const failureMessage: Record<CastFailure, string> = {
 
 export class SpellCast {
 	/** Refusals come back as `{ok: false, error}` rather than a warning nobody reads. */
-	static cast(caster: Character, spellName: string): ActionResult<Spell> {
-		log(`cast:${spellName}`)
+	static cast(caster: Character, spellId: string): ActionResult<Spell> {
+		log(`cast:${spellId}`)
 
-		const SpellClass = caster.spellbook[spellName]
+		const SpellClass = caster.spellbook[spellId]
 		const failure = this.validate(caster, SpellClass)
 		if (failure) {
-			const error = failure === 'missing-spell' ? `Spell ${spellName} not found in spellbook` : failureMessage[failure]
+			const error = failure === 'missing-spell' ? `Spell ${spellId} not found in spellbook` : failureMessage[failure]
 			return {ok: false, error}
 		}
 
@@ -83,7 +83,7 @@ export class SpellCast {
 
 	/** How much longer this spell is on its own cooldown, in ms. Zero when it is ready. */
 	static cooldownRemaining(caster: Character, SpellClass: SpellClass): number {
-		const until = caster.cooldowns.get(SpellClass.name)
+		const until = caster.cooldowns.get(SpellClass.id)
 		if (until === undefined) return 0
 		return Math.max(0, until - (caster.root as GameLoop).elapsedTime)
 	}
@@ -98,7 +98,7 @@ export class SpellCast {
 			eventType: 'SPELL_CAST_START',
 			sourceId: caster.id,
 			sourceName: caster.name,
-			spellId: spell.name,
+			spellId: spell.id,
 			spellName: spell.name,
 			value: spell.delay,
 			// An instant cast still costs the global cooldown, so the longer of the two is what the
@@ -119,7 +119,7 @@ export class SpellCast {
 			eventType: 'SPELL_CAST_SUCCESS',
 			sourceId: caster.id,
 			sourceName: caster.name,
-			spellId: spell.name,
+			spellId: spell.id,
 			spellName: spell.name,
 		})
 	}
@@ -136,14 +136,14 @@ export class SpellCast {
 		if (completed) {
 			caster.lastCastCompletedTime = gameLoop.elapsedTime
 			// Starts when the cast lands, not when it began, so a long cast is not partly free.
-			if (spell.cooldown) caster.cooldowns.set(spell.name, gameLoop.elapsedTime + spell.cooldown)
+			if (spell.cooldown) caster.cooldowns.set(spell.id, gameLoop.elapsedTime + spell.cooldown)
 		} else {
 			logCombat({
 				timestamp: Date.now(),
 				eventType: 'SPELL_CAST_INTERRUPTED',
 				sourceId: caster.id,
 				sourceName: caster.name,
-				spellId: spell.name,
+				spellId: spell.id,
 				spellName: spell.name,
 			})
 		}

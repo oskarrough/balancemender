@@ -15,7 +15,7 @@ index.html
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   (Task) picks currentTarget
               │           ├── DamageEffect(Task) swings on an interval
-              │           ├── SpellCaster (Task) casts on an interval
+              │           ├── Cadence     (Task) casts on an interval
               │           └── effects     HOT / DoT (Tasks)
               ├── AudioPlayer
               └── tick() → renders components/ui.ts into `game.element`
@@ -51,9 +51,8 @@ caster with no `mana` skips the mana check — which is how enemies cast for fre
 interval instead.
 
 What is _not_ shared is who decides. The player has a keyboard and an `Autopilot` weighing the
-fight; an enemy has a `SpellCaster` casting on an interval, the way a `DamageEffect` swings on
-one. A unit wanting real decisions overrides `SpellCaster.chooses()` rather than growing a policy
-system.
+fight; an enemy has a `Cadence` casting on an interval, the way a `DamageEffect` swings on one. A
+unit wanting real decisions overrides `Cadence.chooses()` rather than growing a policy system.
 
 A unit has **one** `currentTarget`, and both attacking and casting read it. `WolfShaman` therefore
 carries no attacks — it spends its target on the ally it is healing (`MostHurtAlly`, the
@@ -132,6 +131,22 @@ retuning reaches live units by `unitId` — never by class name.
 Changes apply to newly constructed spells and attacks, so they take effect on the next cast or
 the next swing — not retroactively. A `rule` is the exception, above.
 
+### Ids and names
+
+Every spell, attack and aura carries two strings, and mixing them up is how the last round of drift
+started. `static id` is the identity: the registry key, the spellbook key, the balance key, the
+`--tune` spelling, the cooldown stamp, the stack key and the log's `spellId`. `static name` is the
+label a player reads, and it is used for nothing else — the log's `spellName`, the icon filename,
+a Balance Lab title, a report row.
+
+The point is that renaming what a player reads is a one-line change. Spells used to be keyed by
+their display name, so it was a find-and-replace across eight systems, and a wolf's spellbook
+already had a latent bug waiting for the first spell whose class name and display name differed.
+
+By convention the id is the class name, as `attackRegistry` and `unitRegistry` have always done.
+Two deliberate exceptions: `RenewEffect` takes `Renew`'s id so the cast and the ticks it plants
+report as one spell, and `WolfBleed` keeps `Rend`. Both are commented where they are declared.
+
 ## The combat log is the interface for analysis
 
 Everything that happens in a fight goes through `logCombat()` in `src/combatlog.ts`: casts, hits,
@@ -145,6 +160,10 @@ headless simulator in `src/sim/`. If you add a mechanic, log it, and it shows up
 Log both an id and a name for whoever an event touches. The analyzer keys on the id; the name is
 only a label, and it changes mid-fight — spawning a second wolf renames the first one to
 "Tiny wolf 1", so anything keyed by name splits that unit in two.
+
+The same holds for `spellId`/`spellName`, and for a while it did not: both were set to the display
+name, so the pair looked like it followed this rule while carrying one string twice. See
+[Ids and names](#ids-and-names).
 
 Log enough that the analyzer needs no game constants. `SPELL_CAST_START` carries a `busyFor` —
 the cast time or the global cooldown, whichever is longer — which is how the report can say what
@@ -197,7 +216,7 @@ has to be caught in the browser. Test the nodes and `perform()`; drive the DOM w
 bun run dev
 agent-browser open http://localhost:5173/
 agent-browser press Space                      # the splash waits for any key
-agent-browser eval 'balancemender.perform({type: "cast", spell: "Flash Heal"})'
+agent-browser eval 'balancemender.perform({type: "cast", spell: "FlashHeal"})'
 agent-browser eval 'balancemender.perform({type: "spawn", unit: "Nakroth"})'
 agent-browser get text 'fight-report'
 ```

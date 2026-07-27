@@ -90,6 +90,9 @@ export class Character extends Node {
 	 * Deliberately not the spell registry: that is the *player's* spellbook, and reading it from
 	 * here would close the import loop `character → registry → spells → spell → character`. Each
 	 * caster names its own; `Player` assigns `spellRegistry`.
+	 *
+	 * Keyed by each spell's `id`, never its display name — `{Mend}` shorthand is only correct
+	 * because that is what the key means.
 	 */
 	spellbook: Record<string, typeof Spell> = {}
 
@@ -97,7 +100,7 @@ export class Character extends Node {
 	 * Casting state. On `Character` rather than `Player` because nothing about it is the player's:
 	 * a cast is a thing with a cast time, a mana cost and a global cooldown, and an enemy that
 	 * casts needs every one of them. What stays player-only is *deciding* — the keyboard and the
-	 * autopilot on one side, a `SpellCaster` task on the other.
+	 * autopilot on one side, a `Cadence` task on the other.
 	 */
 	lastCastTime = 0
 	lastCastCompletedTime = 0
@@ -105,7 +108,7 @@ export class Character extends Node {
 	gcd: GlobalCooldown | undefined
 
 	/**
-	 * When each spell comes off its own cooldown, in fight-clock ms, keyed by spell name.
+	 * When each spell comes off its own cooldown, in fight-clock ms, keyed by spell id.
 	 *
 	 * Expiry stamps rather than a Task per spell: vroum defers `connect()` to a microtask, so a
 	 * cooldown Task started during a cast is not mounted yet when something asks about it in the
@@ -116,8 +119,8 @@ export class Character extends Node {
 	cooldowns = new Map<string, number>()
 
 	/** The primitive `perform({type: 'cast'})` composes. Returns why it refused, if it did. */
-	castSpell(spellName: string) {
-		return SpellCast.cast(this, spellName)
+	castSpell(spellId: string) {
+		return SpellCast.cast(this, spellId)
 	}
 
 	constructor(public parent: Encounter) {

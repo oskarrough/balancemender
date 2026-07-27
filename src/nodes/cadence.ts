@@ -3,7 +3,8 @@ import {applyStatics, log} from '../utils'
 import {Character} from './character'
 
 /**
- * Casts a spell on a cadence. This is the enemy-side stand-in for the player pressing a key.
+ * Casts a spell at a fixed interval. This is the enemy-side stand-in for the player pressing a
+ * key — a driver, and the only thing it contributes is *when*.
  *
  * The split is worth stating, because the obvious reading — that enemies cast differently from
  * the player — is wrong. Casting itself is entirely shared: `Character` owns the spellbook, the
@@ -15,9 +16,12 @@ import {Character} from './character'
  * That mirrors how attacking already works. A `DamageEffect` is a swing on an interval that
  * nothing chooses; this is a cast on an interval that nothing chooses. A unit wanting real
  * decisions overrides `chooses()` rather than growing a policy system it does not need.
+ *
+ * Named for the interval and not for the casting, because `caster` already means "whoever is
+ * casting" everywhere else — this class holds no casting logic at all.
  */
-export class SpellCaster extends Task {
-	/** Which spell, by the name it is filed under in the caster's own `spellbook`. */
+export class Cadence extends Task {
+	/** Which spell, by the id it is filed under in the caster's own `spellbook`. */
 	spell = ''
 	/** How long before the first cast. Enemies open with their attacks, not their tricks. */
 	delay = 4000

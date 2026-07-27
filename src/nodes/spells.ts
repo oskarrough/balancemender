@@ -10,6 +10,7 @@ import {AudioPlayer} from './audio'
 
 /** The workhorse. Nothing heals more per mana except a Renew you had time to plant. */
 export class Heal extends Spell {
+	static id = 'Heal'
 	static name = 'Heal'
 	static cost = 50
 	static heal = 80
@@ -18,6 +19,7 @@ export class Heal extends Spell {
 
 /** The panic button: lands in a second, and wastes the most mana doing it. */
 export class FlashHeal extends Spell {
+	static id = 'FlashHeal'
 	static name = 'Flash Heal'
 	static cost = 80
 	static heal = 100
@@ -26,6 +28,7 @@ export class FlashHeal extends Spell {
 
 /** Throughput. The only answer to a big deficit, and you pay for it. */
 export class GreaterHeal extends Spell {
+	static id = 'GreaterHeal'
 	static name = 'Greater Heal'
 	static cost = 100
 	static heal = 145
@@ -42,6 +45,7 @@ export class GreaterHeal extends Spell {
  * calling `super.cast()` from here would land the whole total twice over.
  */
 export class Renew extends Spell {
+	static id = 'Renew'
 	static name = 'Renew'
 	static cost = 60
 	static heal = 120
@@ -57,7 +61,13 @@ export class Renew extends Spell {
 	}
 }
 
+/**
+ * Shares `Renew`'s id deliberately, so the cast and the five ticks it produces report as one
+ * spell rather than two things that happen to be spelled the same. This is the one place the
+ * "id is the class name" convention is meant to be broken.
+ */
 class RenewEffect extends PeriodicEffect {
+	static id = 'Renew'
 	static name = 'Renew'
 	static interval = 2000
 	static repeat = 5

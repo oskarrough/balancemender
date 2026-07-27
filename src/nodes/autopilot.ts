@@ -54,7 +54,7 @@ export type Policy = (player: Player) => Decision | undefined
  */
 const castable = (player: Player, spell: SpellId, target: Character) =>
 	!SpellCast.whyNotCast(player, spellRegistry[spell], target)
-const hasEffect = (target: Character, name: string) => [...target.effects].some((effect) => effect.name === name)
+const hasEffect = (target: Character, id: string) => [...target.effects].some((effect) => effect.id === id)
 
 /** The party member in the most trouble, ties broken by lowest absolute health. Never a corpse. */
 function mostHurt(player: Player): Character | undefined {
@@ -77,8 +77,8 @@ export const idle: Policy = () => undefined
 export const triage: Policy = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.9) return undefined
-	if (target.health.ratio < 0.4 && castable(player, 'Flash Heal', target)) return {spell: 'Flash Heal', target}
-	if (target.health.ratio < 0.7 && castable(player, 'Greater Heal', target)) return {spell: 'Greater Heal', target}
+	if (target.health.ratio < 0.4 && castable(player, 'FlashHeal', target)) return {spell: 'FlashHeal', target}
+	if (target.health.ratio < 0.7 && castable(player, 'GreaterHeal', target)) return {spell: 'GreaterHeal', target}
 	if (castable(player, 'Heal', target)) return {spell: 'Heal', target}
 	return undefined
 }
@@ -104,7 +104,7 @@ export const renew: Policy = (player) => {
 export const panic: Policy = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
-	if (castable(player, 'Flash Heal', target)) return {spell: 'Flash Heal', target}
+	if (castable(player, 'FlashHeal', target)) return {spell: 'FlashHeal', target}
 	return undefined
 }
 

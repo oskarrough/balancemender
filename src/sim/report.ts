@@ -41,6 +41,8 @@ export interface ActorStats {
 }
 
 export interface SpellStats {
+	/** Stable key. Renaming a spell must not split its history into two rows. */
+	id: string
 	name: string
 	casts: number
 	/** Times the spell actually landed (a HoT lands many times per cast). */
@@ -112,20 +114,20 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			attacker.damageDone += value
 			attacker.hits++
 			target(event).damageTaken += value
-			spell(spells, event.spellName, value, 0)
+			spell(spells, event.spellId, event.spellName, value, 0)
 		} else if (HEAL.includes(event.eventType)) {
 			const healer = source(event)
 			healer.healingDone += value - overheal
 			healer.overhealing += overheal
 			target(event).healingTaken += value - overheal
-			spell(spells, event.spellName, value, overheal)
+			spell(spells, event.spellId, event.spellName, value, overheal)
 		} else if (event.eventType === 'SPELL_CAST_START') {
 			// Counted at the start, not the success: an interrupted cast still cost the caster the
 			// time it spent casting.
 			source(event).busyTime += event.busyFor ?? 0
 		} else if (event.eventType === 'SPELL_CAST_SUCCESS') {
 			source(event).casts++
-			const stats = spell(spells, event.spellName, 0, 0)
+			const stats = spell(spells, event.spellId, event.spellName, 0, 0)
 			stats.casts++
 		} else if (event.eventType === 'RESOURCE_SPENT') {
 			source(event).manaSpent += Math.abs(value)
@@ -180,7 +182,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 		events: sorted.length,
 		outcome,
 		actors: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
-		spells: [...spells.values()].filter((s) => s.name !== 'unknown').sort((a, b) => b.total - a.total),
+		spells: [...spells.values()].filter((s) => s.id !== 'unknown').sort((a, b) => b.total - a.total),
 		deaths,
 		health: roster ? healthSeries(sorted, roster, start, duration, columns) : [],
 		totals,
@@ -264,11 +266,16 @@ function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
 	return stats
 }
 
-function spell(spells: Map<string, SpellStats>, name = 'unknown', value: number, overheal: number) {
-	let stats = spells.get(name)
+/**
+ * Keyed by `spellId`, displayed by `spellName` — the same id/name split the actors use, and for
+ * the same reason: the id is what stays put. `Renew`'s cast and the ticks its aura lands share an
+ * id deliberately, so they total into one row.
+ */
+function spell(spells: Map<string, SpellStats>, id = 'unknown', name = id, value: number, overheal: number) {
+	let stats = spells.get(id)
 	if (!stats) {
-		stats = {name, casts: 0, hits: 0, total: 0, overheal: 0, min: Infinity, max: 0, avg: 0}
-		spells.set(name, stats)
+		stats = {id, name, casts: 0, hits: 0, total: 0, overheal: 0, min: Infinity, max: 0, avg: 0}
+		spells.set(id, stats)
 	}
 	if (value) {
 		stats.hits++

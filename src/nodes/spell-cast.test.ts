@@ -68,7 +68,7 @@ describe('what a cast is allowed to be', () => {
 
 		expect(SpellCast.whyNotCast(player, spellRegistry['Heal'], game.tank)).toBe('cooldown')
 		// Only that one spell. A shared cooldown would be the global one, which this is not.
-		expect(SpellCast.whyNotCast(player, spellRegistry['Flash Heal'], game.tank)).toBeUndefined()
+		expect(SpellCast.whyNotCast(player, spellRegistry['FlashHeal'], game.tank)).toBeUndefined()
 
 		game.elapsedTime = 8000
 		expect(SpellCast.whyNotCast(player, spellRegistry['Heal'], game.tank)).toBeUndefined()
@@ -83,7 +83,7 @@ describe('what a cast is allowed to be', () => {
 		player.mana!.set(spellRegistry['Heal'].cost)
 
 		expect(SpellCast.whyNotCast(player, spellRegistry['Heal'], game.tank)).toBeUndefined()
-		expect(SpellCast.whyNotCast(player, spellRegistry['Greater Heal'], game.tank)).toBe('missing-mana')
+		expect(SpellCast.whyNotCast(player, spellRegistry['GreaterHeal'], game.tank)).toBe('missing-mana')
 		// Nothing about the player is wrong — only that one spell is out of reach.
 		expect(SpellCast.whyNotAct(player)).toBeUndefined()
 

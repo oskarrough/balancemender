@@ -18,6 +18,7 @@ export class DamageEffect extends Task {
 	minDamage = 0
 	maxDamage = 0
 	sound = ''
+	id = ''
 	name = ''
 	eventType: CombatEventType = 'SPELL_DAMAGE'
 
@@ -26,6 +27,9 @@ export class DamageEffect extends Task {
 	static delay = 0
 	static interval = 1000
 	static sound = ''
+	/** Stable key — `attackRegistry`, `--tune`, the log's `spellId`. See `Spell.id`. */
+	static id = 'GenericAttack'
+	/** Display only. */
 	static name = 'Generic Attack'
 	static minDamage = 0
 	static maxDamage = 0
@@ -33,7 +37,7 @@ export class DamageEffect extends Task {
 
 	constructor(public attacker: Character) {
 		super(attacker)
-		applyStatics(this, 'delay', 'interval', 'sound', 'name', 'minDamage', 'maxDamage', 'eventType')
+		applyStatics(this, 'delay', 'interval', 'sound', 'id', 'name', 'minDamage', 'maxDamage', 'eventType')
 	}
 
 	damage() {
@@ -55,7 +59,14 @@ export class DamageEffect extends Task {
 
 		this.targetId = target.id
 		// The floating number, the combat log entry and the death are all applyHit's job.
-		applyHit({source: this.attacker, target, amount: -this.damage(), spell: this.name, eventType: this.eventType})
+		applyHit({
+			source: this.attacker,
+			target,
+			amount: -this.damage(),
+			spellId: this.id,
+			spellName: this.name,
+			eventType: this.eventType,
+		})
 
 		this.playSound()
 		this.shakeTarget()
@@ -102,6 +113,7 @@ export class SmallAttack extends DamageEffect {
 	static minDamage = 5
 	static maxDamage = 7
 	static sound = 'combat_air_hit'
+	static id = 'SmallAttack'
 	static name = 'Quick Stab'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
@@ -113,6 +125,7 @@ export class MediumAttack extends DamageEffect {
 	static minDamage = 15
 	static maxDamage = 20
 	static sound = 'combat_strong_punch'
+	static id = 'MediumAttack'
 	static name = 'Heavy Blow'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }
@@ -133,6 +146,7 @@ export class WolfBite extends DamageEffect {
 	static minDamage = 4
 	static maxDamage = 7
 	static sound = 'combat_strong_punch'
+	static id = 'WolfBite'
 	static name = 'Savage Bite'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 
@@ -169,10 +183,11 @@ export class WolfBite extends DamageEffect {
  * which does not show up in damage-per-wolf at all — it is invisible until win rates drop. Four
  * ticks is just longer than the 3800ms refresh gap, so uptime is unbroken and the debt is small.
  *
- * Not keyed to the pack: `stackKey` is name-and-caster, so three wolves mean three wounds, and
+ * Not keyed to the pack: `stackKey` is id-and-caster, so three wolves mean three wounds, and
  * bleed damage scales with pack size exactly as the bites it was taken from do.
  */
 export class WolfBleed extends PeriodicEffect {
+	static id = 'Rend'
 	static name = 'Rend'
 	static total = -8
 	static interval = 1000
@@ -195,6 +210,7 @@ export class HugeAttack extends DamageEffect {
 	static minDamage = 120
 	static maxDamage = 180
 	static sound = 'combat_arrow'
+	static id = 'HugeAttack'
 	static name = 'Nasty arrow'
 	static eventType: CombatEventType = 'RANGE_DAMAGE'
 }
@@ -205,6 +221,7 @@ export class TankAttack extends DamageEffect {
 	static minDamage = 16
 	static maxDamage = 24
 	static sound = 'combat_sword_hit'
+	static id = 'TankAttack'
 	static name = 'Shield Bash'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 }

@@ -18,8 +18,8 @@ export function UI(game: GameLoop) {
 
 	const SHORTCUTS: Record<string, string> = {
 		'1': 'Heal',
-		'2': 'Flash Heal',
-		'3': 'Greater Heal',
+		'2': 'FlashHeal',
+		'3': 'GreaterHeal',
 		'4': 'Renew',
 	}
 

@@ -38,8 +38,8 @@ type UnitClass = {maxHealth: number; maxMana?: number; manaRegen?: number}
 
 export const spellClasses: Record<string, SpellClass> = {
 	Heal,
-	'Flash Heal': FlashHeal,
-	'Greater Heal': GreaterHeal,
+	FlashHeal,
+	GreaterHeal,
 	Renew,
 	// Not in `spellRegistry` — that is the player's spellbook. Tunable all the same.
 	Mend,
@@ -160,7 +160,7 @@ export interface Tune {
 	value: number
 }
 
-/** Split from the outside in, so a name with a dot or a spell called "Flash Heal" survives. */
+/** Split from the outside in, so a name containing a dot or a space would still survive. */
 export function parseTune(spec: string): Tune {
 	const colon = spec.indexOf(':')
 	const equals = spec.lastIndexOf('=')

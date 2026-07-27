@@ -64,12 +64,16 @@ const RULE_LABEL: Record<RuleKey, string> = {
 	healthy: 'Healthy above (% health)',
 }
 
+/**
+ * Titled by display name, keyed by id — the panel would otherwise read "FlashHeal". The subtitle
+ * carries the id, so what you see in the lab is also what you type after `--tune`.
+ */
 export function spellInspectables(game: GameLoop): Inspectable[] {
-	return Object.keys(spellRegistry).map((name) => ({
+	return Object.entries(spellRegistry).map(([name, SpellClass]) => ({
 		id: `spell:${name}`,
 		kind: 'spell',
-		title: name,
-		subtitle: 'Spell defaults',
+		title: SpellClass.name,
+		subtitle: `spell:${name}`,
 		fields: SPELL_KEYS.map(
 			(key): NumberField => ({
 				kind: 'number',
@@ -85,11 +89,11 @@ export function spellInspectables(game: GameLoop): Inspectable[] {
 }
 
 export function attackInspectables(game: GameLoop): Inspectable[] {
-	return Object.keys(attackRegistry).map((name) => ({
+	return Object.entries(attackRegistry).map(([name, AttackClass]) => ({
 		id: `attack:${name}`,
 		kind: 'attack',
-		title: name,
-		subtitle: 'Attack defaults',
+		title: AttackClass.name,
+		subtitle: `attack:${name}`,
 		fields: ATTACK_KEYS.map(
 			(key): NumberField => ({
 				kind: 'number',
