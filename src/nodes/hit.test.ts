@@ -123,7 +123,9 @@ describe('PeriodicAura', () => {
 		new Renew(game.player).cast()
 		await Promise.resolve()
 
-		const renew = [...game.tank.auras].find((aura) => aura.name === 'Renew')
+		const renew = [...game.tank.auras].find(
+			(aura): aura is PeriodicAura => aura instanceof PeriodicAura && aura.name === 'Renew',
+		)
 		expect(renew).toBeDefined()
 		for (let i = 0; i < renew!.repeat; i++) renew!.tick()
 

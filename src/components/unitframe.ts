@@ -1,7 +1,7 @@
 import {Unit} from '../nodes/unit'
 import {Player} from '../nodes/player'
 import type {GameLoop} from '../nodes/game-loop'
-import type {PeriodicAura} from '../nodes/periodic-aura'
+import type {Aura} from '../nodes/aura'
 import {Spell} from '../nodes/spell'
 import {Meter} from './bar'
 import {AuraIcon} from './aura-icon'
@@ -14,7 +14,7 @@ export function UnitFrame(unit: Unit, spell: Spell | undefined, player: Player) 
 	const maxHealth = unit.health.max
 	const isCurrentTarget = player.getTarget() === unit
 	const displayName = unit.name || unit.constructor.name
-	const auras: PeriodicAura[] = unit.auras ? Array.from(unit.auras) : []
+	const auras: Aura[] = unit.auras ? Array.from(unit.auras) : []
 
 	/**
 	 * What this unit is casting, if anything. Not the `spell` argument above — that is the

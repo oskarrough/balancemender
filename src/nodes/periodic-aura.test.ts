@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import {describe, it, expect, beforeEach} from 'vitest'
 import {GameLoop} from './game-loop'
+import type {Aura} from './aura'
 import {PeriodicAura} from './periodic-aura'
 import {WolfBite} from './attack'
 import {Renew} from './spells'
@@ -12,8 +13,8 @@ import {combatLogs, clearLogs} from '../combatlog'
  * heal-per-mana in the ladder by however fast you can press it.
  */
 
-const aurasNamed = (unit: {auras: Set<PeriodicAura>}, name: string) =>
-	[...unit.auras].filter((aura) => aura.name === name)
+const aurasNamed = (unit: {auras: Set<Aura>}, name: string) =>
+	[...unit.auras].filter((aura): aura is PeriodicAura => aura.name === name && aura instanceof PeriodicAura)
 
 const auraEvents = (spell: string) =>
 	combatLogs.filter((event) => event.eventType.startsWith('SPELL_AURA') && event.abilityName === spell)
