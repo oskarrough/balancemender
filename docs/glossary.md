@@ -27,9 +27,15 @@ unit is a character.
 **Faction** — `'party'` or `'enemy'`. A static, so the registry can say which side a unit fights
 on without spawning one.
 
-**Encounter** — one fight: a party and a set of enemies. **Roster** is the description it is
-built from, `{party: ['Tank'], enemies: ['TinyWolf']}` — a request, never a record. Who actually
-fought is the report's `units`.
+**Encounter** — the live thing in the game tree holding a party and a set of enemies. **Roster** is
+the description it is built from, `{party: ['Tank'], enemies: ['TinyWolf']}` — a request, never a
+record. Who actually fought is the report's `units`.
+
+**Fight** — one run of an encounter, and the sim layer's word: `FightSpec` is the roster plus how
+to run it (a policy, a seed, a duration), and `FightResult` and `FightReport` are what came of one.
+Say "encounter" for the thing in the tree and "fight" for a run of it. Never "fight" for the object
+itself, however natural it reads — most of the codebase's prose still does, which is
+[drift](#drift-worth-fixing).
 
 **Spawn** — the one way a unit joins a fight. `Encounter.spawn(unitId)` routes it to a side by
 the class's own faction, so nothing picks the array itself.
@@ -193,10 +199,11 @@ fight without a healer at all.
 **Outcome** — how a fight ended: `victory` (every enemy dead, even if the healer died on the
 way), `defeat`, or `timeout`.
 
-**Report** — what `analyze()` makes of a combat log: per-unit and per-spell totals, deaths,
+**Report** — what `analyze()` makes of a combat log: per-unit and per-ability totals, deaths,
 health over time. Pure, so the terminal and the in-game panel agree by construction.
 
-**Seed** — one deterministic run. **Sweep** — every enemy group against every policy over many seeds.
+**Seed** — the number that makes a fight reproducible: same seed, same fight. Not a word for the
+run itself — that is a fight. **Sweep** — every enemy group against every policy over many seeds.
 
 **±** — half the 95% interval on a win rate, in points. At 10 seeds it is about ±23, wider than
 most retunes; comparing two candidates takes roughly 200.
@@ -206,7 +213,10 @@ most retunes; comparing two candidates takes roughly 200.
 Each is a word to reach past, not a word that means nothing. Where a class still carries one, that
 is [drift](#drift-worth-fixing) with a plan against it, not a second opinion.
 
-**Actor** — never for a unit. `ActorStats` is the last holdout, and becomes `UnitStats`.
+**Actor** — never for a unit. `ActorStats` is the last holdout, and becomes `UnitStats` with the
+report's `actors` becoming `units`. The one other use is unrelated and stays: `hit.ts` bundles the
+two ends of a hit as `actors` before spreading them into a log event, which is log fields and not
+units.
 
 **Character** — never for a unit _in general_: it means a named unit specifically (above), and
 using it for a wolf throws that distinction away. The class still covers everyone, which is the
@@ -239,6 +249,8 @@ any order — and let the two structural ones wait for the issues that teach us 
 | 6   | Extract the `Aura` base                           | M    | with #47    |
 | 7   | Split `Targeting` into rule + preference          | M    | ready       |
 | 8   | Unweld ability from driver; `Ability` class (#42) | L    | after 6, 7  |
+| 9   | Stop the prose calling an encounter a fight       | S    | ready       |
+| 10  | `report.spells` → `abilities`, keyed as it is     | S    | ready       |
 
 **`Character` should be `Unit`.** One thing, three words: `unit` (234 uses — spawning, the
 registry, balance, `--tune`, the CLI), `Character` / `character` (160), `actor` (26). The word is
@@ -250,7 +262,7 @@ quiet tree.
 The rename does not retire `Character`, it narrows it: a character is a _named_ unit, and the
 class is the base every unit shares. Once `Unit` is the base class, `Character` is free to mean
 what it should — the thing `Nakroth` is and `TinyWolf` is not. `ActorStats` becomes `UnitStats`
-in the same sweep.
+in the same sweep, and the report's `actors` field becomes `units`.
 
 **`HugeAttack` is misfiled, but not in the way we thought.** "Nasty arrow" is a boss ability on a
 12s cadence, and there are two mechanisms for that — `Cadence`, and an `Attack` with a long
@@ -296,17 +308,3 @@ The rule cannot move until there is an `Ability` to hold it: putting `targets` o
 `Attack` separately — they share no base — would duplicate the rule exactly as `prefers()` is
 duplicated today, one layer up. So this is part of plan item 8, not before it. Decomposing
 `Targeting` into a rule and a preference is safe to do first, and makes the move a smaller one.
-
-**~~"Roster" meant three things.~~** Fixed. A roster is the _request_ — what to spawn — and only
-`Encounter`'s `{party, enemies}` is one. The other two were a record and a half: `FightResult.roster`
-is now `units`, since it is a record of who fought, carrying the live names, `maxHealth` and
-factions the request never had — calling it by the request's name was the action/event mistake in
-different clothes. `report(log, {roster})` followed, becoming `{units}`. `sweep --rosters` became
-`--enemies`: it was only half a roster — its own help text at `sweep.ts:48` already called the
-argument "enemy groups" — and `sim` already spelled it `--enemies`, so this was two CLIs agreeing
-rather than a new word.
-
-**~~`spellId` is a name.~~** Fixed. Every spell, attack and aura now carries `static id` alongside
-`static name`, and the id is what everything keys on — see
-[Ids and names](./architecture.md#ids-and-names). `--tune 'spell:FlashHeal.cost=40'` rather than
-`'spell:Flash Heal.cost=40'`.
