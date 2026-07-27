@@ -36,7 +36,7 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 	lines.push(
 		'',
 		table(
-			['actor', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'taken', 'casts', 'busy'],
+			['actor', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'taken', 'casts', 'busy', 'hurt'],
 			report.actors.map((a) => [
 				a.name,
 				a.damageDone,
@@ -47,6 +47,7 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 				a.damageTaken,
 				a.casts,
 				percentOf(a.busyTime, report.duration),
+				percentOf(a.injuredTime, report.duration),
 			]),
 		),
 	)

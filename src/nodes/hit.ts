@@ -23,6 +23,7 @@ export interface Hit {
  */
 export function applyHit({source, target, amount, spell, eventType}: Hit): number {
 	const before = target.health.current
+	const conditionBefore = target.condition
 	if (amount >= 0) target.health.heal(amount)
 	else target.health.damage(-amount)
 	const landed = Math.abs(target.health.current - before)
@@ -49,8 +50,18 @@ export function applyHit({source, target, amount, spell, eventType}: Hit): numbe
 
 	// Recorded here rather than by whatever swung, so a death by any means is logged exactly
 	// once — the `before > 0` is what makes hitting a corpse not announce it again.
+	//
+	// Crossing a condition threshold is the same shape of fact and belongs in the same place:
+	// after the event that caused it, carrying who caused it. Logging it from `Health.set()`
+	// instead would land it *before* its own cause (both stamp the same `elapsedTime`), with no
+	// source and no spell, and would fire from every dev tool that writes a health bar directly.
+	//
+	// `else` because a killing blow already says everything: a corpse reads `injured`, and
+	// announcing that alongside the death is noise.
 	if (before > 0 && target.health.current <= 0) {
 		logCombat({timestamp: Date.now(), eventType: 'UNIT_DIED', ...actors})
+	} else if (target.condition !== conditionBefore) {
+		logCombat({timestamp: Date.now(), eventType: 'UNIT_CONDITION', ...actors, condition: target.condition})
 	}
 
 	return landed

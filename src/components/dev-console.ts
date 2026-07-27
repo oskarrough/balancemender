@@ -1,8 +1,8 @@
 import {GameLoop} from '../nodes/game-loop'
 import {html, render} from '../utils'
 import {createLogger} from '../combatlog'
-import {SPELL_KEYS, ATTACK_KEYS, EFFECT_KEYS, UNIT_KEYS} from '../balance'
-import type {SpellKey, AttackKey, EffectKey, UnitKey, BalanceKind} from '../balance'
+import {balanceCategories} from '../balance'
+import type {BalanceKind} from '../balance'
 import {unitIds, UnitId} from '../nodes/unit-registry'
 import type {GameAction} from '../actions'
 import type {Character} from '../nodes/character'
@@ -145,10 +145,11 @@ export class DevConsole extends HTMLElement {
 					}
 				},
 			},
-			this.tuneCommand<SpellKey>('spell', SPELL_KEYS),
-			this.tuneCommand<AttackKey>('attack', ATTACK_KEYS),
-			this.tuneCommand<EffectKey>('effect', EFFECT_KEYS),
-			this.tuneCommand<UnitKey>('unit', UNIT_KEYS),
+			// Every tunable kind gets a command, from the same table `--tune` reads. Hand-listing
+			// these is how `effect` came to be tunable from a terminal and not from the game.
+			...Object.entries(balanceCategories).map(([kind, category]) =>
+				this.tuneCommand(kind as BalanceKind, category.keys),
+			),
 			{
 				name: 'balance',
 				description: 'Balance ops: reset',

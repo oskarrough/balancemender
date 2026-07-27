@@ -1,4 +1,5 @@
 import Pino from 'pino'
+import type {Condition} from './nodes/types'
 
 // Combat event format inspired by WoW
 export interface CombatLogEvent {
@@ -24,6 +25,13 @@ export interface CombatLogEvent {
 	 * on its target rather than how long its caster stood still.
 	 */
 	busyFor?: number
+	/**
+	 * Which band of its health bar the target has just crossed into. Its own field rather than
+	 * `extraInfo`, which is display text — the analyzer keys on this to total up how long a unit
+	 * spent in trouble, and it cannot ask the game where the thresholds are: `--tune` moves them,
+	 * and an analyzer holding the old number would quietly report the wrong answer.
+	 */
+	condition?: Condition
 	extraInfo?: string
 	isAOE?: boolean
 	groupId?: string
@@ -46,6 +54,7 @@ export type CombatEventType =
 	| 'RESOURCE_GAIN'
 	| 'RESOURCE_SPENT'
 	| 'UNIT_DIED'
+	| 'UNIT_CONDITION'
 	| 'ENCOUNTER_START'
 	| 'ENCOUNTER_END'
 	| 'SWEET_SPOT_HIT'

@@ -25,6 +25,14 @@ export class Resource extends Node {
 	}
 
 	/**
+	 * How full, 0 to 1. Zero when there is no pool at all rather than `NaN`, which is what
+	 * `0 / 0` gives and what anything sorting or drawing on this would then propagate.
+	 */
+	get ratio() {
+		return this.max ? this.current / this.max : 0
+	}
+
+	/**
 	 * Set resource to a new value and emit appropriate events
 	 */
 	set(amount: number) {

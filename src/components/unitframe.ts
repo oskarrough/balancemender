@@ -30,8 +30,9 @@ export function UnitFrame(character: Character, spell: Spell | undefined, player
 
 	return html`
 		<div
-			class=${`Character ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Character--targeted' : ''}`}
+			class=${`Character ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Character--targeted' : ''} ${character.alive ? '' : 'Character--dead'}`}
 			data-character-id=${id}
+			data-condition=${character.condition}
 			onclick=${() => (player.root as GameLoop).perform({type: 'target', unit: id})}
 		>
 			<div class="Character-row">

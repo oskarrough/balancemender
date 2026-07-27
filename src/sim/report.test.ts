@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {analyze, healthSeries} from './report'
+import {analyze, healthSeries, partyInjuredTime} from './report'
 import {sparkline} from './format'
 import type {CombatLogEvent} from '../combatlog'
 import type {UnitInfo} from './run'
@@ -138,6 +138,61 @@ describe('analyze', () => {
 		const empty = analyze([])
 		expect(empty.duration).toBe(0)
 		expect(empty.actors).toEqual([])
+	})
+})
+
+/**
+ * Time spent below the injured line is what separates a fight the healer won from one that was
+ * never in doubt — the question behind #50 and #51. It is counted from `UNIT_CONDITION` rather
+ * than replayed off the health bar, because what counts as injured is a number `--tune` moves.
+ */
+describe('injuredTime', () => {
+	const hurt = (partial: Partial<CombatLogEvent>) =>
+		event({eventType: 'UNIT_CONDITION', targetId: 'tank', targetName: 'Tank', ...partial})
+
+	it('adds up the stretches a unit spent injured', () => {
+		const report = analyze(
+			[
+				event({time: 0, eventType: 'ENCOUNTER_START'}),
+				hurt({time: 1000, condition: 'injured'}),
+				hurt({time: 3000, condition: 'steady'}),
+				hurt({time: 5000, condition: 'injured'}),
+				hurt({time: 6000, condition: 'healthy'}),
+				event({time: 8000, eventType: 'ENCOUNTER_END'}),
+			],
+			{roster},
+		)
+
+		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
+		expect(partyInjuredTime(report)).toBe(3000)
+	})
+
+	it('closes a stretch still open when the fight ends', () => {
+		const report = analyze([event({time: 0, eventType: 'ENCOUNTER_START'}), hurt({time: 2000, condition: 'injured'})], {
+			roster,
+			duration: 10_000,
+		})
+
+		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(8000)
+	})
+
+	/** A killing blow logs no condition change, so without this the interval would run to the end. */
+	it('stops the clock at death rather than at the end of the fight', () => {
+		const report = analyze(
+			[
+				event({time: 0, eventType: 'ENCOUNTER_START'}),
+				hurt({time: 1000, condition: 'injured'}),
+				event({time: 4000, eventType: 'UNIT_DIED', targetId: 'tank', targetName: 'Tank'}),
+				event({time: 9000, eventType: 'ENCOUNTER_END'}),
+			],
+			{roster},
+		)
+
+		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
+	})
+
+	it('counts nobody as hurt in a fight where nobody crossed the line', () => {
+		expect(partyInjuredTime(analyze(fight, {roster}))).toBe(0)
 	})
 })
 

@@ -31,6 +31,12 @@ export interface ActorStats {
 	 * cheaper decision-making will help it.
 	 */
 	busyTime: number
+	/**
+	 * Milliseconds this unit spent below the injured threshold. The number that separates a fight
+	 * the healer won from one that was never in doubt: a party that is never injured was never in
+	 * danger, however long the fight ran or however much healing landed.
+	 */
+	injuredTime: number
 	deathTime?: number
 }
 
@@ -88,6 +94,14 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 	const deaths: {id?: string; name: string; time: number}[] = []
 	const source = (event: CombatLogEvent) => actor(actors, event.sourceId, event.sourceName)
 	const target = (event: CombatLogEvent) => actor(actors, event.targetId, event.targetName)
+	/** When each unit currently below the injured line dropped there. Empty means nobody is. */
+	const injuredSince = new Map<ActorStats, number>()
+	const leaveInjured = (stats: ActorStats, time: number) => {
+		const since = injuredSince.get(stats)
+		if (since === undefined) return
+		stats.injuredTime += time - since
+		injuredSince.delete(stats)
+	}
 
 	for (const event of sorted) {
 		const value = event.value ?? 0
@@ -115,12 +129,29 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			stats.casts++
 		} else if (event.eventType === 'RESOURCE_SPENT') {
 			source(event).manaSpent += Math.abs(value)
+		} else if (event.eventType === 'UNIT_CONDITION') {
+			const stats = target(event)
+			if (event.condition === 'injured') {
+				// Guarded rather than overwritten: two "injured" in a row would otherwise restart
+				// the clock and lose everything before the second one.
+				if (!injuredSince.has(stats)) injuredSince.set(stats, at(event))
+			} else {
+				leaveInjured(stats, at(event))
+			}
 		} else if (event.eventType === 'UNIT_DIED' && event.targetName) {
 			const time = at(event) - start
+			const stats = target(event)
 			deaths.push({id: event.targetId, name: event.targetName, time})
-			target(event).deathTime = time
+			stats.deathTime = time
+			// A killing blow deliberately logs no condition change, so a unit that died injured
+			// still has an interval open. Dying ends it — a corpse is not in danger.
+			leaveInjured(stats, at(event))
 		}
 	}
+
+	// Units spawn at full health, so anyone still injured at the last event has been since their
+	// last crossing. The fight's end closes the interval.
+	for (const [stats, since] of injuredSince) stats.injuredTime += start + duration - since
 
 	// The roster is the authority on who is who. It also carries the *current* name, which
 	// matters because spawning a second wolf renames the first one halfway through the log.
@@ -226,6 +257,7 @@ function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
 			hits: 0,
 			manaSpent: 0,
 			busyTime: 0,
+			injuredTime: 0,
 		}
 		actors.set(key, stats)
 	}
@@ -255,6 +287,17 @@ function spell(spells: Map<string, SpellStats>, name = 'unknown', value: number,
  * an id would have to be looked up from the roster first.
  */
 export const healerOf = (report: FightReport) => report.actors.find((actor) => actor.name === 'Player')
+
+/**
+ * How long the party's worst-off member spent injured — the fight's answer to "was anyone ever
+ * actually in trouble?".
+ *
+ * The worst member rather than the sum, so a bigger party does not read as a more dangerous
+ * fight, and rather than an overlap-merged union, which would need interval arithmetic to say
+ * something no less arbitrary. Needs a roster: `faction` comes from there, not from the log.
+ */
+export const partyInjuredTime = (report: FightReport) =>
+	Math.max(0, ...report.actors.filter((actor) => actor.faction === 'party').map((actor) => actor.injuredTime))
 
 /**
  * Half the 95% interval on `part/whole`, in points — how far a rate this size could have landed

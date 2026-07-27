@@ -46,8 +46,6 @@ export interface Decision {
 /** Given the player, decide what to cast right now (or nothing). */
 export type Policy = (player: Player) => Decision | undefined
 
-const ratio = (c: Character) => c.health.current / c.health.max
-
 /**
  * The same question the action bar asks, so a policy cannot decide to cast something the game
  * would then refuse. This used to compare `cost` to current mana here, which meant the
@@ -62,18 +60,25 @@ const hasEffect = (target: Character, name: string) => [...target.effects].some(
 function mostHurt(player: Player): Character | undefined {
 	const candidates = player.parent.party.filter((member) => member.alive)
 	if (!candidates.length) return undefined
-	return candidates.sort((a, b) => ratio(a) - ratio(b) || a.health.current - b.health.current)[0]
+	return candidates.sort((a, b) => a.health.ratio - b.health.ratio || a.health.current - b.health.current)[0]
 }
 
 /** Cast nothing, ever. The control group: how long does the party last unhealed? */
 export const idle: Policy = () => undefined
 
-/** Match the heal to the emergency, and don't top off people who are nearly full. */
+/**
+ * Match the heal to the emergency, and don't top off people who are nearly full.
+ *
+ * The numbers below are close to `Character.condition`'s bands and are deliberately not them.
+ * These policies are the measuring instrument — every win rate in a sweep is quoted against
+ * them — so folding them into a threshold that spells also read makes the sweep circular and
+ * silently moves every number we have already recorded. Leave them be.
+ */
 export const triage: Policy = (player) => {
 	const target = mostHurt(player)
-	if (!target || ratio(target) > 0.9) return undefined
-	if (ratio(target) < 0.4 && castable(player, 'Flash Heal', target)) return {spell: 'Flash Heal', target}
-	if (ratio(target) < 0.7 && castable(player, 'Greater Heal', target)) return {spell: 'Greater Heal', target}
+	if (!target || target.health.ratio > 0.9) return undefined
+	if (target.health.ratio < 0.4 && castable(player, 'Flash Heal', target)) return {spell: 'Flash Heal', target}
+	if (target.health.ratio < 0.7 && castable(player, 'Greater Heal', target)) return {spell: 'Greater Heal', target}
 	if (castable(player, 'Heal', target)) return {spell: 'Heal', target}
 	return undefined
 }
@@ -81,9 +86,9 @@ export const triage: Policy = (player) => {
 /** Keep a Renew rolling on whoever needs it, fill with Heal. Cheap, but slow to react. */
 export const renew: Policy = (player) => {
 	const target = mostHurt(player)
-	if (!target || ratio(target) > 0.95) return undefined
+	if (!target || target.health.ratio > 0.95) return undefined
 	if (!hasEffect(target, 'Renew') && castable(player, 'Renew', target)) return {spell: 'Renew', target}
-	if (ratio(target) < 0.6 && castable(player, 'Heal', target)) return {spell: 'Heal', target}
+	if (target.health.ratio < 0.6 && castable(player, 'Heal', target)) return {spell: 'Heal', target}
 	return undefined
 }
 
@@ -98,7 +103,7 @@ export const renew: Policy = (player) => {
  */
 export const panic: Policy = (player) => {
 	const target = mostHurt(player)
-	if (!target || ratio(target) > 0.95) return undefined
+	if (!target || target.health.ratio > 0.95) return undefined
 	if (castable(player, 'Flash Heal', target)) return {spell: 'Flash Heal', target}
 	return undefined
 }

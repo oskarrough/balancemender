@@ -4,7 +4,7 @@ import {Mana} from './mana'
 import type {Encounter} from './encounter'
 import type {PeriodicEffect} from './periodic'
 import {createId, log} from '../utils'
-import {Faction, FACTION} from './types'
+import {Faction, FACTION, Condition, CONDITION_THRESHOLDS} from './types'
 import type {UnitId} from './unit-registry'
 import type {Spell} from './spell'
 import type {GlobalCooldown} from './global-cooldown'
@@ -13,6 +13,8 @@ import {SpellCast} from './spell-cast'
 export type CharacterEffect = PeriodicEffect
 export type {Faction} from './types'
 export {FACTION} from './types'
+export {CONDITION_THRESHOLDS} from './types'
+export type {Condition} from './types'
 
 /**
  * Base character class. Subclasses declare `static maxHealth = N` and the
@@ -43,6 +45,38 @@ export class Character extends Node {
 	 */
 	get alive() {
 		return this.health.current > 0
+	}
+
+	/**
+	 * Which band of its health bar this unit is in — the primitive a spell that cares about how
+	 * hurt someone is reads, instead of writing its own percentage.
+	 *
+	 * A pure function of health, with no memory: no hysteresis, no latch. That is what keeps it
+	 * safe to ask anywhere and testable in isolation, and it is what would break the moment a
+	 * threshold became tunable mid-fight against a stored state.
+	 *
+	 * Compared through `ratio` rather than by cross-multiplying `current * 100`: multiplying an
+	 * already-inexact health value pushes a unit sitting exactly on a threshold across it — 305
+	 * times over the first 2000 max-health values, against none this way.
+	 */
+	get condition(): Condition {
+		const percent = this.health.ratio * 100
+		if (percent < CONDITION_THRESHOLDS.injured) return 'injured'
+		if (percent > CONDITION_THRESHOLDS.healthy) return 'healthy'
+		return 'steady'
+	}
+
+	/**
+	 * Orthogonal to `alive`, deliberately: a corpse sits at 0% and so reads `injured`. Every
+	 * consumer in the game already filters the dead before asking anything else, and a fourth
+	 * `'dead'` condition would be a second source of truth for what `alive` already owns.
+	 */
+	get injured() {
+		return this.condition === 'injured'
+	}
+
+	get healthy() {
+		return this.condition === 'healthy'
 	}
 
 	getTarget(): Character | undefined {

@@ -27,7 +27,8 @@ import {cli, bail, attempt} from './cli'
 
 GlobalRegistrator.register()
 
-const {runFight, analyze, healerOf, margin, parseUnits, policies, applyTunes, formatTune} = await import('../src/sim')
+const {runFight, analyze, healerOf, partyInjuredTime, margin, parseUnits, policies, applyTunes, formatTune} =
+	await import('../src/sim')
 
 const {text, num, all, flag} = cli(Bun.argv.slice(2))
 
@@ -98,6 +99,14 @@ interface Row {
 	castsPerFight: number
 	/** Share of the fight the healer spent committed to a cast or its global cooldown. */
 	busyPercent: number
+	/**
+	 * Share of the fight the party's worst-off member spent below the injured line.
+	 *
+	 * Read next to `win%`: a policy that wins at 0% hurt was never tested, and a roster where even
+	 * `idle` stays near 0% is not a fight, it is a waiting room. A retune that raises win rates by
+	 * lowering this made the fight easier; one that leaves it alone made the healer better.
+	 */
+	hurtPercent: number
 }
 
 /**
@@ -113,6 +122,7 @@ interface Fight {
 	mana: number
 	casts: number
 	busy: number
+	hurt: number
 }
 
 const rows: Row[] = []
@@ -128,7 +138,8 @@ for (const roster of rosters) {
 				seed,
 				maxDuration,
 			})
-			const healer = healerOf(analyze(result.events, result))
+			const report = analyze(result.events, result)
+			const healer = healerOf(report)
 			fights.push({
 				outcome: result.outcome,
 				duration: result.duration,
@@ -137,6 +148,8 @@ for (const roster of rosters) {
 				mana: healer?.manaSpent ?? 0,
 				casts: healer?.casts ?? 0,
 				busy: healer?.busyTime ?? 0,
+				// The party's, not the healer's: the question is whether anyone was in danger.
+				hurt: partyInjuredTime(report),
 			})
 		}
 
@@ -160,6 +173,12 @@ for (const roster of rosters) {
 			manaPerSecond: seconds ? round(sum((f) => f.mana) / seconds) : 0,
 			castsPerFight: round(sum((f) => f.casts) / seeds),
 			busyPercent: totalMs ? percent(busy, totalMs) : 0,
+			hurtPercent: totalMs
+				? percent(
+						sum((f) => f.hurt),
+						totalMs,
+					)
+				: 0,
 		})
 		// Progress on stderr, so `--json > file` stays valid.
 		console.error(`${roster.label} / ${policy}`)
@@ -176,12 +195,26 @@ if (flag('json')) {
 process.exit(0)
 
 function table(rows: Row[]) {
-	const header = ['roster', 'policy', 'win%', '±', 'timeout%', 'median', 'hps', 'overheal%', 'mana/s', 'busy%', 'casts']
+	const header = [
+		'roster',
+		'policy',
+		'win%',
+		'±',
+		'hurt%',
+		'timeout%',
+		'median',
+		'hps',
+		'overheal%',
+		'mana/s',
+		'busy%',
+		'casts',
+	]
 	const body = rows.map((row) => [
 		row.roster,
 		row.policy,
 		`${row.winPercent}%`,
 		`${row.winMargin}`,
+		`${row.hurtPercent}%`,
 		`${row.timeoutPercent}%`,
 		`${(row.medianDuration / 1000).toFixed(1)}s`,
 		row.hps.toFixed(1),

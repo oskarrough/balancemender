@@ -8,7 +8,12 @@
 	border: 1px solid;
 	border-radius: var(--radius);
 	cursor: pointer;
-	transition: background 100ms;
+	/* Slow on the condition ring on purpose: a unit hovering on a threshold flips back and
+	   forth, and absorbing that here is cheaper than giving `condition` a memory. */
+	transition:
+		background 100ms,
+		border-color 250ms,
+		box-shadow 250ms;
 	background: var(--character-bg);
 	max-width: 100%;
 	width: 20rem;
@@ -24,6 +29,28 @@
 }
 
 .Character.PartyMember {
+}
+
+/**
+ * How a unit is doing, at a glance. A border rather than a background, because `.Enemy` and
+ * `--targeted` already own the background and a unit is both of those things at once.
+ */
+.Character[data-condition='injured'] {
+	border-color: var(--c-vermilion);
+	box-shadow: 0 0 0 2px color-mix(in oklch, transparent, var(--c-vermilion) 45%);
+}
+
+.Character[data-condition='healthy'] {
+	border-color: var(--c-imperial-green);
+}
+
+/* Corpses stay in the party and keep rendering, and 0% health reads as `injured` — so without
+   this the dead wear the loudest frame on the screen. Doubled up to outweigh the attribute
+   selector above it, which is one class heavier than a bare modifier. */
+.Character.Character--dead {
+	opacity: 0.45;
+	filter: grayscale(1);
+	box-shadow: none;
 }
 
 .Character.Enemy {

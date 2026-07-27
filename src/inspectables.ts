@@ -1,6 +1,6 @@
 import type {GameLoop} from './nodes/game-loop'
 import type {Character} from './nodes/character'
-import {balance, SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, SpellKey, AttackKey, UnitKey} from './balance'
+import {balance, SPELL_KEYS, ATTACK_KEYS, UNIT_KEYS, RULE_KEYS, SpellKey, AttackKey, UnitKey, RuleKey} from './balance'
 import {spellRegistry, attackRegistry} from './nodes/registry'
 import type {UnitId} from './nodes/unit-registry'
 
@@ -32,7 +32,7 @@ export type Action = {
 
 export type Inspectable = {
 	id: string
-	kind: 'spell' | 'attack' | 'unit' | 'live' | 'globals'
+	kind: 'spell' | 'attack' | 'unit' | 'rule' | 'live' | 'globals'
 	title: string
 	subtitle?: string
 	fields: Field[]
@@ -57,6 +57,11 @@ const UNIT_LABEL: Record<UnitKey, string> = {
 	maxHealth: 'Max health',
 	maxMana: 'Max mana',
 	manaRegen: 'Mana regen (per second)',
+}
+
+const RULE_LABEL: Record<RuleKey, string> = {
+	injured: 'Injured below (% health)',
+	healthy: 'Healthy above (% health)',
 }
 
 export function spellInspectables(game: GameLoop): Inspectable[] {
@@ -94,6 +99,31 @@ export function attackInspectables(game: GameLoop): Inspectable[] {
 				set: (value) => {
 					game.perform({type: 'tune', of: 'attack', name, key, value})
 				},
+			}),
+		),
+	}))
+}
+
+/**
+ * Numbers the whole game reads. Unlike the other panels these land on the fight in progress,
+ * because a rule is read where it is used rather than copied onto an instance at construction.
+ */
+export function ruleInspectables(game: GameLoop): Inspectable[] {
+	return Object.keys(balance.rules).map((name) => ({
+		id: `rule:${name}`,
+		kind: 'rule',
+		title: name,
+		subtitle: 'Applies immediately',
+		fields: RULE_KEYS.map(
+			(key): NumberField => ({
+				kind: 'number',
+				key,
+				label: RULE_LABEL[key],
+				get: () => balance.rules[name][key] ?? 0,
+				set: (value) => {
+					game.perform({type: 'tune', of: 'rule', name, key, value})
+				},
+				min: 0,
 			}),
 		),
 	}))
@@ -301,5 +331,6 @@ export function allInspectables(game: GameLoop): InspectableSection[] {
 		{section: 'Spells', items: spellInspectables(game)},
 		{section: 'Units', items: unitInspectables(game)},
 		{section: 'Attacks', items: attackInspectables(game)},
+		{section: 'Rules', items: ruleInspectables(game)},
 	]
 }

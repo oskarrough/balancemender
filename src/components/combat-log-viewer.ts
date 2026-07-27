@@ -17,7 +17,15 @@ export const EVENT_TYPE_FILTERS: CombatEventType[] = [
 	'SPELL_AURA_REFRESH',
 	'SPELL_AURA_REMOVED',
 	'UNIT_DIED',
+	'UNIT_CONDITION',
 ]
+
+/** Reads as a state the unit is now in, not as something the source did to them. */
+const CONDITION_PHRASE = {
+	injured: 'is injured',
+	steady: 'is out of danger',
+	healthy: 'is healthy again',
+}
 
 // Verb + amount-word per event type. Defaults to "used" / value-only.
 const VERBS: Partial<Record<CombatEventType, {verb: string; amountWord?: string}>> = {
@@ -33,6 +41,9 @@ const VERBS: Partial<Record<CombatEventType, {verb: string; amountWord?: string}
 function formatLogEntry(event: CombatLogEvent): string {
 	if (event.eventType === 'UNIT_DIED') {
 		return `${event.targetName || 'Unknown entity'} died${event.extraInfo ? ` (${event.extraInfo})` : ''}`
+	}
+	if (event.eventType === 'UNIT_CONDITION' && event.condition) {
+		return `${event.targetName || 'Unknown entity'} ${CONDITION_PHRASE[event.condition]}`
 	}
 	// Written from the target's side: nobody casts a fade, the effect simply runs out.
 	if (event.eventType === 'SPELL_AURA_REMOVED') {
