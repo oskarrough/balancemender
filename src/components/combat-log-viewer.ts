@@ -13,6 +13,9 @@ export const EVENT_TYPE_FILTERS: CombatEventType[] = [
 	'SPELL_PERIODIC_HEAL',
 	'SWING_DAMAGE',
 	'RANGE_DAMAGE',
+	'SPELL_AURA_APPLIED',
+	'SPELL_AURA_REFRESH',
+	'SPELL_AURA_REMOVED',
 	'UNIT_DIED',
 ]
 
@@ -23,11 +26,17 @@ const VERBS: Partial<Record<CombatEventType, {verb: string; amountWord?: string}
 	SPELL_CAST_SUCCESS: {verb: 'cast'},
 	SPELL_CAST_START: {verb: 'begins casting'},
 	SPELL_CAST_FAILED: {verb: 'failed to cast'},
+	SPELL_AURA_APPLIED: {verb: 'applied'},
+	SPELL_AURA_REFRESH: {verb: 'refreshed'},
 }
 
 function formatLogEntry(event: CombatLogEvent): string {
 	if (event.eventType === 'UNIT_DIED') {
 		return `${event.targetName || 'Unknown entity'} died${event.extraInfo ? ` (${event.extraInfo})` : ''}`
+	}
+	// Written from the target's side: nobody casts a fade, the effect simply runs out.
+	if (event.eventType === 'SPELL_AURA_REMOVED') {
+		return `${event.spellName} fades from ${event.targetName || 'Unknown entity'}`
 	}
 	const {verb = 'used', amountWord} = VERBS[event.eventType] ?? {}
 	const source = event.sourceName ?? ''

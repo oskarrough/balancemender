@@ -118,6 +118,11 @@ nothing else about them differed. That `total` is what lands over the effect's w
 per tick; a spell can pass its own, which is how `Renew` keeps its number where the balance lab
 can tune it.
 
+How many copies of an effect a unit can carry is `maxStacks`, and it defaults to 1 — recasting
+replaces what is there and the duration starts over. Raise it for a spell that is _meant_ to
+stack; unbounded is not a design. Effects log `SPELL_AURA_APPLIED`/`REFRESH`/`REMOVED`, so an
+effect coming and going reads from the same stream as the hits it lands.
+
 ## Fights without a browser
 
 `src/sim/` runs the real GameLoop on a stepped clock with an `Autopilot` playing the healer.
