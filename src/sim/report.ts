@@ -40,12 +40,12 @@ export interface ActorStats {
 	deathTime?: number
 }
 
-export interface SpellStats {
-	/** Stable key. Renaming a spell must not split its history into two rows. */
+export interface AbilityStats {
+	/** Stable key. Renaming an ability must not split its history into two rows. */
 	id: string
 	name: string
 	casts: number
-	/** Times the spell actually landed (a HoT lands many times per cast). */
+	/** Times the ability actually landed (a HoT lands many times per cast). */
 	hits: number
 	total: number
 	overheal: number
@@ -69,7 +69,7 @@ export interface FightReport {
 	events: number
 	outcome?: Outcome
 	actors: ActorStats[]
-	spells: SpellStats[]
+	abilities: AbilityStats[]
 	deaths: {id?: string; name: string; time: number}[]
 	health: Series[]
 	totals: {damage: number; healing: number; overhealing: number; dps: number; hps: number}
@@ -92,7 +92,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 	const duration = options.duration ?? (sorted.length ? at(sorted[sorted.length - 1]) - start : 0)
 
 	const actors = new Map<string, ActorStats>()
-	const spells = new Map<string, SpellStats>()
+	const abilities = new Map<string, AbilityStats>()
 	const deaths: {id?: string; name: string; time: number}[] = []
 	const source = (event: CombatLogEvent) => actor(actors, event.sourceId, event.sourceName)
 	const target = (event: CombatLogEvent) => actor(actors, event.targetId, event.targetName)
@@ -114,20 +114,20 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			attacker.damageDone += value
 			attacker.hits++
 			target(event).damageTaken += value
-			spell(spells, event.abilityId, event.abilityName, value, 0)
+			ability(abilities, event.abilityId, event.abilityName, value, 0)
 		} else if (HEAL.includes(event.eventType)) {
 			const healer = source(event)
 			healer.healingDone += value - overheal
 			healer.overhealing += overheal
 			target(event).healingTaken += value - overheal
-			spell(spells, event.abilityId, event.abilityName, value, overheal)
+			ability(abilities, event.abilityId, event.abilityName, value, overheal)
 		} else if (event.eventType === 'SPELL_CAST_START') {
 			// Counted at the start, not the success: an interrupted cast still cost the caster the
 			// time it spent casting.
 			source(event).busyTime += event.busyFor ?? 0
 		} else if (event.eventType === 'SPELL_CAST_SUCCESS') {
 			source(event).casts++
-			const stats = spell(spells, event.abilityId, event.abilityName, 0, 0)
+			const stats = ability(abilities, event.abilityId, event.abilityName, 0, 0)
 			stats.casts++
 		} else if (event.eventType === 'RESOURCE_SPENT') {
 			source(event).manaSpent += Math.abs(value)
@@ -182,7 +182,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 		events: sorted.length,
 		outcome,
 		actors: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
-		spells: [...spells.values()].filter((s) => s.id !== 'unknown').sort((a, b) => b.total - a.total),
+		abilities: [...abilities.values()].filter((a) => a.id !== 'unknown').sort((a, b) => b.total - a.total),
 		deaths,
 		health: units ? healthSeries(sorted, units, start, duration, columns) : [],
 		totals,
@@ -271,11 +271,11 @@ function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
  * for the same reason: the id is what stays put. `Renew`'s cast and the ticks its aura lands share
  * an id deliberately, so they total into one row.
  */
-function spell(spells: Map<string, SpellStats>, id = 'unknown', name = id, value: number, overheal: number) {
-	let stats = spells.get(id)
+function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id, value: number, overheal: number) {
+	let stats = abilities.get(id)
 	if (!stats) {
 		stats = {id, name, casts: 0, hits: 0, total: 0, overheal: 0, min: Infinity, max: 0, avg: 0}
-		spells.set(id, stats)
+		abilities.set(id, stats)
 	}
 	if (value) {
 		stats.hits++

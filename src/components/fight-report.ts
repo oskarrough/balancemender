@@ -121,12 +121,12 @@ export class FightReportView extends HTMLElement {
 						</tbody>
 					</table>
 
-					${report.spells.length
+					${report.abilities.length
 						? html`
 								<table class="FightReport-table">
 									<thead>
 										<tr>
-											<th>spell</th>
+											<th>ability</th>
 											<th>casts</th>
 											<th>hits</th>
 											<th>total</th>
@@ -135,15 +135,15 @@ export class FightReportView extends HTMLElement {
 										</tr>
 									</thead>
 									<tbody>
-										${report.spells.map(
-											(spell) => html`
+										${report.abilities.map(
+											(ability) => html`
 												<tr>
-													<td>${spell.name}</td>
-													<td>${spell.casts}</td>
-													<td>${spell.hits}</td>
-													<td>${spell.total}</td>
-													<td>${spell.avg}</td>
-													<td>${percent(spell.overheal, spell.total)}</td>
+													<td>${ability.name}</td>
+													<td>${ability.casts}</td>
+													<td>${ability.hits}</td>
+													<td>${ability.total}</td>
+													<td>${ability.avg}</td>
+													<td>${percent(ability.overheal, ability.total)}</td>
 												</tr>
 											`,
 										)}

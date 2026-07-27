@@ -133,8 +133,8 @@ describe('analyze', () => {
 		])
 	})
 
-	it('groups by spell', () => {
-		const heal = report.spells.find((s) => s.name === 'Heal')!
+	it('groups by ability', () => {
+		const heal = report.abilities.find((a) => a.name === 'Heal')!
 		expect(heal).toMatchObject({casts: 1, hits: 1, total: 40, overheal: 10, avg: 40})
 	})
 

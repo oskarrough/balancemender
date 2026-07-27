@@ -45,7 +45,7 @@ bun run sim --json > fight.json                    # every event, for your own a
 truncates mid-object at 64KB — what you get back is a JSON parse error that looks like a bug in the
 report. `> fight.json` is fine at any size.
 
-A single fight prints health graphs, per-actor damage and healing, per-spell breakdowns and
+A single fight prints health graphs, per-actor damage and healing, per-ability breakdowns and
 deaths:
 
 ```
@@ -62,7 +62,7 @@ seed 1 · triage · victory in 60.0s
   Tank         507  8.4     0  0.0        0%    591      0    0%
   Tiny wolf 2  401  6.7     0  0.0        0%    255      0    0%
 
-  spell        casts  hits  total  per s   avg  overheal
+  ability      casts  hits  total  per s   avg  overheal
   Heal            10    10    807   13.4  80.7       30%
   Rend             0    66    132    2.2     2        0%
   Savage Bite      0    22    121    2.0   5.5        0%

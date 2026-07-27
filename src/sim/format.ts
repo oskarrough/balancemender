@@ -52,14 +52,14 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 		),
 	)
 
-	if (report.spells.length) {
+	if (report.abilities.length) {
 		lines.push(
 			'',
 			table(
 				// `per s` rather than only a total, because a total says nothing about whether a bleed
 				// is worth its slot next to a bite that swings three times as often.
-				['spell', 'casts', 'hits', 'total', 'per s', 'avg', 'overheal'],
-				report.spells.map((s) => [
+				['ability', 'casts', 'hits', 'total', 'per s', 'avg', 'overheal'],
+				report.abilities.map((s) => [
 					s.name,
 					s.casts,
 					s.hits,
