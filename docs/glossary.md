@@ -72,9 +72,12 @@ written down.
 
 **Preference** — which of the eligible units to pick. A property of the _driver_, not the unit and
 not the ability: the keyboard, an `Autopilot` weighing the fight, or a standing rule like "always
-the most hurt". `prefers()` is the method, and `reconsiders()` decides whether to look again once
-it has one. Both live on the `Targeting` Task, which holds the rule as well and so is named for
-only half of what it does — drift, and the reason there was one word for two things.
+the most hurt". One object with two methods: `prefers()` picks, `reconsiders()` decides whether to
+look again once it has one. They stay together because they have to agree — a preference for the
+most hurt ally that does not re-pick heals someone already topped up. The four are `prefer.first`,
+`prefer.atRandom`, `prefer.lowestHealth` and `prefer.tankFirst`. Today they are `Targeting`
+subclasses, and `Targeting` holds the rule as well, so it is named for only half of what it does —
+[drift](#drift-worth-fixing), and the reason there was one word for two things.
 
 **Selected target** — the one the player clicked. UI state, kept because a player needs to see
 what they are aiming at; not what an ability reads.
@@ -245,12 +248,12 @@ any order — and let the two structural ones wait for the issues that teach us 
 | 2   | Settle ability / spell / attack / aura            | —    | **decided** |
 | 3   | `roster` → `units` / `--enemies`                  | S    | **done**    |
 | 4   | The aura renames                                  | M    | **done**    |
-| 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | quiet tree  |
+| 5   | `Character`→`Unit`, `ActorStats`→`UnitStats`      | L    | ready       |
 | 6   | Extract the `Aura` base                           | M    | with #47    |
-| 7   | Split `Targeting` into rule + preference          | M    | ready       |
+| 7   | Split `Targeting` into rule + preference          | S    | **decided** |
 | 8   | Unweld ability from driver; `Ability` class (#42) | L    | after 6, 7  |
-| 9   | Stop the prose calling an encounter a fight       | S    | ready       |
-| 10  | `report.spells` → `abilities`, keyed as it is     | S    | ready       |
+| 9   | Stop the prose calling an encounter a fight       | S    | **done**    |
+| 10  | `report.spells` → `abilities`, keyed as it is     | S    | **done**    |
 
 **`Character` should be `Unit`.** One thing, three words: `unit` (234 uses — spawning, the
 registry, balance, `--tune`, the CLI), `Character` / `character` (160), `actor` (26). The word is
@@ -293,9 +296,11 @@ ability itself.
 **One target slot, doing three jobs.** `Character.currentTarget` is the rule, the preference and
 the player's selection at once, and a unit gets one. That is the whole reason `WolfShaman` carries
 no attacks — it spends its single target on the ally it heals — and the reason `Player.getTarget()`
-falls back to the tank while nothing else does. Two identical `prefers()` bodies (`LowestHealth`
-and `MostHurtAlly`) are the visible symptom: `Targeting` crosses rule and preference into one
-inheritance chain, so the same preference had to be written twice to reach two different rules.
+falls back to the tank while nothing else does. Two byte-identical `prefers()` bodies
+(`LowestHealth` and `MostHurtAlly`) are the visible symptom: `Targeting` crosses rule and
+preference into one inheritance chain, so the same preference had to be written twice to reach two
+different rules. Nothing constructs `LowestHealth` — which is what becomes of a class you can only
+reach by also inheriting a rule you did not want.
 
 The endpoint is that a target is **passed to a use**, not stored on a unit. Half the code already
 works this way — `whyNotCast(caster, SpellClass, target)` takes it as an argument with the slot as
