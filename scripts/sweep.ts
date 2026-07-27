@@ -51,7 +51,7 @@ bun run sweep [options]
   --seeds    <n>       how many seeds per combination, starting at 1 (default 10)
   --duration <s>       give up after n seconds of fight time (default 120)
   --tune     <spec>    change a balance number first, e.g. 'aura:Rend.total=-16'
-                       kind:Name.key=value — spell, attack, aura or unit. Repeatable.
+                       kind:Name.key=value — spell, attack, cadence, aura, unit or rule. Repeatable.
   --json               print rows as JSON instead of a table
 
   10 seeds shows a shape; comparing two candidates needs about 200. See the note the
@@ -94,6 +94,17 @@ interface Row {
 	timeoutPercent: number
 	medianDuration: number
 	hps: number
+	/**
+	 * Absorption per second, the healer's own — damage a shield swallowed that never reached a
+	 * health bar.
+	 *
+	 * Its own column rather than folded into `hps`, because prevention is not healing and the two
+	 * do not trade one for one: a point absorbed is a point that was never taken, while a point
+	 * healed is one taken and then paid back. Without this the shield policy reads as a healer
+	 * doing a quarter of the work — `hps` on Nakroth drops from 14.7 to 3.6 — which is the
+	 * instrument missing the spell, not the spell doing nothing.
+	 */
+	absorbPerSecond: number
 	overhealPercent: number
 	manaPerSecond: number
 	castsPerFight: number
@@ -119,6 +130,7 @@ interface Fight {
 	duration: number
 	healing: number
 	overhealing: number
+	absorbed: number
 	mana: number
 	casts: number
 	busy: number
@@ -145,6 +157,7 @@ for (const group of enemyGroups) {
 				duration: result.duration,
 				healing: healer?.healingDone ?? 0,
 				overhealing: healer?.overhealing ?? 0,
+				absorbed: healer?.absorbed ?? 0,
 				mana: healer?.manaSpent ?? 0,
 				casts: healer?.casts ?? 0,
 				busy: healer?.busyTime ?? 0,
@@ -169,6 +182,7 @@ for (const group of enemyGroups) {
 			timeoutPercent: percent(fights.filter((f) => f.outcome === 'timeout').length, seeds),
 			medianDuration: median(fights.map((f) => f.duration)),
 			hps: seconds ? round(healing / seconds) : 0,
+			absorbPerSecond: seconds ? round(sum((f) => f.absorbed) / seconds) : 0,
 			overhealPercent: landed ? percent(overhealing, landed) : 0,
 			manaPerSecond: seconds ? round(sum((f) => f.mana) / seconds) : 0,
 			castsPerFight: round(sum((f) => f.casts) / seeds),
@@ -204,6 +218,7 @@ function table(rows: Row[]) {
 		'timeout%',
 		'median',
 		'hps',
+		'aps',
 		'overheal%',
 		'mana/s',
 		'busy%',
@@ -218,6 +233,7 @@ function table(rows: Row[]) {
 		`${row.timeoutPercent}%`,
 		`${(row.medianDuration / 1000).toFixed(1)}s`,
 		row.hps.toFixed(1),
+		row.absorbPerSecond.toFixed(1),
 		`${row.overhealPercent}%`,
 		row.manaPerSecond.toFixed(1),
 		`${row.busyPercent}%`,

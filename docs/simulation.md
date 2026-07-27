@@ -105,15 +105,18 @@ bun run sweep --json > sweep.json
 ```
 
 ```
-enemies                 policy  win%  ±   timeout%  median  hps   overheal%  mana/s  busy%  casts
-TinyWolf*3              idle    0%    24  0%        24.0s   0.0   0%         0.0     0%     0.0
-TinyWolf*3              triage  75%   33  0%        86.4s   10.5  26%        8.9     37%    15.3
-TinyWolf*4              renew   75%   33  0%        115.2s  13.5  8%         7.9     25%    15.8
-TinyWolf*5              triage  0%    24  0%        41.6s   19.7  14%        14.4    56%    11.5
-TinyWolf*2, WolfShaman  triage  0%    24  0%        116.8s  15.9  27%        7.6     31%    14.8
-Nakroth                 triage  100%  24  0%        60.0s   15.1  12%        11.1    40%    10.3
+enemies     policy  win%  ±   hurt%  timeout%  median  hps   aps   overheal%  mana/s  busy%  casts
+TinyWolf*3  idle    0%    14  25%    0%        24.0s   0.0   0.0   0%         0.0     0%     0.0
+TinyWolf*3  triage  90%   19  12%    0%        88.8s   11.0  0.0   25%        9.1     37%    16.0
+TinyWolf*3  shield  90%   19  7%     0%        88.8s   5.5   6.1   35%        8.2     29%    13.6
+TinyWolf*4  idle    0%    14  23%    0%        19.2s   0.0   0.0   0%         0.0     0%     0.0
+TinyWolf*4  triage  0%    14  16%    0%        56.5s   15.0  0.0   21%        11.8    48%    13.1
+TinyWolf*4  shield  20%   23  13%    0%        72.0s   6.1   9.1   35%        9.9     34%    13.7
+Nakroth     idle    0%    14  25%    0%        32.0s   0.0   0.0   0%         0.0     0%     0.0
+Nakroth     triage  100%  14  2%     0%        60.0s   14.9  0.0   12%        11.0    40%    10.2
+Nakroth     shield  100%  14  0%     0%        60.0s   3.4   12.7  32%        9.1     28%    9.4
 
-  4 seeds per cell. ± is the 95% interval on win%, up to 33 points wide here:
+  10 seeds per cell. ± is the 95% interval on win%, up to 23 points wide here:
   two cells whose ranges overlap are not different, however different they look.
 ```
 
@@ -129,6 +132,13 @@ around 200.**
 
 `busy%` is the healer's, and it is how #50 was found: it never exceeds 56% even in fights it loses,
 so the healer is short of mana, not of time.
+
+`hps` and `aps` have to be read together — a point healed was taken and paid back, a point absorbed
+was never taken at all. Read either alone and the `shield` rows above look like a healer doing a
+third of the work, when `3.4 + 12.7` on Nakroth is slightly more throughput than `triage`'s `14.9`
+and it arrives before the damage rather than after. That is also why `shield` halves `hurt%` while
+winning no more often: the party spends less of the fight hurt because less of the fight's damage
+ever landed.
 
 This is how the difficulty curve got its shape checked. It used to be inverted — three wolves
 were unwinnable while the boss was a guaranteed win — because the tank kills enemies one at a time,
