@@ -9,6 +9,8 @@ import type {Outcome, UnitInfo} from './run'
 
 const DAMAGE: CombatEventType[] = ['SPELL_DAMAGE', 'SPELL_PERIODIC_DAMAGE', 'SWING_DAMAGE', 'RANGE_DAMAGE']
 const HEAL: CombatEventType[] = ['SPELL_HEAL', 'SPELL_PERIODIC_HEAL']
+/** Both carry `wasted` when the aura was a shield with pool left — see `ShieldAura.removalFields`. */
+const AURA_ENDED: CombatEventType[] = ['SPELL_AURA_REMOVED', 'SPELL_AURA_REFRESH']
 
 export interface UnitStats {
 	/** The unit's id. Names change mid-fight — `Encounter.renumber()` sees to that. */
@@ -21,6 +23,17 @@ export interface UnitStats {
 	/** Healing that landed on a full health bar and did nothing. */
 	overhealing: number
 	healingTaken: number
+	/**
+	 * Damage this unit's shields swallowed before it reached a health bar. Credited to the
+	 * shield's caster, the way `healingDone` credits the healer rather than the target.
+	 */
+	absorbed: number
+	/**
+	 * Absorption a shield lost unspent, because it timed out or was recast over. Overheal's
+	 * counterpart for a preventive spell — without it, a shield that expired untouched and one
+	 * that soaked a killing blow look the same: zero everywhere else in the report.
+	 */
+	wasted: number
 	casts: number
 	hits: number
 	manaSpent: number
@@ -121,6 +134,14 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			healer.overhealing += overheal
 			target(event).healingTaken += value - overheal
 			ability(abilities, event.abilityId, event.abilityName, value, overheal)
+		} else if (event.eventType === 'SPELL_ABSORBED') {
+			// Credited to the shield's caster, the way healing is — see `ShieldAura.absorb`.
+			source(event).absorbed += value
+			ability(abilities, event.abilityId, event.abilityName, value, 0)
+		} else if (AURA_ENDED.includes(event.eventType)) {
+			// `wasted` is only present on a shield's own removal/refresh — everything else in
+			// `AURA_ENDED` leaves it undefined, so this is a no-op for periodic auras.
+			if (event.wasted) source(event).wasted += event.wasted
 		} else if (event.eventType === 'SPELL_CAST_START') {
 			// Counted at the start, not the success: an interrupted cast still cost the caster the
 			// time it spent casting.
@@ -255,6 +276,8 @@ function unit(units: Map<string, UnitStats>, id?: string, name = 'unknown') {
 			healingDone: 0,
 			overhealing: 0,
 			healingTaken: 0,
+			absorbed: 0,
+			wasted: 0,
 			casts: 0,
 			hits: 0,
 			manaSpent: 0,

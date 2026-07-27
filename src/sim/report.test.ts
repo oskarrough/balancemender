@@ -146,6 +146,105 @@ describe('analyze', () => {
 })
 
 /**
+ * A shield changes no health bar, so `SPELL_ABSORBED` and the `wasted` carried on
+ * `SPELL_AURA_REMOVED`/`REFRESH` are the only trace it leaves in the log — see #47.
+ */
+describe('absorption', () => {
+	it('credits absorbed damage to the shield caster, not the shielded ally', () => {
+		const report = analyze(
+			[
+				event({
+					time: 1000,
+					eventType: 'SPELL_ABSORBED',
+					sourceId: 'player',
+					sourceName: 'Player',
+					targetId: 'tank',
+					targetName: 'Tank',
+					abilityId: 'PowerWordShield',
+					abilityName: 'Power Word: Shield',
+					value: 25,
+				}),
+			],
+			{units},
+		)
+
+		const player = report.units.find((a) => a.name === 'Player')!
+		expect(player.absorbed).toBe(25)
+		expect(report.units.find((a) => a.name === 'Tank')!.absorbed).toBe(0)
+	})
+
+	it('totals unspent pool from SPELL_AURA_REMOVED as waste, the way overheal works for a heal', () => {
+		const report = analyze(
+			[
+				event({
+					time: 1000,
+					eventType: 'SPELL_AURA_REMOVED',
+					sourceId: 'player',
+					sourceName: 'Player',
+					targetId: 'tank',
+					targetName: 'Tank',
+					abilityId: 'PowerWordShield',
+					abilityName: 'Power Word: Shield',
+					wasted: 40,
+				}),
+			],
+			{units},
+		)
+
+		expect(report.units.find((a) => a.name === 'Player')!.wasted).toBe(40)
+	})
+
+	it('also counts waste carried onto a SPELL_AURA_REFRESH, when a recast replaces an unspent shield', () => {
+		const report = analyze(
+			[
+				event({
+					time: 1000,
+					eventType: 'SPELL_AURA_REFRESH',
+					sourceId: 'player',
+					sourceName: 'Player',
+					targetId: 'tank',
+					targetName: 'Tank',
+					abilityId: 'PowerWordShield',
+					abilityName: 'Power Word: Shield',
+					wasted: 15,
+				}),
+			],
+			{units},
+		)
+
+		expect(report.units.find((a) => a.name === 'Player')!.wasted).toBe(15)
+	})
+
+	it('leaves a periodic aura ending with no `wasted` alone', () => {
+		const report = analyze(
+			[
+				event({
+					time: 500,
+					eventType: 'SPELL_CAST_SUCCESS',
+					sourceId: 'player',
+					sourceName: 'Player',
+					abilityId: 'Renew',
+					abilityName: 'Renew',
+				}),
+				event({
+					time: 1000,
+					eventType: 'SPELL_AURA_REMOVED',
+					sourceId: 'player',
+					sourceName: 'Player',
+					targetId: 'tank',
+					targetName: 'Tank',
+					abilityId: 'Renew',
+					abilityName: 'Renew',
+				}),
+			],
+			{units},
+		)
+
+		expect(report.units.find((a) => a.name === 'Player')!.wasted).toBe(0)
+	})
+})
+
+/**
  * Time spent below the injured line is what separates a fight the healer won from one that was
  * never in doubt — the question behind #50 and #51. It is counted from `UNIT_CONDITION` rather
  * than replayed off the health bar, because what counts as injured is a number `--tune` moves.

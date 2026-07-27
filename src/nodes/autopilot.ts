@@ -1,6 +1,7 @@
 import {Task} from 'vroum'
 import type {Unit} from './unit'
 import type {Player} from './player'
+import {Tank} from './party-units'
 import {spellRegistry, SpellId} from './registry'
 import {SpellCast} from './spell-cast'
 import type {GameLoop} from './game-loop'
@@ -108,6 +109,18 @@ export const panic: Policy = (player) => {
 	return undefined
 }
 
-export const policies = {idle, triage, renew, panic}
+/**
+ * Shield the tank while no shield is on them, otherwise heal as `triage` does. Enough to exercise
+ * absorption in a sweep — see #47.
+ */
+export const shield: Policy = (player) => {
+	const tank = player.parent.party.find((member) => member.alive && member instanceof Tank)
+	if (tank && !hasAura(tank, 'PowerWordShield') && castable(player, 'PowerWordShield', tank)) {
+		return {spell: 'PowerWordShield', target: tank}
+	}
+	return triage(player)
+}
+
+export const policies = {idle, triage, renew, panic, shield}
 
 export type PolicyName = keyof typeof policies

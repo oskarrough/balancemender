@@ -36,7 +36,7 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 	lines.push(
 		'',
 		table(
-			['unit', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'taken', 'casts', 'busy', 'hurt'],
+			['unit', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'absorb', 'wasted', 'taken', 'casts', 'busy', 'hurt'],
 			report.units.map((a) => [
 				a.name,
 				a.damageDone,
@@ -44,6 +44,10 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 				a.healingDone,
 				perSecond(a.healingDone, report.duration),
 				percentOf(a.overhealing, a.healingDone + a.overhealing),
+				a.absorbed,
+				// Same shape as overheal: the share of what a shield could have swallowed that
+				// nobody ever hit into it.
+				percentOf(a.wasted, a.absorbed + a.wasted),
 				a.damageTaken,
 				a.casts,
 				percentOf(a.busyTime, report.duration),
@@ -90,6 +94,8 @@ export function formatAggregate(results: FightResult[]): string {
 	const spec = results[0].spec
 	const policy = typeof spec.policy === 'string' ? spec.policy : (spec.policy?.name ?? 'triage')
 	const victories = outcomes.get('victory') ?? 0
+	const absorbed = avg(healers.map((h) => h?.absorbed ?? 0))
+	const wasted = avg(healers.map((h) => h?.wasted ?? 0))
 
 	const lines = [
 		`${results.length} fights · ${[...(spec.party ?? ['Tank']), 'Player'].join(' + ')} vs ${(spec.enemies ?? ['TinyWolf']).join(' + ')} · ${policy}`,
@@ -113,6 +119,11 @@ export function formatAggregate(results: FightResult[]): string {
 			runtime,
 		)}  mana ${Math.round(avg(healers.map((h) => h?.manaSpent ?? 0)))}`,
 	]
+	// Only when a shield was actually cast, the way `deaths` only shows up if there were any —
+	// a healer with no shields would print `0 aps  wasted 0%` on every run otherwise.
+	if (absorbed || wasted) {
+		lines.push(`  shield    ${perSecond(absorbed, runtime)} aps  wasted ${percentOf(wasted, absorbed + wasted)}`)
+	}
 	if (deaths.size) {
 		lines.push(`  deaths    ${[...deaths].map(([name, n]) => `${name} ${n}/${results.length}`).join('   ')}`)
 	}
