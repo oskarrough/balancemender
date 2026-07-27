@@ -1,6 +1,6 @@
 import {Task} from 'vroum'
 import {applyStatics, log} from '../utils'
-import {logCombat} from '../combatlog'
+import {logCombat, type CombatLogEvent} from '../combatlog'
 // Type-only both ways: unit.ts names this class for its `auras` set.
 import type {Unit} from './unit'
 
@@ -94,11 +94,16 @@ export class Aura extends Task {
 		const existing = [...this.parent.auras].filter((aura) => aura.stackKey === this.stackKey)
 		// Insertion order is chronological, so the front of the list is closest to expiring.
 		// Collect before removing: `supersede` deletes from the set this walked.
-		for (const stale of existing.slice(0, Math.max(0, existing.length + 1 - this.maxStacks))) stale.supersede()
+		const replaced = existing.slice(0, Math.max(0, existing.length + 1 - this.maxStacks))
+		// What a pushed-off copy leaves unfinished rides on the refresh. `supersede()` logs no
+		// removal of its own by design, so this is the only chance to say it: recast a shield with
+		// half its pool left and that half is wasted exactly as if it had timed out.
+		const unfinished = replaced.reduce((carried, stale) => ({...carried, ...stale.removalFields()}), {})
+		for (const stale of replaced) stale.supersede()
 
 		this.parent.auras.add(this)
 		const stacks = [...this.parent.auras].filter((aura) => aura.stackKey === this.stackKey).length
-		this.logAura(existing.length ? 'SPELL_AURA_REFRESH' : 'SPELL_AURA_APPLIED', stacks)
+		this.logAura(existing.length ? 'SPELL_AURA_REFRESH' : 'SPELL_AURA_APPLIED', stacks, unfinished)
 		log('aura:mount', this.name)
 	}
 
@@ -127,12 +132,26 @@ export class Aura extends Task {
 		// too would read as the target losing an aura it is still carrying.
 		if (!this.superseded) {
 			const stacks = [...this.parent.auras].filter((aura) => aura.stackKey === this.stackKey).length
-			this.logAura('SPELL_AURA_REMOVED', stacks)
+			this.logAura('SPELL_AURA_REMOVED', stacks, this.removalFields())
 		}
 		log('aura:destroy', this.name)
 	}
 
-	private logAura(eventType: 'SPELL_AURA_APPLIED' | 'SPELL_AURA_REFRESH' | 'SPELL_AURA_REMOVED', stacks: number) {
+	/**
+	 * What this aura leaves unfinished, for its own removal event. Nothing here, because what
+	 * counts as unfinished depends on what the aura was doing: a periodic one has already landed
+	 * everything it landed, while `ShieldAura` reports the pool nobody spent — the only trace a
+	 * spell that prevents damage leaves when it goes to waste.
+	 */
+	protected removalFields(): Partial<CombatLogEvent> {
+		return {}
+	}
+
+	private logAura(
+		eventType: 'SPELL_AURA_APPLIED' | 'SPELL_AURA_REFRESH' | 'SPELL_AURA_REMOVED',
+		stacks: number,
+		extra: Partial<CombatLogEvent> = {},
+	) {
 		logCombat({
 			timestamp: Date.now(),
 			eventType,
@@ -142,6 +161,7 @@ export class Aura extends Task {
 			targetName: this.parent.name || 'Unknown',
 			abilityId: this.id,
 			abilityName: this.name,
+			...extra,
 			// Only when there is more than one, so the common case does not read as "(1 stack)".
 			...(stacks > 1 && {extraInfo: `${stacks} stacks`}),
 		})

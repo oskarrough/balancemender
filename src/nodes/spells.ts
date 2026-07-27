@@ -1,5 +1,6 @@
 import {Spell} from './spell'
 import {PeriodicAura} from './periodic-aura'
+import {ShieldAura} from './shield-aura'
 import {AudioPlayer} from './audio'
 
 /**
@@ -71,4 +72,41 @@ class RenewAura extends PeriodicAura {
 	static name = 'Renew'
 	static interval = 2000
 	static repeat = 5
+}
+
+/**
+ * The other half of healing: spend a global cooldown *before* the hit so the hit costs less.
+ *
+ * It is off the healing-per-mana ladder above on purpose — `heal` here is a pool of absorption
+ * rather than health restored, and 150 for 60 mana only looks like the best rate in the game
+ * while every point of it is spent. A shield planted on nobody in danger is worth nothing at all,
+ * which is the trade the spell is actually made of. It lasts 15s — `ShieldAura.lifetime`.
+ *
+ * Overrides `cast()` outright for the same reason `Renew` does: the base class heals when `heal`
+ * is set, so calling `super.cast()` here would land 150 direct healing alongside the shield.
+ */
+export class PowerWordShield extends Spell {
+	static id = 'PowerWordShield'
+	static name = 'Power Word: Shield'
+	static cost = 60
+	static heal = 150
+	static castTime = 0
+	// TODO no shield art yet — this wants `public/assets/generated/spells/power-word-shield.png`,
+	// which is the slug `SpellIcon` derives from the name. Renew's stands in until it exists.
+	static icon = 'renew'
+
+	cast() {
+		const player = this.parent
+		const target = player.getTarget()
+		if (target) {
+			new PowerWordShieldAura(target, player, this.heal)
+			AudioPlayer.play('spell_cast')
+		}
+	}
+}
+
+/** Shares the spell's id, so the cast and every absorb it pays for report as one thing — see `RenewAura`. */
+class PowerWordShieldAura extends ShieldAura {
+	static id = 'PowerWordShield'
+	static name = 'Power Word: Shield'
 }

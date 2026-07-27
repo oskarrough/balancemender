@@ -1,5 +1,6 @@
 import {logCombat, CombatEventType} from '../combatlog'
 import {fct} from '../components/floating-combat-text'
+import {ShieldAura} from './shield-aura'
 import type {Unit} from './unit'
 
 export interface Hit {
@@ -22,14 +23,21 @@ export interface Hit {
  *
  * Returns what actually landed, which is less than `amount` when a heal tops off a full bar.
  */
-export function applyHit({source, target, amount, abilityId, abilityName, eventType}: Hit): number {
+export function applyHit({source, target, amount: incoming, abilityId, abilityName, eventType}: Hit): number {
+	// Shields take their share before anything else in this function runs. That is the whole
+	// trick: `landed`, the floating number and the death check below all follow from what got
+	// through, so none of the three has to know shields exist and a killing blow is decided on
+	// the damage that was actually dealt.
+	const amount = throughShields(target, incoming)
+
 	const before = target.health.current
 	const conditionBefore = target.condition
 	if (amount >= 0) target.health.heal(amount)
 	else target.health.damage(-amount)
 	const landed = Math.abs(target.health.current - before)
 
-	fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`)
+	// A fully absorbed hit moved nothing, and `-0` floating over the unit would claim otherwise.
+	if (amount !== 0) fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`)
 
 	const actors = {
 		sourceId: source.id,
@@ -66,4 +74,23 @@ export function applyHit({source, target, amount, abilityId, abilityName, eventT
 	}
 
 	return landed
+}
+
+/**
+ * What is left of a hit once the target's shields have eaten their share. Only damage is
+ * absorbable — a heal passes straight through, shields or not.
+ *
+ * Oldest shield first: `auras` is kept in insertion order, which is chronological, and it is the
+ * order stacking already reads.
+ */
+function throughShields(target: Unit, amount: number): number {
+	if (amount >= 0) return amount
+
+	let remaining = -amount
+	for (const aura of target.auras) {
+		if (!(aura instanceof ShieldAura)) continue
+		remaining -= aura.absorb(remaining)
+		if (remaining <= 0) break
+	}
+	return -remaining
 }
