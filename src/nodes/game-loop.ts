@@ -43,7 +43,7 @@ export class GameLoop extends Loop {
 	audio = new AudioPlayer(this)
 	encounter: Encounter
 
-	/** Pass a roster to start on something other than the demo fight. */
+	/** Pass a roster to start on something other than the demo encounter. */
 	constructor(roster: Roster = DEMO_ROSTER) {
 		super()
 		this.encounter = new Encounter(this, roster)

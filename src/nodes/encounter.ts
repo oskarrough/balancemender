@@ -6,18 +6,18 @@ import {FACTION} from './types'
 import type {GameLoop} from './game-loop'
 import type {Character} from './character'
 
-/** Who is in a fight. This is the only way to describe one — there are no encounter subclasses. */
+/** Who is in an encounter. This is the only way to describe one — there are no encounter subclasses. */
 export interface Roster {
 	/** Allies besides the player, who is always added. */
 	party?: UnitId[]
 	enemies?: UnitId[]
 }
 
-/** The fight you get on a fresh boot. */
+/** The roster a fresh boot starts from. */
 export const DEMO_ROSTER: Roster = {party: ['Tank'], enemies: ['TinyWolf']}
 
 /**
- * Owns the party + enemies for a single fight, built from a `Roster`.
+ * Owns the party + enemies, built from a `Roster`.
  *
  * Everything that adds a unit — boot, the dev console, the Balance Lab, a simulation,
  * a test — goes through `spawn()`. There is deliberately no second way to do it.
@@ -49,7 +49,7 @@ export class Encounter extends Node {
 	}
 
 	/**
-	 * Add a unit to the fight. The class's own `faction` decides which side it joins,
+	 * Add a unit to the encounter. The class's own `faction` decides which side it joins,
 	 * so callers never pick the array themselves.
 	 */
 	spawn(id: UnitId): Character {
@@ -80,7 +80,7 @@ export class Encounter extends Node {
 	 * A unit's health reached zero. The one death path — a `Character` hands over here instead
 	 * of tearing itself off the tree.
 	 *
-	 * The dead are not removed. `party` and `enemies` are who *joined* the fight, and three
+	 * The dead are not removed. `party` and `enemies` are who *joined* the encounter, and three
 	 * things read them that way: `unitsOf()` walks them after the last blow to rebuild every
 	 * health bar in the fight report, the Fight report panel re-simulates the composition from
 	 * them (a won fight would otherwise replay against no enemies at all), and a healer has to

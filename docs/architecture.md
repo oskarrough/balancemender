@@ -10,7 +10,7 @@ mostly the traps, each of which has cost someone an afternoon.
 index.html
   └── src/main.ts            splash → on first keypress, builds the game
         └── GameLoop         (vroum Loop) the clock and the root of everything
-              ├── Encounter  owns one fight: party + enemies
+              ├── Encounter  owns the party + enemies
               │     └── Character…        Player, Tank, TinyWolf, WolfShaman, Nakroth
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   (Task) picks currentTarget
@@ -81,7 +81,7 @@ union, not a new command plus a new panel button plus a new test helper.
 
 ### Spawning, in particular
 
-A fight is described by a `Roster` — `{party: ['Tank'], enemies: ['TinyWolf']}` — and every
+An encounter is described by a `Roster` — `{party: ['Tank'], enemies: ['TinyWolf']}` — and every
 unit that joins it goes through `Encounter.spawn(unitId)`. Boot, the dev console, the Balance
 Lab, a simulation and a test all end up there, so faction routing, duplicate numbering and
 unknown-id errors are written once. Nothing reads `constructor.name`: the production build
