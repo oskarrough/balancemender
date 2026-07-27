@@ -17,8 +17,8 @@ export interface CombatLogEvent {
 	/** Portion of `value` that healed a full health bar and did nothing. */
 	overheal?: number
 	/**
-	 * How long this event commits the actor for, in ms — a cast's time or its global cooldown,
-	 * whichever is longer. Logged so the analyzer can say how much of a fight an actor spent
+	 * How long this event commits the unit for, in ms — a cast's time or its global cooldown,
+	 * whichever is longer. Logged so the analyzer can say how much of a fight a unit spent
 	 * unable to act without knowing what a GCD is: everything it needs is in the stream.
 	 *
 	 * Not `duration`: an aura has one too, and it is a different thing — how long the effect lasts

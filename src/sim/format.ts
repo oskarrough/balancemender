@@ -36,8 +36,8 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 	lines.push(
 		'',
 		table(
-			['actor', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'taken', 'casts', 'busy', 'hurt'],
-			report.actors.map((a) => [
+			['unit', 'dmg', 'dps', 'heal', 'hps', 'overheal', 'taken', 'casts', 'busy', 'hurt'],
+			report.units.map((a) => [
 				a.name,
 				a.damageDone,
 				perSecond(a.damageDone, report.duration),

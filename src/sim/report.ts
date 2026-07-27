@@ -10,7 +10,7 @@ import type {Outcome, UnitInfo} from './run'
 const DAMAGE: CombatEventType[] = ['SPELL_DAMAGE', 'SPELL_PERIODIC_DAMAGE', 'SWING_DAMAGE', 'RANGE_DAMAGE']
 const HEAL: CombatEventType[] = ['SPELL_HEAL', 'SPELL_PERIODIC_HEAL']
 
-export interface ActorStats {
+export interface UnitStats {
 	/** The unit's id. Names change mid-fight — `Encounter.renumber()` sees to that. */
 	id?: string
 	name: string
@@ -25,7 +25,7 @@ export interface ActorStats {
 	hits: number
 	manaSpent: number
 	/**
-	 * Milliseconds this actor spent committed to a cast or its global cooldown. Against the
+	 * Milliseconds this unit spent committed to a cast or its global cooldown. Against the
 	 * fight's duration it answers the question a cast count cannot: was this healer out of time
 	 * or out of mana? A healer at 40% with an empty mana bar is mana-capped, and no amount of
 	 * cheaper decision-making will help it.
@@ -68,7 +68,7 @@ export interface FightReport {
 	duration: number
 	events: number
 	outcome?: Outcome
-	actors: ActorStats[]
+	units: UnitStats[]
 	abilities: AbilityStats[]
 	deaths: {id?: string; name: string; time: number}[]
 	health: Series[]
@@ -86,19 +86,19 @@ export interface AnalyzeOptions {
 const at = (event: CombatLogEvent) => event.time ?? event.timestamp
 
 export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}): FightReport {
-	const {units, outcome, columns = 40} = options
+	const {units: unitInfo, outcome, columns = 40} = options
 	const sorted = [...events].sort((a, b) => at(a) - at(b))
 	const start = sorted.length ? at(sorted[0]) : 0
 	const duration = options.duration ?? (sorted.length ? at(sorted[sorted.length - 1]) - start : 0)
 
-	const actors = new Map<string, ActorStats>()
+	const units = new Map<string, UnitStats>()
 	const abilities = new Map<string, AbilityStats>()
 	const deaths: {id?: string; name: string; time: number}[] = []
-	const source = (event: CombatLogEvent) => actor(actors, event.sourceId, event.sourceName)
-	const target = (event: CombatLogEvent) => actor(actors, event.targetId, event.targetName)
+	const source = (event: CombatLogEvent) => unit(units, event.sourceId, event.sourceName)
+	const target = (event: CombatLogEvent) => unit(units, event.targetId, event.targetName)
 	/** When each unit currently below the injured line dropped there. Empty means nobody is. */
-	const injuredSince = new Map<ActorStats, number>()
-	const leaveInjured = (stats: ActorStats, time: number) => {
+	const injuredSince = new Map<UnitStats, number>()
+	const leaveInjured = (stats: UnitStats, time: number) => {
 		const since = injuredSince.get(stats)
 		if (since === undefined) return
 		stats.injuredTime += time - since
@@ -157,15 +157,15 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 
 	// The units are the authority on who is who. The list also carries the *current* name,
 	// which matters because spawning a second wolf renames the first one halfway through the log.
-	if (units) {
-		for (const entry of units) {
-			const stats = actor(actors, entry.id, entry.name)
+	if (unitInfo) {
+		for (const entry of unitInfo) {
+			const stats = unit(units, entry.id, entry.name)
 			stats.name = entry.name
 			stats.faction = entry.faction
 		}
 	}
 
-	const list = [...actors.values()].filter((a) => a.name !== 'unknown')
+	const list = [...units.values()].filter((a) => a.name !== 'unknown')
 	const totals = {
 		damage: sum(list, (a) => a.damageDone),
 		healing: sum(list, (a) => a.healingDone),
@@ -181,10 +181,10 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 		duration,
 		events: sorted.length,
 		outcome,
-		actors: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
+		units: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
 		abilities: [...abilities.values()].filter((a) => a.id !== 'unknown').sort((a, b) => b.total - a.total),
 		deaths,
-		health: units ? healthSeries(sorted, units, start, duration, columns) : [],
+		health: unitInfo ? healthSeries(sorted, unitInfo, start, duration, columns) : [],
 		totals,
 	}
 }
@@ -243,9 +243,9 @@ function fill(points: (number | null)[]) {
  * One row per unit, keyed by id. Every event the game logs carries one; the name is only a
  * label, and two units can share it for the moment between a spawn and the renumbering.
  */
-function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
+function unit(units: Map<string, UnitStats>, id?: string, name = 'unknown') {
 	const key = id ?? name
-	let stats = actors.get(key)
+	let stats = units.get(key)
 	if (!stats) {
 		stats = {
 			id,
@@ -261,13 +261,13 @@ function actor(actors: Map<string, ActorStats>, id?: string, name = 'unknown') {
 			busyTime: 0,
 			injuredTime: 0,
 		}
-		actors.set(key, stats)
+		units.set(key, stats)
 	}
 	return stats
 }
 
 /**
- * Keyed by `abilityId`, displayed by `abilityName` — the same id/name split the actors use, and
+ * Keyed by `abilityId`, displayed by `abilityName` — the same id/name split the units use, and
  * for the same reason: the id is what stays put. `Renew`'s cast and the ticks its aura lands share
  * an id deliberately, so they total into one row.
  */
@@ -289,11 +289,11 @@ function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id
 }
 
 /**
- * The actor the policy drives. By name, unusually: `runFight` adds the healer itself and calls it
+ * The unit the policy drives. By name, unusually: `runFight` adds the healer itself and calls it
  * Player, and it is the one unit `Encounter.renumber()` never touches, so the name is stable where
  * an id would have to be looked up from the unit list first.
  */
-export const healerOf = (report: FightReport) => report.actors.find((actor) => actor.name === 'Player')
+export const healerOf = (report: FightReport) => report.units.find((unit) => unit.name === 'Player')
 
 /**
  * How long the party's worst-off member spent injured — the fight's answer to "was anyone ever
@@ -304,7 +304,7 @@ export const healerOf = (report: FightReport) => report.actors.find((actor) => a
  * something no less arbitrary. Needs the unit list: `faction` comes from there, not from the log.
  */
 export const partyInjuredTime = (report: FightReport) =>
-	Math.max(0, ...report.actors.filter((actor) => actor.faction === 'party').map((actor) => actor.injuredTime))
+	Math.max(0, ...report.units.filter((unit) => unit.faction === 'party').map((unit) => unit.injuredTime))
 
 /**
  * Half the 95% interval on `part/whole`, in points — how far a rate this size could have landed

@@ -89,7 +89,7 @@ export class FightReportView extends HTMLElement {
 					<table class="FightReport-table">
 						<thead>
 							<tr>
-								<th>actor</th>
+								<th>unit</th>
 								<th>dmg</th>
 								<th>heal</th>
 								<th>overheal</th>
@@ -101,20 +101,20 @@ export class FightReportView extends HTMLElement {
 							</tr>
 						</thead>
 						<tbody>
-							${report.actors.map(
-								(actor) => html`
+							${report.units.map(
+								(unit) => html`
 									<tr>
-										<td>${actor.name}</td>
-										<td>${actor.damageDone}</td>
-										<td>${actor.healingDone}</td>
-										<td>${percent(actor.overhealing, actor.healingDone + actor.overhealing)}</td>
-										<td>${actor.damageTaken}</td>
-										<td>${actor.casts}</td>
-										<td>${actor.manaSpent}</td>
+										<td>${unit.name}</td>
+										<td>${unit.damageDone}</td>
+										<td>${unit.healingDone}</td>
+										<td>${percent(unit.overhealing, unit.healingDone + unit.overhealing)}</td>
+										<td>${unit.damageTaken}</td>
+										<td>${unit.casts}</td>
+										<td>${unit.manaSpent}</td>
 										<!-- Share of the fight spent committed to a cast or its global cooldown. -->
-										<td>${percent(actor.busyTime, report.duration)}</td>
+										<td>${percent(unit.busyTime, report.duration)}</td>
 										<!-- And the share spent below the injured line, in real trouble. -->
-										<td>${percent(actor.injuredTime, report.duration)}</td>
+										<td>${percent(unit.injuredTime, report.duration)}</td>
 									</tr>
 								`,
 							)}

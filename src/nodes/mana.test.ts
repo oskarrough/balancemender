@@ -59,7 +59,7 @@ describe('mana regeneration', () => {
 		const fight = await runFight({enemies: ['Nakroth'], policy: 'triage', seed: 1})
 		expect(fight.outcome).toBe('victory')
 
-		const player = analyze(fight.events, fight).actors.find((actor) => actor.name === 'Player')
+		const player = analyze(fight.events, fight).units.find((unit) => unit.name === 'Player')
 		expect(player!.manaSpent).toBeGreaterThan(Player.maxMana)
 	})
 })

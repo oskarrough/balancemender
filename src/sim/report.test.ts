@@ -77,7 +77,7 @@ describe('analyze', () => {
 	const report = analyze(fight, {units, outcome: 'victory'})
 
 	it('splits healing into effective and overhealing', () => {
-		const player = report.actors.find((a) => a.name === 'Player')!
+		const player = report.units.find((a) => a.name === 'Player')!
 		expect(player.healingDone).toBe(30)
 		expect(player.overhealing).toBe(10)
 		expect(player.casts).toBe(1)
@@ -87,14 +87,14 @@ describe('analyze', () => {
 	 * Against the duration this is the answer to "was the healer out of time or out of mana",
 	 * which a cast count cannot give — and it was the question behind #50.
 	 */
-	it('adds up how long an actor was committed to casting', () => {
-		const player = report.actors.find((a) => a.name === 'Player')!
+	it('adds up how long a unit was committed to casting', () => {
+		const player = report.units.find((a) => a.name === 'Player')!
 		expect(player.busyTime).toBe(1500)
-		expect(report.actors.find((a) => a.name === 'Tank')!.busyTime).toBe(0)
+		expect(report.units.find((a) => a.name === 'Tank')!.busyTime).toBe(0)
 	})
 
 	it('tracks damage from both sides', () => {
-		const tank = report.actors.find((a) => a.name === 'Tank')!
+		const tank = report.units.find((a) => a.name === 'Tank')!
 		expect(tank.damageDone).toBe(50)
 		expect(tank.damageTaken).toBe(30)
 	})
@@ -108,7 +108,7 @@ describe('analyze', () => {
 
 	it('records deaths with the time they happened', () => {
 		expect(report.deaths).toEqual([{id: 'wolf', name: 'Wolf', time: 3000}])
-		expect(report.actors.find((a) => a.name === 'Wolf')!.deathTime).toBe(3000)
+		expect(report.units.find((a) => a.name === 'Wolf')!.deathTime).toBe(3000)
 	})
 
 	// Spawning a second wolf renames the first one to "Tiny wolf 1" halfway through the log.
@@ -127,7 +127,7 @@ describe('analyze', () => {
 				],
 			},
 		)
-		expect(renamed.actors.map((a) => [a.name, a.damageDone])).toEqual([
+		expect(renamed.units.map((a) => [a.name, a.damageDone])).toEqual([
 			['Tiny wolf 1', 20],
 			['Tiny wolf 2', 5],
 		])
@@ -141,7 +141,7 @@ describe('analyze', () => {
 	it('survives an empty log', () => {
 		const empty = analyze([])
 		expect(empty.duration).toBe(0)
-		expect(empty.actors).toEqual([])
+		expect(empty.units).toEqual([])
 	})
 })
 
@@ -167,7 +167,7 @@ describe('injuredTime', () => {
 			{units},
 		)
 
-		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
+		expect(report.units.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
 		expect(partyInjuredTime(report)).toBe(3000)
 	})
 
@@ -177,7 +177,7 @@ describe('injuredTime', () => {
 			duration: 10_000,
 		})
 
-		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(8000)
+		expect(report.units.find((a) => a.name === 'Tank')!.injuredTime).toBe(8000)
 	})
 
 	/** A killing blow logs no condition change, so without this the interval would run to the end. */
@@ -192,7 +192,7 @@ describe('injuredTime', () => {
 			{units},
 		)
 
-		expect(report.actors.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
+		expect(report.units.find((a) => a.name === 'Tank')!.injuredTime).toBe(3000)
 	})
 
 	it('counts nobody as hurt in a fight where nobody crossed the line', () => {

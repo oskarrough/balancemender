@@ -2,7 +2,7 @@
 
 > What happens if a tank and a healer take on three wolves? Run it ten times and find out.
 
-There is one game. A simulated fight is the same `GameLoop`, the same characters, spells and
+There is one game. A simulated fight is the same `GameLoop`, the same units, spells and
 combat log you get in the browser, with two things swapped:
 
 - the browser's animation frames are replaced by a fixed step, so two minutes of fight
@@ -45,7 +45,7 @@ bun run sim --json > fight.json                    # every event, for your own a
 truncates mid-object at 64KB — what you get back is a JSON parse error that looks like a bug in the
 report. `> fight.json` is fine at any size.
 
-A single fight prints health graphs, per-actor damage and healing, per-ability breakdowns and
+A single fight prints health graphs, per-unit damage and healing, per-ability breakdowns and
 deaths:
 
 ```
@@ -57,7 +57,7 @@ seed 1 · triage · victory in 60.0s
   Tiny wolf 1  █▇▇▇▆▆▅▅▅▄▄▃▃▃▂▁▁▁▁·····················  dead 28.8s
   Tiny wolf 2  ██████████████████████▇▆▆▆▆▅▄▄▄▃▃▂▂▂▁▁▁·  dead 60.0s
 
-  actor        dmg  dps  heal  hps  overheal  taken  casts  busy
+  unit         dmg  dps  heal  hps  overheal  taken  casts  busy
   Player         0  0.0   562  9.4       30%      0     10   33%
   Tank         507  8.4     0  0.0        0%    591      0    0%
   Tiny wolf 2  401  6.7     0  0.0        0%    255      0    0%
@@ -68,7 +68,7 @@ seed 1 · triage · victory in 60.0s
   Savage Bite      0    22    121    2.0   5.5        0%
 ```
 
-`busy` is the share of the fight that actor spent committed to a cast or its global cooldown, and
+`busy` is the share of the fight that unit spent committed to a cast or its global cooldown, and
 it is the column that answers "was the healer out of time, or out of mana?". A healer at 33% has
 two thirds of the fight spare, so a policy that loses there is not losing for want of a free
 moment. `per s` is there because a total says nothing about whether a bleed is worth its slot
@@ -87,7 +87,7 @@ next to a bite that swings three times as often.
   deaths    Tiny wolf 1 3/3   Tiny wolf 2 3/3
 ```
 
-The `healing` and `damage` lines are the whole fight; the `healer` line is only the actor the
+The `healing` and `damage` lines are the whole fight; the `healer` line is only the unit the
 policy drives. They are separate because enemies heal now — a `WolfShaman` in the roster puts its
 own work into the fight's total, and reading that as the player's throughput makes an `idle`
 control group look like it healed for 6 a second.
