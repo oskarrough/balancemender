@@ -21,7 +21,7 @@ export interface CombatLogEvent {
 	 * whichever is longer. Logged so the analyzer can say how much of a fight a unit spent
 	 * unable to act without knowing what a GCD is: everything it needs is in the stream.
 	 *
-	 * Not `duration`: an aura has one too, and it is a different thing — how long the effect lasts
+	 * Not `duration`: an aura has one too, and it is a different thing — how long the aura lasts
 	 * on its target rather than how long its caster stood still.
 	 */
 	busyFor?: number

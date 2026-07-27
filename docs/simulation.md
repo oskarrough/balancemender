@@ -130,7 +130,7 @@ around 200.**
 `busy%` is the healer's, and it is how #50 was found: it never exceeds 56% even in fights it loses,
 so the healer is short of mana, not of time.
 
-This is how the difficulty curve got its shape checked. It used to be inverted — three trash mobs
+This is how the difficulty curve got its shape checked. It used to be inverted — three wolves
 were unwinnable while the boss was a guaranteed win — because the tank kills enemies one at a time,
 so each wolf added both raises incoming damage and lengthens the fight (#40). It is still quadratic
 on purpose: `TinyWolf*5` has to stay a wall, and a flat curve cannot give you one.

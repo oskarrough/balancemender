@@ -15,7 +15,7 @@ export interface Hit {
 }
 
 /**
- * The one door for changing a health bar. Spells, attacks and periodic effects all come
+ * The one door for changing a health bar. Spells, attacks and periodic auras all come
  * through here, so nothing can land without a floating number and a combat log entry —
  * the Combat log panel, the Fight report and the simulator all read that log, and a
  * mechanic missing from it is invisible to all three at once.

@@ -9,7 +9,7 @@
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the
  * question above it: is the difficulty curve the shape we think it is? One seed cannot tell a
  * balanced fight from a lucky roll, and a single enemy group cannot tell you that the boss is
- * easier than three trash mobs — which is exactly what it was, and how #40 was found.
+ * easier than three ordinary enemies — which is exactly what it was, and how #40 was found.
  *
  * Read the `idle` row first. A policy that wins with `idle` is a fight healing does not decide,
  * so a retune that lifts a win rate by making the healer irrelevant shows up here as `idle`

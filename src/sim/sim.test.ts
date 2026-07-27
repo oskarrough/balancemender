@@ -110,7 +110,7 @@ describe('healing changes the outcome', () => {
 	})
 
 	/**
-	 * The difficulty ramp was inverted: three trash mobs were unwinnable while the boss was a
+	 * The difficulty ramp was inverted: three wolves were unwinnable while the boss was a
 	 * guaranteed win, because the tank kills one enemy at a time, so an extra wolf raises incoming
 	 * damage *and* lengthens the fight. #40 moved the cliff rather than flattening the curve —
 	 * five wolves is still meant to be a wall, which a flat curve could not give you.

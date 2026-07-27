@@ -40,14 +40,14 @@ const VERBS: Partial<Record<CombatEventType, {verb: string; amountWord?: string}
 
 function formatLogEntry(event: CombatLogEvent): string {
 	if (event.eventType === 'UNIT_DIED') {
-		return `${event.targetName || 'Unknown entity'} died${event.extraInfo ? ` (${event.extraInfo})` : ''}`
+		return `${event.targetName || 'Unknown unit'} died${event.extraInfo ? ` (${event.extraInfo})` : ''}`
 	}
 	if (event.eventType === 'UNIT_CONDITION' && event.condition) {
-		return `${event.targetName || 'Unknown entity'} ${CONDITION_PHRASE[event.condition]}`
+		return `${event.targetName || 'Unknown unit'} ${CONDITION_PHRASE[event.condition]}`
 	}
 	// Written from the target's side: nobody casts a fade, the aura simply runs out.
 	if (event.eventType === 'SPELL_AURA_REMOVED') {
-		return `${event.abilityName} fades from ${event.targetName || 'Unknown entity'}`
+		return `${event.abilityName} fades from ${event.targetName || 'Unknown unit'}`
 	}
 	const {verb = 'used', amountWord} = VERBS[event.eventType] ?? {}
 	const source = event.sourceName ?? ''
