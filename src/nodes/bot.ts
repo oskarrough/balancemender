@@ -88,13 +88,19 @@ export const renew: Bot = (player) => {
 }
 
 /**
- * Flash Heal on cooldown. Fast reactions, burns mana, overheals a lot. The only bot with no
- * fallback, so it stops measuring bad play the moment Flash Heal gets a cooldown (#41).
+ * Reach for Flash Heal every time, and Heal when it is out of reach. Fast reactions, burns mana,
+ * overheals a lot — the trap the spell ladder is built around.
+ *
+ * The Heal fallback is what keeps it a bot about spell *choice* (#41). A bot whose whole output is
+ * one spell is not measuring bad play once that spell can be unavailable: it idles while the spell
+ * is down, banking the mana it was supposed to waste, and a cooldown meant to punish it reads as a
+ * buff instead. Any bot added here wants the same — a second spell to fall to.
  */
 export const panic: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
 	if (castable(player, 'FlashHeal', target)) return {ability: 'FlashHeal', target}
+	if (castable(player, 'Heal', target)) return {ability: 'Heal', target}
 	return undefined
 }
 

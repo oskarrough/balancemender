@@ -106,8 +106,11 @@ Pin a seed and an ability that quietly becomes twice as strong fails the build.
 
 The healer needs to play somehow. `src/nodes/bot.ts` holds them, deliberately simple to read and
 to add to: `idle` never casts and is the control group, `triage` matches the heal to the
-emergency, `renew` keeps a heal-over-time rolling, `panic` spams Flash Heal, and `shield` keeps
-Power Word: Shield on the tank. Comparing bots on one composition usually tells you more than
+emergency, `renew` keeps a heal-over-time rolling, `panic` reaches for Flash Heal every time and
+drops to Heal when it cannot, and `shield` keeps Power Word: Shield on the tank. Every bot but
+`idle` has a spell to fall back on, deliberately: one whose whole output is a single spell stops
+measuring play and starts measuring that spell's availability (#41). Comparing bots on one
+composition usually tells you more than
 comparing compositions — `idle` dying in 15s while `triage` lasts 47s is the encounter's actual
 demand. A `BotDriver` is a normal Task, so one can play in the browser:
 
