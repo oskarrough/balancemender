@@ -42,19 +42,26 @@ export class Cadence extends Task {
 	tick() {
 		if (!this.shouldUse()) return
 		const AbilityClass = this.parent.abilities[this.abilityId]
+
+		// Ask for an unknown ability once so useAbility's refusal reaches the log.
+		if (!AbilityClass) return this.use()
+
 		const targeting = this.parent.targeting
 
 		// A unit with no preference has nothing to choose with, this beat or any other. Say so:
 		// beating forever in silence is how a Cadence on a unit that never got a Targeting — the
 		// player, for one — looks exactly like a Cadence that is working.
-		if (AbilityClass && !targeting) return this.refuse('no targeting to choose a target with')
+		if (!targeting) return this.refuse('no targeting to choose a target with')
 
 		// Having nobody eligible right now is the other thing entirely, and not a failure at all.
 		// Wait for the next beat rather than spend it on a refusal.
-		const target = AbilityClass && targeting ? targeting.pick(AbilityClass.targetRule) : undefined
-		if (AbilityClass && !target) return
+		const target = targeting.pick(AbilityClass.targetRule)
+		if (!target) return
 
-		// An ability the unit does not own is still asked for, so that refusal reaches the log.
+		this.use(target)
+	}
+
+	private use(target?: Unit) {
 		const result = this.parent.useAbility(this.abilityId, target)
 		if (!result.ok) this.refuse(result.error)
 	}
@@ -94,8 +101,13 @@ export class ShieldBashCadence extends Cadence {
 	static interval = 2400
 }
 
+/**
+ * Slow on purpose. At 8s this healed for as much as the tank hit for, to the decimal, so the fight
+ * stalled at exactly nobody winning (#51). Half as often puts daylight between the two numbers
+ * without shaving `Mend` itself, which stays a heal big enough to be worth racing.
+ */
 export class MendCadence extends Cadence {
 	static abilityId = 'Mend'
 	static delay = 4000
-	static interval = 8000
+	static interval = 16000
 }

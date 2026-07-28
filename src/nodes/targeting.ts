@@ -17,6 +17,9 @@ export interface Preference {
 	reconsiders(current: Unit, candidates: Unit[]): boolean
 }
 
+/** Whether this unit carries anything tagged `healing` — what makes it worth killing first. */
+const heals = (unit: Unit) => Object.values(unit.abilities).some((ability) => ability.tags.includes('healing'))
+
 export const prefer = {
 	/** Whoever comes first. Stays with them until they die. */
 	first: {
@@ -39,6 +42,20 @@ export const prefer = {
 		// the caller's.
 		prefers: (candidates: Unit[]) => [...candidates].sort((a, b) => a.health.ratio - b.health.ratio)[0],
 		reconsiders: () => true,
+	},
+
+	/**
+	 * Anything that can heal, before anything that cannot. Read off the ability's own `healing` tag
+	 * rather than off a class, so a unit that is given a heal later becomes a priority target by
+	 * saying so in its abilities and nowhere else.
+	 *
+	 * Without this the party had no way to express "kill the healer first" and no other way to win a
+	 * fight containing one: a `WolfShaman` at the back of the array was reached only after every
+	 * wolf died, and no wolf could die while it lived (#51).
+	 */
+	healerFirst: {
+		prefers: (candidates: Unit[]) => candidates.find(heals) ?? candidates[0],
+		reconsiders: (current: Unit, candidates: Unit[]) => !heals(current) && candidates.some(heals),
 	},
 
 	/** A tank if there is one, and it switches over the moment one shows up. */

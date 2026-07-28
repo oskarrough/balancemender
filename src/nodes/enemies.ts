@@ -27,9 +27,10 @@ export class TinyWolf extends Unit {
 }
 
 /**
- * A wolf that mends the pack instead of biting it. Nothing stops it from carrying attacks too —
- * each use is handed its own target, so a bite and a mend no longer compete for one slot — but
- * giving it one is a balance question (#51), not a modelling one.
+ * A wolf that mends the pack instead of biting it, and the one enemy the party is meant to kill
+ * first — `Tank` prefers whatever heals. Nothing stops it from carrying attacks too, since each use
+ * is handed its own target and a bite and a mend no longer compete for one slot; it has none yet
+ * only because a pack this size does not need more damage in it.
  */
 export class WolfShaman extends Unit {
 	static maxHealth = 180

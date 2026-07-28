@@ -8,7 +8,7 @@ export class Tank extends Unit {
 	static maxHealth = 300
 	static faction = FACTION.PARTY
 	abilities = {ShieldBash}
-	targeting = new Targeting(this, prefer.first)
+	targeting = new Targeting(this, prefer.healerFirst)
 	shieldBashCadence = new ShieldBashCadence(this)
 	name = 'Tank'
 	image = '/assets/generated/characters/tank.png'
