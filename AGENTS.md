@@ -14,7 +14,7 @@ Read [docs/architecture.md](./docs/architecture.md) first — it is the map of t
 covers the vroum lifecycle rules that are easy to get wrong.
 
 - `src/main.ts` boots the splash, then builds a `GameLoop` on the first keypress
-- `src/nodes/` is the game: loop, encounter, units, spells, attacks, resources
+- `src/nodes/` is the game: loop, encounter, units, abilities, auras, resources
 - `src/components/` is the UI (plain custom elements + uhtml), re-rendered by the loop each frame
 - `src/combatlog.ts` is the event stream every fight writes to
 - `src/sim/` runs fights without a browser and turns combat logs into reports
@@ -26,7 +26,11 @@ it — the fastest way to see what a file holds before opening it. Add `--items 
 public surface of a directory, or `--json` to work over it.
 
 [docs/glossary.md](./docs/glossary.md) is what the words mean. Reach for it before naming a new
-class or field, and fold a term into it rather than inventing a second word for something.
+class or field, and fold a term into it rather than inventing a second word for something. The
+words that catch people out: everything a unit can do is an **ability** (a spell and an attack are
+tags on one, not two classes), one **use** of it is a one-shot Task, a **driver** decides when,
+`magnitude` is how big it lands, and an **id** is what the code files an ability under while a
+**name** is only what the player reads.
 
 ## Answering "what happens if…" questions
 
@@ -60,7 +64,10 @@ fight worth tuning. Between two retunes that win equally often, the one that lea
 made the healer better and the one that lowered it made the fight easier.
 
 `--tune 'kind:Name.key=value'` changes a balance number for the run, so a candidate never needs a
-source edit you have to remember to undo. The kinds are `spell`, `attack`, `aura`, `unit` and
-`rule` — a rule is a number the whole game reads, like where the injured line sits
-(`rule:Condition.injured=30`), and unlike the rest it lands on the fight already running. Redirect `--json` to a file rather than piping it; a
-pipe truncates at 64KB and the parse error looks like a bug in the report.
+source edit you have to remember to undo. The kinds are `ability`, `cadence`, `aura`, `unit` and
+`rule` — spells and attacks are both abilities, `cadence` is how often a unit uses one, and a rule
+is a number the whole game reads, like where the injured line sits (`rule:Condition.injured=30`),
+which unlike the rest lands on the fight already running. How much an ability lands for is
+`magnitude` (`ability:Renew.magnitude=140`); damage is `minDamage`/`maxDamage`. Redirect `--json`
+to a file rather than piping it; a pipe truncates at 64KB and the parse error looks like a bug in
+the report.

@@ -8,7 +8,7 @@ combat log you get in the browser, with two things swapped:
 - the browser's animation frames are replaced by a fixed step, so two minutes of fight
   resolve in a fraction of a second, and
 - the keyboard is replaced by an `Autopilot` — a Task that performs the same
-  `{type: 'cast'}` action a keypress does.
+  `{type: 'use'}` action a keypress does.
 
 Everything else is untouched. What comes out is an ordinary combat log, which `analyze()`
 turns into a report. That is why the terminal and the in-game "Fight report" panel agree: they
