@@ -69,8 +69,8 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 		}
 
 		case 'use': {
-			// A named target belongs to this one use and leaves the player's selection alone — the
-			// A bot casting on the tank must not move the frame the player is aiming at.
+			// A named target belongs to this one use and leaves the player's selection alone. A bot
+			// casting on the tank must not move the frame the player is aiming at.
 			const target = action.target ? findUnit(game, action.target) : game.player.intendedTarget
 			if (action.target && !target) return fail(`No unit with id ${action.target}`)
 			return game.player.useAbility(action.ability, target)
