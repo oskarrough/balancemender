@@ -1,6 +1,7 @@
 import {describe, it, expect, beforeEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
+import {SimLoop} from '../sim/run'
 import type {Aura} from './aura'
 import {PeriodicAura} from './periodic-aura'
 import {SavageBite} from './attack'
@@ -118,6 +119,35 @@ describe('stack rule', () => {
 			aura.disconnect()
 		}).not.toThrow()
 		await settle()
+		game.disconnect()
+	})
+})
+
+describe('tick timing', () => {
+	beforeEach(() => clearLogs())
+
+	it('waits one subclass interval before its first tick', async () => {
+		class PatientAura extends PeriodicAura {
+			static id = 'PatientAura'
+			static name = 'Patient aura'
+			static total = 10
+			static interval = 2000
+			static repeat = 2
+		}
+
+		const game = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		await settle()
+		new PatientAura(game.tank, game.player)
+		await settle()
+		const ticks = () => combatLogs.filter((event) => event.abilityId === 'PatientAura' && 'value' in event)
+
+		game.runFrame(0)
+		game.runFrame(PatientAura.interval - 1)
+		expect(ticks()).toHaveLength(0)
+
+		game.runFrame(PatientAura.interval)
+		expect(ticks()).toHaveLength(1)
+		expect(ticks()[0].time).toBe(PatientAura.interval)
 		game.disconnect()
 	})
 })

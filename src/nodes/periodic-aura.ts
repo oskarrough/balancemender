@@ -22,12 +22,8 @@ export class PeriodicAura extends Aura {
 	interval = 3000
 	repeat = 5
 	/**
-	 * How long before the first tick. Zero means the next frame — `interval` is the gap *between*
-	 * ticks, so by default an aura lands an instalment the moment it is applied.
-	 *
-	 * Set it to `interval` for the Classic behaviour of waiting a full tick. That matters for an
-	 * aura refreshed faster than it expires: with no delay, every reapplication buys an immediate
-	 * instalment, and the aura is partly a direct hit wearing a periodic's name.
+	 * How long before the first tick. Defaults to the aura's interval; a deliberately immediate
+	 * periodic effect opts in with `static delay = 0`.
 	 */
 	delay = 0
 
@@ -36,7 +32,6 @@ export class PeriodicAura extends Aura {
 	static total = 0
 	static interval = 3000
 	static repeat = 5
-	static delay = 0
 
 	/**
 	 * `total` overrides the class default, so a spell can own its own number — see `Renew`, which
@@ -44,7 +39,10 @@ export class PeriodicAura extends Aura {
 	 */
 	constructor(parent: Unit, caster: Unit, total?: number) {
 		super(parent, caster)
-		applyStatics(this, 'total', 'interval', 'repeat', 'delay')
+		applyStatics(this, 'total', 'interval', 'repeat')
+		this.delay = this.interval
+		// Apply separately so the default follows a subclass interval while an explicit zero wins.
+		applyStatics(this, 'delay')
 		if (total !== undefined) this.total = total
 	}
 

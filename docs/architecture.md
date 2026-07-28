@@ -209,11 +209,11 @@ keeps its number where the Balance Lab can tune it. `maxStacks` defaults to 1, s
 what is there — raise it only for an aura that is _meant_ to stack, because unbounded is not a
 design.
 
-`interval` is the gap **between** ticks, not before the first one, so by default an aura lands an
-instalment the frame it is applied. That is free damage for anything reapplied faster than it expires
-— a wolf's bleed refreshed every bite would arrive half as a lump. Set `delay` to `interval` for the
-Classic behaviour of waiting a full tick. Renew still front-loads; changing it is a balance question,
-not a bug fix (#48).
+`interval` is both the default wait before the first tick and the gap between later ticks. The
+default is derived from the aura's subclass interval, so a periodic effect waits one full tick even
+when it overrides that interval. An intentionally immediate effect must opt in with
+`static delay = 0`; explicit zero matters because reapplying such an aura buys another immediate
+instalment.
 
 ## Fights without a browser
 
