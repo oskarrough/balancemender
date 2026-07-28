@@ -1,17 +1,20 @@
-import {beforeEach, describe, expect, it} from 'vitest'
+import {afterEach, beforeEach, describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
 import {combatLogs, clearLogs} from '../combatlog'
 import {SimLoop} from '../sim/run'
 import {GameLoop} from './game-loop'
 import {Cadence} from './cadence'
-import {Nakroth, TinyWolf, WolfShaman, Mend} from './enemies'
+import {Nakroth, TinyWolf, WolfShaman} from './enemies'
+import {Mend} from './spells'
 import {QuickStab} from './attack'
 
-describe('a cadence', () => {
-	beforeEach(() => clearLogs())
+let game!: GameLoop
+beforeEach(() => clearLogs())
+afterEach(() => game.disconnect())
 
+describe('a cadence', () => {
 	it('requests every kind through the unit ability collection', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
 		await settle()
 		const [wolf, shaman] = game.enemies
 		new Cadence(wolf, 'QuickStab').tick()
@@ -19,17 +22,16 @@ describe('a cadence', () => {
 		new Cadence(shaman, 'Mend').tick()
 		expect(shaman.currentAbility?.id).toBe('Mend')
 		await settle()
-		game.disconnect()
 	})
 
 	it('requires one stable ability id', () => {
-		const game = new GameLoop({party: [], enemies: []})
+		game = new GameLoop({party: [], enemies: []})
 		expect(() => new Cadence(game.player)).toThrow(/needs an ability id/)
-		game.disconnect()
 	})
 
 	it('preserves independent attack timings', async () => {
-		const game = new SimLoop({party: ['Tank'], enemies: ['TinyWolf', 'Nakroth']})
+		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf', 'Nakroth']})
+		game = sim
 		await settle()
 		const wolf = game.enemies[0] as TinyWolf
 		const nakroth = game.enemies[1] as Nakroth
@@ -42,7 +44,7 @@ describe('a cadence', () => {
 		expect([nakroth.heavyBlowCadence.delay, nakroth.heavyBlowCadence.interval]).toEqual([4000, 3800])
 		expect([nakroth.nastyArrowCadence.delay, nakroth.nastyArrowCadence.interval]).toEqual([8000, 12000])
 		for (let time = 0; time <= 8000; time += 100) {
-			game.runFrame(time)
+			sim.runFrame(time)
 			await settle()
 		}
 		const times = (id: string) =>
@@ -52,15 +54,12 @@ describe('a cadence', () => {
 		expect(times('HeavyBlow')).toEqual([4000, 7800])
 		expect(times('NastyArrow')).toEqual([8000])
 		expect(times('ShieldBash')).toEqual([0, 2400, 4800, 7200])
-		game.disconnect()
 	})
 })
 
 describe('an enemy cast cadence', () => {
-	beforeEach(() => clearLogs())
-
 	it('mends the ally that needs it most', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
 		const [wolf, shaman] = game.enemies
 		await settle()
 		wolf.health.set(wolf.health.max / 2)
@@ -74,7 +73,6 @@ describe('an enemy cast cadence', () => {
 		expect(combatLogs.filter((event) => event.eventType === 'SPELL_HEAL' && event.sourceId === shaman.id)).toHaveLength(
 			1,
 		)
-		game.disconnect()
 	})
 
 	/**
@@ -82,7 +80,7 @@ describe('an enemy cast cadence', () => {
 	 * both an attack and a heal meant two drivers overwriting each other's aim.
 	 */
 	it('lets one unit strike an enemy and mend an ally at the same time', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
 		await settle()
 		const [wolf, shaman] = game.enemies
 		shaman.abilities = {...shaman.abilities, QuickStab}
@@ -97,11 +95,10 @@ describe('an enemy cast cadence', () => {
 		expect(game.tank.health.current).toBeLessThan(tankBefore)
 		expect(wolf.health.current).toBeGreaterThan(wolf.health.max / 2)
 		await settle()
-		game.disconnect()
 	})
 
 	it('uses its own collection, cast rules and cadence rather than mana', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
 		const [wolf, shaman] = game.enemies
 		await settle()
 		expect(shaman.useAbility('Heal', wolf)).toMatchObject({ok: false, error: /Ability Heal/})
@@ -112,6 +109,5 @@ describe('an enemy cast cadence', () => {
 		expect(shaman.useAbility('Mend', wolf).ok).toBe(true)
 		expect((shaman as WolfShaman).cadence.shouldTick()).toBe(false)
 		await settle()
-		game.disconnect()
 	})
 })

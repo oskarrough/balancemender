@@ -1,4 +1,5 @@
-import {Unit, FACTION} from './unit'
+import {Unit} from './unit'
+import {FACTION} from './types'
 import {Mana} from './mana'
 import {playerAbilities} from './registry'
 import type {AbilityClass} from './ability'

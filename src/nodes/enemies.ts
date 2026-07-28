@@ -40,5 +40,3 @@ export class WolfShaman extends Unit {
 	targeting = new Targeting(this, prefer.lowestHealth)
 	cadence = new MendCadence(this)
 }
-
-export {Mend}

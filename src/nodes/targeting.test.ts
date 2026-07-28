@@ -1,7 +1,10 @@
-import {describe, expect, it} from 'vitest'
+import {describe, expect, it, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {prefer} from './targeting'
+
+let game!: GameLoop
+afterEach(() => game.disconnect())
 
 describe('healerFirst', () => {
 	/**
@@ -10,12 +13,11 @@ describe('healerFirst', () => {
 	 * no wolf could die while it was healing them. Three units, unwinnable by every bot.
 	 */
 	it('reaches past the wolves in front for the one that can heal', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf', 'WolfShaman']})
 		await settle()
 		const shaman = game.enemies.at(-1)
 
 		expect(game.tank.targeting.pick('enemy')).toBe(shaman)
-		game.disconnect()
 	})
 
 	/**
@@ -23,12 +25,11 @@ describe('healerFirst', () => {
 	 * single out, this has to be the plain "whoever comes first" it replaced, switching never.
 	 */
 	it('is exactly first when nothing in the fight heals', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']})
 		await settle()
 		const candidates = game.enemies
 
 		expect(prefer.healerFirst.prefers(candidates)).toBe(prefer.first.prefers(candidates))
 		expect(prefer.healerFirst.reconsiders(candidates[0], candidates)).toBe(false)
-		game.disconnect()
 	})
 })

@@ -1,9 +1,12 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {GameLoop} from './game-loop'
-import {CONDITION_THRESHOLDS} from './unit'
+import {CONDITION_THRESHOLDS} from './types'
 import {applyHit} from './hit'
 import {combatLogs, clearLogs} from '../combatlog'
-import {resetBalance, setRuleValue} from '../balance'
+import {resetBalance, setBalanceValue} from '../balance'
+
+let game!: GameLoop
+afterEach(() => game.disconnect())
 
 /**
  * `condition` is a primitive nothing casts off yet, so these tests are the whole specification
@@ -12,13 +15,13 @@ import {resetBalance, setRuleValue} from '../balance'
  */
 describe('Unit.condition', () => {
 	const tank = () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
-		return {game, unit: game.tank}
+		game = new GameLoop({party: ['Tank'], enemies: []})
+		return game.tank
 	}
 	const at = (max: number, percent: number) => (max * percent) / 100
 
 	it('reads the three bands off the health bar', () => {
-		const {game, unit} = tank()
+		const unit = tank()
 		const {max} = unit.health
 
 		expect(unit.condition).toBe('healthy')
@@ -32,8 +35,6 @@ describe('Unit.condition', () => {
 		unit.health.set(at(max, 20))
 		expect(unit.condition).toBe('injured')
 		expect(unit.injured).toBe(true)
-
-		game.disconnect()
 	})
 
 	/**
@@ -42,7 +43,7 @@ describe('Unit.condition', () => {
 	 * health values — a mechanic that fires one point early on some units and not others.
 	 */
 	it('leaves a unit sitting exactly on a threshold in neither band', () => {
-		const {game, unit} = tank()
+		const unit = tank()
 		const {max} = unit.health
 
 		unit.health.set(at(max, CONDITION_THRESHOLDS.injured))
@@ -50,19 +51,15 @@ describe('Unit.condition', () => {
 
 		unit.health.set(at(max, CONDITION_THRESHOLDS.healthy))
 		expect(unit.condition).toBe('steady')
-
-		game.disconnect()
 	})
 
 	/** Orthogonal to `alive` on purpose — see the comment on `injured`. */
 	it('calls a corpse injured, and leaves saying it is dead to `alive`', () => {
-		const {game, unit} = tank()
+		const unit = tank()
 		unit.health.set(0)
 
 		expect(unit.condition).toBe('injured')
 		expect(unit.alive).toBe(false)
-
-		game.disconnect()
 	})
 })
 
@@ -75,17 +72,16 @@ describe('the condition thresholds are balance numbers', () => {
 	 * is used, so moving it re-reads every unit already fighting.
 	 */
 	it('moves the bands on the fight already in progress', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 		game.tank.health.set(game.tank.health.max * 0.5)
 
 		expect(game.tank.condition).toBe('steady')
 
-		setRuleValue('Condition', 'injured', 60)
+		setBalanceValue('rule', 'Condition', 'injured', 60)
 		expect(game.tank.condition).toBe('injured')
 
 		resetBalance()
 		expect(game.tank.condition).toBe('steady')
-		game.disconnect()
 	})
 })
 
@@ -100,7 +96,7 @@ describe('UNIT_CONDITION', () => {
 	const conditions = () => combatLogs.filter((event) => event.eventType === 'UNIT_CONDITION')
 
 	it('records a crossing once, after the hit that caused it, with who caused it', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		const hit = (amount: number) =>
 			applyHit({
@@ -125,11 +121,10 @@ describe('UNIT_CONDITION', () => {
 		hit(-game.tank.health.max * 0.2)
 		expect(conditions()).toHaveLength(2)
 		expect(conditions()[1]).toMatchObject({condition: 'injured'})
-		game.disconnect()
 	})
 
 	it('says nothing extra when the hit kills, because a corpse reading injured is not news', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		applyHit({
 			source: game.enemies[0],
 			target: game.tank,
@@ -141,18 +136,15 @@ describe('UNIT_CONDITION', () => {
 
 		expect(conditions()).toHaveLength(0)
 		expect(combatLogs.at(-1)?.eventType).toBe('UNIT_DIED')
-		game.disconnect()
 	})
 })
 
 describe('Resource.ratio', () => {
 	it('is zero rather than NaN when there is no pool at all', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 		game.tank.health.max = 0
 
 		expect(game.tank.health.ratio).toBe(0)
 		expect(game.tank.condition).toBe('injured')
-
-		game.disconnect()
 	})
 })

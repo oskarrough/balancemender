@@ -1,17 +1,8 @@
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
-import {
-	balance,
-	ABILITY_KEYS,
-	CADENCE_KEYS,
-	UNIT_KEYS,
-	RULE_KEYS,
-	type AbilityKey,
-	type CadenceKey,
-	type UnitKey,
-	type RuleKey,
-} from './balance'
-import {abilityRegistry} from './nodes/registry'
+import {balanceCategories, type AbilityKey, type CadenceKey, type UnitKey, type RuleKey} from './balance'
+import type {GameAction} from './actions'
+import {abilityRegistry, type AbilityId} from './nodes/registry'
 import type {UnitId} from './nodes/unit-registry'
 
 export type NumberField = {
@@ -49,113 +40,65 @@ export type Inspectable = {
 	actions?: Action[]
 }
 
-const ABILITY_LABEL: Record<AbilityKey, string> = {
-	cost: 'Mana cost',
-	magnitude: 'Magnitude (heal or shield)',
-	castTime: 'Cast time (ms)',
-	cooldown: 'Cooldown (ms)',
-	minDamage: 'Min damage',
-	maxDamage: 'Max damage',
+/**
+ * What the player reads for every tunable number, in the order a panel lists them. Typed per kind
+ * so adding a key to `ABILITY_KEYS` and friends without labelling it fails to compile.
+ */
+const LABELS: {
+	ability: Record<AbilityKey, string>
+	unit: Record<UnitKey, string>
+	cadence: Record<CadenceKey, string>
+	rule: Record<RuleKey, string>
+} = {
+	ability: {
+		cost: 'Mana cost',
+		magnitude: 'Magnitude (heal or shield)',
+		castTime: 'Cast time (ms)',
+		cooldown: 'Cooldown (ms)',
+		minDamage: 'Min damage',
+		maxDamage: 'Max damage',
+	},
+	unit: {maxHealth: 'Max health', maxMana: 'Max mana', manaRegen: 'Mana regen (per second)'},
+	cadence: {delay: 'Initial delay (ms)', interval: 'Interval (ms)'},
+	rule: {injured: 'Injured below (% health)', healthy: 'Healthy above (% health)'},
 }
 
-const CADENCE_LABEL: Record<CadenceKey, string> = {
-	delay: 'Initial delay (ms)',
-	interval: 'Interval (ms)',
-}
+type BalancePanelKind = keyof typeof LABELS
 
-const UNIT_LABEL: Record<UnitKey, string> = {
-	maxHealth: 'Max health',
-	maxMana: 'Max mana',
-	manaRegen: 'Mana regen (per second)',
-}
-
-const RULE_LABEL: Record<RuleKey, string> = {
-	injured: 'Injured below (% health)',
-	healthy: 'Healthy above (% health)',
-}
-
-/** One panel per stable ability id; tags and school are labels, not execution paths. */
-export function abilityInspectables(game: GameLoop): Inspectable[] {
-	return Object.entries(abilityRegistry).map(([name, AbilityClass]) => ({
-		id: `ability:${name}`,
-		kind: 'ability',
-		title: AbilityClass.name,
-		subtitle: `ability:${name} · ${AbilityClass.tags.join(', ')} · ${AbilityClass.school}`,
-		fields: ABILITY_KEYS.filter((key) => key in balance.abilities[name]).map(
-			(key): NumberField => ({
-				kind: 'number',
-				key,
-				label: ABILITY_LABEL[key],
-				get: () => balance.abilities[name][key] ?? 0,
-				set: (value) => {
-					game.perform({type: 'tune', of: 'ability', name, key, value})
-				},
-			}),
-		),
-	}))
-}
-
-export function cadenceInspectables(game: GameLoop): Inspectable[] {
-	return Object.keys(balance.cadences).map((name) => ({
-		id: `cadence:${name}`,
-		kind: 'cadence',
-		title: name,
-		subtitle: `cadence:${name}`,
-		fields: CADENCE_KEYS.map(
-			(key): NumberField => ({
-				kind: 'number',
-				key,
-				label: CADENCE_LABEL[key],
-				get: () => balance.cadences[name][key] ?? 0,
-				set: (value) => {
-					game.perform({type: 'tune', of: 'cadence', name, key, value})
-				},
-			}),
-		),
-	}))
+type PanelSpec = {
+	kind: BalancePanelKind
+	section: string
+	/** The panel heading. The balance key itself, unless the thing has a name a player reads. */
+	title?: (name: string) => string
+	subtitle: (name: string) => string
+	min?: number
+	actions?: (game: GameLoop, name: string) => Action[]
 }
 
 /**
- * Numbers the whole game reads. Unlike the other panels these land on the fight in progress,
- * because a rule is read where it is used rather than copied onto an instance at construction.
+ * One section per balance kind. They differ only in what they are called and whether a panel
+ * offers to *do* something as well as tune something — the rest falls out of `balance.ts`.
+ *
+ * `aura` has no section: `Rend` is the only free-standing one, reachable as `--tune aura:Rend.total`.
  */
-export function ruleInspectables(game: GameLoop): Inspectable[] {
-	return Object.keys(balance.rules).map((name) => ({
-		id: `rule:${name}`,
-		kind: 'rule',
-		title: name,
-		subtitle: 'Applies immediately',
-		fields: RULE_KEYS.map(
-			(key): NumberField => ({
-				kind: 'number',
-				key,
-				label: RULE_LABEL[key],
-				get: () => balance.rules[name][key] ?? 0,
-				set: (value) => {
-					game.perform({type: 'tune', of: 'rule', name, key, value})
-				},
-				min: 0,
-			}),
-		),
-	}))
-}
-
-export function unitInspectables(game: GameLoop): Inspectable[] {
-	return Object.keys(balance.units).map((name) => {
-		const fields = UNIT_KEYS.filter((key) => key in balance.units[name]).map(
-			(key): NumberField => ({
-				kind: 'number',
-				key,
-				label: UNIT_LABEL[key],
-				get: () => balance.units[name][key] ?? 0,
-				set: (value) => {
-					game.perform({type: 'tune', of: 'unit', name, key, value})
-				},
-				min: 0,
-			}),
-		)
+const PANELS: PanelSpec[] = [
+	{
+		kind: 'ability',
+		section: 'Abilities',
+		// Tags and school are labels, not execution paths — a spell and an attack are one class.
+		title: (name) => abilityRegistry[name as AbilityId].name,
+		subtitle: (name) => {
+			const {tags, school} = abilityRegistry[name as AbilityId]
+			return `ability:${name} · ${tags.join(', ')} · ${school}`
+		},
+	},
+	{
+		kind: 'unit',
+		section: 'Units',
+		subtitle: () => 'Unit defaults',
+		min: 0,
 		// The player is spawned with the encounter; a second one would just stand there.
-		const actions: Action[] =
+		actions: (game, name) =>
 			name === 'Player'
 				? []
 				: [
@@ -166,137 +109,151 @@ export function unitInspectables(game: GameLoop): Inspectable[] {
 								game.perform({type: 'spawn', unit: name as UnitId})
 							},
 						},
-					]
-		return {
-			id: `unit:${name}`,
-			kind: 'unit',
-			title: name,
-			subtitle: 'Unit defaults',
-			fields,
-			actions,
-		}
-	})
+					],
+	},
+	{kind: 'cadence', section: 'Cadences', subtitle: (name) => `cadence:${name}`},
+	{
+		kind: 'rule',
+		section: 'Rules',
+		// Unlike the rest these land on the fight in progress, because a rule is read where it is
+		// used rather than copied onto an instance at construction.
+		subtitle: () => 'Applies immediately',
+		min: 0,
+	},
+]
+
+/**
+ * `PANELS` has already paired each kind with its own keys, which is the thing the `tune` action's
+ * union asks for and the thing a kind/key pair widened to strings can no longer prove.
+ */
+const tune = (game: GameLoop, kind: BalancePanelKind, name: string, key: string, value: number) =>
+	game.perform({type: 'tune', of: kind, name, key, value} as GameAction)
+
+function balancePanels(game: GameLoop, spec: PanelSpec): Inspectable[] {
+	const {kind} = spec
+	const labels: Record<string, string> = LABELS[kind]
+	const state = balanceCategories[kind].state
+	return Object.keys(state).map((name) => ({
+		id: `${kind}:${name}`,
+		kind,
+		title: spec.title?.(name) ?? name,
+		subtitle: spec.subtitle(name),
+		// Only the keys this one declares — an opt-in key stays absent rather than showing up as a
+		// zero the player can tune.
+		fields: Object.keys(labels)
+			.filter((key) => key in state[name])
+			.map(
+				(key): NumberField => ({
+					kind: 'number',
+					key,
+					label: labels[key],
+					get: () => state[name][key] ?? 0,
+					set: (value) => {
+						tune(game, kind, name, key, value)
+					},
+					min: spec.min,
+				}),
+			),
+		actions: spec.actions?.(game, name),
+	}))
 }
 
 export function liveInspectables(game: GameLoop): Inspectable[] {
-	const party = game.party ?? []
-	const enemies = game.encounter?.enemies ?? []
-	const units: Unit[] = [...party, ...enemies]
-	return units.map((c) => liveInspectable(game, c))
+	const units: Unit[] = [...(game.party ?? []), ...(game.encounter?.enemies ?? [])]
+	return units.map((unit) => liveInspectable(game, unit))
 }
 
-function liveInspectable(game: GameLoop, c: Unit): Inspectable {
-	const fields: Field[] = [
+type Pool = {current: number; max: number; set(value: number): number}
+
+/** A unit already in the fight: its bars written straight to, and the buttons that end it. */
+function liveInspectable(game: GameLoop, unit: Unit): Inspectable {
+	const {health, mana} = unit
+	const poolFields = (key: string, label: string, pool: Pool): NumberField[] => [
 		{
 			kind: 'number',
-			key: 'hp',
-			label: 'Health',
-			get: () => c.health.current,
-			set: (v) => {
-				c.health.set(v)
+			key,
+			label,
+			get: () => pool.current,
+			set: (value) => {
+				pool.set(value)
 			},
 			min: 0,
 		},
 		{
 			kind: 'number',
-			key: 'hpMax',
-			label: 'Max health',
-			get: () => c.health.max,
-			set: (v) => {
-				c.health.max = v
-				if (c.health.current > v) c.health.current = v
+			key: `${key}Max`,
+			label: `Max ${label.toLowerCase()}`,
+			get: () => pool.max,
+			set: (value) => {
+				pool.max = value
+				if (pool.current > value) pool.set(value)
 			},
 			min: 1,
 		},
 	]
-	if (c.mana) {
-		const mana = c.mana
-		fields.push(
-			{
-				kind: 'number',
-				key: 'mana',
-				label: 'Mana',
-				get: () => mana.current,
-				set: (v) => {
-					mana.set(v)
-				},
-				min: 0,
-			},
-			{
-				kind: 'number',
-				key: 'manaMax',
-				label: 'Max mana',
-				get: () => mana.max,
-				set: (v) => {
-					mana.max = v
-					if (mana.current > v) mana.current = v
-				},
-				min: 1,
-			},
-		)
-	}
 
 	const actions: Action[] = [
 		{
 			label: 'Full heal',
 			run: () => {
-				c.health.set(c.health.max)
-				c.mana?.set(c.mana.max)
+				health.set(health.max)
+				mana?.set(mana.max)
 			},
 		},
 		{
 			label: 'Kill',
 			variant: 'danger',
 			run: () => {
-				c.health.set(0)
+				health.set(0)
 			},
 		},
 	]
-	if (c.faction === 'enemy') {
+	if (unit.faction === 'enemy') {
 		actions.push({
 			label: 'Remove',
 			variant: 'danger',
 			run: () => {
-				game.perform({type: 'remove', unit: c.id})
+				game.perform({type: 'remove', unit: unit.id})
 			},
 		})
 	}
 
 	return {
-		id: `live:${c.id}`,
+		id: `live:${unit.id}`,
 		kind: 'live',
-		title: c.name || c.unitId || '?',
-		subtitle: `${c.faction} · ${c.unitId}`,
-		fields,
+		title: unit.name || unit.unitId || '?',
+		subtitle: `${unit.faction} · ${unit.unitId}`,
+		fields: [...poolFields('hp', 'Health', health), ...(mana ? poolFields('mana', 'Mana', mana) : [])],
 		actions,
 	}
 }
 
 export function globalsInspectable(game: GameLoop): Inspectable {
+	const toggle = (key: 'godMode' | 'infiniteMana', label: string): BooleanField => ({
+		kind: 'boolean',
+		key,
+		label,
+		get: () => game[key],
+		set: (value) => {
+			game.perform({type: 'set', key, value})
+		},
+	})
+	const button = (label: string, action: GameAction, variant?: Action['variant']): Action => ({
+		label,
+		variant,
+		run: () => {
+			game.perform(action)
+		},
+	})
+
 	return {
 		id: 'globals',
 		kind: 'globals',
 		title: 'Game',
 		subtitle: 'Global toggles',
 		fields: [
-			{
-				kind: 'boolean',
-				key: 'godMode',
-				label: 'God mode',
-				get: () => game.godMode,
-				set: (value) => {
-					game.perform({type: 'set', key: 'godMode', value})
-				},
-			},
-			{
-				kind: 'boolean',
-				key: 'infiniteMana',
-				label: 'Infinite mana',
-				get: () => game.infiniteMana,
-				set: (value) => {
-					game.perform({type: 'set', key: 'infiniteMana', value})
-				},
-			},
+			toggle('godMode', 'God mode'),
+			toggle('infiniteMana', 'Infinite mana'),
 			{
 				kind: 'number',
 				key: 'gcd',
@@ -310,25 +267,9 @@ export function globalsInspectable(game: GameLoop): Inspectable {
 			},
 		],
 		actions: [
-			{
-				label: 'Heal party',
-				run: () => {
-					game.perform({type: 'healParty'})
-				},
-			},
-			{
-				label: 'Restart encounter',
-				run: () => {
-					game.perform({type: 'restart'})
-				},
-			},
-			{
-				label: 'Reset balance',
-				variant: 'danger',
-				run: () => {
-					game.perform({type: 'resetBalance'})
-				},
-			},
+			button('Heal party', {type: 'healParty'}),
+			button('Restart encounter', {type: 'restart'}),
+			button('Reset balance', {type: 'resetBalance'}, 'danger'),
 		],
 	}
 }
@@ -339,9 +280,6 @@ export function allInspectables(game: GameLoop): InspectableSection[] {
 	return [
 		{section: 'Live', items: liveInspectables(game)},
 		{section: 'Game', items: [globalsInspectable(game)]},
-		{section: 'Abilities', items: abilityInspectables(game)},
-		{section: 'Units', items: unitInspectables(game)},
-		{section: 'Cadences', items: cadenceInspectables(game)},
-		{section: 'Rules', items: ruleInspectables(game)},
+		...PANELS.map((spec) => ({section: spec.section, items: balancePanels(game, spec)})),
 	]
 }

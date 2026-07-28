@@ -1,9 +1,6 @@
-/**
- * Represents the faction a unit belongs to
- */
+/** Which side a unit fights on. */
 export type Faction = 'party' | 'enemy'
 
-// Constants for faction values
 export const FACTION = {
 	PARTY: 'party' as Faction,
 	ENEMY: 'enemy' as Faction,

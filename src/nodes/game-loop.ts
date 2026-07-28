@@ -26,13 +26,11 @@ export function currentGame(): GameLoop | undefined {
 	return window.balancemender instanceof GameLoop ? window.balancemender : undefined
 }
 
-/**
- * Main game loop that manages the game state and updates
- */
+/** The clock and the root of everything. See [architecture](../../docs/architecture.md). */
 export class GameLoop extends Loop {
 	gameOver = false
 
-	// A global cooldown window that starts after each successful cast. Spells can not be cast during global cooldown.
+	/** How long a cast locks the caster out of the next one. See `GlobalCooldown`. */
 	gcd = 1500
 
 	/**
@@ -56,7 +54,6 @@ export class GameLoop extends Loop {
 		return Promise.resolve(onfulfilled())
 	}
 
-	// Private mute state - use getter/setter to sync with AudioPlayer
 	private _muted = true
 
 	audio = new AudioPlayer(this)
@@ -68,7 +65,6 @@ export class GameLoop extends Loop {
 		this.encounter = new Encounter(this, roster)
 	}
 
-	// Developer mode properties
 	godMode = false
 	infiniteMana = false
 	console!: DevConsole
@@ -110,23 +106,14 @@ export class GameLoop extends Loop {
 		this.render()
 	}
 
-	// Getter and setter for muted property that syncs with AudioPlayer
 	get muted(): boolean {
 		return this._muted
 	}
 
+	/** Kept in step with the speaker, which the menu and the `muted` URL param both reach through here. */
 	set muted(value: boolean) {
-		// Only update if value is changing
-		if (this._muted !== value) {
-			this._muted = value
-			log(`game: mute set to ${value}`)
-
-			// Sync with AudioPlayer
-			if (AudioPlayer.global) {
-				AudioPlayer.global.muted = value
-				log(`game: synced mute state with AudioPlayer: ${value}`)
-			}
-		}
+		this._muted = value
+		if (AudioPlayer.global) AudioPlayer.global.muted = value
 	}
 
 	get party() {
@@ -147,23 +134,9 @@ export class GameLoop extends Loop {
 
 	mount() {
 		log('game:mount')
-		this.on(GameLoop.PLAY, this.handlePlay)
-		this.on(GameLoop.PAUSE, this.handlePause)
 		// Stamp combat events with fight time instead of wall time.
 		setCombatClock(() => this.elapsedTime)
-
-		logCombat({
-			timestamp: Date.now(),
-			eventType: 'ENCOUNTER_START',
-		})
-	}
-
-	handlePlay = () => {
-		log('game:play')
-	}
-
-	handlePause = () => {
-		log('game:pause')
+		logCombat({timestamp: Date.now(), eventType: 'ENCOUNTER_START'})
 	}
 
 	tick() {
@@ -179,10 +152,7 @@ export class GameLoop extends Loop {
 	}
 
 	onGameOver() {
-		logCombat({
-			timestamp: Date.now(),
-			eventType: 'ENCOUNTER_END',
-		})
+		logCombat({timestamp: Date.now(), eventType: 'ENCOUNTER_END'})
 		this.audio.stop()
 		this.pause()
 		// gameOver/render are already set/done by tick() before this fires;

@@ -2,11 +2,8 @@ import {Task} from '../vroum'
 import type {Unit} from './unit'
 
 /**
- * Global Cooldown
- *
- * When this task is added to a unit as its `gcd` property, it will prevent them from casting spells
- * while it exists.
- *
+ * Sat on a unit as its `gcd`, this blocks casting for as long as it exists. One cycle, so vroum
+ * disconnects it when the delay is up and `destroy()` clears the slot.
  */
 export class GlobalCooldown extends Task {
 	repeat = 1

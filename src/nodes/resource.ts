@@ -7,9 +7,7 @@ export type ResourceEvents = {
 	FULL: string
 }
 
-/**
- * Base class for resources like health, mana, stamina, etc.
- */
+/** A clamped pool with events on the edges: health, mana, whatever comes next. */
 export class Resource extends Node {
 	max = 0
 	current = 0
@@ -32,26 +30,15 @@ export class Resource extends Node {
 		return this.max ? this.current / this.max : 0
 	}
 
-	/**
-	 * Set resource to a new value and emit appropriate events
-	 */
+	/** Clamps to the pool, and announces the edges only when something actually moved. */
 	set(amount: number) {
-		const oldValue = this.current
+		const previous = this.current
 		this.current = clamp(amount, 0, this.max)
+		if (previous === this.current) return this.current
 
-		// Emit events only if the value changed
-		if (oldValue !== this.current) {
-			this.emit(this.events.CHANGE, {
-				previous: oldValue,
-				current: this.current,
-			})
-
-			if (this.current <= 0) {
-				this.emit(this.events.EMPTY)
-			} else if (this.current === this.max && oldValue < this.max) {
-				this.emit(this.events.FULL)
-			}
-		}
+		this.emit(this.events.CHANGE, {previous, current: this.current})
+		if (this.current <= 0) this.emit(this.events.EMPTY)
+		else if (this.current === this.max && previous < this.max) this.emit(this.events.FULL)
 
 		return this.current
 	}

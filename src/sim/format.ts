@@ -1,10 +1,17 @@
 import {analyze, healerOf, margin, FightReport, Series} from './report'
-import type {FightResult, Outcome} from './run'
+import type {FightResult, FightSpec, Outcome} from './run'
 
 /** Plain-text fight reports. No colours, so they pipe and diff cleanly. */
 
 const BLOCKS = '▁▂▃▄▅▆▇█'
 const OUTCOMES: Outcome[] = ['victory', 'defeat', 'timeout']
+
+/** Who fought and how the healer played, with the defaults `runFight` would have filled in. */
+const lineup = (spec: FightSpec) => ({
+	party: spec.party ?? ['Tank'],
+	enemies: spec.enemies ?? ['TinyWolf'],
+	bot: typeof spec.bot === 'string' ? spec.bot : (spec.bot?.name ?? 'triage'),
+})
 
 /** A health bar over time: one block per column, `·` once the unit is dead. */
 export function sparkline(points: number[]) {
@@ -18,9 +25,7 @@ export function sparkline(points: number[]) {
 
 export function formatFight(result: FightResult, report = analyze(result.events, result)): string {
 	const lines: string[] = []
-	const party = result.spec.party ?? ['Tank']
-	const enemies = result.spec.enemies ?? ['TinyWolf']
-	const bot = typeof result.spec.bot === 'string' ? result.spec.bot : (result.spec.bot?.name ?? 'triage')
+	const {party, enemies, bot} = lineup(result.spec)
 
 	lines.push(
 		`${[...party, 'Player'].join(' + ')}  vs  ${enemies.join(' + ')}`,
@@ -91,14 +96,13 @@ export function formatAggregate(results: FightResult[]): string {
 	const runtime = avg(durations)
 	const outcomes = count(results.map((r) => r.outcome))
 	const deaths = count(reports.flatMap((r) => r.deaths.map((d) => d.name)))
-	const spec = results[0].spec
-	const bot = typeof spec.bot === 'string' ? spec.bot : (spec.bot?.name ?? 'triage')
+	const {party, enemies, bot} = lineup(results[0].spec)
 	const victories = outcomes.get('victory') ?? 0
 	const absorbed = avg(healers.map((h) => h?.absorbed ?? 0))
 	const wasted = avg(healers.map((h) => h?.wasted ?? 0))
 
 	const lines = [
-		`${results.length} fights · ${[...(spec.party ?? ['Tank']), 'Player'].join(' + ')} vs ${(spec.enemies ?? ['TinyWolf']).join(' + ')} · ${bot}`,
+		`${results.length} fights · ${[...party, 'Player'].join(' + ')} vs ${enemies.join(' + ')} · ${bot}`,
 		'',
 		'  ' +
 			OUTCOMES.map(

@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
@@ -14,11 +14,13 @@ import {combatLogs, clearLogs} from '../combatlog'
 
 const deaths = () => combatLogs.filter((event) => event.eventType === 'UNIT_DIED')
 
-describe('applyHit', () => {
-	beforeEach(() => clearLogs())
+let game!: GameLoop
+beforeEach(() => clearLogs())
+afterEach(() => game.disconnect())
 
+describe('applyHit', () => {
 	it('reports the part of a heal that did nothing', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 		game.tank.health.set(game.tank.health.max - 10)
 
 		const landed = applyHit({
@@ -38,11 +40,10 @@ describe('applyHit', () => {
 			value: 40,
 			overheal: 30,
 		})
-		game.disconnect()
 	})
 
 	it('leaves overheal off a hit, so damage does not claim it overhealed nothing', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 		applyHit({
 			source: game.tank,
 			target: game.tank,
@@ -54,11 +55,10 @@ describe('applyHit', () => {
 
 		expect(combatLogs.at(-1)).toMatchObject({eventType: 'SWING_DAMAGE', value: 5})
 		expect(combatLogs.at(-1)).not.toHaveProperty('overheal')
-		game.disconnect()
 	})
 
 	it('announces a death once, however many more hits land on the body', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		const hit = (amount: number) =>
 			applyHit({
@@ -76,17 +76,14 @@ describe('applyHit', () => {
 
 		hit(-10)
 		expect(deaths()).toHaveLength(1)
-		game.disconnect()
 	})
 })
 
 describe('PeriodicAura', () => {
-	beforeEach(() => clearLogs())
-
 	// The old DoT class applied damage without logging anything at all, so a poison was
 	// invisible to every report. One class for both directions is what stops that recurring.
 	it('logs damage as readily as it logs healing, and credits the caster either way', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 
 		class Poison extends PeriodicAura {
@@ -106,7 +103,6 @@ describe('PeriodicAura', () => {
 			targetId: wolf.id,
 			value: 10,
 		})
-		game.disconnect()
 	})
 
 	/**
@@ -116,7 +112,7 @@ describe('PeriodicAura', () => {
 	 * that lands, so the two cannot drift apart again.
 	 */
 	it('lands the total a heal-over-time advertises, not a fraction of it', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 		game.tank.health.set(1)
 
 		new Renew(game.player, game.tank).land()
@@ -132,6 +128,5 @@ describe('PeriodicAura', () => {
 			.filter((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
 			.reduce((total, event) => total + (event.value ?? 0), 0)
 		expect(healed).toBe(Renew.magnitude)
-		game.disconnect()
 	})
 })

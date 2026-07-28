@@ -2,21 +2,15 @@ import {createLogger} from './combatlog'
 import {Xid} from 'xid-ts'
 import {random} from './rng'
 
-// min and max is inclusive
+/** Inclusive of both ends. Uses the seeded `random()`, so a fight replays from its seed. */
 export function randomIntFromInterval(min: number, max: number) {
 	return Math.floor(random() * (max - min + 1) + min)
 }
 
-/**
- * Returns rounded with one decimal
- */
 export function roundOne(num: number) {
 	return Math.round(num * 10) / 10
 }
 
-/**
- * Makes sure the number x is inside the lower and upper bounds.
- */
 export function clamp(x: number, lower: number, upper: number) {
 	return Math.max(lower, Math.min(x, upper))
 }
@@ -41,7 +35,6 @@ export const logger = createLogger()
 // @ts-ignore
 export const log = (...args) => logger.info(...args)
 
-/** Generates a random, unique ID with xid */
 export function createId() {
 	return new Xid().toString()
 }
@@ -59,9 +52,7 @@ export function applyStatics<T extends object, K extends keyof T>(instance: T, .
 	}
 }
 
-/**
- * Format a timestamp for display
- */
+/** Wall-clock time as HH:MM:SS.sss, for the combat log panel. */
 export function formatTimestamp(timestamp: number): string {
-	return new Date(timestamp).toISOString().substring(11, 23) // HH:MM:SS.sss
+	return new Date(timestamp).toISOString().substring(11, 23)
 }

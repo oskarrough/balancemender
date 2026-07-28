@@ -125,7 +125,6 @@ function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: nu
 		resource.max = value
 		if (resource.current > value) resource.set(value)
 	}
-	return true
 }
 
 function interrupt(game: GameLoop): ActionResult<void> {

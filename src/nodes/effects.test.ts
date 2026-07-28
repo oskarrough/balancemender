@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {Ability} from './ability'
@@ -35,11 +35,13 @@ class Rebuke extends Ability {
 	static effects = [new Damage(), new ApplyAura(Mark)]
 }
 
-describe('an ordered list of effects', () => {
-	beforeEach(() => clearLogs())
+let game!: GameLoop
+beforeEach(() => clearLogs())
+afterEach(() => game.disconnect())
 
+describe('an ordered list of effects', () => {
 	it('runs them in the order the ability declares', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		const before = wolf.health.current
 
@@ -50,7 +52,6 @@ describe('an ordered list of effects', () => {
 		expect([...wolf.auras].map((aura) => aura.id)).toEqual(['Mark'])
 		// The hit is logged before the aura it precedes, because that is the order they ran in.
 		expect(acted().map((event) => event.eventType)).toEqual(['SPELL_DAMAGE', 'SPELL_AURA_APPLIED'])
-		game.disconnect()
 	})
 
 	/**
@@ -59,7 +60,7 @@ describe('an ordered list of effects', () => {
 	 * runs.
 	 */
 	it('plants no aura once an earlier effect killed the target', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		wolf.health.set(4)
 
@@ -69,15 +70,12 @@ describe('an ordered list of effects', () => {
 		expect(wolf.alive).toBe(false)
 		expect([...wolf.auras]).toHaveLength(0)
 		expect(abilityEvents('Mark')).toHaveLength(0)
-		game.disconnect()
 	})
 })
 
 describe('the effects themselves', () => {
-	beforeEach(() => clearLogs())
-
 	it('heals by the ability amount, within a few percent', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game.tank.health.set(10)
 
 		class Mend extends Ability {
@@ -93,7 +91,6 @@ describe('the effects themselves', () => {
 		expect(healed).toBeGreaterThanOrEqual(95)
 		expect(healed).toBeLessThanOrEqual(105)
 		expect(abilityEvents('TestMend')[0]).toMatchObject({eventType: 'SPELL_HEAL'})
-		game.disconnect()
 	})
 
 	/**
@@ -101,7 +98,7 @@ describe('the effects themselves', () => {
 	 * the ability's `heal` when it has one, which is the whole of that arrangement.
 	 */
 	it('leaves an aura its own numbers when the ability owns none', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 
 		new SavageBite(wolf, game.tank).land()
@@ -110,6 +107,5 @@ describe('the effects themselves', () => {
 		const [bleed] = [...game.tank.auras]
 		expect(bleed).toBeInstanceOf(Rend)
 		expect((bleed as Rend).total).toBe(Rend.total)
-		game.disconnect()
 	})
 })

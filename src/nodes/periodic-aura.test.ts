@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {SimLoop} from '../sim/run'
@@ -20,11 +20,13 @@ const aurasNamed = (unit: {auras: Set<Aura>}, name: string) =>
 const auraEvents = (spell: string) =>
 	combatLogs.filter((event) => event.eventType.startsWith('SPELL_AURA') && event.abilityName === spell)
 
-describe('stack rule', () => {
-	beforeEach(() => clearLogs())
+let game!: GameLoop
+beforeEach(() => clearLogs())
+afterEach(() => game.disconnect())
 
+describe('stack rule', () => {
 	it('replaces rather than stacks by default, so a recast refreshes', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 
 		new Renew(game.player, game.tank).land()
 		await settle()
@@ -38,11 +40,10 @@ describe('stack rule', () => {
 		expect(after).toHaveLength(1)
 		expect(after[0]).not.toBe(first)
 		expect(first.superseded).toBe(true)
-		game.disconnect()
 	})
 
 	it('keeps up to maxStacks copies and drops the one closest to expiring', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 
 		class Lifebloom extends PeriodicAura {
 			static name = 'Lifebloom'
@@ -60,22 +61,20 @@ describe('stack rule', () => {
 		expect(stacks).toHaveLength(3)
 		expect(stacks).toEqual(planted.slice(1))
 		expect(planted[0].superseded).toBe(true)
-		game.disconnect()
 	})
 
 	it('counts casters separately, so two healers can each keep one up', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 
 		new PeriodicAura(game.tank, game.player, 50)
 		new PeriodicAura(game.tank, game.tank, 50)
 		await settle()
 
 		expect(aurasNamed(game.tank, 'Periodic')).toHaveLength(2)
-		game.disconnect()
 	})
 
 	it('logs a refresh instead of a removal, so the log never says an aura it still has fell off', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 
 		new Renew(game.player, game.tank).land()
 		await settle()
@@ -84,11 +83,10 @@ describe('stack rule', () => {
 
 		expect(auraEvents('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
 		expect(auraEvents('Renew')[0]).toMatchObject({sourceId: game.player.id, targetId: game.tank.id})
-		game.disconnect()
 	})
 
 	it('says how many are up once there is more than one', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 
 		class Sunder extends PeriodicAura {
 			static name = 'Sunder'
@@ -101,7 +99,6 @@ describe('stack rule', () => {
 		await settle()
 
 		expect(auraEvents('Sunder').map((event) => event.extraInfo)).toEqual([undefined, '2 stacks'])
-		game.disconnect()
 	})
 
 	/**
@@ -110,7 +107,7 @@ describe('stack rule', () => {
 	 * Auras are the node type several unrelated callers can reach — see `detached`.
 	 */
 	it('survives being disconnected twice', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 		const aura = new PeriodicAura(game.tank, game.player, -10)
 		await settle()
 
@@ -119,13 +116,10 @@ describe('stack rule', () => {
 			aura.disconnect()
 		}).not.toThrow()
 		await settle()
-		game.disconnect()
 	})
 })
 
 describe('tick timing', () => {
-	beforeEach(() => clearLogs())
-
 	it('waits one subclass interval before its first tick', async () => {
 		class PatientAura extends PeriodicAura {
 			static id = 'PatientAura'
@@ -135,28 +129,26 @@ describe('tick timing', () => {
 			static repeat = 2
 		}
 
-		const game = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = sim
 		await settle()
 		new PatientAura(game.tank, game.player)
 		await settle()
 		const ticks = () => combatLogs.filter((event) => event.abilityId === 'PatientAura' && 'value' in event)
 
-		game.runFrame(0)
-		game.runFrame(PatientAura.interval - 1)
+		sim.runFrame(0)
+		sim.runFrame(PatientAura.interval - 1)
 		expect(ticks()).toHaveLength(0)
 
-		game.runFrame(PatientAura.interval)
+		sim.runFrame(PatientAura.interval)
 		expect(ticks()).toHaveLength(1)
 		expect(ticks()[0].time).toBe(PatientAura.interval)
-		game.disconnect()
 	})
 })
 
 describe('the wolf bleed', () => {
-	beforeEach(() => clearLogs())
-
 	it('opens a wound that later bites refresh rather than stack', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		new SavageBite(wolf, game.tank).executeNow()
 		await settle()
@@ -165,7 +157,6 @@ describe('the wolf bleed', () => {
 
 		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(1)
 		expect(auraEvents('Rend').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
-		game.disconnect()
 	})
 
 	/**
@@ -173,7 +164,7 @@ describe('the wolf bleed', () => {
 	 * fresh wound would be joining. Planting one anyway leaves a Task mounted on a corpse.
 	 */
 	it('does not wound a target the same bite just killed', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		game.tank.health.set(1)
 		new SavageBite(wolf, game.tank).executeNow()
@@ -181,6 +172,5 @@ describe('the wolf bleed', () => {
 
 		expect(game.tank.alive).toBe(false)
 		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(0)
-		game.disconnect()
 	})
 })

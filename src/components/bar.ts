@@ -2,26 +2,11 @@ import type {Ability} from '../nodes/ability'
 import {html} from 'uhtml'
 import {toPercent} from '../utils'
 
-interface BarProps {
+interface MeterProps {
 	value: number
 	max: number
 	type: string
-}
-
-export function Bar({value, max, type}: BarProps) {
-	const percent = toPercent(value, max)
-	const barStyles = `width: ${percent}%`
-	return html` <div class="Bar" data-type=${type}>
-		<div class="Bar-value" style=${barStyles}></div>
-		<span>${Math.round(value)}/${max} ${type}</span>
-	</div>`
-}
-
-/**
- * Used for "bars" that indicate a min/max like health and mana.
- * <meter min="0" max=${max} value=${current}></meter>
- */
-interface MeterProps extends BarProps {
+	/** How much of the bar the player's cast in flight would add, drawn ahead of the filled part. */
 	potentialValue?: number
 	ability?: Ability
 }
@@ -31,16 +16,15 @@ export function Meter({value, max, type, potentialValue = 0, ability}: MeterProp
 	if (!max) max = 0
 
 	const percent = toPercent(value, max)
-	const barStyles = `width: ${percent}%`
 
+	// An instant ability with instalments left has already landed some of what it promised.
 	if (ability?.delay === 0) {
 		potentialValue = potentialValue - (potentialValue / ability.repeat) * ability._cycles
 	}
-	const potentialBarStyles = `left: ${percent}%; width: ${toPercent(potentialValue, max)}%`
 
 	return html` <div class="Bar" data-type=${type}>
-		<div class="Bar-value" style="${barStyles}"></div>
-		<div class="Bar-potentialValue" style=${potentialBarStyles}></div>
+		<div class="Bar-value" style=${`width: ${percent}%`}></div>
+		<div class="Bar-potentialValue" style=${`left: ${percent}%; width: ${toPercent(potentialValue, max)}%`}></div>
 		<span>${Math.round(value)}/${max}</span>
 	</div>`
 }

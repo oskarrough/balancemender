@@ -11,12 +11,6 @@ import type {GlobalCooldown} from './global-cooldown'
 import type {Targeting} from './targeting'
 import {AbilityUse} from './ability-use'
 
-export type {Aura} from './aura'
-export type {Faction} from './types'
-export {FACTION} from './types'
-export {CONDITION_THRESHOLDS} from './types'
-export type {Condition} from './types'
-
 /**
  * Base unit class. Subclasses declare `static maxHealth = N` and the
  * base constructor wires up the Health node — defining `health` as a field
@@ -120,9 +114,5 @@ export class Unit extends Node {
 	private onHealthEmpty = () => {
 		log(`${this.name} is dead`)
 		this.parent.onDeath(this)
-	}
-
-	damage(amount: number) {
-		return this.health.damage(amount)
 	}
 }

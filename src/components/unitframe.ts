@@ -14,7 +14,7 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const maxHealth = unit.health.max
 	const isCurrentTarget = player.intendedTarget === unit
 	const displayName = unit.name || unit.constructor.name
-	const auras: Aura[] = unit.auras ? Array.from(unit.auras) : []
+	const auras: Aura[] = [...unit.auras]
 
 	/**
 	 * What this unit is casting. Not `playerCast` above, which is the player's own cast, passed in

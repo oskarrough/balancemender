@@ -96,14 +96,6 @@ export function setBalanceValue(kind: BalanceKind, name: string, key: string, va
 	return true
 }
 
-export const setAbilityValue = (name: string, key: AbilityKey, value: number) =>
-	setBalanceValue('ability', name, key, value)
-export const setCadenceValue = (name: string, key: CadenceKey, value: number) =>
-	setBalanceValue('cadence', name, key, value)
-export const setAuraValue = (name: string, key: AuraKey, value: number) => setBalanceValue('aura', name, key, value)
-export const setUnitValue = (name: string, key: UnitKey, value: number) => setBalanceValue('unit', name, key, value)
-export const setRuleValue = (name: string, key: RuleKey, value: number) => setBalanceValue('rule', name, key, value)
-
 export function resetBalance() {
 	for (const kind of Object.keys(balanceCategories) as BalanceKind[]) {
 		for (const [name, row] of Object.entries(balanceCategories[kind].defaults)) {

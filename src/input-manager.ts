@@ -1,33 +1,25 @@
 import {GameLoop} from './nodes/game-loop'
 import {logCombat} from './combatlog'
 
+/** The keys that are about the game rather than about one spell — the action bar handles those. */
 export class InputManager {
-	private game: GameLoop
-
-	constructor(game: GameLoop) {
-		this.game = game
-		this.setupKeyboardHandlers()
-	}
-
-	private setupKeyboardHandlers() {
+	constructor(private game: GameLoop) {
 		document.addEventListener('keydown', (event) => this.handleKeydown(event))
 	}
 
 	private handleKeydown(event: KeyboardEvent) {
-		// Toggle play/pause with spacebar
 		if (event.code === 'Space' && !event.repeat && !this.game.gameOver) {
+			// Space in a dev panel's input is a space, not a pause.
 			if (document.activeElement instanceof HTMLInputElement) return
-			event.preventDefault() // Prevent scrolling with spacebar
+			event.preventDefault() // or the page scrolls
 			this.togglePlayPause()
 		}
 
-		// Toggle console with backtick/tilde
 		if (event.key === '`' || event.key === '~') {
 			event.preventDefault()
 			this.toggleConsole()
 		}
 
-		// Close console with Escape
 		if (event.key === 'Escape') {
 			this.game.player.selectedTarget = undefined
 			this.closeConsole()

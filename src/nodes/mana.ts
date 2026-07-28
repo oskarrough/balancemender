@@ -2,18 +2,13 @@ import {Task} from '../vroum'
 import {Resource} from './resource'
 import type {GameLoop} from './game-loop'
 import {Unit} from './unit'
-/**
- * Events emitted by the Mana node
- */
+
 export const MANA_EVENTS = {
 	CHANGE: 'mana:change',
 	EMPTY: 'mana:empty',
 	FULL: 'mana:full',
 } as const
 
-/**
- * Mana node with regeneration capability
- */
 export class Mana extends Resource {
 	regen: ManaRegen
 	lastCastTime = 0
@@ -28,10 +23,7 @@ export class Mana extends Resource {
 		this.regen = new ManaRegen(this, regenRate)
 	}
 
-	/**
-	 * Attempt to spend mana - used where validation is required
-	 * Returns false if not enough mana is available
-	 */
+	/** Spend if there is enough, and say whether there was. Also starts the five-second rule. */
 	spend(amount: number): boolean {
 		const gameLoop = this.root as GameLoop
 		if (gameLoop.infiniteMana) return true
