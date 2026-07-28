@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 import {describe, expect, it} from 'vitest'
 import {Damage, Heal} from './effects'
 import {abilityRegistry} from './registry'

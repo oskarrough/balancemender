@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 import {describe, it, expect, afterEach} from 'vitest'
 import {GameLoop} from './game-loop'
 import {unitsOf} from '../sim/run'

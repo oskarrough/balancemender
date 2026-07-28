@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 import {describe, expect, it} from 'vitest'
 import {GameLoop} from './game-loop'
 import {AbilityUse} from './ability-use'

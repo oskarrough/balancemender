@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 import {describe, it, expect, beforeAll} from 'vitest'
 import {runFight, type FightResult} from './run'
 import {analyze} from './report'

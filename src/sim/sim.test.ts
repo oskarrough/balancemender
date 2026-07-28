@@ -1,5 +1,5 @@
-// @vitest-environment happy-dom
 import {describe, it, expect} from 'vitest'
+import {combatEvents} from '../combatlog'
 import {runFight} from './run'
 import {analyze} from './report'
 import {parseUnits} from './roster'
@@ -53,7 +53,7 @@ describe('running a fight', () => {
 		const {logCombat} = await import('../combatlog')
 		let heard = 0
 		const listener = () => heard++
-		document.addEventListener('combatlog-update', listener)
+		combatEvents.addEventListener('combatlog-update', listener)
 		try {
 			await runFight({maxDuration: 5000})
 			expect(heard).toBe(0)
@@ -61,7 +61,7 @@ describe('running a fight', () => {
 			logCombat({timestamp: 1, eventType: 'GAME_PAUSE'})
 			expect(heard).toBe(1)
 		} finally {
-			document.removeEventListener('combatlog-update', listener)
+			combatEvents.removeEventListener('combatlog-update', listener)
 		}
 	})
 
