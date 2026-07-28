@@ -1,5 +1,6 @@
-import {html, formatTimestamp, render} from '../utils'
-import {CombatLogEvent, combatLogs, getCombatLogs, CombatEventType} from '../combatlog'
+import {html, render} from 'uhtml'
+import {formatTimestamp} from '../utils'
+import {CombatLogEvent, combatEvents, combatLogs, getCombatLogs, CombatEventType} from '../combatlog'
 import '../components/floating-view.js'
 
 /** The types we allow filtering for in the UI */
@@ -70,12 +71,12 @@ export class CombatLogViewer extends HTMLElement {
 	private handleLogUpdate = () => this.render()
 
 	connectedCallback() {
-		document.addEventListener('combatlog-update', this.handleLogUpdate)
+		combatEvents.addEventListener('combatlog-update', this.handleLogUpdate)
 		this.render()
 	}
 
 	disconnectedCallback() {
-		document.removeEventListener('combatlog-update', this.handleLogUpdate)
+		combatEvents.removeEventListener('combatlog-update', this.handleLogUpdate)
 	}
 
 	private getFilteredLogs(): CombatLogEvent[] {

@@ -6,20 +6,21 @@
  *   bun run sim --party Tank --enemies Nakroth --repeat 20
  *   bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
  *   bun run sim --json > fight.json
- *
- * The game is a browser game, so we hand it a DOM before importing it. Nothing is drawn —
- * the UI just renders into a document nobody looks at.
  */
 import {parseArgs} from 'node:util'
-import {GlobalRegistrator} from '@happy-dom/global-registrator'
-// Type-only, so it is erased and does not load the game before the DOM exists.
-import type {FightResult} from '../src/sim'
+import {
+	runFight,
+	runFights,
+	formatFight,
+	formatAggregate,
+	analyze,
+	parseUnits,
+	policies,
+	applyTunes,
+	formatTune,
+	type FightResult,
+} from '../src/sim'
 import {bail, attempt, num} from './cli'
-
-GlobalRegistrator.register()
-
-const {runFight, runFights, formatFight, formatAggregate, analyze, parseUnits, policies, applyTunes, formatTune} =
-	await import('../src/sim')
 
 const {values: args} = attempt(() =>
 	parseArgs({

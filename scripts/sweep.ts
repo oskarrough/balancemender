@@ -9,19 +9,21 @@
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the question
  * above it: is the difficulty curve the shape we think it is? How to read the table is in
  * docs/simulation.md — start with the `idle` row and the ± column.
- *
- * The game is a browser game, so we hand it a DOM before importing it.
  */
 import {parseArgs} from 'node:util'
-import {GlobalRegistrator} from '@happy-dom/global-registrator'
-// Type-only, so it is erased and does not load the game before the DOM exists.
-import type {FightResult} from '../src/sim'
+import {
+	runFight,
+	analyze,
+	healerOf,
+	partyInjuredTime,
+	margin,
+	parseUnits,
+	policies,
+	applyTunes,
+	formatTune,
+	type FightResult,
+} from '../src/sim'
 import {bail, attempt, num} from './cli'
-
-GlobalRegistrator.register()
-
-const {runFight, analyze, healerOf, partyInjuredTime, margin, parseUnits, policies, applyTunes, formatTune} =
-	await import('../src/sim')
 
 const {values: args} = attempt(() =>
 	parseArgs({

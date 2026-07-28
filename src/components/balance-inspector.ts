@@ -1,4 +1,4 @@
-import {html, render} from '../utils'
+import {html, render} from 'uhtml'
 import type {Inspectable, Field} from '../inspectables'
 
 export class BalanceInspector extends HTMLElement {

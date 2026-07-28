@@ -1,5 +1,5 @@
 import {GameLoop} from '../nodes/game-loop'
-import {html, render} from '../utils'
+import {html, render} from 'uhtml'
 import {createLogger} from '../combatlog'
 import {balanceCategories} from '../balance'
 import type {BalanceKind} from '../balance'

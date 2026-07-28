@@ -1,5 +1,6 @@
-import {render} from './utils'
+import {render} from 'uhtml'
 import {GameLoop} from './nodes/game-loop'
+import {UI} from './components/ui'
 import {Menu} from './components/menu'
 import {buildSplashIntro, buildIntro} from './animations'
 import {DevConsole} from './components/dev-console'
@@ -62,7 +63,8 @@ function main() {
 		// vroum's mount() runs in a microtask and sets running=true, so a synchronous pause()
 		// here would be overwritten. Queue it so it lands after mount.
 		queueMicrotask(() => game.pause())
-		game.element = document.querySelector('#game')
+		const element = document.querySelector('#game')
+		if (element) game.draw = () => render(element, UI(game))
 		setupDevTools(game)
 		// @ts-ignore
 		window.balancemender = game

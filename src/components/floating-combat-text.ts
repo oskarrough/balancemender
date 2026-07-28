@@ -1,24 +1,28 @@
-import {html} from 'uhtml'
 import {randomIntFromInterval} from '../utils'
 
-export class FloatingCombatText extends HTMLElement {
-	connectedCallback() {
-		// Remove decimals
-		this.textContent = String(Math.round(Number(this.textContent)))
-
-		// Damage
-		const isDamage = this.textContent[0] === '-'
-		if (isDamage) this.classList.add('damage')
-
-		// Put heals to the left, damage to the right, jittered so equal numbers don't stack
-		this.style.left = `${isDamage ? randomIntFromInterval(8, 14) : randomIntFromInterval(1, 7)}rem`
-
-		// Remove node once the CSS animation is done
-		this.addEventListener('animationend', () => this.remove())
-	}
-}
-
+/**
+ * `src/nodes/hit.ts` imports `fct` from here, so this file has to load in a simulation, where
+ * there is no DOM at all — hence no uhtml (it wants one the moment it loads) and the element
+ * class declared in here rather than at the top level (`extends HTMLElement` is evaluated where
+ * it is written). Called once, from `ui.ts`.
+ */
 export function register() {
+	class FloatingCombatText extends HTMLElement {
+		connectedCallback() {
+			// Remove decimals
+			this.textContent = String(Math.round(Number(this.textContent)))
+
+			// Damage
+			const isDamage = this.textContent[0] === '-'
+			if (isDamage) this.classList.add('damage')
+
+			// Put heals to the left, damage to the right, jittered so equal numbers don't stack
+			this.style.left = `${isDamage ? randomIntFromInterval(8, 14) : randomIntFromInterval(1, 7)}rem`
+
+			// Remove node once the CSS animation is done
+			this.addEventListener('animationend', () => this.remove())
+		}
+	}
 	customElements.define('floating-combat-text', FloatingCombatText)
 }
 
@@ -31,6 +35,8 @@ export function register() {
 const containers = new Map<string, Element>()
 
 function containerFor(unitId: string) {
+	// `applyHit` calls this on every hit, and a simulation has no document to float anything over.
+	if (typeof document === 'undefined') return
 	const cached = containers.get(unitId)
 	if (cached?.isConnected) return cached
 	const container = document.querySelector(`[data-unit-id="${unitId}"] .FloatingCombatText`)
@@ -39,11 +45,11 @@ function containerFor(unitId: string) {
 	return container
 }
 
-/**
- * Floats a number over the frame of the unit it happened to.
- */
+/** Floats a number over the frame of the unit it happened to. */
 export function fct(unitId: string, text: string | number) {
 	const container = containerFor(unitId)
 	if (!container) return
-	container.appendChild(html`<floating-combat-text>${text}</floating-combat-text>`.toDOM())
+	const element = document.createElement('floating-combat-text')
+	element.textContent = String(text)
+	container.appendChild(element)
 }

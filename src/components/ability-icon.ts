@@ -1,4 +1,4 @@
-import {html} from '../utils'
+import {html} from 'uhtml'
 import type {GameLoop} from '../nodes/game-loop'
 import type {AbilityClass} from '../nodes/ability'
 import {AbilityUse} from '../nodes/ability-use'

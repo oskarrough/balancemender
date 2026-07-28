@@ -77,6 +77,8 @@ export class ApplyAura implements Effect {
 
 /** The flinch a hit draws on its target. Only a direct hit shakes — a bleed ticking does not. */
 function shake(target: Unit) {
+	// A simulated fight has no document to flinch in.
+	if (typeof document === 'undefined') return
 	const element = document.querySelector(`[data-unit-id="${target.id}"] .Unit-avatar`)
 	if (!element) return
 	element.classList.add('is-takingDamage')

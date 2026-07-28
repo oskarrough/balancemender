@@ -1,11 +1,10 @@
 import {Loop} from 'vroum'
-import {log, render} from '../utils'
+import {log} from '../utils'
 import type {Player} from './player'
 import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
 import {Encounter, DEMO_ROSTER, Roster} from './encounter'
-import {UI} from '../components/ui'
-import {DevConsole} from '../components/dev-console'
+import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
 import {logCombat, setCombatClock, clearLogs} from '../combatlog'
 import {perform, type GameAction} from '../actions'
@@ -35,7 +34,14 @@ export class GameLoop extends Loop {
 
 	// A global cooldown window that starts after each successful cast. Spells can not be cast during global cooldown.
 	gcd = 1500
-	element: HTMLElement | null = null // where to render the UI
+
+	/**
+	 * How the game draws itself — `main.ts` installs it, a simulation leaves it unset and the
+	 * fight happens with nobody watching. A slot rather than an import of `components/ui`, because
+	 * that import reaches uhtml, and uhtml needs a DOM the moment it loads. See
+	 * [architecture](../../docs/architecture.md).
+	 */
+	draw?: (game: GameLoop) => void
 
 	// Private mute state - use getter/setter to sync with AudioPlayer
 	private _muted = true
@@ -155,10 +161,8 @@ export class GameLoop extends Loop {
 		this.render()
 	}
 
-	/** No element means we're running headless (a simulation) — the fight still happens, nobody watches. */
 	render() {
-		if (!this.element) return
-		render(this.element, UI(this))
+		this.draw?.(this)
 	}
 
 	onGameOver() {
@@ -172,7 +176,8 @@ export class GameLoop extends Loop {
 		// also set here so the debugger's manual trigger works from any state.
 		this.gameOver = true
 		this.render()
-		if (this.element) buildGameOver(this)
+		// Only worth animating for someone who is watching it.
+		if (this.draw) buildGameOver(this)
 	}
 
 	/** Reset state for a fresh encounter. Does not animate — pair with `restartGame()` for the visual transition. */

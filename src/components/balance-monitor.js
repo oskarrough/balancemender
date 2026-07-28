@@ -1,4 +1,5 @@
-import {html, render, roundOne} from '../utils'
+import {html, render} from 'uhtml'
+import {roundOne} from '../utils'
 import {Task} from 'vroum'
 import {getCombatLogs} from '../combatlog'
 

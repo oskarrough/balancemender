@@ -1,5 +1,4 @@
 import {createLogger} from './combatlog'
-export {html, render} from 'uhtml'
 import {Xid} from 'xid-ts'
 import {random} from './rng'
 

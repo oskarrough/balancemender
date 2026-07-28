@@ -1,4 +1,5 @@
-import {html, roundOne} from '../utils'
+import {html} from 'uhtml'
+import {roundOne} from '../utils'
 import {Meter} from './bar'
 import {Monitor} from './monitor'
 import {AbilityIcon} from './ability-icon'

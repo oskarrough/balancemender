@@ -1,4 +1,5 @@
-import {html, roundOne} from '../utils'
+import {html} from 'uhtml'
+import {roundOne} from '../utils'
 import {GameLoop} from '../nodes/game-loop'
 
 export function Monitor(loop: GameLoop) {

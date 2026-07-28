@@ -87,6 +87,12 @@ export function setCombatClock(fn: () => number) {
 }
 
 /**
+ * Where the panels hear about new events. Its own `EventTarget` rather than `document`, so the
+ * stream exists in a simulation too — the game has to run without a DOM.
+ */
+export const combatEvents = new EventTarget()
+
+/**
  * Whether the panels get told about new events. A simulation borrows the log and turns this
  * off: those events belong to a fight nobody is watching, and letting them through would make
  * the live Combat log and Fight report redraw thousands of times off someone else's log.
@@ -180,9 +186,7 @@ export function logCombat(event: CombatLogEvent) {
 	if (!event.timestamp) event.timestamp = Date.now()
 	if (event.time === undefined) event.time = clock()
 	combatLogs.push(event)
-	if (notifying && typeof document !== 'undefined') {
-		document.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
-	}
+	if (notifying) combatEvents.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
 	logger.info({combat: event})
 }
 

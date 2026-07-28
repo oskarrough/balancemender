@@ -1,5 +1,5 @@
 import type {Ability} from '../nodes/ability'
-import {html} from '../utils'
+import {html} from 'uhtml'
 import {toPercent} from '../utils'
 
 interface BarProps {

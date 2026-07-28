@@ -1,4 +1,4 @@
-import {html} from '../utils'
+import {html} from 'uhtml'
 import type {Aura} from '../nodes/aura'
 
 export function AuraIcon(aura: Aura) {

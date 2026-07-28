@@ -1,5 +1,5 @@
-import {html, render} from '../utils'
-import {combatLogs} from '../combatlog'
+import {html, render} from 'uhtml'
+import {combatEvents, combatLogs} from '../combatlog'
 import {currentGame, type GameLoop} from '../nodes/game-loop'
 import {analyze, FightReport as Report, Series} from '../sim/report'
 import {unitsOf, runFights} from '../sim/run'
@@ -24,12 +24,12 @@ export class FightReportView extends HTMLElement {
 	}
 
 	connectedCallback() {
-		document.addEventListener('combatlog-update', this.onLogUpdate)
+		combatEvents.addEventListener('combatlog-update', this.onLogUpdate)
 		this.render()
 	}
 
 	disconnectedCallback() {
-		document.removeEventListener('combatlog-update', this.onLogUpdate)
+		combatEvents.removeEventListener('combatlog-update', this.onLogUpdate)
 		cancelAnimationFrame(this.pending)
 	}
 

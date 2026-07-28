@@ -1,5 +1,6 @@
-import {html, render} from '../utils'
+import {html, render} from 'uhtml'
 import {currentGame, type GameLoop} from '../nodes/game-loop'
+import {combatEvents} from '../combatlog'
 import {allInspectables, Inspectable, InspectableSection} from '../inspectables'
 import {BalanceInspector} from './balance-inspector'
 import './balance-inspector'
@@ -19,7 +20,7 @@ export class BalanceLab extends HTMLElement {
 	}
 
 	connectedCallback() {
-		document.addEventListener('combatlog-update', this._onLogUpdate)
+		combatEvents.addEventListener('combatlog-update', this._onLogUpdate)
 		this.render()
 		if (!this.game) {
 			// Game isn't constructed yet (splash). Poll briefly until it appears.
@@ -34,7 +35,7 @@ export class BalanceLab extends HTMLElement {
 	}
 
 	disconnectedCallback() {
-		document.removeEventListener('combatlog-update', this._onLogUpdate)
+		combatEvents.removeEventListener('combatlog-update', this._onLogUpdate)
 		if (this._retryTimer) {
 			window.clearInterval(this._retryTimer)
 			this._retryTimer = null

@@ -50,7 +50,8 @@ export type SoundName = keyof typeof CATALOG | (string & {})
 export class AudioPlayer extends Node {
 	static global: AudioPlayer | null = null
 	folder = '/assets/sounds/'
-	disabled = false
+	/** No `Audio` constructor means no browser, so a simulation runs silent rather than throwing. */
+	disabled = typeof Audio === 'undefined'
 	paused = false
 	private _volume = 0.3
 	private _muted = false
