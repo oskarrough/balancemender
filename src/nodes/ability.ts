@@ -57,7 +57,14 @@ export class Ability extends Task {
 	declare static sound?: string
 	declare static eventType?: CombatEventType
 
-	constructor(public parent: Unit) {
+	constructor(
+		public parent: Unit,
+		/**
+		 * Who this one use lands on, decided by the driver that asked for it. `readonly` on purpose:
+		 * a cast holds the target it started with, and nothing may swap one under it.
+		 */
+		public readonly target: Unit,
+	) {
 		super(parent)
 		applyStatics(
 			this,
@@ -99,17 +106,15 @@ export class Ability extends Task {
 		return true
 	}
 
-	/** The current target, constrained by this ability's own rule until explicit targeting lands in #56. */
-	get target() {
-		const target = this.parent.getTarget()
-		return target && eligible(this.parent, this.targetRule).includes(target) ? target : undefined
-	}
-
 	/** Run what this ability does, in the order it declares it, and then say it out loud. */
 	land() {
-		const target = this.target
-		if (!target) return
-		for (const effect of this.effects) effect.apply(this, target)
+		// Eligibility was settled when the use was requested, but a cast outlives the moment it
+		// started: the target can die, and it can be removed from the fight outright. Removal is not
+		// death — `Encounter.remove()` leaves the health bar full — so `alive` cannot see it and
+		// only eligibility can. Landing on someone who has left logs a hit naming a unit the report
+		// has never heard of, and plants auras on a node vroum has already detached.
+		if (!this.target.alive || !eligible(this.parent, this.targetRule).includes(this.target)) return
+		for (const effect of this.effects) effect.apply(this, this.target)
 		this.playLandingSound()
 	}
 

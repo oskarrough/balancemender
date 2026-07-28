@@ -12,7 +12,7 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const isEnemy = unit.faction === 'enemy'
 	const health = unit.health.current
 	const maxHealth = unit.health.max
-	const isCurrentTarget = player.getTarget() === unit
+	const isCurrentTarget = player.intendedTarget === unit
 	const displayName = unit.name || unit.constructor.name
 	const auras: Aura[] = unit.auras ? Array.from(unit.auras) : []
 

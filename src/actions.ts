@@ -21,10 +21,10 @@ export type GameAction =
 	| {type: 'spawn'; unit: UnitId}
 	/** Take a unit out of the fight, by unit id. */
 	| {type: 'remove'; unit: string}
-	/** Point the player at a unit id. */
+	/** Select a unit id. Player UI state — it moves nobody else's aim. */
 	| {type: 'target'; unit: string}
-	/** Use one of the player's abilities, optionally switching target first — the pair every caller
-	 * used to duplicate. Casting is one way an ability runs, not a second action. */
+	/** Use one of the player's abilities on a named unit, or on whatever the player has selected.
+	 * Casting is one way an ability runs, not a second action. */
 	| {type: 'use'; ability: string; target?: string}
 	/** Stop the cast in progress. */
 	| {type: 'interrupt'}
@@ -64,16 +64,16 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 		case 'target': {
 			const unit = findUnit(game, action.unit)
 			if (!unit) return fail(`No unit with id ${action.unit}`)
-			game.player.currentTarget = unit
+			game.player.selectedTarget = unit
 			return ok(unit)
 		}
 
 		case 'use': {
-			if (action.target) {
-				const targeted = perform(game, {type: 'target', unit: action.target})
-				if (!targeted.ok) return targeted
-			}
-			return game.player.useAbility(action.ability)
+			// A named target belongs to this one use and leaves the player's selection alone — the
+			// A bot casting on the tank must not move the frame the player is aiming at.
+			const target = action.target ? findUnit(game, action.target) : game.player.intendedTarget
+			if (action.target && !target) return fail(`No unit with id ${action.target}`)
+			return game.player.useAbility(action.ability, target)
 		}
 
 		case 'interrupt':

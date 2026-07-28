@@ -12,7 +12,7 @@ index.html
               ├── Encounter  owns the party + enemies
               │     └── Unit…             Player, Tank, TinyWolf, WolfShaman, Nakroth
               │           ├── Health/Mana (Resource nodes, emit change events)
-              │           ├── Targeting   (Task) a rule + a preference → currentTarget
+              │           ├── Targeting   a preference its drivers ask for one target at a time
               │           ├── abilities   stable id → one-shot Ability class
               │           ├── Cadence     (Task) requests an ability on an interval
               │           └── auras       HOT / DoT (Tasks)
@@ -65,10 +65,29 @@ What is _not_ shared is who decides. The player has a keyboard and a `BotDriver`
 a fixed schedule has a `Cadence`. A unit that needs real decisions overrides `Cadence.shouldUse()`
 rather than growing a bot system.
 
-A unit has **one** `currentTarget`, and casting and attacking both read it. That is why `WolfShaman`
-carries no attacks: it spends its target on the ally it heals (`Targeting(this, 'ally',
-prefer.lowestHealth)`, where attackers take the `'enemy'` rule). A unit that both hit and healed
-would need two targets, and nothing does yet.
+### A target belongs to one use, not to a unit
+
+Whoever decided to act also decided who it lands on, and hands both to `useAbility(id, target)`.
+Validation and every effect then see the same unit, and a cast holds the target it started with:
+`Ability.target` is `readonly`, so nothing can be swapped under one.
+
+What a cast cannot hold still is the world around it, and `Ability.land()` re-checks eligibility
+for exactly two reasons. The target can die. It can also be **removed** from the fight, and
+removal is not death — `Encounter.remove()` splices the unit out but leaves its health bar full, so
+`alive` still reads true. A guard that only asked `alive` healed a unit that was no longer in the
+fight and mounted auras on a node vroum had already detached, which threw inside a microtask where
+nothing could catch it.
+
+Who is eligible comes from the ability (`targetRule`); which of them comes from the driver. The
+keyboard's preference is `Player.intendedTarget` — the frame the player selected, falling back to
+the tank; the `BotDriver`'s is whatever its bot weighed; a `Cadence` asks its unit's
+`Targeting.pick(rule)`, which is a preference and a memory per target rule and nothing else. A unit
+with no `Targeting` has no way to choose, so its Cadence says so rather than beating in silence.
+
+A unit used to hold one `currentTarget` that every ability read back, so `WolfShaman` could not
+both bite and mend — the two drivers would have overwritten each other's aim. Now nothing stores a
+target on a unit, so it can carry both. Selecting a frame is player UI state and moves nobody
+else's aim: a `BotDriver` healing the tank no longer drags the player's selection with it.
 
 Enemy casts are drawn on the caster's own unit frame; the player's has its own `CastingInfo` panel. A
 cast nobody can see warns nobody.

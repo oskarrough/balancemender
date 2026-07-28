@@ -23,14 +23,13 @@ describe('stack rule', () => {
 
 	it('replaces rather than stacks by default, so a recast refreshes', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
-		game.player.currentTarget = game.tank
 
-		new Renew(game.player).land()
+		new Renew(game.player, game.tank).land()
 		await Promise.resolve()
 		const first = aurasNamed(game.tank, 'Renew')[0]
 		first.tick()
 
-		new Renew(game.player).land()
+		new Renew(game.player, game.tank).land()
 		await Promise.resolve()
 		const after = aurasNamed(game.tank, 'Renew')
 
@@ -75,11 +74,10 @@ describe('stack rule', () => {
 
 	it('logs a refresh instead of a removal, so the log never says an aura it still has fell off', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
-		game.player.currentTarget = game.tank
 
-		new Renew(game.player).land()
+		new Renew(game.player, game.tank).land()
 		await Promise.resolve()
-		new Renew(game.player).land()
+		new Renew(game.player, game.tank).land()
 		await Promise.resolve()
 
 		expect(auraEvents('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
@@ -129,10 +127,9 @@ describe('the wolf bleed', () => {
 	it('opens a wound that later bites refresh rather than stack', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
-		wolf.currentTarget = game.tank
-		new SavageBite(wolf).executeNow()
+		new SavageBite(wolf, game.tank).executeNow()
 		await Promise.resolve()
-		new SavageBite(wolf).executeNow()
+		new SavageBite(wolf, game.tank).executeNow()
 		await Promise.resolve()
 
 		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(1)
@@ -147,9 +144,8 @@ describe('the wolf bleed', () => {
 	it('does not wound a target the same bite just killed', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
-		wolf.currentTarget = game.tank
 		game.tank.health.set(1)
-		new SavageBite(wolf).executeNow()
+		new SavageBite(wolf, game.tank).executeNow()
 		await Promise.resolve()
 
 		expect(game.tank.alive).toBe(false)

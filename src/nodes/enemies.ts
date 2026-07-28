@@ -10,7 +10,7 @@ export class Nakroth extends Unit {
 	static faction = FACTION.ENEMY
 	name = 'Nakroth the Destroyer'
 	abilities = {HeavyBlow, NastyArrow}
-	targeting = new Targeting(this, 'enemy', prefer.tankFirst)
+	targeting = new Targeting(this, prefer.tankFirst)
 	heavyBlowCadence = new HeavyBlowCadence(this)
 	nastyArrowCadence = new NastyArrowCadence(this)
 }
@@ -21,21 +21,22 @@ export class TinyWolf extends Unit {
 	name = 'Tiny wolf'
 	image = '/assets/generated/characters/tiny-wolf.png'
 	abilities = {SavageBite, QuickStab}
-	targeting = new Targeting(this, 'enemy', prefer.atRandom)
+	targeting = new Targeting(this, prefer.atRandom)
 	savageBiteCadence = new SavageBiteCadence(this)
 	quickStabCadence = new QuickStabCadence(this)
 }
 
 /**
- * A wolf that mends the pack instead of biting it. It has one target, spent on allies; a unit that
- * both attacks and heals still needs explicit targeting, which belongs to #56.
+ * A wolf that mends the pack instead of biting it. Nothing stops it from carrying attacks too —
+ * each use is handed its own target, so a bite and a mend no longer compete for one slot — but
+ * giving it one is a balance question (#51), not a modelling one.
  */
 export class WolfShaman extends Unit {
 	static maxHealth = 180
 	static faction = FACTION.ENEMY
 	name = 'Wolf shaman'
 	abilities = {Mend}
-	targeting = new Targeting(this, 'ally', prefer.lowestHealth)
+	targeting = new Targeting(this, prefer.lowestHealth)
 	cadence = new MendCadence(this)
 }
 

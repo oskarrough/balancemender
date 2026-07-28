@@ -30,6 +30,8 @@ export class BotDriver extends Task {
 		const decision = this.bot(this.parent)
 		if (!decision) return
 		const game = this.parent.root as GameLoop
+		// The target the bot weighed is the target the use gets. It used to be written into the
+		// player and read back out by the spell, which meant a bot moved the player's aim.
 		game.perform({type: 'use', ability: decision.ability, target: decision.target.id})
 	}
 }

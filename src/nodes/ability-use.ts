@@ -30,16 +30,14 @@ const failureMessage: Record<AbilityFailure, string> = {
 
 /** The one lookup, validation and execution boundary for every ability use. */
 export class AbilityUse {
-	static use(unit: Unit, abilityId: string): ActionResult<Ability> {
+	static use(unit: Unit, abilityId: string, target?: Unit): ActionResult<Ability> {
 		const AbilityClass = unit.abilities[abilityId]
-		const failure = this.validate(unit, AbilityClass)
-		if (failure) {
-			const error =
-				failure === 'missing-ability' ? `Ability ${abilityId} not found in abilities` : failureMessage[failure]
-			return {ok: false, error}
-		}
+		if (!AbilityClass) return {ok: false, error: `Ability ${abilityId} not found in abilities`}
+		const failure = this.validate(unit, AbilityClass, target)
+		// A missing target is already a refusal; the second half of this is what tells the compiler so.
+		if (failure || !target) return {ok: false, error: failureMessage[failure ?? 'missing-target']}
 
-		const ability = new AbilityClass(unit)
+		const ability = new AbilityClass(unit, target)
 		if (this.usesCastRules(AbilityClass)) {
 			unit.currentAbility = ability
 			unit.lastCastTime = (unit.root as GameLoop).elapsedTime
@@ -49,9 +47,9 @@ export class AbilityUse {
 		return {ok: true, value: ability}
 	}
 
-	static validate(unit: Unit, AbilityClass?: AbilityClass): AbilityFailure | undefined {
+	static validate(unit: Unit, AbilityClass?: AbilityClass, target?: Unit): AbilityFailure | undefined {
 		if (!AbilityClass) return 'missing-ability'
-		return this.whyNotAct(unit, AbilityClass) ?? this.whyNotUse(unit, AbilityClass)
+		return this.whyNotAct(unit, AbilityClass) ?? this.whyNotUse(unit, AbilityClass, target)
 	}
 
 	/** Restrictions which serialize only abilities explicitly configured as casts. */
@@ -63,8 +61,8 @@ export class AbilityUse {
 		return undefined
 	}
 
-	/** Restrictions belonging to this ability and the target being considered. */
-	static whyNotUse(unit: Unit, AbilityClass?: AbilityClass, target = unit.getTarget()): AbilityFailure | undefined {
+	/** Restrictions belonging to this ability and the one target the driver named. */
+	static whyNotUse(unit: Unit, AbilityClass?: AbilityClass, target?: Unit): AbilityFailure | undefined {
 		if (!AbilityClass) return 'missing-ability'
 		if (!target?.alive) return 'missing-target'
 		if (!eligible(unit, AbilityClass.targetRule).includes(target)) return 'invalid-target'

@@ -52,24 +52,31 @@ for "unit" — reach for them only when the relationship is the point.
 **Player** the one at the keyboard · **caster** whoever is casting · **attacker** whoever is swinging
 · **source** and **target** the two ends of a hit · **ally** a unit of your own faction.
 
-**Target** — who a use of an ability lands on. A unit holds one `currentTarget`, kept filled by its
-`Targeting` task, and every ability it uses reads that one. Picking it is two separate questions, and
-they are two words:
+**Target** — who a use of an ability lands on. It belongs to that one use: the driver hands it to
+`useAbility(id, target)`, validation and every effect see the same one, and no unit stores it.
+Picking it is two separate questions, and they are two words:
 
 **Target rule** — which units an ability may land on at all: `enemy`, `ally`, `self`. A property of
 the ability, because it never changes with who is using it or when. `TargetRule` is the type and
 `eligible(unit, rule)` answers it.
 
 **Preference** — which of the eligible units to pick. A property of the _driver_, not the unit and
-not the ability: the keyboard, a `BotDriver` weighing the fight, or a standing rule like "always the
-most hurt". One object with two methods: `prefers()` picks, `reconsiders()` decides whether to look
-again once it has one. They stay together because they have to agree — a preference for the most hurt
-ally that does not re-pick heals someone already topped up. The four are `prefer.first`,
-`prefer.atRandom`, `prefer.lowestHealth` and `prefer.tankFirst`, handed to a unit alongside a rule:
-`new Targeting(this, 'ally', prefer.lowestHealth)`.
+not the ability: the keyboard, a `BotDriver` weighing the fight, or a standing rule like "always
+the most hurt". One object with two methods: `prefers()` picks, `reconsiders()` decides whether to
+look again once it has one. They stay together because they have to agree — a preference for the
+most hurt ally that does not re-pick heals someone already topped up. The four are `prefer.first`,
+`prefer.atRandom`, `prefer.lowestHealth` and `prefer.tankFirst`, and a unit's standing drivers
+share one: `new Targeting(this, prefer.lowestHealth)`, asked one rule at a time through
+`Targeting.pick(rule)`. It remembers per rule, so a unit that both attacks and heals holds an enemy
+and an ally at once.
 
-**Selected target** — the one the player clicked. UI state, kept because a player needs to see what
-they are aiming at; not what an ability reads.
+**Selected target** — the one the player clicked, on `Player.selectedTarget`. UI state; no other
+driver reads or writes it, so clicking a frame never moves anyone else's aim.
+
+**Intended target** — who a keypress would land on: the selected target, or the tank while nothing
+is selected. `Player.intendedTarget`, and the whole of the keyboard's preference — the unit frames
+tick it, the action bar greys itself out against it, and `{type: 'use'}` falls back to it when the
+caller names no target. Only the player has one; every other driver asks `Targeting.pick()`.
 
 ## Doing things
 

@@ -1,4 +1,3 @@
-import {Task} from 'vroum'
 import type {Unit} from './unit'
 import {Tank} from './party-units'
 import {random} from '../rng'
@@ -50,26 +49,30 @@ export const prefer = {
 	},
 } satisfies Record<string, Preference>
 
-/** Keeps a unit's `currentTarget` filled, from a rule and a preference it is handed. */
-export class Targeting extends Task {
+/**
+ * A unit's standing preference, asked once per use of an ability.
+ *
+ * It remembers who it settled on per target rule, not per unit, so a unit that both attacks and
+ * heals keeps an enemy and an ally at the same time instead of two drivers fighting over one slot.
+ * Nobody reads what it chose afterwards: the pick is handed to the use that asked for it.
+ */
+export class Targeting {
+	private settled = new Map<TargetRule, Unit>()
+
 	constructor(
 		public parent: Unit,
-		public rule: TargetRule,
 		public preference: Preference,
-	) {
-		super(parent)
-	}
+	) {}
 
-	tick() {
-		const candidates = eligible(this.parent, this.rule)
-		const current = this.parent.getTarget()
-		if (!current || this.preference.reconsiders(current, candidates)) {
-			this.parent.currentTarget = this.preference.prefers(candidates)
-		}
-	}
-
-	/** A corpse picks no targets. Death leaves the unit connected, so this is what stops it. */
-	shouldTick() {
-		return this.parent.alive
+	/** Who to use an ability with this rule on, right now. A corpse picks nobody. */
+	pick(rule: TargetRule): Unit | undefined {
+		if (!this.parent.alive) return undefined
+		const candidates = eligible(this.parent, rule)
+		const current = this.settled.get(rule)
+		const keep = current && candidates.includes(current) && !this.preference.reconsiders(current, candidates)
+		const target = keep ? current : this.preference.prefers(candidates)
+		if (target) this.settled.set(rule, target)
+		else this.settled.delete(rule)
+		return target
 	}
 }

@@ -25,19 +25,43 @@ describe('ability use rules', () => {
 		game.disconnect()
 	})
 
-	it('keeps the target rule in force while a cast is in flight', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
-		const enemy = game.enemies[0]
-		enemy.health.set(10)
-		game.player.currentTarget = game.tank
-		const use = game.player.useAbility('Heal')
+	/**
+	 * Removal is not death: `Encounter.remove()` splices the unit out and leaves its health bar
+	 * alone, so `alive` still reads true. A guard that asked only that healed someone who had left
+	 * the fight, and logged a hit naming a unit the report has never heard of.
+	 */
+	it('lands nothing on a target that left the fight mid-cast', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		const tank = game.tank
+		tank.health.set(10)
+		const use = game.player.useAbility('Heal', tank)
 		expect(use.ok).toBe(true)
 		if (!use.ok) return
 		await Promise.resolve()
 
-		game.player.currentTarget = enemy
+		expect(game.perform({type: 'remove', unit: tank.id}).ok).toBe(true)
+		await Promise.resolve()
+		await Promise.resolve()
+
 		use.value.tick()
-		expect(enemy.health.current).toBe(10)
+		expect(tank.alive).toBe(true)
+		expect(tank.health.current).toBe(10)
+		await Promise.resolve()
+		game.disconnect()
+	})
+
+	/** The target belongs to the use, so nothing can be swapped under a cast — but it can die. */
+	it('lands nothing when the target does not survive the cast', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		game.tank.health.set(10)
+		const use = game.player.useAbility('Heal', game.tank)
+		expect(use.ok).toBe(true)
+		if (!use.ok) return
+		await Promise.resolve()
+
+		game.tank.health.set(0)
+		use.value.tick()
+		expect(game.tank.health.current).toBe(0)
 		await Promise.resolve()
 		game.disconnect()
 	})

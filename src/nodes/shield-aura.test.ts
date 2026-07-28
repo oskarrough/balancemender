@@ -197,10 +197,9 @@ it('waits out its lifetime and then falls off', async () => {
  */
 it('Power Word: Shield leaves a pool rather than healing', async () => {
 	await start()
-	game.player.currentTarget = game.tank
 	game.tank.health.set(50)
 
-	new PowerWordShield(game.player).land()
+	new PowerWordShield(game.player, game.tank).land()
 	await flush()
 
 	expect(game.tank.health.current).toBe(50)

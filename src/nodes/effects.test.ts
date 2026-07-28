@@ -42,10 +42,9 @@ describe('an ordered list of effects', () => {
 	it('runs them in the order the ability declares', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
-		game.tank.currentTarget = wolf
 		const before = wolf.health.current
 
-		new Rebuke(game.tank).land()
+		new Rebuke(game.tank, wolf).land()
 		await flush()
 
 		expect(wolf.health.current).toBe(before - 6)
@@ -64,25 +63,13 @@ describe('an ordered list of effects', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		wolf.health.set(4)
-		game.tank.currentTarget = wolf
 
-		new Rebuke(game.tank).land()
+		new Rebuke(game.tank, wolf).land()
 		await flush()
 
 		expect(wolf.alive).toBe(false)
 		expect([...wolf.auras]).toHaveLength(0)
 		expect(abilityEvents('Mark')).toHaveLength(0)
-		game.disconnect()
-	})
-
-	it('does nothing at all without a target', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
-		game.tank.currentTarget = undefined
-
-		new Rebuke(game.tank).land()
-		await flush()
-
-		expect(acted()).toHaveLength(0)
 		game.disconnect()
 	})
 })
@@ -93,7 +80,6 @@ describe('the effects themselves', () => {
 	it('heals by the ability amount, within a few percent', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game.tank.health.set(10)
-		game.player.currentTarget = game.tank
 
 		class Mend extends Ability {
 			static id = 'TestMend'
@@ -102,7 +88,7 @@ describe('the effects themselves', () => {
 			static magnitude = 100
 			static effects = [new Heal()]
 		}
-		new Mend(game.player).land()
+		new Mend(game.player, game.tank).land()
 
 		const healed = game.tank.health.current - 10
 		expect(healed).toBeGreaterThanOrEqual(95)
@@ -118,9 +104,8 @@ describe('the effects themselves', () => {
 	it('leaves an aura its own numbers when the ability owns none', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
-		wolf.currentTarget = game.tank
 
-		new SavageBite(wolf).land()
+		new SavageBite(wolf, game.tank).land()
 		await flush()
 
 		const [bleed] = [...game.tank.auras]

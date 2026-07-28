@@ -3,7 +3,10 @@ import {applyStatics, log} from '../utils'
 import {AbilityUse} from './ability-use'
 import type {Unit} from './unit'
 
-/** Uses one unit-owned ability on a fixed schedule. Cadence owns when and nothing else. */
+/**
+ * Uses one unit-owned ability on a fixed schedule. Cadence owns when, and picks who from its
+ * unit's standing preference among the units that ability's own rule allows.
+ */
 export class Cadence extends Task {
 	abilityId: string
 	delay = 0
@@ -33,14 +36,31 @@ export class Cadence extends Task {
 		if (!this.parent.alive) return false
 		const AbilityClass = this.parent.abilities[this.abilityId]
 		if (!AbilityClass) return true
-		if (AbilityUse.usesCastRules(AbilityClass) && (this.parent.currentAbility || this.parent.gcd)) return false
-		return !!this.parent.getTarget()
+		return !(AbilityUse.usesCastRules(AbilityClass) && (this.parent.currentAbility || this.parent.gcd))
 	}
 
 	tick() {
 		if (!this.shouldUse()) return
-		const result = this.parent.useAbility(this.abilityId)
-		if (!result.ok) log(`cadence:${this.parent.name}:${this.abilityId}:${result.error}`)
+		const AbilityClass = this.parent.abilities[this.abilityId]
+		const targeting = this.parent.targeting
+
+		// A unit with no preference has nothing to choose with, this beat or any other. Say so:
+		// beating forever in silence is how a Cadence on a unit that never got a Targeting — the
+		// player, for one — looks exactly like a Cadence that is working.
+		if (AbilityClass && !targeting) return this.refuse('no targeting to choose a target with')
+
+		// Having nobody eligible right now is the other thing entirely, and not a failure at all.
+		// Wait for the next beat rather than spend it on a refusal.
+		const target = AbilityClass && targeting ? targeting.pick(AbilityClass.targetRule) : undefined
+		if (AbilityClass && !target) return
+
+		// An ability the unit does not own is still asked for, so that refusal reaches the log.
+		const result = this.parent.useAbility(this.abilityId, target)
+		if (!result.ok) this.refuse(result.error)
+	}
+
+	private refuse(reason: string) {
+		log(`cadence:${this.parent.name}:${this.abilityId}:${reason}`)
 	}
 }
 

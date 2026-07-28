@@ -29,7 +29,7 @@ export class InputManager {
 
 		// Close console with Escape
 		if (event.key === 'Escape') {
-			this.game.player.currentTarget = undefined
+			this.game.player.selectedTarget = undefined
 			this.closeConsole()
 		}
 	}

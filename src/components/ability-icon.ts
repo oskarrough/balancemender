@@ -17,7 +17,7 @@ export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string 
 	const realCastTime = (game.elapsedTime || 0) - player.lastCastTime
 	const gcdPercentage = realCastTime / game.gcd
 	const angle = gcdPercentage ? (1 - gcdPercentage) * 360 : 0
-	const refusal = AbilityUse.whyNotUse(player, AbilityClass)
+	const refusal = AbilityUse.whyNotUse(player, AbilityClass, player.intendedTarget)
 	const cooldownLeft = AbilityUse.cooldownRemaining(player, AbilityClass)
 	const cooldown = AbilityClass.cooldown ?? 0
 	const cooldownSweep = cooldown ? (cooldownLeft / cooldown) * 360 : 0

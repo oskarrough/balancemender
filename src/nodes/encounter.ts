@@ -38,7 +38,7 @@ export class Encounter extends Node {
 		super(parent)
 		for (const id of roster.party ?? []) this.spawn(id)
 		this.player = this.spawn('Player') as Player
-		this.player.currentTarget = this.player
+		this.player.selectedTarget = this.player
 		for (const id of roster.enemies ?? []) this.spawn(id)
 		this.tank = this.party.find((unit) => unit instanceof Tank) as Tank
 	}
@@ -85,11 +85,11 @@ export class Encounter extends Node {
 	 * `unit.alive`.
 	 *
 	 * So death is not removal, it is stopping. Tasks on a unit already skip themselves while
-	 * `alive` is false; what is cancelled here is the rest — its target, its auras, a cast in
-	 * progress. Staying connected is also what lets a corpse resume when it is healed.
+	 * `alive` is false; what is cancelled here is the rest — its auras, a cast in progress. Nothing
+	 * has to clear its target, because no target is stored on it. Staying connected is also what
+	 * lets a corpse resume when it is healed.
 	 */
 	onDeath(unit: Unit) {
-		unit.currentTarget = undefined
 		for (const aura of unit.auras) aura.disconnect()
 		unit.currentAbility?.disconnect()
 	}

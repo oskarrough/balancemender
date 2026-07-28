@@ -117,9 +117,8 @@ describe('PeriodicAura', () => {
 	it('lands the total a heal-over-time advertises, not a fraction of it', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		game.tank.health.set(1)
-		game.player.currentTarget = game.tank
 
-		new Renew(game.player).land()
+		new Renew(game.player, game.tank).land()
 		await Promise.resolve()
 
 		const renew = [...game.tank.auras].find(

@@ -20,11 +20,20 @@ export class Player extends Unit {
 		this.mana = new Mana(this, stats.maxMana, stats.manaRegen)
 	}
 
-	/** The healer always has a fallback target. Other units use only what their Targeting chose. */
-	getTarget() {
-		const target = super.getTarget()
-		if (target) return target
+	/**
+	 * The frame the player clicked. Player UI state and nothing else: the unit frames highlight it
+	 * and the keyboard aims at it, while every other driver picks its own target and never touches
+	 * this. Clicking a wolf does not send the tank's next swing anywhere.
+	 */
+	selectedTarget?: Unit
+
+	/**
+	 * Who a keypress would land on right now — what is selected, or the tank while nothing is. The
+	 * healer always has a fallback so that a deselected player is not left unable to act.
+	 */
+	get intendedTarget(): Unit | undefined {
+		if (this.selectedTarget?.alive) return this.selectedTarget
 		const tank = this.parent.tank
-		return tank?.health.current > 0 ? tank : undefined
+		return tank?.alive ? tank : undefined
 	}
 }

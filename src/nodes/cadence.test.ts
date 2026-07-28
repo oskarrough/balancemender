@@ -4,14 +4,13 @@ import {SimLoop} from '../sim/run'
 import {GameLoop} from './game-loop'
 import {Cadence} from './cadence'
 import {Nakroth, TinyWolf, WolfShaman, Mend} from './enemies'
-import type {Unit} from './unit'
+import {QuickStab} from './attack'
 
 const step = () => Promise.resolve()
 const settle = async () => {
 	await step()
 	await step()
 }
-const retarget = (unit: Unit) => (unit as WolfShaman).targeting.tick()
 
 describe('a cadence', () => {
 	beforeEach(() => clearLogs())
@@ -20,8 +19,6 @@ describe('a cadence', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
 		await step()
 		const [wolf, shaman] = game.enemies
-		wolf.currentTarget = game.tank
-		shaman.currentTarget = wolf
 		new Cadence(wolf, 'QuickStab').tick()
 		expect(combatLogs.some((event) => event.abilityId === 'QuickStab')).toBe(true)
 		new Cadence(shaman, 'Mend').tick()
@@ -72,9 +69,8 @@ describe('an enemy cast cadence', () => {
 		const [wolf, shaman] = game.enemies
 		await step()
 		wolf.health.set(wolf.health.max / 2)
-		retarget(shaman)
 		const before = wolf.health.current
-		const use = shaman.useAbility('Mend')
+		const use = shaman.useAbility('Mend', wolf)
 		expect(use.ok).toBe(true)
 		if (!use.ok) return
 		await step()
@@ -86,17 +82,39 @@ describe('an enemy cast cadence', () => {
 		game.disconnect()
 	})
 
+	/**
+	 * The whole point of handing a target to each use: a unit used to have one slot, so carrying
+	 * both an attack and a heal meant two drivers overwriting each other's aim.
+	 */
+	it('lets one unit strike an enemy and mend an ally at the same time', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
+		await step()
+		const [wolf, shaman] = game.enemies
+		shaman.abilities = {...shaman.abilities, QuickStab}
+		wolf.health.set(wolf.health.max / 2)
+		const tankBefore = game.tank.health.current
+
+		new Cadence(shaman, 'QuickStab').tick()
+		new Cadence(shaman, 'Mend').tick()
+		await step()
+		shaman.currentAbility?.tick()
+
+		expect(game.tank.health.current).toBeLessThan(tankBefore)
+		expect(wolf.health.current).toBeGreaterThan(wolf.health.max / 2)
+		await settle()
+		game.disconnect()
+	})
+
 	it('uses its own collection, cast rules and cadence rather than mana', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
 		const [wolf, shaman] = game.enemies
 		await step()
-		shaman.currentTarget = wolf
-		expect(shaman.useAbility('Heal')).toMatchObject({ok: false, error: /Ability Heal/})
-		expect(wolf.useAbility('Mend')).toMatchObject({ok: false})
+		expect(shaman.useAbility('Heal', wolf)).toMatchObject({ok: false, error: /Ability Heal/})
+		expect(wolf.useAbility('Mend', shaman)).toMatchObject({ok: false})
 		expect(shaman.mana).toBeUndefined()
 		expect(Mend.cost).toBe(0)
 		expect((shaman as WolfShaman).cadence.interval).toBeGreaterThan(0)
-		expect(shaman.useAbility('Mend').ok).toBe(true)
+		expect(shaman.useAbility('Mend', wolf).ok).toBe(true)
 		expect((shaman as WolfShaman).cadence.shouldTick()).toBe(false)
 		await settle()
 		game.disconnect()

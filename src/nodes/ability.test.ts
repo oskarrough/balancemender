@@ -21,12 +21,11 @@ describe('abilities', () => {
 		await step()
 		const wolf = game.enemies[0]
 		wolf.abilities = {...wolf.abilities, WindUp}
-		wolf.currentTarget = game.tank
 		const before = game.tank.health.current
 
-		expect(wolf.useAbility('WindUp').ok).toBe(true)
+		expect(wolf.useAbility('WindUp', game.tank).ok).toBe(true)
 		expect(wolf.currentAbility?.id).toBe('WindUp')
-		const attack = wolf.useAbility('QuickStab')
+		const attack = wolf.useAbility('QuickStab', game.tank)
 		expect(attack.ok).toBe(true)
 		expect(game.tank.health.current).toBeLessThan(before)
 		expect(wolf.mana).toBeUndefined()

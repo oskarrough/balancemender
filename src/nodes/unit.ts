@@ -8,6 +8,7 @@ import {Faction, FACTION, Condition, CONDITION_THRESHOLDS} from './types'
 import type {UnitId} from './unit-registry'
 import type {Ability, AbilityClass} from './ability'
 import type {GlobalCooldown} from './global-cooldown'
+import type {Targeting} from './targeting'
 import {AbilityUse} from './ability-use'
 
 export type {Aura} from './aura'
@@ -37,7 +38,12 @@ export class Unit extends Node {
 	mana?: Mana
 	auras = new Set<Aura>()
 	faction: Faction = (this.constructor as typeof Unit).faction
-	currentTarget?: Unit
+	/**
+	 * How this unit's standing drivers choose among the units an ability may land on. A preference
+	 * and nothing more — it holds no target the rest of the game reads back. The player has none:
+	 * the keyboard is its own driver.
+	 */
+	targeting?: Targeting
 
 	/**
 	 * Still standing. This — not membership of `encounter.party`/`enemies` — is who is in the
@@ -78,10 +84,6 @@ export class Unit extends Node {
 		return this.condition === 'healthy'
 	}
 
-	getTarget(): Unit | undefined {
-		return this.currentTarget?.alive ? this.currentTarget : undefined
-	}
-
 	/** Every ability this unit may use, keyed by stable ability id. Display names never enter lookup. */
 	abilities: Record<string, AbilityClass> = {}
 
@@ -94,9 +96,12 @@ export class Unit extends Node {
 	/** Cooldown expiry stamps in fight-clock ms, keyed by stable ability id. */
 	cooldowns = new Map<string, number>()
 
-	/** The neutral primitive every driver uses, including Cadence and the transitional cast action. */
-	useAbility(abilityId: string) {
-		return AbilityUse.use(this, abilityId)
+	/**
+	 * The neutral primitive every driver uses. The target belongs to this one use: whoever decided
+	 * to act also decided who it lands on, and hands both over together.
+	 */
+	useAbility(abilityId: string, target?: Unit) {
+		return AbilityUse.use(this, abilityId, target)
 	}
 
 	constructor(public parent: Encounter) {
@@ -110,7 +115,7 @@ export class Unit extends Node {
 	 * Dying is the encounter's business, not the unit's. This used to call `this.disconnect()`,
 	 * which left the corpse half in and half out: vroum's teardown nulls `parent`, but the unit
 	 * stayed in `encounter.party`, so anything that walked that array and reached back up the
-	 * tree — `Player.getTarget()` reads `this.parent.tank` — threw from the first death onwards.
+	 * tree — `Player.intendedTarget` reads `this.parent.tank` — threw from the first death onwards.
 	 */
 	private onHealthEmpty = () => {
 		log(`${this.name} is dead`)

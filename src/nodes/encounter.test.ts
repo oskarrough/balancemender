@@ -81,7 +81,7 @@ describe('death', () => {
 	})
 
 	/**
-	 * Dying used to detach the unit from the tree, and `UnitFrame` calls `player.getTarget()`
+	 * Dying used to detach the unit from the tree, and `UnitFrame` reads `player.intendedTarget`
 	 * for every unit every frame — which reaches back up through `parent`. So the moment the
 	 * player died, every render threw, the Game Over screen included.
 	 */
@@ -94,23 +94,24 @@ describe('death', () => {
 
 		expect(game.encounter.isPartyDefeated()).toBe(true)
 		expect(game.player.parent).toBe(game.encounter)
-		expect(() => game.player.getTarget()).not.toThrow()
+		expect(() => game.player.intendedTarget).not.toThrow()
 	})
 
 	it('takes the dead out of targeting', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		await settle()
 		const wolf = game.enemies[0] as TinyWolf
-		wolf.currentTarget = game.tank
+		// Let it settle on someone first — a wolf that never picked could not pick a corpse anyway.
+		wolf.targeting.pick('enemy')
 
 		game.tank.health.set(0)
 		await settle()
 
-		expect(wolf.getTarget()).toBeUndefined()
-		expect(eligible(wolf, wolf.targeting.rule)).toEqual([game.player])
+		expect(eligible(wolf, 'enemy')).toEqual([game.player])
+		expect(wolf.targeting.pick('enemy')).toBe(game.player)
 	})
 
-	it('stops what the dying unit was doing — its cast, its target, the auras on it', async () => {
+	it('stops what the dying unit was doing — its cast, the auras on it', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		await settle()
 		const tank = game.tank
@@ -125,7 +126,6 @@ describe('death', () => {
 		game.player.health.set(0)
 		await settle()
 		expect(game.player.currentAbility).toBeUndefined()
-		expect(game.player.currentTarget).toBeUndefined()
 
 		tank.health.set(0)
 		await settle()
@@ -139,13 +139,13 @@ describe('death', () => {
 
 		game.tank.health.set(0)
 		await settle()
-		expect(eligible(wolf, wolf.targeting.rule)).not.toContain(game.tank)
+		expect(eligible(wolf, 'enemy')).not.toContain(game.tank)
 
 		game.perform({type: 'healParty'})
 		await settle()
 		expect(game.tank.alive).toBe(true)
 		expect(game.tank.parent).toBe(game.encounter)
-		expect(eligible(wolf, wolf.targeting.rule)).toContain(game.tank)
+		expect(eligible(wolf, 'enemy')).toContain(game.tank)
 	})
 })
 

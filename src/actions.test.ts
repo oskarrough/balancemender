@@ -30,14 +30,15 @@ describe('perform', () => {
 		})
 	})
 
-	it('casting takes the target with it, so nobody has to set both', async () => {
+	it('casts on the target it was given without moving what the player has selected', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		const tank = game.tank
-		expect(game.player.currentTarget).not.toBe(tank)
+		const selected = game.player.selectedTarget
+		expect(selected).not.toBe(tank)
 
 		expect(game.perform({type: 'use', ability: 'Heal', target: tank.id}).ok).toBe(true)
-		expect(game.player.currentTarget).toBe(tank)
-		expect(game.player.currentAbility?.name).toBe('Heal')
+		expect(game.player.currentAbility?.target).toBe(tank)
+		expect(game.player.selectedTarget).toBe(selected)
 		// Let the spell finish mounting before tearing the loop down — its global cooldown
 		// mounts in a microtask, and a node that mounts into a disconnected root throws.
 		await flush()
