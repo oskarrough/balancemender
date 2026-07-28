@@ -95,7 +95,6 @@ running — a live frame landing mid-simulation would write into its log.
 Fights are deterministic per seed, so they make ordinary assertions:
 
 ```ts
-// @vitest-environment happy-dom
 const fight = await runFight({enemies: ['TinyWolf', 'TinyWolf'], policy: 'triage', seed: 3})
 expect(fight.outcome).toBe('victory')
 expect(analyze(fight.events).totals.overhealing).toBeLessThan(500)

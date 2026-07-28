@@ -18,7 +18,7 @@ index.html
               │           ├── Cadence     (Task) requests an ability on an interval
               │           └── auras       HOT / DoT (Tasks)
               ├── AudioPlayer
-              └── tick() → renders components/ui.ts into `game.element`
+              └── tick() → game.draw(), which main.ts points at components/ui.ts
 ```
 
 Every frame the loop runs each Task, then re-renders the whole UI with
@@ -209,23 +209,35 @@ is a balance question, not a bug fix (#48).
 not a second implementation of the game; it is the game with the frame clock and the keyboard
 replaced. See [simulation.md](./simulation.md).
 
+This is a browser game and game code may touch the DOM — `effects.ts` queries for the frame it is
+about to shake, `floating-combat-text.ts` builds real elements. The line is _when_, not _whether_:
+
+- **At call time, use it** — behind `typeof document === 'undefined'` if a simulation reaches it.
+  That is one line, and the fight goes on without the flourish.
+- **At import time, nothing may need a DOM.** `import 'uhtml'` and `class X extends HTMLElement`
+  both run on load, so either one anywhere `src/nodes/` can reach means no fight runs headless at
+  all. This is why the loop takes a `draw` slot that `main.ts` fills instead of importing
+  `components/ui`, why `utils.ts` no longer re-exports uhtml, and why `floating-combat-text.ts`
+  declares its element inside `register()`.
+
+Nothing has to be remembered here: the tests run in plain node, so a bad import fails the suite
+immediately with `DocumentFragment is not defined` or `HTMLElement is not defined`.
+
 ## Testing
 
-`bun run test` runs vitest. Tests that touch the game need a DOM — uhtml is imported all the way
-down the tree — so start such a file with `// @vitest-environment happy-dom`. Pure code (the combat
-log, the report analyzer) runs in the default node environment.
+`bun run test` runs vitest in plain node — there is no fake DOM. `src/test-setup.ts` stubs
+`requestAnimationFrame`, which vroum asks for the moment a `Loop` is constructed; the stub never
+fires, so a constructed game sits still until something steps it.
 
-The run is quiet: `src/test-setup.ts` calls `setLogLevel('silent')` so a failing assertion is not
+The run is also quiet: that same file calls `setLogLevel('silent')` so a failing assertion is not
 buried under a few hundred lines of pino. Call `setLogLevel('info')` at the top of one file to
-watch a fight happen. That setup file runs before _every_ test file including the node-environment
-ones, so it must not import anything that reaches uhtml — which is why the level lives in
-`combatlog.ts` rather than in `utils.ts` next to `log()`.
+watch a fight happen.
 
-**Components cannot be render-tested.** happy-dom is enough to _import_ the game, but uhtml cannot
-interpolate an attribute in it — `` html`<div data-type=${x}>` `` throws `Cannot read properties of
-null`, while static attributes and interpolated text render fine. That rules out asserting on
-rendered markup, so a bug like a unit-frame selector matching nothing has to be caught in the
-browser. Test the nodes and `perform()`; drive the DOM with `agent-browser`.
+**Components are tested in a real browser, not a fake one.** Markup is the thing they exist to
+produce, so asserting on it in a simulated DOM tests the simulation as much as the component — and
+a bug like a unit-frame selector matching nothing survives that happily. Run `bun run dev` and
+drive the actual game with `agent-browser`; see "Driving the real game" below. Vitest is for the
+logic underneath: the nodes, `perform()`, the analyzer.
 
 ## Driving the real game
 
