@@ -43,6 +43,19 @@ export class GameLoop extends Loop {
 	 */
 	draw?: (game: GameLoop) => void
 
+	/**
+	 * Awaiting a game returns nothing, immediately — it does not wait for the fight to end.
+	 *
+	 * vroum makes every Loop thenable and resolves that on DESTROY, so `await game` parks on a loop
+	 * that never dies: a 5s test timeout with no error and nothing pointing at the cause. Resolving
+	 * now turns that into `undefined` and a TypeError on the next line, which says where to look.
+	 * A helper that builds a game still must not return it — assign it to a variable the caller has.
+	 */
+	// oxlint-disable-next-line no-thenable -- vroum already made it thenable; this defuses it
+	then<T>(onfulfilled: () => T | PromiseLike<T>): PromiseLike<T> {
+		return Promise.resolve(onfulfilled())
+	}
+
 	// Private mute state - use getter/setter to sync with AudioPlayer
 	private _muted = true
 
@@ -70,7 +83,7 @@ export class GameLoop extends Loop {
 
 	/**
 	 * Do something to this game. The only way anything mutates a fight — keyboard, ability buttons,
-	 * dev console, Balance Lab, Autopilot, tests, agents. See `src/actions.ts`.
+	 * dev console, Balance Lab, BotDriver, tests, agents. See `src/actions.ts`.
 	 *
 	 * Refusals are recorded here rather than at each call site, so a caller cannot forget to tell
 	 * the player why nothing happened and leave a dead click.

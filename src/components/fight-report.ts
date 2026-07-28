@@ -4,7 +4,7 @@ import {currentGame, type GameLoop} from '../nodes/game-loop'
 import {analyze, FightReport as Report, Series} from '../sim/report'
 import {unitsOf, runFights} from '../sim/run'
 import {deathOf, formatAggregate, percentOf as percent} from '../sim/format'
-import {policies, PolicyName} from '../nodes/autopilot'
+import {bots, BotName} from '../nodes/bot'
 
 /**
  * The fight you are playing, read the same way a simulated fight is read: `analyze()` over
@@ -15,7 +15,7 @@ export class FightReportView extends HTMLElement {
 	private pending = 0
 	private simulation: string | null = null
 	private busy = false
-	private policy: PolicyName = 'triage'
+	private bot: BotName = 'triage'
 	private runs = 5
 	private onLogUpdate = () => this.schedule()
 
@@ -54,7 +54,7 @@ export class FightReportView extends HTMLElement {
 			// `unitId`, not `constructor.name` — the production build minifies class names.
 			const enemies = game.enemies.flatMap((enemy) => enemy.unitId ?? [])
 			const party = game.party.filter((member) => member !== game.player).flatMap((member) => member.unitId ?? [])
-			const results = await runFights({party, enemies, policy: this.policy}, this.runs)
+			const results = await runFights({party, enemies, bot: this.bot}, this.runs)
 			this.simulation = formatAggregate(results)
 		} catch (error) {
 			this.simulation = String(error)
@@ -155,11 +155,11 @@ export class FightReportView extends HTMLElement {
 					<div class="FightReport-controls">
 						<select
 							onchange=${(e: Event) => {
-								this.policy = (e.target as HTMLSelectElement).value as PolicyName
+								this.bot = (e.target as HTMLSelectElement).value as BotName
 							}}
 						>
-							${Object.keys(policies).map(
-								(name) => html`<option value=${name} selected=${name === this.policy}>${name}</option>`,
+							${Object.keys(bots).map(
+								(name) => html`<option value=${name} selected=${name === this.bot}>${name}</option>`,
 							)}
 						</select>
 						<button class="Button" onclick=${() => this.simulate()} disabled=${this.busy}>

@@ -316,7 +316,7 @@ function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id
 }
 
 /**
- * The unit the policy drives. By name, unusually: `runFight` adds the healer itself and calls it
+ * The unit the bot drives. By name, unusually: `runFight` adds the healer itself and calls it
  * Player, and it is the one unit `renumber()` never touches, so the name is stable here.
  */
 export const healerOf = (report: FightReport) => report.units.find((unit) => unit.name === 'Player')

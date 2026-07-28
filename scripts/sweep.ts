@@ -1,9 +1,9 @@
 /**
- * Sweep every enemy group against every policy over many seeds, and print one table.
+ * Sweep every enemy group against every bot over many seeds, and print one table.
  *
  *   bun run sweep
  *   bun run sweep --seeds 25
- *   bun run sweep --enemies 'TinyWolf*3, Nakroth' --policies triage,renew
+ *   bun run sweep --enemies 'TinyWolf*3, Nakroth' --bots triage,renew
  *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
  *
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the question
@@ -18,7 +18,7 @@ import {
 	partyInjuredTime,
 	margin,
 	parseUnits,
-	policies,
+	bots,
 	applyTunes,
 	formatTune,
 	type FightResult,
@@ -30,7 +30,7 @@ const {values: args} = attempt(() =>
 		args: Bun.argv.slice(2),
 		options: {
 			enemies: {type: 'string'},
-			policies: {type: 'string'},
+			bots: {type: 'string'},
 			seeds: {type: 'string'},
 			duration: {type: 'string'},
 			tune: {type: 'string', multiple: true},
@@ -43,7 +43,7 @@ const {values: args} = attempt(() =>
 /**
  * The standard grid. Every wolf count from one to five, because the curve is quadratic on purpose
  * and the interesting cells are the ones that are neither hopeless nor free — at four wolves
- * `renew` is the only policy still moving, which makes it the row a retune shows up in first.
+ * `renew` is the only bot still moving, which makes it the row a retune shows up in first.
  */
 const DEFAULT_ENEMIES =
 	'TinyWolf; TinyWolf*2; TinyWolf*3; TinyWolf*4; TinyWolf*5; TinyWolf*2, WolfShaman; Nakroth; Nakroth, TinyWolf*2'
@@ -55,7 +55,7 @@ bun run sweep [options]
 
   --enemies  <list>    semicolon-separated enemy groups, "Name*3" to repeat
                        (default: ${DEFAULT_ENEMIES})
-  --policies <list>    comma separated (default all: ${Object.keys(policies).join(', ')})
+  --bots     <list>    comma separated (default all: ${Object.keys(bots).join(', ')})
   --seeds    <n>       how many seeds per combination, starting at 1 (default 10)
   --duration <s>       give up after n seconds of fight time (default 120)
   --tune     <spec>    change a balance number first, e.g. 'aura:Rend.total=-16'
@@ -81,13 +81,13 @@ const enemyGroups = attempt(() =>
 		.map((entry) => ({label: entry, enemies: parseUnits(entry)})),
 )
 
-const policyNames = (args.policies ?? Object.keys(policies).join(','))
+const botNames = (args.bots ?? Object.keys(bots).join(','))
 	.split(',')
 	.map((name) => name.trim())
 	.filter(Boolean)
 
-for (const name of policyNames) {
-	if (!(name in policies)) bail(`Unknown policy "${name}". Known: ${Object.keys(policies).join(', ')}`)
+for (const name of botNames) {
+	if (!(name in bots)) bail(`Unknown bot "${name}". Known: ${Object.keys(bots).join(', ')}`)
 }
 
 const seeds = num('seeds', args.seeds, 10)
@@ -95,7 +95,7 @@ const maxDuration = num('duration', args.duration, 120) * 1000
 
 interface Row {
 	enemies: string
-	policy: string
+	bot: string
 	winPercent: number
 	/** Half-width of the 95% interval on `winPercent`, in points. */
 	winMargin: number
@@ -105,7 +105,7 @@ interface Row {
 	/**
 	 * Absorption per second, the healer's own — damage a shield swallowed before it reached a
 	 * health bar. Its own column rather than folded into `hps`: a point absorbed was never taken,
-	 * a point healed was taken and paid back. Folded together, a shield policy reads as a healer
+	 * a point healed was taken and paid back. Folded together, a shield bot reads as a healer
 	 * doing a quarter of the work.
 	 */
 	absorbPerSecond: number
@@ -142,13 +142,13 @@ interface Fight {
 const rows: Row[] = []
 
 for (const group of enemyGroups) {
-	for (const policy of policyNames) {
+	for (const bot of botNames) {
 		const fights: Fight[] = []
 
 		for (let seed = 1; seed <= seeds; seed++) {
 			const result: FightResult = await runFight({
 				enemies: group.enemies,
-				policy: policy as keyof typeof policies,
+				bot: bot as keyof typeof bots,
 				seed,
 				maxDuration,
 			})
@@ -178,7 +178,7 @@ for (const group of enemyGroups) {
 		const landed = healing + overhealing
 		rows.push({
 			enemies: group.label,
-			policy,
+			bot,
 			winPercent: percent(wins, seeds),
 			winMargin: margin(wins, seeds),
 			timeoutPercent: percent(fights.filter((f) => f.outcome === 'timeout').length, seeds),
@@ -197,7 +197,7 @@ for (const group of enemyGroups) {
 				: 0,
 		})
 		// Progress on stderr, so `--json > file` stays valid.
-		console.error(`${group.label} / ${policy}`)
+		console.error(`${group.label} / ${bot}`)
 	}
 }
 
@@ -213,7 +213,7 @@ process.exit(0)
 function table(rows: Row[]) {
 	const header = [
 		'enemies',
-		'policy',
+		'bot',
 		'win%',
 		'±',
 		'hurt%',
@@ -228,7 +228,7 @@ function table(rows: Row[]) {
 	]
 	const body = rows.map((row) => [
 		row.enemies,
-		row.policy,
+		row.bot,
 		`${row.winPercent}%`,
 		`${row.winMargin}`,
 		`${row.hurtPercent}%`,

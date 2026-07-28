@@ -1,6 +1,6 @@
 import {GameLoop} from '../nodes/game-loop'
 import {AudioPlayer} from '../nodes/audio'
-import {Autopilot, Policy, PolicyName} from '../nodes/autopilot'
+import {BotDriver, Bot, BotName} from '../nodes/bot'
 import {combatLogs, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
 import {setSeed} from '../rng'
 import {DEMO_ROSTER, Roster} from '../nodes/encounter'
@@ -9,8 +9,8 @@ import type {Unit} from '../nodes/unit'
 export type Outcome = 'victory' | 'defeat' | 'timeout'
 
 export interface FightSpec extends Roster {
-	/** How the healer plays. See `src/nodes/autopilot.ts`. */
-	policy?: PolicyName | Policy
+	/** How the healer plays. See `src/nodes/bot.ts`. */
+	bot?: BotName | Bot
 	/** Fix the dice so the fight replays exactly. `null` for real randomness. */
 	seed?: number | null
 	/** Give up after this much fight time (ms). */
@@ -43,10 +43,10 @@ export interface FightResult {
  *
  * This is the real game — the real GameLoop, units, spells and combat log — with two
  * substitutions: the browser's frame clock is replaced by a fixed step, so a two-minute
- * fight resolves in milliseconds, and the healer is played by an `Autopilot`.
+ * fight resolves in milliseconds, and the healer is played by a `BotDriver`.
  */
 export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
-	const {policy = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = spec
+	const {bot = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = spec
 	const lineup: Roster = {party: spec.party ?? DEMO_ROSTER.party, enemies: spec.enemies ?? DEMO_ROSTER.enemies}
 
 	// Everything below borrows process-global state. It all has to happen inside the try,
@@ -65,7 +65,7 @@ export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
 		game.audio.disabled = true
 		await flush() // vroum mounts nodes in a microtask
 
-		new Autopilot(game.player, policy)
+		new BotDriver(game.player, bot)
 		await flush()
 
 		const frame = 1000 / fps

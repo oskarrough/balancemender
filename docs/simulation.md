@@ -4,11 +4,11 @@
 
 There is one game. A simulated fight is the same `GameLoop`, the same units and the same combat
 log you get in the browser, with two things swapped: animation frames become a fixed step, so two
-minutes of fight resolve in a fraction of a second, and the keyboard becomes an `Autopilot`
+minutes of fight resolve in a fraction of a second, and the keyboard becomes a `BotDriver`
 performing the same `{type: 'use'}` action a keypress does.
 
 ```
-roster ──▶ GameLoop + Autopilot ──▶ combat log ──▶ analyze() ──▶ report
+roster ──▶ GameLoop + BotDriver ──▶ combat log ──▶ analyze() ──▶ report
    (or you, playing, in the browser) ──▶  ▲
 ```
 
@@ -18,7 +18,7 @@ That is why the terminal and the in-game Fight report agree: one analysis, one e
 
 ```
 bun run sim                                        # the demo fight
-bun run sim --enemies 'TinyWolf*3' --policy panic  # three wolves, a bad healer
+bun run sim --enemies 'TinyWolf*3' --bot panic     # three wolves, a bad healer
 bun run sim --repeat 20                            # 20 seeds, summarised
 bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
 bun run sim --json > fight.json                    # every event, for your own analysis
@@ -54,16 +54,16 @@ fight's, since enemies heal too.
 ## Sweeping the curve
 
 `--repeat` answers "how does _this_ fight usually go". `bun run sweep` answers the question above
-it — every enemy group against every policy, one table.
+it — every enemy group against every bot, one table.
 
 ```
 bun run sweep                                       # 10 seeds, the standard groups
 bun run sweep --seeds 200                           # enough to compare two candidates
-bun run sweep --enemies 'TinyWolf*3; Nakroth' --policies triage,renew
+bun run sweep --enemies 'TinyWolf*3; Nakroth' --bots triage,renew
 ```
 
 ```
-enemies     policy  win%  ±   hurt%  timeout%  median  hps   aps   overheal%  mana/s  busy%  casts
+enemies     bot     win%  ±   hurt%  timeout%  median  hps   aps   overheal%  mana/s  busy%  casts
 TinyWolf*3  idle    0%    14  25%    0%        24.0s   0.0   0.0   0%         0.0     0%     0.0
 TinyWolf*3  triage  90%   19  12%    0%        88.8s   11.0  0.0   25%        9.1     37%    16.0
 TinyWolf*3  shield  90%   19  7%     0%        88.8s   5.5   6.1   35%        8.2     29%    13.6
@@ -95,24 +95,24 @@ running — a live frame landing mid-simulation would write into its log.
 Fights are deterministic per seed, so they make ordinary assertions:
 
 ```ts
-const fight = await runFight({enemies: ['TinyWolf', 'TinyWolf'], policy: 'triage', seed: 3})
+const fight = await runFight({enemies: ['TinyWolf', 'TinyWolf'], bot: 'triage', seed: 3})
 expect(fight.outcome).toBe('victory')
 expect(analyze(fight.events).totals.overhealing).toBeLessThan(500)
 ```
 
 Pin a seed and an ability that quietly becomes twice as strong fails the build.
 
-## Policies
+## Bots
 
-The healer needs to play somehow. `src/nodes/autopilot.ts` holds them, deliberately simple to read
-and to add to: `idle` never casts and is the control group, `triage` matches the heal to the
+The healer needs to play somehow. `src/nodes/bot.ts` holds them, deliberately simple to read and
+to add to: `idle` never casts and is the control group, `triage` matches the heal to the
 emergency, `renew` keeps a heal-over-time rolling, `panic` spams Flash Heal, and `shield` keeps
-Power Word: Shield on the tank. Comparing policies on one composition usually tells you more than
+Power Word: Shield on the tank. Comparing bots on one composition usually tells you more than
 comparing compositions — `idle` dying in 15s while `triage` lasts 47s is the encounter's actual
-demand. An Autopilot is a normal Task, so one can play in the browser:
+demand. A `BotDriver` is a normal Task, so one can play in the browser:
 
 ```js
-new (await import('/src/nodes/autopilot.ts')).Autopilot(balancemender.player, 'triage')
+new (await import('/src/nodes/bot.ts')).BotDriver(balancemender.player, 'triage')
 ```
 
 ## Trying out a number
@@ -132,16 +132,16 @@ failing that, write it on the instance from inside a method.
 
 ## The pieces
 
-| file                     | what it does                                               |
-| ------------------------ | ---------------------------------------------------------- |
-| `src/sim/roster.ts`      | `'TinyWolf*3'` → a validated list of unit ids              |
-| `src/sim/run.ts`         | runs the real loop on a stepped clock, returns the log     |
-| `src/sim/report.ts`      | pure analysis of a combat log, including health over time  |
-| `src/sim/format.ts`      | plain-text reports                                         |
-| `src/nodes/autopilot.ts` | the healer policies                                        |
-| `scripts/sim.ts`         | one fight, or n seeds of it                                |
-| `scripts/sweep.ts`       | every enemy group × every policy, over many seeds          |
-| `scripts/cli.ts`         | numbers and one-line exits, over `node:util`'s `parseArgs` |
+| file                | what it does                                               |
+| ------------------- | ---------------------------------------------------------- |
+| `src/sim/roster.ts` | `'TinyWolf*3'` → a validated list of unit ids              |
+| `src/sim/run.ts`    | runs the real loop on a stepped clock, returns the log     |
+| `src/sim/report.ts` | pure analysis of a combat log, including health over time  |
+| `src/sim/format.ts` | plain-text reports                                         |
+| `src/nodes/bot.ts`  | the bots, and the `BotDriver` that runs one                |
+| `scripts/sim.ts`    | one fight, or n seeds of it                                |
+| `scripts/sweep.ts`  | every enemy group × every bot, over many seeds             |
+| `scripts/cli.ts`    | numbers and one-line exits, over `node:util`'s `parseArgs` |
 
 `src/rng.ts` is why any of it repeats: seed it and every damage roll and target choice replays
 identically. Unseeded — how the browser plays — it is `Math.random`.

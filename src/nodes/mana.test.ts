@@ -55,7 +55,7 @@ describe('mana regeneration', () => {
 	 * backwards, turned into an assertion.
 	 */
 	it('lets the healer spend more than one poolful over a boss fight', async () => {
-		const fight = await runFight({enemies: ['Nakroth'], policy: 'triage', seed: 1})
+		const fight = await runFight({enemies: ['Nakroth'], bot: 'triage', seed: 1})
 		expect(fight.outcome).toBe('victory')
 
 		const player = analyze(fight.events, fight).units.find((unit) => unit.name === 'Player')

@@ -20,11 +20,11 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 	const lines: string[] = []
 	const party = result.spec.party ?? ['Tank']
 	const enemies = result.spec.enemies ?? ['TinyWolf']
-	const policy = typeof result.spec.policy === 'string' ? result.spec.policy : (result.spec.policy?.name ?? 'triage')
+	const bot = typeof result.spec.bot === 'string' ? result.spec.bot : (result.spec.bot?.name ?? 'triage')
 
 	lines.push(
 		`${[...party, 'Player'].join(' + ')}  vs  ${enemies.join(' + ')}`,
-		`seed ${result.seed} · ${policy} · ${result.outcome} in ${seconds(result.duration)}`,
+		`seed ${result.seed} · ${bot} · ${result.outcome} in ${seconds(result.duration)}`,
 		'',
 	)
 
@@ -92,13 +92,13 @@ export function formatAggregate(results: FightResult[]): string {
 	const outcomes = count(results.map((r) => r.outcome))
 	const deaths = count(reports.flatMap((r) => r.deaths.map((d) => d.name)))
 	const spec = results[0].spec
-	const policy = typeof spec.policy === 'string' ? spec.policy : (spec.policy?.name ?? 'triage')
+	const bot = typeof spec.bot === 'string' ? spec.bot : (spec.bot?.name ?? 'triage')
 	const victories = outcomes.get('victory') ?? 0
 	const absorbed = avg(healers.map((h) => h?.absorbed ?? 0))
 	const wasted = avg(healers.map((h) => h?.wasted ?? 0))
 
 	const lines = [
-		`${results.length} fights · ${[...(spec.party ?? ['Tank']), 'Player'].join(' + ')} vs ${(spec.enemies ?? ['TinyWolf']).join(' + ')} · ${policy}`,
+		`${results.length} fights · ${[...(spec.party ?? ['Tank']), 'Player'].join(' + ')} vs ${(spec.enemies ?? ['TinyWolf']).join(' + ')} · ${bot}`,
 		'',
 		'  ' +
 			OUTCOMES.map(
@@ -112,7 +112,7 @@ export function formatAggregate(results: FightResult[]): string {
 		`  damage    avg ${avg(reports.map((r) => r.totals.dps)).toFixed(1)} dps`,
 		// The healer's own row, because the two lines above are fight-wide — an enemy healer's work
 		// lands in `totals.healing` too. `busy` is how much of the fight it was locked into a cast:
-		// low with mana to spare means the policy is timid, low with an empty bar means mana is the
+		// low with mana to spare means the bot is timid, low with an empty bar means mana is the
 		// wall and no amount of cleverer decision-making gets past it.
 		`  healer    ${perSecond(avg(healers.map((h) => h?.healingDone ?? 0)), runtime)} hps  busy ${percentOf(
 			avg(healers.map((h) => h?.busyTime ?? 0)),

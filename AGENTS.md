@@ -37,7 +37,7 @@ tags on one, not two classes), one **use** of it is a one-shot Task, a **driver*
 Don't guess at balance — run it:
 
 ```
-bun run sim --enemies 'TinyWolf*3' --policy triage --repeat 10
+bun run sim --enemies 'TinyWolf*3' --bot triage --repeat 10
 ```
 
 Then read the report. The same numbers show up in the in-game "Fight report" panel while you

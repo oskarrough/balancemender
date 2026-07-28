@@ -14,7 +14,7 @@ export function bail(message: string): never {
 /**
  * Run something that validates input, and turn its throw into a one-line exit.
  *
- * Everything these scripts parse — flags, enemy groups, policies, tunes — reports a bad value by
+ * Everything these scripts parse — flags, enemy groups, bots, tunes — reports a bad value by
  * throwing with a message meant for a person. A stack trace above it helps nobody: the caller
  * typo'd an ability name.
  */

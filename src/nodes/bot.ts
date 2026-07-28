@@ -7,23 +7,18 @@ import {AbilityUse} from './ability-use'
 import type {GameLoop} from './game-loop'
 
 /**
- * A healer that plays itself.
- *
- * It is an ordinary Task on the player, so it casts through the same `perform()` the
- * keyboard does — no special path, no cheating. Attach one to run unattended fights
- * (see `src/sim`), or to watch a policy play in the browser:
- *
- *   new Autopilot(balancemender.player, 'triage')
+ * Runs a `Bot` as an ordinary Task on the player, so it casts through the same `perform()` the
+ * keyboard does. `new BotDriver(balancemender.player, 'triage')` watches one play in the browser.
  */
-export class Autopilot extends Task {
-	policy: Policy
+export class BotDriver extends Task {
+	bot: Bot
 
 	constructor(
 		public parent: Player,
-		policy: Policy | PolicyName = 'triage',
+		bot: Bot | BotName = 'triage',
 	) {
 		super(parent)
-		this.policy = typeof policy === 'string' ? policies[policy] : policy
+		this.bot = typeof bot === 'string' ? bots[bot] : bot
 	}
 
 	shouldTick() {
@@ -32,7 +27,7 @@ export class Autopilot extends Task {
 	}
 
 	tick() {
-		const decision = this.policy(this.parent)
+		const decision = this.bot(this.parent)
 		if (!decision) return
 		const game = this.parent.root as GameLoop
 		game.perform({type: 'use', ability: decision.ability, target: decision.target.id})
@@ -44,14 +39,15 @@ export interface Decision {
 	target: Unit
 }
 
-/** Given the player, decide what to cast right now (or nothing). */
-export type Policy = (player: Player) => Decision | undefined
+/**
+ * A stand-in for the player: what to cast right now, or nothing. Also the measuring instrument —
+ * every win rate a sweep prints is "with this bot playing", which is why `idle` counts as one.
+ */
+export type Bot = (player: Player) => Decision | undefined
 
 /**
- * The same question the action bar asks, so a policy cannot decide to cast something the game
- * would then refuse. This used to compare `cost` to current mana here, which meant the
- * simulator's idea of a castable spell and the game's could drift apart — and would have, the
- * moment spells grew their own cooldowns.
+ * The same question the action bar asks, so a bot cannot decide to cast something the game would
+ * refuse. Comparing `cost` to mana here instead would drift the moment spells grow cooldowns.
  */
 const castable = (player: Player, ability: PlayerAbilityId, target: Unit) =>
 	!AbilityUse.whyNotUse(player, playerAbilities[ability], target)
@@ -65,17 +61,13 @@ function mostHurt(player: Player): Unit | undefined {
 }
 
 /** Cast nothing, ever. The control group: how long does the party last unhealed? */
-export const idle: Policy = () => undefined
+export const idle: Bot = () => undefined
 
 /**
- * Match the heal to the emergency, and don't top off people who are nearly full.
- *
- * The numbers below are close to `Unit.condition`'s bands and are deliberately not them.
- * These policies are the measuring instrument — every win rate in a sweep is quoted against
- * them — so folding them into a threshold that spells also read makes the sweep circular and
- * silently moves every number we have already recorded. Leave them be.
+ * Match the heal to the emergency, and don't top off people who are nearly full. The ratios below
+ * are near `Unit.condition`'s bands and deliberately not them — sharing would make sweeps circular.
  */
-export const triage: Policy = (player) => {
+export const triage: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.9) return undefined
 	if (target.health.ratio < 0.4 && castable(player, 'FlashHeal', target)) return {ability: 'FlashHeal', target}
@@ -85,7 +77,7 @@ export const triage: Policy = (player) => {
 }
 
 /** Keep a Renew rolling on whoever needs it, fill with Heal. Cheap, but slow to react. */
-export const renew: Policy = (player) => {
+export const renew: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
 	if (!hasAura(target, 'Renew') && castable(player, 'Renew', target)) return {ability: 'Renew', target}
@@ -94,24 +86,18 @@ export const renew: Policy = (player) => {
 }
 
 /**
- * Flash Heal on cooldown. Fast reactions, burns mana, overheals a lot.
- *
- * The only policy with no fallback, so it stops measuring bad play the moment Flash Heal gets a
- * cooldown (#41): it would cast nothing while the spell is down, which is a fixed-rate policy
- * wearing a spam policy's name. `triage` and `renew` drop to a lesser heal instead.
+ * Flash Heal on cooldown. Fast reactions, burns mana, overheals a lot. The only bot with no
+ * fallback, so it stops measuring bad play the moment Flash Heal gets a cooldown (#41).
  */
-export const panic: Policy = (player) => {
+export const panic: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
 	if (castable(player, 'FlashHeal', target)) return {ability: 'FlashHeal', target}
 	return undefined
 }
 
-/**
- * Shield the tank while no shield is on them, otherwise heal as `triage` does. Enough to exercise
- * absorption in a sweep — see #47.
- */
-export const shield: Policy = (player) => {
+/** Shield the tank when they have none, else heal as `triage`. Exercises absorption in a sweep (#47). */
+export const shield: Bot = (player) => {
 	const tank = player.parent.party.find((member) => member.alive && member instanceof Tank)
 	if (tank && !hasAura(tank, 'PowerWordShield') && castable(player, 'PowerWordShield', tank)) {
 		return {ability: 'PowerWordShield', target: tank}
@@ -119,6 +105,6 @@ export const shield: Policy = (player) => {
 	return triage(player)
 }
 
-export const policies = {idle, triage, renew, panic, shield}
+export const bots = {idle, triage, renew, panic, shield}
 
-export type PolicyName = keyof typeof policies
+export type BotName = keyof typeof bots

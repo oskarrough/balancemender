@@ -84,8 +84,8 @@ describe('running a fight', () => {
 describe('healing changes the outcome', () => {
 	it('a party that is healed outlasts one that is not', async () => {
 		const spec = {enemies: ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never, seed: 3}
-		const unhealed = await runFight({...spec, policy: 'idle'})
-		const healed = await runFight({...spec, policy: 'triage'})
+		const unhealed = await runFight({...spec, bot: 'idle'})
+		const healed = await runFight({...spec, bot: 'triage'})
 
 		expect(unhealed.outcome).toBe('defeat')
 		expect(healed.duration).toBeGreaterThan(unhealed.duration)
@@ -102,8 +102,8 @@ describe('healing changes the outcome', () => {
 	// winnable is a real change and should fail here rather than hide behind seed 1.
 	it.each([1, 2, 3, 4, 5])('makes the boss winnable by healing and only by healing (seed %i)', async (seed) => {
 		const spec = {enemies: ['Nakroth'] as never, seed}
-		const unhealed = await runFight({...spec, policy: 'idle'})
-		const healed = await runFight({...spec, policy: 'triage'})
+		const unhealed = await runFight({...spec, bot: 'idle'})
+		const healed = await runFight({...spec, bot: 'triage'})
 
 		expect(unhealed.outcome).toBe('defeat')
 		expect(healed.outcome).toBe('victory')
@@ -128,7 +128,7 @@ describe('healing changes the outcome', () => {
 
 	it('makes three wolves winnable but not a formality', async () => {
 		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
-		const outcomes = await Promise.all(SEEDS.map((seed) => runFight({enemies: three, policy: 'triage', seed})))
+		const outcomes = await Promise.all(SEEDS.map((seed) => runFight({enemies: three, bot: 'triage', seed})))
 		const wins = outcomes.filter((fight) => fight.outcome === 'victory').length / SEEDS.length
 		expect(wins).toBeGreaterThan(0.55)
 		expect(wins).toBeLessThan(0.95)
@@ -137,16 +137,16 @@ describe('healing changes the outcome', () => {
 	it.each([1, 2, 3, 4, 5])('makes three wolves need a healer and five a wall (seed %i)', async (seed) => {
 		// Still not a fight healing is irrelevant to — the control group has to keep losing it.
 		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
-		expect((await runFight({enemies: three, policy: 'idle', seed})).outcome).toBe('defeat')
+		expect((await runFight({enemies: three, bot: 'idle', seed})).outcome).toBe('defeat')
 
 		const five = ['TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf'] as never
-		expect((await runFight({enemies: five, policy: 'triage', seed})).outcome).toBe('defeat')
+		expect((await runFight({enemies: five, bot: 'triage', seed})).outcome).toBe('defeat')
 	})
 
 	it('spamming the expensive heal overheals more than triaging', async () => {
 		const spec = {enemies: ['TinyWolf', 'TinyWolf'] as never, seed: 5, maxDuration: 40_000}
-		const overheal = async (policy: 'panic' | 'triage') => {
-			const {totals} = analyze((await runFight({...spec, policy})).events)
+		const overheal = async (bot: 'panic' | 'triage') => {
+			const {totals} = analyze((await runFight({...spec, bot})).events)
 			return totals.overhealing / (totals.overhealing + totals.healing)
 		}
 		expect(await overheal('panic')).toBeGreaterThan(await overheal('triage'))

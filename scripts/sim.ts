@@ -2,7 +2,7 @@
  * Simulate fights from the terminal.
  *
  *   bun run sim
- *   bun run sim --enemies TinyWolf*3 --policy panic
+ *   bun run sim --enemies TinyWolf*3 --bot panic
  *   bun run sim --party Tank --enemies Nakroth --repeat 20
  *   bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
  *   bun run sim --json > fight.json
@@ -15,7 +15,7 @@ import {
 	formatAggregate,
 	analyze,
 	parseUnits,
-	policies,
+	bots,
 	applyTunes,
 	formatTune,
 	type FightResult,
@@ -28,7 +28,7 @@ const {values: args} = attempt(() =>
 		options: {
 			party: {type: 'string'},
 			enemies: {type: 'string'},
-			policy: {type: 'string'},
+			bot: {type: 'string'},
 			seed: {type: 'string'},
 			repeat: {type: 'string'},
 			duration: {type: 'string'},
@@ -46,7 +46,7 @@ bun run sim [options]
 
   --party    <units>   allies besides you, comma separated (default Tank)
   --enemies  <units>   enemies, comma separated, "Name*3" to repeat (default TinyWolf)
-  --policy   <name>    how the healer plays: ${Object.keys(policies).join(', ')} (default triage)
+  --bot      <name>    how the healer plays: ${Object.keys(bots).join(', ')} (default triage)
   --seed     <n>       dice seed; the same seed always plays out the same (default 1)
   --repeat   <n>       run n fights and summarise them
   --duration <s>       give up after n seconds of fight time (default 120)
@@ -68,13 +68,13 @@ const tuned = attempt(() => applyTunes(args.tune ?? []).map(formatTune))
 const spec = attempt(() => ({
 	party: args.party ? parseUnits(args.party) : undefined,
 	enemies: args.enemies ? parseUnits(args.enemies) : undefined,
-	policy: (args.policy ?? 'triage') as keyof typeof policies,
+	bot: (args.bot ?? 'triage') as keyof typeof bots,
 	seed: num('seed', args.seed, 1),
 	maxDuration: num('duration', args.duration, 120) * 1000,
 }))
 
-if (!(spec.policy in policies)) {
-	bail(`Unknown policy "${spec.policy}". Known: ${Object.keys(policies).join(', ')}`)
+if (!(spec.bot in bots)) {
+	bail(`Unknown bot "${spec.bot}". Known: ${Object.keys(bots).join(', ')}`)
 }
 
 const repeat = num('repeat', args.repeat, 0)

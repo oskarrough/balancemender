@@ -10,7 +10,7 @@ import type {UnitId} from './nodes/unit-registry'
  * Everything that can change a running game.
  *
  * There is one interpreter — `game.perform(action)` — and everything that mutates a fight goes
- * through it: the keyboard, the ability buttons, the dev console, the Balance Lab, the Autopilot,
+ * through it: the keyboard, the ability buttons, the dev console, the Balance Lab, the bot driver,
  * tests and agents. The console is a text adapter over this, nothing more.
  *
  * Actions go in; combat events come out of the fight separately (see `src/combatlog.ts`). An

@@ -6,7 +6,7 @@ import {combatLogs, clearLogs} from './combatlog'
 
 /**
  * `game.perform()` is the only way anything changes a fight, so these assertions cover the
- * keyboard, the spell buttons, the dev console, the Balance Lab, the Autopilot and agents at
+ * keyboard, the spell buttons, the dev console, the Balance Lab, the bot driver and agents at
  * once. Anything that stops being true here has grown a second path.
  */
 
