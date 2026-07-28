@@ -1,4 +1,4 @@
-import {Heal, FlashHeal, GreaterHeal, Renew, PowerWordShield, Mend} from './spells'
+import {Heal, FlashHeal, GreaterHeal, Renew, PowerWordShield, Smite, Mend} from './spells'
 import {QuickStab, HeavyBlow, SavageBite, NastyArrow, ShieldBash} from './attack'
 
 /** Every one-shot ability, keyed by stable id. Display names are labels only. */
@@ -8,6 +8,7 @@ export const abilityRegistry = {
 	GreaterHeal,
 	Renew,
 	PowerWordShield,
+	Smite,
 	Mend,
 	QuickStab,
 	HeavyBlow,
@@ -17,7 +18,7 @@ export const abilityRegistry = {
 } as const
 
 /** The player's action bar subset. Units own collections; the global registry is only a catalog. */
-export const playerAbilities = {Heal, FlashHeal, GreaterHeal, Renew, PowerWordShield} as const
+export const playerAbilities = {Heal, FlashHeal, GreaterHeal, Renew, PowerWordShield, Smite} as const
 
 export type AbilityId = keyof typeof abilityRegistry
 export type PlayerAbilityId = keyof typeof playerAbilities

@@ -23,6 +23,7 @@ export function UI(game: GameLoop) {
 		'3': 'GreaterHeal',
 		'4': 'Renew',
 		'5': 'PowerWordShield',
+		'6': 'Smite',
 	}
 
 	function handleShortcuts({key}: {key: string}) {

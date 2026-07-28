@@ -144,9 +144,11 @@ describe('every player ability', () => {
 		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = sim
 		await settle()
-		sim.tank.health.set(1)
+		const AbilityClass = playerAbilities[ability as keyof typeof playerAbilities]
+		const target = AbilityClass.targetRule === 'enemy' ? sim.enemies[0] : sim.tank
+		if (AbilityClass.targetRule === 'ally') sim.tank.health.set(1)
 
-		expect(sim.perform({type: 'use', ability, target: sim.tank.id}).ok).toBe(true)
+		expect(sim.perform({type: 'use', ability, target: target.id}).ok).toBe(true)
 		for (let time = 0; time < 5000; time += 16) {
 			sim.runFrame(time)
 			await settle()

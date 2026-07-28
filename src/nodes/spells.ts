@@ -1,5 +1,5 @@
 import {Ability} from './ability'
-import {ApplyAura, Heal as HealEffect} from './effects'
+import {ApplyAura, Damage, Heal as HealEffect} from './effects'
 import {PeriodicAura} from './periodic-aura'
 import {ShieldAura} from './shield-aura'
 
@@ -49,6 +49,23 @@ export class GreaterHeal extends Ability {
 	static cooldown = 0
 	static gcd = true
 	static effects = [new HealEffect()]
+}
+
+/** The player's holy ranged attack. Its inherited event type records the hit as spell damage. */
+export class Smite extends Ability {
+	static id = 'Smite'
+	static name = 'Smite'
+	static tags = ['spell', 'attack', 'ranged'] as const
+	static school = 'holy' as const
+	static targetRule = 'enemy' as const
+	static cost = 40
+	static castTime = 1500
+	static cooldown = 0
+	static gcd = true
+	static minDamage = 15
+	static maxDamage = 25
+	static icon = 'heal'
+	static effects = [new Damage()]
 }
 
 /**

@@ -195,7 +195,7 @@ the one already in flight; cadence timing reaches the next driver spawned, never
 running — and patching a prototype does nothing.
 
 **Bot** — a stand-in for the player, deciding what to cast next: `idle`, `triage`, `renew`, `panic`,
-`shield`. Which ability, never which target — that is a **preference**. Bots are also the measuring
+`shield`, `smite`. Which ability, never which target — that is a **preference**. Bots are also the measuring
 instrument: every win rate a sweep prints is really "with this bot playing", which is why they never
 read the game's own thresholds. `BotDriver` is only the Task that runs one, so a fight can go with
 nobody at the keyboard — the bot decides, the driver casts, through the same `perform()` the keyboard

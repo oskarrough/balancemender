@@ -55,12 +55,17 @@ const castable = (player: Player, ability: PlayerAbilityId, target: Unit) =>
 	!AbilityUse.whyNotUse(player, playerAbilities[ability], target)
 const hasAura = (target: Unit, id: string) => [...target.auras].some((aura) => aura.id === id)
 
-/** The party member in the most trouble, ties broken by lowest absolute health. Never a corpse. */
-function mostHurt(player: Player): Unit | undefined {
-	const candidates = player.parent.party.filter((member) => member.alive)
-	if (!candidates.length) return undefined
-	return candidates.sort((a, b) => a.health.ratio - b.health.ratio || a.health.current - b.health.current)[0]
-}
+/** Whoever is closest to death, ties broken by lowest absolute health. Never a corpse. */
+const weakest = (units: Unit[]): Unit | undefined =>
+	units
+		.filter((unit) => unit.alive)
+		.sort((a, b) => a.health.ratio - b.health.ratio || a.health.current - b.health.current)[0]
+
+/** The party member in the most trouble — who a healing bot reaches for. */
+const mostHurt = (player: Player) => weakest(player.parent.party)
+
+/** The enemy closest to death, so damage finishes one target rather than spreading out. */
+const lowestHealthEnemy = (player: Player) => weakest(player.parent.enemies)
 
 /** Cast nothing, ever. The control group: how long does the party last unhealed? */
 export const idle: Bot = () => undefined
@@ -113,6 +118,18 @@ export const shield: Bot = (player) => {
 	return triage(player)
 }
 
-export const bots = {idle, triage, renew, panic, shield}
+/** Heal exactly as `triage` while anyone needs it; only spend safe GCDs attacking. */
+export const smite: Bot = (player) => {
+	const hurtAlly = mostHurt(player)
+	// Do not turn an unavailable heal into permission to deal damage. At exactly 90%, triage still
+	// considers the ally hurt, so this boundary deliberately matches its `> 0.9` early return.
+	if (hurtAlly && hurtAlly.health.ratio <= 0.9) return triage(player)
+
+	const target = lowestHealthEnemy(player)
+	if (target && castable(player, 'Smite', target)) return {ability: 'Smite', target}
+	return undefined
+}
+
+export const bots = {idle, triage, renew, panic, shield, smite}
 
 export type BotName = keyof typeof bots

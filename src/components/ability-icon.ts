@@ -21,6 +21,10 @@ export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string 
 	const cooldownLeft = AbilityUse.cooldownRemaining(player, AbilityClass)
 	const cooldown = AbilityClass.cooldown ?? 0
 	const cooldownSweep = cooldown ? (cooldownLeft / cooldown) * 360 : 0
+	const outcome =
+		AbilityClass.minDamage !== undefined
+			? html`<span>🔴 ${AbilityClass.minDamage}-${AbilityClass.maxDamage ?? AbilityClass.minDamage}</span>`
+			: html`<span>🟢 ${AbilityClass.magnitude ?? 0}</span>`
 
 	let state = ''
 	if (cooldownLeft > 0) state = 'cooldown'
@@ -39,7 +43,7 @@ export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string 
 				<h3>${AbilityClass.name}</h3>
 				<p>
 					<span>🔵 ${AbilityClass.cost ?? 0} </span>
-					<span>🟢 ${AbilityClass.magnitude ?? 0}</span>
+					${outcome}
 					<span>⏲ ${(AbilityClass.castTime ?? 0) / 1000}s</span>
 					${cooldown ? html`<span>⏳ ${cooldown / 1000}s</span>` : null}
 				</p>
