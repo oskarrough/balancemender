@@ -30,7 +30,7 @@ and `agent-browser eval` reach all of it through that.
 
 [vroum](https://gitlab.com/jfalxa/vroum) gives us `Loop`, `Node` and `Task`. [vroum.md](./vroum.md)
 covers the API: a Task is configured by `delay`/`interval`/`duration`/`repeat` instead of by
-writing timers, and statics are the template that `applyStatics()` copies onto an instance. Three
+writing timers, and statics are the template that `applyStatics()` copies onto an instance. Four
 things bite here that are not in that doc:
 
 - **`mount()` and `destroy()` run down the whole prototype chain**, base class first. A subclass
@@ -42,6 +42,9 @@ things bite here that are not in that doc:
 - **`connect()`/`disconnect()` are deferred to a microtask.** A node is not mounted on the line
   after you construct it, and a dead unit is still in `encounter.party` until the microtask runs.
   Tests and simulations `await Promise.resolve()` to let this settle.
+- **A `Loop` is thenable** — `Loop.prototype.then` exists — so `await`ing anything that resolves to
+  one never comes back. A test helper that builds a game must not return it; assign it to a
+  variable the test already has. The symptom is a 5s timeout with no error.
 
 ## Using an ability is shared, deciding is not
 
