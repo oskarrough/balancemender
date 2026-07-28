@@ -6,31 +6,37 @@
  *   bun run sweep --enemies 'TinyWolf*3, Nakroth' --policies triage,renew
  *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
  *
- * `bun run sim --repeat` answers "how does this one fight usually go". This answers the
- * question above it: is the difficulty curve the shape we think it is? One seed cannot tell a
- * balanced fight from a lucky roll, and a single enemy group cannot tell you that the boss is
- * easier than three ordinary enemies — which is exactly what it was, and how #40 was found.
- *
- * Read the `idle` row first. A policy that wins with `idle` is a fight healing does not decide,
- * so a retune that lifts a win rate by making the healer irrelevant shows up here as `idle`
- * climbing alongside `triage` rather than staying at 0%.
- *
- * Then read `±` before believing any comparison. A win rate is a coin flip counted a few times,
- * and at the default seed count a five-point difference is nothing at all.
+ * `bun run sim --repeat` answers "how does this one fight usually go". This answers the question
+ * above it: is the difficulty curve the shape we think it is? How to read the table is in
+ * docs/simulation.md — start with the `idle` row and the ± column.
  *
  * The game is a browser game, so we hand it a DOM before importing it.
  */
+import {parseArgs} from 'node:util'
 import {GlobalRegistrator} from '@happy-dom/global-registrator'
 // Type-only, so it is erased and does not load the game before the DOM exists.
 import type {FightResult} from '../src/sim'
-import {cli, bail, attempt} from './cli'
+import {bail, attempt, num} from './cli'
 
 GlobalRegistrator.register()
 
 const {runFight, analyze, healerOf, partyInjuredTime, margin, parseUnits, policies, applyTunes, formatTune} =
 	await import('../src/sim')
 
-const {text, num, all, flag} = cli(Bun.argv.slice(2))
+const {values: args} = attempt(() =>
+	parseArgs({
+		args: Bun.argv.slice(2),
+		options: {
+			enemies: {type: 'string'},
+			policies: {type: 'string'},
+			seeds: {type: 'string'},
+			duration: {type: 'string'},
+			tune: {type: 'string', multiple: true},
+			json: {type: 'boolean'},
+			help: {type: 'boolean'},
+		},
+	}),
+)
 
 /**
  * The standard grid. Every wolf count from one to five, because the curve is quadratic on purpose
@@ -40,7 +46,7 @@ const {text, num, all, flag} = cli(Bun.argv.slice(2))
 const DEFAULT_ENEMIES =
 	'TinyWolf; TinyWolf*2; TinyWolf*3; TinyWolf*4; TinyWolf*5; TinyWolf*2, WolfShaman; Nakroth; Nakroth, TinyWolf*2'
 
-if (flag('help')) {
+if (args.help) {
 	console.log(
 		`
 bun run sweep [options]
@@ -62,10 +68,10 @@ bun run sweep [options]
 }
 
 // Throws on an unknown name or key rather than measuring the baseline and calling it a result.
-const tuned = attempt(() => applyTunes(all('tune')).map(formatTune))
+const tuned = attempt(() => applyTunes(args.tune ?? []).map(formatTune))
 
 const enemyGroups = attempt(() =>
-	(text('enemies') ?? DEFAULT_ENEMIES)
+	(args.enemies ?? DEFAULT_ENEMIES)
 		.split(';')
 		.map((entry) => entry.trim())
 		.filter(Boolean)
@@ -73,7 +79,7 @@ const enemyGroups = attempt(() =>
 		.map((entry) => ({label: entry, enemies: parseUnits(entry)})),
 )
 
-const policyNames = (text('policies') ?? Object.keys(policies).join(','))
+const policyNames = (args.policies ?? Object.keys(policies).join(','))
 	.split(',')
 	.map((name) => name.trim())
 	.filter(Boolean)
@@ -82,8 +88,8 @@ for (const name of policyNames) {
 	if (!(name in policies)) bail(`Unknown policy "${name}". Known: ${Object.keys(policies).join(', ')}`)
 }
 
-const seeds = num('seeds', 10)
-const maxDuration = num('duration', 120) * 1000
+const seeds = num('seeds', args.seeds, 10)
+const maxDuration = num('duration', args.duration, 120) * 1000
 
 interface Row {
 	enemies: string
@@ -95,14 +101,10 @@ interface Row {
 	medianDuration: number
 	hps: number
 	/**
-	 * Absorption per second, the healer's own — damage a shield swallowed that never reached a
-	 * health bar.
-	 *
-	 * Its own column rather than folded into `hps`, because prevention is not healing and the two
-	 * do not trade one for one: a point absorbed is a point that was never taken, while a point
-	 * healed is one taken and then paid back. Without this the shield policy reads as a healer
-	 * doing a quarter of the work — `hps` on Nakroth drops from 14.7 to 3.6 — which is the
-	 * instrument missing the spell, not the spell doing nothing.
+	 * Absorption per second, the healer's own — damage a shield swallowed before it reached a
+	 * health bar. Its own column rather than folded into `hps`: a point absorbed was never taken,
+	 * a point healed was taken and paid back. Folded together, a shield policy reads as a healer
+	 * doing a quarter of the work.
 	 */
 	absorbPerSecond: number
 	overhealPercent: number
@@ -111,11 +113,9 @@ interface Row {
 	/** Share of the fight the healer spent committed to a cast or its global cooldown. */
 	busyPercent: number
 	/**
-	 * Share of the fight the party's worst-off member spent below the injured line.
-	 *
-	 * Read next to `win%`: a policy that wins at 0% hurt was never tested, and an enemy group where
-	 * even `idle` stays near 0% is not a fight, it is a waiting room. A retune that raises win rates by
-	 * lowering this made the fight easier; one that leaves it alone made the healer better.
+	 * Share of the fight the party's worst-off member spent below the injured line. Read next to
+	 * `win%`: a retune that raises win rates by lowering this made the fight easier, one that
+	 * leaves it alone made the healer better.
 	 */
 	hurtPercent: number
 }
@@ -199,7 +199,7 @@ for (const group of enemyGroups) {
 	}
 }
 
-if (flag('json')) {
+if (args.json) {
 	console.log(JSON.stringify({seeds, tuned, rows}, null, 2))
 } else {
 	console.log(table(rows))

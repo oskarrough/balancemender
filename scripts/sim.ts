@@ -10,19 +10,35 @@
  * The game is a browser game, so we hand it a DOM before importing it. Nothing is drawn —
  * the UI just renders into a document nobody looks at.
  */
+import {parseArgs} from 'node:util'
 import {GlobalRegistrator} from '@happy-dom/global-registrator'
 // Type-only, so it is erased and does not load the game before the DOM exists.
 import type {FightResult} from '../src/sim'
-import {cli, bail, attempt} from './cli'
+import {bail, attempt, num} from './cli'
 
 GlobalRegistrator.register()
 
 const {runFight, runFights, formatFight, formatAggregate, analyze, parseUnits, policies, applyTunes, formatTune} =
 	await import('../src/sim')
 
-const {text, num, all, flag} = cli(Bun.argv.slice(2))
+const {values: args} = attempt(() =>
+	parseArgs({
+		args: Bun.argv.slice(2),
+		options: {
+			party: {type: 'string'},
+			enemies: {type: 'string'},
+			policy: {type: 'string'},
+			seed: {type: 'string'},
+			repeat: {type: 'string'},
+			duration: {type: 'string'},
+			tune: {type: 'string', multiple: true},
+			json: {type: 'boolean'},
+			help: {type: 'boolean'},
+		},
+	}),
+)
 
-if (flag('help')) {
+if (args.help) {
 	console.log(
 		`
 bun run sim [options]
@@ -45,28 +61,26 @@ bun run sim [options]
 }
 
 // Throws on an unknown name or key rather than measuring the baseline and calling it a result.
-const tuned = attempt(() => applyTunes(all('tune')).map(formatTune))
+const tuned = attempt(() => applyTunes(args.tune ?? []).map(formatTune))
 
 // parseUnits validates against the unit registry and throws with the list of known units.
-const party = text('party')
-const enemies = text('enemies')
 const spec = attempt(() => ({
-	party: party ? parseUnits(party) : undefined,
-	enemies: enemies ? parseUnits(enemies) : undefined,
-	policy: (text('policy') ?? 'triage') as keyof typeof policies,
-	seed: num('seed', 1),
-	maxDuration: num('duration', 120) * 1000,
+	party: args.party ? parseUnits(args.party) : undefined,
+	enemies: args.enemies ? parseUnits(args.enemies) : undefined,
+	policy: (args.policy ?? 'triage') as keyof typeof policies,
+	seed: num('seed', args.seed, 1),
+	maxDuration: num('duration', args.duration, 120) * 1000,
 }))
 
 if (!(spec.policy in policies)) {
 	bail(`Unknown policy "${spec.policy}". Known: ${Object.keys(policies).join(', ')}`)
 }
 
-const repeat = num('repeat', 0)
+const repeat = num('repeat', args.repeat, 0)
 
 if (repeat > 1) {
 	const results = await runFights(spec, repeat)
-	if (flag('json')) {
+	if (args.json) {
 		console.log(
 			JSON.stringify(
 				{tuned, fights: results.map((result) => ({...summary(result), report: analyze(result.events, result)}))},
@@ -80,7 +94,7 @@ if (repeat > 1) {
 	}
 } else {
 	const result = await runFight(spec)
-	if (flag('json')) {
+	if (args.json) {
 		console.log(
 			JSON.stringify(
 				{...summary(result), tuned, report: analyze(result.events, result), events: result.events},
