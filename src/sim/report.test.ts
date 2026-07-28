@@ -145,102 +145,48 @@ describe('analyze', () => {
 	})
 })
 
+/** Whoever cast the shield, in a report of just these events. */
+const caster = (log: CombatLogEvent[]) => analyze(log, {units}).units.find((unit) => unit.name === 'Player')!
+
+const shield = (partial: Partial<CombatLogEvent>) =>
+	event({
+		time: 1000,
+		sourceId: 'player',
+		sourceName: 'Player',
+		targetId: 'tank',
+		targetName: 'Tank',
+		abilityId: 'PowerWordShield',
+		abilityName: 'Power Word: Shield',
+		...partial,
+	})
+
 /**
  * A shield changes no health bar, so `SPELL_ABSORBED` and the `wasted` carried on
  * `SPELL_AURA_REMOVED`/`REFRESH` are the only trace it leaves in the log — see #47.
  */
 describe('absorption', () => {
 	it('credits absorbed damage to the shield caster, not the shielded ally', () => {
-		const report = analyze(
-			[
-				event({
-					time: 1000,
-					eventType: 'SPELL_ABSORBED',
-					sourceId: 'player',
-					sourceName: 'Player',
-					targetId: 'tank',
-					targetName: 'Tank',
-					abilityId: 'PowerWordShield',
-					abilityName: 'Power Word: Shield',
-					value: 25,
-				}),
-			],
-			{units},
-		)
+		const report = analyze([shield({eventType: 'SPELL_ABSORBED', value: 25})], {units})
 
-		const player = report.units.find((a) => a.name === 'Player')!
-		expect(player.absorbed).toBe(25)
+		expect(report.units.find((a) => a.name === 'Player')!.absorbed).toBe(25)
 		expect(report.units.find((a) => a.name === 'Tank')!.absorbed).toBe(0)
 	})
 
-	it('totals unspent pool from SPELL_AURA_REMOVED as waste, the way overheal works for a heal', () => {
-		const report = analyze(
-			[
-				event({
-					time: 1000,
-					eventType: 'SPELL_AURA_REMOVED',
-					sourceId: 'player',
-					sourceName: 'Player',
-					targetId: 'tank',
-					targetName: 'Tank',
-					abilityId: 'PowerWordShield',
-					abilityName: 'Power Word: Shield',
-					wasted: 40,
-				}),
-			],
-			{units},
-		)
-
-		expect(report.units.find((a) => a.name === 'Player')!.wasted).toBe(40)
-	})
-
-	it('also counts waste carried onto a SPELL_AURA_REFRESH, when a recast replaces an unspent shield', () => {
-		const report = analyze(
-			[
-				event({
-					time: 1000,
-					eventType: 'SPELL_AURA_REFRESH',
-					sourceId: 'player',
-					sourceName: 'Player',
-					targetId: 'tank',
-					targetName: 'Tank',
-					abilityId: 'PowerWordShield',
-					abilityName: 'Power Word: Shield',
-					wasted: 15,
-				}),
-			],
-			{units},
-		)
-
-		expect(report.units.find((a) => a.name === 'Player')!.wasted).toBe(15)
-	})
+	// A recast wastes the remainder as surely as a shield that timed out, so the refresh carries it
+	// too — otherwise re-shielding an untouched ally reads as free.
+	it.each(['SPELL_AURA_REMOVED', 'SPELL_AURA_REFRESH'] as const)(
+		'totals unspent pool from %s as waste',
+		(eventType) => {
+			expect(caster([shield({eventType, wasted: 40})]).wasted).toBe(40)
+		},
+	)
 
 	it('leaves a periodic aura ending with no `wasted` alone', () => {
-		const report = analyze(
-			[
-				event({
-					time: 500,
-					eventType: 'SPELL_CAST_SUCCESS',
-					sourceId: 'player',
-					sourceName: 'Player',
-					abilityId: 'Renew',
-					abilityName: 'Renew',
-				}),
-				event({
-					time: 1000,
-					eventType: 'SPELL_AURA_REMOVED',
-					sourceId: 'player',
-					sourceName: 'Player',
-					targetId: 'tank',
-					targetName: 'Tank',
-					abilityId: 'Renew',
-					abilityName: 'Renew',
-				}),
-			],
-			{units},
-		)
+		const renew = (partial: Partial<CombatLogEvent>) => shield({abilityId: 'Renew', abilityName: 'Renew', ...partial})
+		// The cast is what puts the healer in the report at all; the removal is what must add nothing.
+		const log = [renew({time: 500, eventType: 'SPELL_CAST_SUCCESS'}), renew({eventType: 'SPELL_AURA_REMOVED'})]
 
-		expect(report.units.find((a) => a.name === 'Player')!.wasted).toBe(0)
+		expect(caster(log).wasted).toBe(0)
 	})
 })
 

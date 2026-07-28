@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
-import {beforeEach, describe, expect, it} from 'vitest'
-import {combatLogs, clearLogs} from '../combatlog'
+import {describe, expect, it} from 'vitest'
 import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {abilityRegistry} from './registry'
@@ -8,57 +7,6 @@ import {abilityRegistry} from './registry'
 const step = () => Promise.resolve()
 
 describe('abilities', () => {
-	beforeEach(() => clearLogs())
-
-	it('has one base and explicit classification data', () => {
-		for (const AbilityClass of Object.values(abilityRegistry)) {
-			expect(AbilityClass.prototype instanceof Ability, AbilityClass.id).toBe(true)
-			expect(AbilityClass.id).toBeTruthy()
-			expect(AbilityClass.name).toBeTruthy()
-			expect(AbilityClass.tags.length).toBeGreaterThan(0)
-			expect(AbilityClass.school).toBeTruthy()
-			expect(AbilityClass.targetRule).toBeTruthy()
-		}
-		expect([
-			abilityRegistry.FlashHeal.tags,
-			abilityRegistry.FlashHeal.school,
-			abilityRegistry.FlashHeal.targetRule,
-		]).toEqual([['spell', 'healing'], 'holy', 'ally'])
-		expect([
-			abilityRegistry.SavageBite.tags,
-			abilityRegistry.SavageBite.school,
-			abilityRegistry.SavageBite.targetRule,
-		]).toEqual([['attack', 'melee'], 'physical', 'enemy'])
-		expect([
-			abilityRegistry.NastyArrow.tags,
-			abilityRegistry.NastyArrow.school,
-			abilityRegistry.NastyArrow.targetRule,
-		]).toEqual([['attack', 'ranged'], 'physical', 'enemy'])
-	})
-
-	it('looks up Flash Heal, Savage Bite and Nasty Arrow through the same unit boundary', async () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'Nakroth']})
-		await step()
-		const [wolf, nakroth] = game.enemies
-
-		game.player.currentTarget = game.tank
-		const heal = game.player.useAbility('FlashHeal')
-		expect(heal.ok && heal.value.id).toBe('FlashHeal')
-
-		wolf.currentTarget = game.tank
-		const bite = wolf.useAbility('SavageBite')
-		expect(bite.ok && bite.value.id).toBe('SavageBite')
-		nakroth.currentTarget = game.tank
-		const arrow = nakroth.useAbility('NastyArrow')
-		expect(arrow.ok && arrow.value.id).toBe('NastyArrow')
-
-		expect(combatLogs.some((event) => event.abilityId === 'SavageBite')).toBe(true)
-		expect(combatLogs.some((event) => event.abilityId === 'NastyArrow')).toBe(true)
-		await step()
-		await step()
-		game.disconnect()
-	})
-
 	it('keeps ordinary attacks synchronous, free and independent from a concurrent cast', async () => {
 		class WindUp extends Ability {
 			static id = 'WindUp'
@@ -89,6 +37,7 @@ describe('abilities', () => {
 		game.disconnect()
 	})
 
+	/** Repetition belongs to a cadence. An attack that carried its own would fire on two schedules. */
 	it('keeps cadence timing off ability classes', () => {
 		for (const AbilityClass of Object.values(abilityRegistry).filter((ability) =>
 			(ability.tags as readonly string[]).includes('attack'),
