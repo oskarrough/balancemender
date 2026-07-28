@@ -1,0 +1,150 @@
+import type {Loop} from './loop'
+import {Node} from './node'
+
+declare global {
+	interface EventMap {
+		[Task.PLAY]: void
+		[Task.PAUSE]: void
+	}
+}
+
+export class Task extends Node implements PromiseLike<void> {
+	static PLAY = 'play-task' as const
+	static PAUSE = 'pause-task' as const
+
+	static compare(this: void, a: Task, b: Task) {
+		const prioA = a.priority || Number.MAX_SAFE_INTEGER
+		const prioB = b.priority || Number.MAX_SAFE_INTEGER
+		return prioA !== prioB ? prioA - prioB : a.elapsedTime - b.elapsedTime
+	}
+
+	declare root: Loop
+
+	priority = 0
+
+	delay = 0
+	interval = 0
+	duration = 0
+	fps = 0
+	ticks = Infinity
+	repeat = Infinity
+
+	elapsedTime = 0
+	deltaTime = 0
+	progress = 0
+
+	running = true
+	done = false
+
+	_firstRun = true
+	_cycles = 0
+	_currentTick = 0
+	_cycleTime = 0
+
+	private _tickInterval = 0
+	private _cycleStartTime = 0
+	private _cycleEndTime = 0
+	private _lastTick = 0
+
+	protected begin?(): void
+	protected beforeCycle?(): void
+	protected tick?(): void
+	protected afterCycle?(): void
+
+	protected shouldTick?(): boolean | void
+	protected shouldEnd?(): boolean | void
+
+	protected mount() {
+		this.running = true
+		this.done = false
+
+		this.elapsedTime = 0
+		this._cycleTime = 0
+		this._firstRun = true
+
+		if (this.fps !== 0) {
+			this._tickInterval = 1000 / this.fps
+			this.duration = this.ticks * this._tickInterval
+		}
+
+		this._cycleStartTime = this.delay
+		this._cycleEndTime = this._cycleStartTime + this.duration
+		this._lastTick = this._cycleStartTime
+
+		this.root._register(this)
+	}
+
+	protected destroy() {
+		this.running = false
+		this.done = true
+		this.root._kill(this)
+	}
+
+	play() {
+		this.running = true
+		this.emit(Task.PLAY)
+	}
+
+	pause() {
+		this.running = false
+		this.emit(Task.PAUSE)
+	}
+
+	run() {
+		if (!this.running || !this.mounted) return
+
+		if (!this._firstRun) this.elapsedTime += this.root.frameTime
+		else this._firstRun = false
+
+		if (this.elapsedTime < this._cycleStartTime) return
+
+		this._cycleTime = Math.min(this.elapsedTime - this._cycleStartTime, this.duration)
+
+		if (this._currentTick === 0) {
+			if (this._cycles === 0) this.begin?.()
+			this.beforeCycle?.()
+		}
+
+		if (this.shouldTick?.() ?? true) {
+			if (this.fps === 0) {
+				this.progress = Math.min(this._cycleTime / this.duration, 1)
+				this.deltaTime = this.root.frameTime
+				this.tick?.()
+				this._currentTick++
+			} else {
+				const ratio = Math.floor(this._cycleTime / this._tickInterval)
+				const dueTick = Math.min(ratio + 1, this.ticks)
+				const t0 = this.elapsedTime - dueTick * this._tickInterval
+
+				while (this._currentTick < dueTick) {
+					const tick = ++this._currentTick
+					this.elapsedTime = t0 + tick * this._tickInterval
+					this.deltaTime = this.elapsedTime - this._lastTick
+					this.progress = Math.min(tick / this.ticks, 1)
+					this.tick?.()
+					this._lastTick = this.elapsedTime
+				}
+			}
+		}
+
+		if (this.elapsedTime >= this._cycleEndTime) {
+			this.afterCycle?.()
+
+			this._cycles += 1
+			this._currentTick = 0
+
+			this._cycleStartTime = this.delay + (this.duration + this.interval) * this._cycles
+			this._cycleEndTime = this._cycleStartTime + this.duration
+		}
+
+		if (this.shouldEnd?.() || this._cycles >= this.repeat) {
+			this.disconnect()
+		}
+	}
+
+	// oxlint-disable-next-line no-thenable -- preserve vroum's public API while it is inlined
+	then<T>(onfulfilled: () => T | PromiseLike<T>): PromiseLike<T> {
+		if (this.done) return Promise.resolve(onfulfilled())
+		return new Promise((resolve) => this.once(Task.DESTROY, () => resolve(onfulfilled())))
+	}
+}

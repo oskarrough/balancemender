@@ -1,4 +1,4 @@
-import {Loop} from 'vroum'
+import {Loop} from '../vroum'
 import {log} from '../utils'
 import type {Player} from './player'
 import type {Tank} from './party-units'

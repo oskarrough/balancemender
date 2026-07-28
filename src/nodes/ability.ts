@@ -1,4 +1,4 @@
-import {Task} from 'vroum'
+import {Task} from '../vroum'
 import type {CombatEventType} from '../combatlog'
 import {applyStatics} from '../utils'
 import {AudioPlayer} from './audio'

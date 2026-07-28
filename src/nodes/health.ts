@@ -1,4 +1,4 @@
-import {Node} from 'vroum'
+import {Node} from '../vroum'
 import {Resource} from './resource'
 import type {GameLoop} from './game-loop'
 

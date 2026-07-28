@@ -27,8 +27,9 @@ the live nodes. `window.balancemender` is the running game, so the browser conso
 
 ## vroum, and the parts that surprise people
 
-[vroum](https://gitlab.com/jfalxa/vroum) gives us `Loop`, `Node` and `Task`; [vroum.md](./vroum.md)
-covers the API. Four things bite here that it does not cover:
+[`src/vroum/`](../src/vroum/) contains the inlined [vroum](https://gitlab.com/jfalxa/vroum)
+engine: `Loop`, `Node` and `Task`. [vroum.md](./vroum.md) covers the API. Four lifecycle rules
+matter throughout the game:
 
 - **`mount()` and `destroy()` run the whole prototype chain**, base class first — a subclass
   `mount()` does not replace its parent's. That is why `Loop.mount()` starting the frame loop and

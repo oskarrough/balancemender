@@ -1,4 +1,4 @@
-import {Task} from 'vroum'
+import {Task} from '../vroum'
 import {Resource} from './resource'
 import type {GameLoop} from './game-loop'
 import {Unit} from './unit'

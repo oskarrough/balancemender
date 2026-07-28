@@ -1,4 +1,4 @@
-import {Node, Loop, Task} from 'vroum'
+import {Node, Loop, Task} from '../vroum'
 import {logger} from '../utils'
 import type {GameLoop} from './game-loop'
 

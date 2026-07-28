@@ -24,7 +24,7 @@ This is a website and uses vite as build system.
 2. main.ts renders the menu and sets up the dev tools
 3. main.ts also creates a [`GameLoop`](./src/nodes/game-loop.ts). The game loop ties everything together. It continuously renders [`components/ui.ts`](./src/components/ui.ts) to its `element` DOM node (assigned via main). Actually, should just make it a web component.
 
-The game uses the `vroum` (https://gitlab.com/jfalxa/vroum library). Vroum helps organize everything into `Nodes` and `Tasks` that run on a (Game)`Loop`.
+The game engine in [`src/vroum/`](./src/vroum/) provides `Node` and `Task` primitives that run on a `Loop`. It is inlined from [`vroum`](https://gitlab.com/jfalxa/vroum).
 
 To render DOM nodes, https://github.com/WebReflection/uhtml is used.
 

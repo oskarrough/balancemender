@@ -1,4 +1,4 @@
-import {Node} from 'vroum'
+import {Node} from '../vroum'
 import {clamp} from '../utils'
 
 export type ResourceEvents = {

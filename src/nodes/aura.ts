@@ -1,4 +1,4 @@
-import {Task} from 'vroum'
+import {Task} from '../vroum'
 import {applyStatics, log} from '../utils'
 import {logCombat, type CombatLogEvent} from '../combatlog'
 // Type-only both ways: unit.ts names this class for its `auras` set.

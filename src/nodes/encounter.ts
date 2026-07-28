@@ -1,4 +1,4 @@
-import {Node} from 'vroum'
+import {Node} from '../vroum'
 import {Player} from './player'
 import {Tank} from './party-units'
 import {unitRegistry, UnitId} from './unit-registry'

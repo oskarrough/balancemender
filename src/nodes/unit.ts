@@ -1,4 +1,4 @@
-import {Node} from 'vroum'
+import {Node} from '../vroum'
 import {Health, HEALTH_EVENTS} from './health'
 import {Mana} from './mana'
 import type {Encounter} from './encounter'

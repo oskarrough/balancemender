@@ -1,4 +1,4 @@
-import {Task} from 'vroum'
+import {Task} from '../vroum'
 import {applyStatics, log} from '../utils'
 import {AbilityUse} from './ability-use'
 import type {Unit} from './unit'

@@ -1,4 +1,4 @@
-import {Task} from 'vroum'
+import {Task} from '../vroum'
 import type {Unit} from './unit'
 import type {Player} from './player'
 import {Tank} from './party-units'
