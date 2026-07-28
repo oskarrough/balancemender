@@ -1,4 +1,5 @@
 import {describe, expect, it} from 'vitest'
+import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {AbilityUse} from './ability-use'
 import {GlobalCooldown} from './global-cooldown'
@@ -37,16 +38,16 @@ describe('ability use rules', () => {
 		const use = game.player.useAbility('Heal', tank)
 		expect(use.ok).toBe(true)
 		if (!use.ok) return
-		await Promise.resolve()
+		await settle()
 
 		expect(game.perform({type: 'remove', unit: tank.id}).ok).toBe(true)
-		await Promise.resolve()
-		await Promise.resolve()
+		await settle()
+		await settle()
 
 		use.value.tick()
 		expect(tank.alive).toBe(true)
 		expect(tank.health.current).toBe(10)
-		await Promise.resolve()
+		await settle()
 		game.disconnect()
 	})
 
@@ -57,12 +58,12 @@ describe('ability use rules', () => {
 		const use = game.player.useAbility('Heal', game.tank)
 		expect(use.ok).toBe(true)
 		if (!use.ok) return
-		await Promise.resolve()
+		await settle()
 
 		game.tank.health.set(0)
 		use.value.tick()
 		expect(game.tank.health.current).toBe(0)
-		await Promise.resolve()
+		await settle()
 		game.disconnect()
 	})
 
@@ -73,7 +74,7 @@ describe('ability use rules', () => {
 		expect(game.perform({type: 'use', ability: 'Heal', target: game.tank.id}).ok).toBe(true)
 		player.currentAbility!._cycles = 1
 		player.currentAbility!.destroy()
-		await Promise.resolve()
+		await settle()
 		expect(AbilityUse.whyNotUse(player, Heal, game.tank)).toBe('cooldown')
 		expect(AbilityUse.whyNotUse(player, abilityRegistry.FlashHeal, game.tank)).toBeUndefined()
 		game.elapsedTime = 8000

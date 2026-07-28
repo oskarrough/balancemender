@@ -1,4 +1,5 @@
 import {describe, it, expect, afterEach} from 'vitest'
+import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {unitsOf} from '../sim/run'
 import {PeriodicAura} from './periodic-aura'
@@ -57,12 +58,6 @@ describe('Encounter.spawn', () => {
  * without taking it out of the fight — see the comment there for why the dead stay in the arrays.
  */
 describe('death', () => {
-	/** vroum defers connect/disconnect to a microtask; two flushes settle a death. */
-	const settle = async () => {
-		await Promise.resolve()
-		await Promise.resolve()
-	}
-
 	it('keeps the fallen in the fight, so the report can still draw them', async () => {
 		game = new GameLoop({party: [], enemies: ['TinyWolf', 'TinyWolf']})
 		await settle()

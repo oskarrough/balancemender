@@ -1,9 +1,8 @@
 import {describe, expect, it} from 'vitest'
+import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {abilityRegistry} from './registry'
-
-const step = () => Promise.resolve()
 
 describe('abilities', () => {
 	it('keeps ordinary attacks synchronous, free and independent from a concurrent cast', async () => {
@@ -18,7 +17,7 @@ describe('abilities', () => {
 		}
 
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
-		await step()
+		await settle()
 		const wolf = game.enemies[0]
 		wolf.abilities = {...wolf.abilities, WindUp}
 		const before = game.tank.health.current
@@ -30,8 +29,8 @@ describe('abilities', () => {
 		expect(game.tank.health.current).toBeLessThan(before)
 		expect(wolf.mana).toBeUndefined()
 		expect(wolf.currentAbility?.id).toBe('WindUp')
-		await step()
-		await step()
+		await settle()
+		await settle()
 		game.disconnect()
 	})
 

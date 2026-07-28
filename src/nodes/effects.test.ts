@@ -1,4 +1,5 @@
 import {describe, it, expect, beforeEach} from 'vitest'
+import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {ApplyAura, Damage, Heal} from './effects'
@@ -10,8 +11,6 @@ import {combatLogs, clearLogs} from '../combatlog'
  * An effect is the smallest thing an ability does. What is worth asserting here is that a list of
  * them behaves like a list — in order, and with each one seeing what the one before it did.
  */
-
-const flush = () => Promise.resolve()
 
 const abilityEvents = (abilityId: string) => combatLogs.filter((event) => event.abilityId === abilityId)
 
@@ -45,7 +44,7 @@ describe('an ordered list of effects', () => {
 		const before = wolf.health.current
 
 		new Rebuke(game.tank, wolf).land()
-		await flush()
+		await settle()
 
 		expect(wolf.health.current).toBe(before - 6)
 		expect([...wolf.auras].map((aura) => aura.id)).toEqual(['Mark'])
@@ -65,7 +64,7 @@ describe('an ordered list of effects', () => {
 		wolf.health.set(4)
 
 		new Rebuke(game.tank, wolf).land()
-		await flush()
+		await settle()
 
 		expect(wolf.alive).toBe(false)
 		expect([...wolf.auras]).toHaveLength(0)
@@ -106,7 +105,7 @@ describe('the effects themselves', () => {
 		const wolf = game.enemies[0]
 
 		new SavageBite(wolf, game.tank).land()
-		await flush()
+		await settle()
 
 		const [bleed] = [...game.tank.auras]
 		expect(bleed).toBeInstanceOf(Rend)

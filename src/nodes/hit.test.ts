@@ -1,4 +1,5 @@
 import {describe, it, expect, beforeEach} from 'vitest'
+import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
 import {PeriodicAura} from './periodic-aura'
@@ -95,7 +96,7 @@ describe('PeriodicAura', () => {
 			static repeat = 5
 		}
 		const poison = new Poison(wolf, game.tank)
-		await Promise.resolve()
+		await settle()
 		poison.tick()
 
 		expect(combatLogs.at(-1)).toMatchObject({
@@ -119,7 +120,7 @@ describe('PeriodicAura', () => {
 		game.tank.health.set(1)
 
 		new Renew(game.player, game.tank).land()
-		await Promise.resolve()
+		await settle()
 
 		const renew = [...game.tank.auras].find(
 			(aura): aura is PeriodicAura => aura instanceof PeriodicAura && aura.name === 'Renew',

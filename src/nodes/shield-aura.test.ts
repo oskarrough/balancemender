@@ -1,4 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {SimLoop} from '../sim/run'
 import {ShieldAura} from './shield-aura'
@@ -13,8 +14,6 @@ import {combatLogs, clearLogs} from '../combatlog'
  * is asserted here is something that did not happen — and the log entry that is the only reason
  * anyone could tell it happened at all.
  */
-
-const flush = () => Promise.resolve()
 
 const events = (eventType: string) => combatLogs.filter((event) => event.eventType === eventType)
 
@@ -31,7 +30,7 @@ afterEach(() => game.disconnect())
  */
 const start = async (loop: GameLoop = new GameLoop(ROSTER)) => {
 	game = loop
-	await flush()
+	await settle()
 }
 
 const bite = (target: Unit, damage: number) =>
@@ -48,7 +47,7 @@ describe('absorbing', () => {
 	it('takes its share off a hit before the health bar moves', async () => {
 		await start()
 		new ShieldAura(game.tank, game.player, 20)
-		await flush()
+		await settle()
 
 		const full = game.tank.health.current
 		bite(game.tank, 50)
@@ -59,7 +58,7 @@ describe('absorbing', () => {
 	it('leaves the bar alone when it covers the whole hit, and says so in the log', async () => {
 		await start()
 		new ShieldAura(game.tank, game.player, 100)
-		await flush()
+		await settle()
 
 		const full = game.tank.health.current
 		bite(game.tank, 30)
@@ -78,7 +77,7 @@ describe('absorbing', () => {
 	it('spends the pool, lets the remainder land, and is gone', async () => {
 		await start()
 		new ShieldAura(game.tank, game.player, 20)
-		await flush()
+		await settle()
 
 		bite(game.tank, 50)
 
@@ -94,7 +93,7 @@ describe('absorbing', () => {
 		// Two casters, or the second would supersede the first rather than join it — see `stackKey`.
 		const first = new ShieldAura(game.tank, game.player, 10)
 		const second = new ShieldAura(game.tank, game.tank, 10)
-		await flush()
+		await settle()
 
 		bite(game.tank, 15)
 
@@ -105,11 +104,11 @@ describe('absorbing', () => {
 	it('reports the pool nobody spent when it falls off', async () => {
 		await start()
 		const shield = new ShieldAura(game.tank, game.player, 100)
-		await flush()
+		await settle()
 
 		bite(game.tank, 30)
 		shield.disconnect()
-		await flush()
+		await settle()
 
 		expect(events('SPELL_AURA_REMOVED')[0]).toMatchObject({abilityId: 'Shield', wasted: 70})
 	})
@@ -122,11 +121,11 @@ describe('absorbing', () => {
 	it('reports the pool nobody spent when a recast replaces it', async () => {
 		await start()
 		new ShieldAura(game.tank, game.player, 100)
-		await flush()
+		await settle()
 
 		bite(game.tank, 30)
 		new ShieldAura(game.tank, game.player, 100)
-		await flush()
+		await settle()
 
 		expect(events('SPELL_AURA_REMOVED')).toHaveLength(0)
 		expect(events('SPELL_AURA_REFRESH')[0]).toMatchObject({abilityId: 'Shield', wasted: 70})
@@ -142,7 +141,7 @@ describe('a killing blow through a shield', () => {
 		await start()
 		game.tank.health.set(40)
 		new ShieldAura(game.tank, game.player, 100)
-		await flush()
+		await settle()
 
 		bite(game.tank, 80)
 
@@ -155,7 +154,7 @@ describe('a killing blow through a shield', () => {
 		await start()
 		game.tank.health.set(40)
 		new ShieldAura(game.tank, game.player, 10)
-		await flush()
+		await settle()
 
 		bite(game.tank, 80)
 
@@ -173,18 +172,18 @@ it('waits out its lifetime and then falls off', async () => {
 	await start(sim)
 	// Far more than a wolf can chew through, so what ends this shield is the clock.
 	const shield = new ShieldAura(sim.tank, sim.player, 100_000)
-	await flush()
+	await settle()
 
 	const removals = () => events('SPELL_AURA_REMOVED').filter((event) => event.abilityId === 'Shield')
 	for (let time = 0; time < ShieldAura.lifetime; time += 100) {
 		sim.runFrame(time)
-		await flush()
+		await settle()
 	}
 	expect(removals()).toHaveLength(0)
 	expect(sim.tank.auras.has(shield)).toBe(true)
 
 	sim.runFrame(ShieldAura.lifetime + 100)
-	await flush()
+	await settle()
 
 	expect(removals()).toHaveLength(1)
 	expect(removals()[0].wasted).toBeGreaterThan(0)
@@ -200,7 +199,7 @@ it('Power Word: Shield leaves a pool rather than healing', async () => {
 	game.tank.health.set(50)
 
 	new PowerWordShield(game.player, game.tank).land()
-	await flush()
+	await settle()
 
 	expect(game.tank.health.current).toBe(50)
 	const [shield] = [...game.tank.auras]

@@ -1,4 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {settle} from './test-setup'
 import {GameLoop} from './nodes/game-loop'
 import {SimLoop} from './sim/run'
 import {playerAbilities} from './nodes/registry'
@@ -9,8 +10,6 @@ import {combatLogs, clearLogs} from './combatlog'
  * keyboard, the spell buttons, the dev console, the Balance Lab, the bot driver and agents at
  * once. Anything that stops being true here has grown a second path.
  */
-
-const flush = () => Promise.resolve()
 
 let game!: GameLoop
 afterEach(() => game.disconnect())
@@ -41,7 +40,7 @@ describe('perform', () => {
 		expect(game.player.selectedTarget).toBe(selected)
 		// Let the spell finish mounting before tearing the loop down — its global cooldown
 		// mounts in a microtask, and a node that mounts into a disconnected root throws.
-		await flush()
+		await settle()
 	})
 
 	it('does not start a cast when the target is bad', () => {
@@ -57,7 +56,7 @@ describe('perform', () => {
 		game.perform({type: 'use', ability: 'Heal'})
 		expect(game.perform({type: 'interrupt'}).ok).toBe(true)
 		expect(game.player.currentAbility).toBeUndefined()
-		await flush()
+		await settle()
 	})
 
 	it('retunes the units already fighting, matched by id and not by class name', () => {
@@ -108,7 +107,7 @@ describe('refusals', () => {
 		game.perform({type: 'use', ability: 'Fireball'})
 
 		expect(game.lastRefusal).toEqual({error: 'Ability Fireball not found in abilities', at: 5000})
-		await flush()
+		await settle()
 	})
 
 	// The reason has to be one a player can act on: "Not enough mana", never a generic failure.
@@ -144,17 +143,17 @@ describe('every player ability', () => {
 	it.each(Object.keys(playerAbilities))('logs a completed cast: %s', async (ability) => {
 		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = sim
-		await flush()
+		await settle()
 		sim.tank.health.set(1)
 
 		expect(sim.perform({type: 'use', ability, target: sim.tank.id}).ok).toBe(true)
 		for (let time = 0; time < 5000; time += 16) {
 			sim.runFrame(time)
-			await flush()
+			await settle()
 		}
 
 		const casts = combatLogs.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.abilityId === ability)
 		expect(casts).toHaveLength(1)
-		await flush()
+		await settle()
 	})
 })

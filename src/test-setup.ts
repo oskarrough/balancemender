@@ -20,3 +20,15 @@ setLogLevel('silent')
  */
 globalThis.requestAnimationFrame = () => 0
 globalThis.cancelAnimationFrame = () => {}
+
+/**
+ * Let vroum's deferred lifecycle land: `await settle()` after anything that spawns, kills or
+ * disconnects a node.
+ *
+ * `connect()` and `disconnect()` are queued as microtasks, so a node is not mounted on the line
+ * after you construct it and a dead unit is still in `encounter.party`. Some of it chains — a
+ * death takes two hops — and every test guessing its own number is how one passes by luck.
+ * Yielding to a macrotask drains the whole microtask queue, including whatever is queued while it
+ * drains, so this is always enough and never needs counting.
+ */
+export const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0))

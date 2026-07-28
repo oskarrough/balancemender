@@ -1,4 +1,5 @@
 import {describe, it, expect, beforeEach} from 'vitest'
+import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import type {Aura} from './aura'
 import {PeriodicAura} from './periodic-aura'
@@ -25,12 +26,12 @@ describe('stack rule', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 
 		new Renew(game.player, game.tank).land()
-		await Promise.resolve()
+		await settle()
 		const first = aurasNamed(game.tank, 'Renew')[0]
 		first.tick()
 
 		new Renew(game.player, game.tank).land()
-		await Promise.resolve()
+		await settle()
 		const after = aurasNamed(game.tank, 'Renew')
 
 		expect(after).toHaveLength(1)
@@ -51,7 +52,7 @@ describe('stack rule', () => {
 		const planted = []
 		for (let i = 0; i < 4; i++) {
 			planted.push(new Lifebloom(game.tank, game.player))
-			await Promise.resolve()
+			await settle()
 		}
 
 		const stacks = aurasNamed(game.tank, 'Lifebloom')
@@ -66,7 +67,7 @@ describe('stack rule', () => {
 
 		new PeriodicAura(game.tank, game.player, 50)
 		new PeriodicAura(game.tank, game.tank, 50)
-		await Promise.resolve()
+		await settle()
 
 		expect(aurasNamed(game.tank, 'Periodic')).toHaveLength(2)
 		game.disconnect()
@@ -76,9 +77,9 @@ describe('stack rule', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 
 		new Renew(game.player, game.tank).land()
-		await Promise.resolve()
+		await settle()
 		new Renew(game.player, game.tank).land()
-		await Promise.resolve()
+		await settle()
 
 		expect(auraEvents('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
 		expect(auraEvents('Renew')[0]).toMatchObject({sourceId: game.player.id, targetId: game.tank.id})
@@ -94,9 +95,9 @@ describe('stack rule', () => {
 			static maxStacks = 5
 		}
 		new Sunder(game.tank, game.player)
-		await Promise.resolve()
+		await settle()
 		new Sunder(game.tank, game.player)
-		await Promise.resolve()
+		await settle()
 
 		expect(auraEvents('Sunder').map((event) => event.extraInfo)).toEqual([undefined, '2 stacks'])
 		game.disconnect()
@@ -110,13 +111,13 @@ describe('stack rule', () => {
 	it('survives being disconnected twice', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		const aura = new PeriodicAura(game.tank, game.player, -10)
-		await Promise.resolve()
+		await settle()
 
 		expect(() => {
 			aura.disconnect()
 			aura.disconnect()
 		}).not.toThrow()
-		await Promise.resolve()
+		await settle()
 		game.disconnect()
 	})
 })
@@ -128,9 +129,9 @@ describe('the wolf bleed', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 		new SavageBite(wolf, game.tank).executeNow()
-		await Promise.resolve()
+		await settle()
 		new SavageBite(wolf, game.tank).executeNow()
-		await Promise.resolve()
+		await settle()
 
 		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(1)
 		expect(auraEvents('Rend').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
@@ -146,7 +147,7 @@ describe('the wolf bleed', () => {
 		const wolf = game.enemies[0]
 		game.tank.health.set(1)
 		new SavageBite(wolf, game.tank).executeNow()
-		await Promise.resolve()
+		await settle()
 
 		expect(game.tank.alive).toBe(false)
 		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(0)

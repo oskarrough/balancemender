@@ -37,11 +37,12 @@ covers the API. Four things bite here that it does not cover:
   time-based reads it: the five-second rule, cast bookkeeping, the combat log's `time`. It resets
   when an encounter is loaded.
 - **`connect()`/`disconnect()` are deferred to a microtask.** A node is not mounted on the line after
-  you construct it, and a dead unit is still in `encounter.party` until the microtask runs. Tests and
-  simulations `await Promise.resolve()` to let this settle.
-- **A `Loop` is thenable** — `Loop.prototype.then` exists — so `await`ing anything that resolves to
-  one never comes back. A test helper that builds a game must not return it; assign it to a variable
-  the test already has. The symptom is a 5s timeout with no error.
+  you construct it, and a dead unit is still in `encounter.party` until the microtask runs. Some of
+  it chains — a death takes two hops — so `await settle()` from `test-setup.ts` rather than counting
+  your own `Promise.resolve()`s.
+- **A `Loop` is thenable**, and vroum resolves that on DESTROY — so `await game` would park on a loop
+  that never dies. `GameLoop` overrides `then()` to resolve immediately, which turns a silent 5s
+  timeout into an instant `undefined`. A helper that builds a game still should not return it.
 
 ## Using an ability is shared, deciding is not
 
@@ -235,10 +236,10 @@ Nothing has to be remembered here: the tests run in plain node, so a bad import 
 
 ## Testing
 
-`bun run test` runs vitest in plain node — there is no fake DOM. `src/test-setup.ts` stubs
-`requestAnimationFrame`, which vroum asks for the moment a `Loop` is constructed; the stub never
-fires, so a constructed game sits still until something steps it. It also calls
-`setLogLevel('silent')` so a failing assertion is not buried under a few hundred lines of pino — call
+`bun run test` runs vitest in plain node — there is no fake DOM. `src/test-setup.ts` holds what every
+test needs: the `requestAnimationFrame` stub vroum asks for the moment a `Loop` is constructed (it
+never fires, so a constructed game sits still until something steps it), `setLogLevel('silent')` so a
+failing assertion is not buried in pino, and `settle()` for vroum's deferred lifecycle. Call
 `setLogLevel('info')` at the top of a file to watch a fight happen.
 
 **Components are tested in a real browser, not a fake one.** Markup is the thing they exist to
