@@ -111,15 +111,14 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 	}
 }
 
-const findUnit = (game: GameLoop, id: string): Unit | undefined =>
-	[...game.party, ...game.enemies].find((unit) => unit.id === id)
+const findUnit = (game: GameLoop, id: string): Unit | undefined => game.encounter.units.find((unit) => unit.id === id)
 
 /**
  * A retuned unit type applies to the ones already fighting, matched by `unitId` — never by
  * class name, which the production build minifies into nonsense.
  */
 function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: number) {
-	for (const unit of [...game.party, ...game.enemies]) {
+	for (const unit of game.encounter.units) {
 		if (unit.unitId !== unitId) continue
 		const resource = key === 'maxHealth' ? unit.health : unit.mana
 		if (!resource) continue

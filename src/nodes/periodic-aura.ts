@@ -23,13 +23,11 @@ export class PeriodicAura extends Aura {
 	repeat = 5
 	/**
 	 * How long before the first tick. Zero means the next frame — `interval` is the gap *between*
-	 * ticks, so by default an aura lands one instalment the moment it is applied and its last
-	 * one an interval before its life is up.
+	 * ticks, so by default an aura lands an instalment the moment it is applied.
 	 *
-	 * Set it to `interval` for the Classic behaviour, where a freshly applied aura waits a full
-	 * tick before doing anything. That matters most for an aura refreshed faster than it
-	 * expires: with no delay, every reapplication buys an immediate instalment, so a rapidly
-	 * refreshed aura is partly a direct hit wearing a periodic's name.
+	 * Set it to `interval` for the Classic behaviour of waiting a full tick. That matters for an
+	 * aura refreshed faster than it expires: with no delay, every reapplication buys an immediate
+	 * instalment, and the aura is partly a direct hit wearing a periodic's name.
 	 */
 	delay = 0
 

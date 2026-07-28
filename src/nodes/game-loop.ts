@@ -63,12 +63,11 @@ export class GameLoop extends Loop {
 	lastRefusal?: {error: string; at: number}
 
 	/**
-	 * Do something to this game. The only way anything mutates a fight — keyboard, spell
-	 * buttons, dev console, Balance Lab, Autopilot, tests, agents. See `src/actions.ts`.
+	 * Do something to this game. The only way anything mutates a fight — keyboard, ability buttons,
+	 * dev console, Balance Lab, Autopilot, tests, agents. See `src/actions.ts`.
 	 *
-	 * Refusals are recorded here rather than at each call site, so a caller cannot forget to
-	 * tell the player why nothing happened — which is exactly what the spell buttons and the
-	 * keyboard both did, discarding `{ok: false, error}` and leaving a dead click.
+	 * Refusals are recorded here rather than at each call site, so a caller cannot forget to tell
+	 * the player why nothing happened and leave a dead click.
 	 */
 	perform(action: GameAction) {
 		const result = perform(this, action)

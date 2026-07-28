@@ -29,25 +29,22 @@ export interface UnitStats {
 	 */
 	absorbed: number
 	/**
-	 * Absorption a shield lost unspent, because it timed out or was recast over. Overheal's
-	 * counterpart for a preventive spell — without it, a shield that expired untouched and one
-	 * that soaked a killing blow look the same: zero everywhere else in the report.
+	 * Absorption a shield lost unspent, to a timeout or a recast. Overheal's counterpart for a
+	 * preventive spell: without it, a shield that expired untouched and one that soaked a killing
+	 * blow read the same.
 	 */
 	wasted: number
 	casts: number
 	hits: number
 	manaSpent: number
 	/**
-	 * Milliseconds this unit spent committed to a cast or its global cooldown. Against the
-	 * fight's duration it answers the question a cast count cannot: was this healer out of time
-	 * or out of mana? A healer at 40% with an empty mana bar is mana-capped, and no amount of
-	 * cheaper decision-making will help it.
+	 * Milliseconds this unit spent committed to a cast or its global cooldown. Against the fight's
+	 * duration it answers what a cast count cannot: was this healer out of time, or out of mana?
 	 */
 	busyTime: number
 	/**
-	 * Milliseconds this unit spent below the injured threshold. The number that separates a fight
-	 * the healer won from one that was never in doubt: a party that is never injured was never in
-	 * danger, however long the fight ran or however much healing landed.
+	 * Milliseconds this unit spent below the injured threshold. What separates a fight the healer
+	 * won from one that was never in doubt, however much healing landed.
 	 */
 	injuredTime: number
 	deathTime?: number
@@ -77,13 +74,20 @@ export interface Series {
 	endHealth: number
 }
 
+export interface Death {
+	id?: string
+	name: string
+	/** Milliseconds into the fight. */
+	time: number
+}
+
 export interface FightReport {
 	duration: number
 	events: number
 	outcome?: Outcome
 	units: UnitStats[]
 	abilities: AbilityStats[]
-	deaths: {id?: string; name: string; time: number}[]
+	deaths: Death[]
 	health: Series[]
 	totals: {damage: number; healing: number; overhealing: number; dps: number; hps: number}
 }
@@ -106,7 +110,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 
 	const units = new Map<string, UnitStats>()
 	const abilities = new Map<string, AbilityStats>()
-	const deaths: {id?: string; name: string; time: number}[] = []
+	const deaths: Death[] = []
 	const source = (event: CombatLogEvent) => unit(units, event.sourceId, event.sourceName)
 	const target = (event: CombatLogEvent) => unit(units, event.targetId, event.targetName)
 	/** When each unit currently below the injured line dropped there. Empty means nobody is. */
@@ -221,13 +225,13 @@ export function healthSeries(
 	duration: number,
 	columns: number,
 ): Series[] {
+	const byId = new Map(units.map((unit) => [unit.id, unit]))
 	const current = new Map(units.map((unit) => [unit.id, unit.maxHealth]))
 	const points = new Map(units.map((unit) => [unit.id, Array.from<number | null>({length: columns}).fill(null)]))
 	const column = (time: number) => Math.min(columns - 1, Math.floor(((time - start) / (duration || 1)) * columns))
 
 	for (const event of events) {
-		if (!event.targetId || !current.has(event.targetId)) continue
-		const unit = units.find((u) => u.id === event.targetId)
+		const unit = event.targetId ? byId.get(event.targetId) : undefined
 		if (!unit) continue
 		const delta = DAMAGE.includes(event.eventType)
 			? -(event.value ?? 0)
@@ -235,9 +239,9 @@ export function healthSeries(
 				? (event.value ?? 0) - (event.overheal ?? 0)
 				: 0
 		if (!delta) continue
-		const next = clamp((current.get(event.targetId) ?? 0) + delta, 0, unit.maxHealth)
-		current.set(event.targetId, next)
-		points.get(event.targetId)![column(at(event))] = next / unit.maxHealth
+		const next = clamp((current.get(unit.id) ?? 0) + delta, 0, unit.maxHealth)
+		current.set(unit.id, next)
+		points.get(unit.id)![column(at(event))] = next / unit.maxHealth
 	}
 
 	return units.map((unit) => ({
@@ -313,18 +317,15 @@ function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id
 
 /**
  * The unit the policy drives. By name, unusually: `runFight` adds the healer itself and calls it
- * Player, and it is the one unit `Encounter.renumber()` never touches, so the name is stable where
- * an id would have to be looked up from the unit list first.
+ * Player, and it is the one unit `renumber()` never touches, so the name is stable here.
  */
 export const healerOf = (report: FightReport) => report.units.find((unit) => unit.name === 'Player')
 
 /**
- * How long the party's worst-off member spent injured — the fight's answer to "was anyone ever
- * actually in trouble?".
+ * How long the party's worst-off member spent injured — was anyone ever actually in trouble?
  *
- * The worst member rather than the sum, so a bigger party does not read as a more dangerous
- * fight, and rather than an overlap-merged union, which would need interval arithmetic to say
- * something no less arbitrary. Needs the unit list: `faction` comes from there, not from the log.
+ * The worst member rather than the sum, so a bigger party does not read as a more dangerous fight.
+ * Needs the unit list: `faction` comes from there, not from the log.
  */
 export const partyInjuredTime = (report: FightReport) =>
 	Math.max(0, ...report.units.filter((unit) => unit.faction === 'party').map((unit) => unit.injuredTime))

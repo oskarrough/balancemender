@@ -17,13 +17,9 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const auras: Aura[] = unit.auras ? Array.from(unit.auras) : []
 
 	/**
-	 * What this unit is casting, if anything. Not the `playerCast` argument above — that is the
-	 * *player's* cast, passed in to preview how much of this bar it would fill.
-	 *
-	 * Only for units other than the player, whose own cast bar has a dedicated panel under the
-	 * frames. An enemy cast is otherwise invisible: the shaman's Mend takes 2500ms and says so in
-	 * the combat log, but a telegraph nobody can see is not a telegraph, and it is what makes a
-	 * caster something to react to rather than a health bar that refills.
+	 * What this unit is casting. Not `playerCast` above, which is the player's own cast, passed in
+	 * to preview how much of this bar it would fill. The player is skipped here because their cast
+	 * bar has its own panel.
 	 */
 	const casting = unit === player ? undefined : unit.currentAbility
 	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - unit.lastCastTime : 0

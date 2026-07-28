@@ -18,20 +18,16 @@ export interface CombatLogEvent {
 	overheal?: number
 	/**
 	 * Absorption a shield still had when it fell off, on `SPELL_AURA_REMOVED`. What `overheal` is
-	 * for a heal, and the only way a preventive spell's waste can be seen at all: a shield nobody
-	 * hit moves no health bar in either direction, so nothing else in the stream records it.
-	 *
-	 * Its own field for the reason given on `condition` — the analyzer totals it, and `extraInfo`
-	 * is display text, not something to parse a number back out of.
+	 * for a heal, and the only trace of it in the stream: a shield nobody hit moves no health bar.
+	 * Its own field because the analyzer totals it, and `extraInfo` is display text.
 	 */
 	wasted?: number
 	/**
 	 * How long this event commits the unit for, in ms — a cast's time or its global cooldown,
-	 * whichever is longer. Logged so the analyzer can say how much of a fight a unit spent
-	 * unable to act without knowing what a GCD is: everything it needs is in the stream.
+	 * whichever is longer. Logged so the analyzer never has to know how long a GCD lasts.
 	 *
-	 * Not `duration`: an aura has one too, and it is a different thing — how long the aura lasts
-	 * on its target rather than how long its caster stood still.
+	 * Not `duration`: an aura has one of those, and it means how long the aura lasts rather than
+	 * how long its caster stood still.
 	 */
 	busyFor?: number
 	/**

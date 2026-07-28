@@ -49,11 +49,8 @@ export class Mana extends Resource {
  * The rule is the interesting part: casting suppresses your own regeneration, so a lull is worth
  * something and topping everyone off during one has a price.
  *
- * Two numbers set how much a lull pays — this rate, and the threshold below it. A healer's pauses
- * run about 6-8s, so the threshold eats most of each one and only the tail pays out; widening the
- * threshold and raising the rate reach the same place. The rate is the one tuned, because it is
- * what a unit can plausibly differ on later (#31's spirit stat) while the rule is the same
- * for everyone. See #39.
+ * The rate and the threshold reach the same place, but the rate is the one tuned — a unit can
+ * plausibly differ on it later (#31's spirit stat) where the rule is the same for everyone (#39).
  */
 export class ManaRegen extends Task {
 	repeat = Infinity

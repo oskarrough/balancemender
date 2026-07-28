@@ -6,12 +6,10 @@ import type {Unit} from './unit'
 /**
  * An aura with a pool of absorption: it swallows damage instead of moving a health bar.
  *
- * The aura shape that is neither immediate nor periodic. Nothing happens when it lands and
- * nothing happens on a cadence — it changes how a *later* hit resolves, which is why the
- * absorbing is reached from `applyHit` rather than from a tick here.
+ * Nothing happens when it lands and nothing happens on a cadence — it changes how a *later* hit
+ * resolves, which is why the absorbing is reached from `applyHit` and not from a tick here.
  *
- * Everything about attaching, stacking and going away lives on `Aura`. This class is only the
- * pool.
+ * Attaching, stacking and going away all live on `Aura`. This class is only the pool.
  */
 export class ShieldAura extends Aura {
 	/** Damage this shield can still swallow. It empties, and the shield is over. */
@@ -32,10 +30,8 @@ export class ShieldAura extends Aura {
 	 * How long an unspent shield lasts, in ms. Mirrored onto `Task.delay` at construction, the way
 	 * `Ability.castTime` is.
 	 *
-	 * Deliberately not a balance number: `AURA_KEYS` is `total`/`interval`/`repeat`/`delay`, every
-	 * one of them a periodic aura's dial, and a shield has none of them. Growing the balance schema
-	 * for a single spell before a sweep has asked for it buys nothing — the pool, which is the
-	 * number worth tuning, already rides on the casting spell's `magnitude`.
+	 * Not a balance number: `AURA_KEYS` holds a periodic aura's dials, which a shield has none of,
+	 * and the number worth tuning — the pool — already rides on the casting spell's `magnitude`.
 	 */
 	static lifetime = 15000
 

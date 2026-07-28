@@ -139,7 +139,7 @@ const isAlive = (c: Unit) => c.health.current > 0
 
 /** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
 export function unitsOf(game: GameLoop): UnitInfo[] {
-	return [...game.party, ...game.enemies].map((c) => ({
+	return game.encounter.units.map((c) => ({
 		id: c.id,
 		name: c.name || c.constructor.name,
 		maxHealth: c.health.max,

@@ -96,11 +96,9 @@ export const renew: Policy = (player) => {
 /**
  * Flash Heal on cooldown. Fast reactions, burns mana, overheals a lot.
  *
- * The only policy with no fallback, so it is the only one a cooldown rewrites: give Flash Heal one
- * and this casts *nothing* while it is down, which turns a spam policy into a fixed-rate one that
- * can beat `triage` on fights it is meant to lose. So `panic` stops measuring bad play the moment
- * Flash Heal gets a cooldown (#41). `triage` and `renew` drop to Greater Heal or Heal, so their
- * throughput never rests on one spell being up.
+ * The only policy with no fallback, so it stops measuring bad play the moment Flash Heal gets a
+ * cooldown (#41): it would cast nothing while the spell is down, which is a fixed-rate policy
+ * wearing a spam policy's name. `triage` and `renew` drop to a lesser heal instead.
  */
 export const panic: Policy = (player) => {
 	const target = mostHurt(player)

@@ -10,11 +10,9 @@ import type {Unit} from './unit'
  * One thing an ability does when it lands. An ability owns an ordered list of these, so what it
  * does is readable from its declaration rather than from an override two files away.
  *
- * Deliberately not a vroum node. A child cannot run in the frame it is constructed — `mount()` and
- * `tick()` are both a microtask late — so an effect node would have its whole lifecycle bypassed
- * and be run by hand anyway, and would need `Aura`'s idempotent-disconnect guard copied onto it for
- * nothing. Everything here is instantaneous by definition; anything that lasts is an aura, and an
- * aura is a Task.
+ * Deliberately not a vroum node: a child cannot run in the frame it is constructed, so an effect
+ * node would have its lifecycle bypassed and be run by hand anyway. Everything here is
+ * instantaneous; anything that lasts is an aura, and an aura is a Task.
  *
  * Effects hold no state, so one instance is shared by every use of the ability that declares it.
  */

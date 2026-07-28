@@ -48,16 +48,15 @@ export class Unit extends Node {
 	}
 
 	/**
-	 * Which band of its health bar this unit is in — the primitive a spell that cares about how
-	 * hurt someone is reads, instead of writing its own percentage.
+	 * Which band of its health bar this unit is in — what an ability reads instead of writing its
+	 * own percentage.
 	 *
 	 * A pure function of health, with no memory: no hysteresis, no latch. That is what keeps it
-	 * safe to ask anywhere and testable in isolation, and it is what would break the moment a
-	 * threshold became tunable mid-fight against a stored state.
+	 * safe to ask anywhere, and what a threshold tunable mid-fight would break if it were compared
+	 * against a stored state.
 	 *
-	 * Compared through `ratio` rather than by cross-multiplying `current * 100`: multiplying an
-	 * already-inexact health value pushes a unit sitting exactly on a threshold across it — 305
-	 * times over the first 2000 max-health values, against none this way.
+	 * Through `ratio`, not `current * 100`: multiplying an already-inexact health value pushes a
+	 * unit sitting exactly on a threshold across it.
 	 */
 	get condition(): Condition {
 		const percent = this.health.ratio * 100

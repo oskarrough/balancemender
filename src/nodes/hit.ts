@@ -16,18 +16,15 @@ export interface Hit {
 }
 
 /**
- * The one door for changing a health bar. Every effect and every periodic aura comes
- * through here, so nothing can land without a floating number and a combat log entry —
- * the Combat log panel, the Fight report and the simulator all read that log, and a
- * mechanic missing from it is invisible to all three at once.
+ * The one door for changing a health bar. Every effect and every periodic aura comes through here,
+ * so nothing lands without a floating number and a combat log entry — and a mechanic missing from
+ * the log is invisible to the Combat log panel, the Fight report and the simulator at once.
  *
  * Returns what actually landed, which is less than `amount` when a heal tops off a full bar.
  */
 export function applyHit({source, target, amount: incoming, abilityId, abilityName, eventType}: Hit): number {
-	// Shields take their share before anything else in this function runs. That is the whole
-	// trick: `landed`, the floating number and the death check below all follow from what got
-	// through, so none of the three has to know shields exist and a killing blow is decided on
-	// the damage that was actually dealt.
+	// Shields take their share before anything else here runs, so `landed`, the floating number and
+	// the death check all follow from what got through and none of them has to know shields exist.
 	const amount = throughShields(target, incoming)
 
 	const before = target.health.current
@@ -39,7 +36,7 @@ export function applyHit({source, target, amount: incoming, abilityId, abilityNa
 	// A fully absorbed hit moved nothing, and `-0` floating over the unit would claim otherwise.
 	if (amount !== 0) fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`)
 
-	const actors = {
+	const eventFields = {
 		sourceId: source.id,
 		sourceName: source.name,
 		targetId: target.id,
@@ -51,26 +48,20 @@ export function applyHit({source, target, amount: incoming, abilityId, abilityNa
 	logCombat({
 		timestamp: Date.now(),
 		eventType,
-		...actors,
+		...eventFields,
 		value: Math.abs(amount),
 		// Only heals can overheal, and reporting `0` on every hit would say they can't.
 		...(amount > 0 && {overheal: amount - landed}),
 	})
 
-	// Recorded here rather than by whatever swung, so a death by any means is logged exactly
-	// once — the `before > 0` is what makes hitting a corpse not announce it again.
-	//
-	// Crossing a condition threshold is the same shape of fact and belongs in the same place:
-	// after the event that caused it, carrying who caused it. Logging it from `Health.set()`
-	// instead would land it *before* its own cause (both stamp the same `elapsedTime`), with no
-	// source and no spell, and would fire from every dev tool that writes a health bar directly.
-	//
-	// `else` because a killing blow already says everything: a corpse reads `injured`, and
-	// announcing that alongside the death is noise.
+	// Both recorded here rather than by whatever swung, so they land after their own cause and
+	// carry who caused it — from `Health.set()` they would arrive first, sourceless. `before > 0`
+	// is what stops hitting a corpse announcing the death again, and the `else` is because a
+	// killing blow already implies the condition: a corpse reads `injured`.
 	if (before > 0 && target.health.current <= 0) {
-		logCombat({timestamp: Date.now(), eventType: 'UNIT_DIED', ...actors})
+		logCombat({timestamp: Date.now(), eventType: 'UNIT_DIED', ...eventFields})
 	} else if (target.condition !== conditionBefore) {
-		logCombat({timestamp: Date.now(), eventType: 'UNIT_CONDITION', ...actors, condition: target.condition})
+		logCombat({timestamp: Date.now(), eventType: 'UNIT_CONDITION', ...eventFields, condition: target.condition})
 	}
 
 	return landed
@@ -78,10 +69,8 @@ export function applyHit({source, target, amount: incoming, abilityId, abilityNa
 
 /**
  * What is left of a hit once the target's shields have eaten their share. Only damage is
- * absorbable — a heal passes straight through, shields or not.
- *
- * Oldest shield first: `auras` is kept in insertion order, which is chronological, and it is the
- * order stacking already reads.
+ * absorbable — a heal passes straight through. Oldest shield first: `auras` is in insertion order,
+ * which is the order stacking already reads.
  */
 function throughShields(target: Unit, amount: number): number {
 	if (amount >= 0) return amount

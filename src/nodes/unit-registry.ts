@@ -8,12 +8,12 @@ import {Player} from './player'
  * Every spawnable unit, by id. `Encounter.spawn()` reads this and routes by the class's own
  * faction, so party and enemies go through one door.
  *
- * Ids are stable strings, unlike `constructor.name`, which the production build minifies.
- * They are also the keys of `balance.units`.
+ * Ids are stable strings, unlike `constructor.name`, which the production build minifies. They are
+ * also the keys of `balance.units`.
  *
- * Deliberately separate from `registry.ts`: `player.ts` imports the spell registry, so
- * anything that names the `Player` class from inside `registry.ts` would be reading it
- * mid-initialisation and get `undefined`. Nothing here may be imported by `player.ts`.
+ * Separate from `registry.ts` on purpose: `player.ts` imports the ability registry, so naming the
+ * `Player` class from inside `registry.ts` would read it mid-initialisation and get `undefined`.
+ * Nothing here may be imported by `player.ts`.
  */
 export const unitRegistry = {
 	Player,

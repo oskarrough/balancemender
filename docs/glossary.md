@@ -220,9 +220,7 @@ retunes; comparing two candidates takes roughly 200.
 
 Each is a word to reach past, not a word that means nothing.
 
-**Actor** — never for a unit. What a fight did to each one is `UnitStats`, in `report.units`. One
-unrelated use stays: `hit.ts` bundles the two ends of a hit as `actors` before spreading them into a
-log event, which is log fields and not units.
+**Actor** — never for a unit. What a fight did to each one is `UnitStats`, in `report.units`.
 
 **Character** — never for a unit _in general_: it means a named unit specifically (above), and using
 it for a wolf throws that distinction away. No class claims the word, which is the point — it is

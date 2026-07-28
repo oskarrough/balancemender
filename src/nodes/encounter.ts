@@ -36,16 +36,16 @@ export class Encounter extends Node {
 		public roster: Roster = DEMO_ROSTER,
 	) {
 		super(parent)
-		this.populate(roster)
-		this.player = this.party.find((c) => c instanceof Player) as Player
-		this.tank = this.party.find((c) => c instanceof Tank) as Tank
+		for (const id of roster.party ?? []) this.spawn(id)
+		this.player = this.spawn('Player') as Player
+		this.player.currentTarget = this.player
+		for (const id of roster.enemies ?? []) this.spawn(id)
+		this.tank = this.party.find((unit) => unit instanceof Tank) as Tank
 	}
 
-	populate(roster: Roster) {
-		for (const id of roster.party ?? []) this.spawn(id)
-		const player = this.spawn('Player') as Player
-		player.currentTarget = player
-		for (const id of roster.enemies ?? []) this.spawn(id)
+	/** Everyone in the fight, both sides. The dead included — see `onDeath`. */
+	get units(): Unit[] {
+		return [...this.party, ...this.enemies]
 	}
 
 	/**
@@ -67,7 +67,7 @@ export class Encounter extends Node {
 
 	/** Remove a unit by id. Returns false if nothing matched. */
 	remove(id: string): boolean {
-		const unit = [...this.party, ...this.enemies].find((c) => c.id === id)
+		const unit = this.units.find((candidate) => candidate.id === id)
 		if (!unit) return false
 		unit.disconnect()
 		this.party = this.party.filter((c) => c !== unit)
@@ -80,19 +80,13 @@ export class Encounter extends Node {
 	 * A unit's health reached zero. The one death path — a `Unit` hands over here instead
 	 * of tearing itself off the tree.
 	 *
-	 * The dead are not removed. `party` and `enemies` are who *joined* the encounter, and three
-	 * things read them that way: `unitsOf()` walks them after the last blow to rebuild every
-	 * health bar in the fight report, the Fight report panel re-simulates the composition from
-	 * them (a won fight would otherwise replay against no enemies at all), and a healer has to
-	 * go on seeing — and one day resurrecting — a fallen party member. Who is still standing is
-	 * `unit.alive`, which is already what targeting, the autopilot, casting, the win/lose check
-	 * and the simulator's survivor count all ask.
+	 * The dead are not removed: `party` and `enemies` are who *joined*, which is what the fight
+	 * report, the re-simulate button and a future resurrect all need. Who is still standing is
+	 * `unit.alive`.
 	 *
-	 * So death is not removal, it is stopping. Every task on a unit already skips itself while
-	 * `alive` is false; what is cancelled here is the rest — the target it was holding, the
-	 * auras ticking on it, and a cast it was halfway through, none of which watch health.
-	 * Leaving the unit connected is also what lets it come back: heal a corpse and it simply
-	 * resumes, where a disconnected one would stay inert at full health.
+	 * So death is not removal, it is stopping. Tasks on a unit already skip themselves while
+	 * `alive` is false; what is cancelled here is the rest — its target, its auras, a cast in
+	 * progress. Staying connected is also what lets a corpse resume when it is healed.
 	 */
 	onDeath(unit: Unit) {
 		unit.currentTarget = undefined
@@ -106,22 +100,14 @@ export class Encounter extends Node {
 	 * an already-renamed unit would otherwise give you "Tiny wolf 1 2".
 	 */
 	private renumber() {
-		const units = [...this.party, ...this.enemies]
-		for (const unit of units) unit.baseName ??= unit.name
+		const groups = new Map<string, Unit[]>()
+		for (const unit of this.units) {
+			const base = (unit.baseName ??= unit.name)
+			groups.set(base, [...(groups.get(base) ?? []), unit])
+		}
 
-		const totals = new Map<string, number>()
-		for (const unit of units) totals.set(unit.baseName!, (totals.get(unit.baseName!) ?? 0) + 1)
-
-		const seen = new Map<string, number>()
-		for (const unit of units) {
-			const base = unit.baseName!
-			if ((totals.get(base) ?? 0) < 2) {
-				unit.name = base
-				continue
-			}
-			const n = (seen.get(base) ?? 0) + 1
-			seen.set(base, n)
-			unit.name = `${base} ${n}`
+		for (const [base, group] of groups) {
+			group.forEach((unit, index) => (unit.name = group.length > 1 ? `${base} ${index + 1}` : base))
 		}
 	}
 
