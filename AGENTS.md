@@ -2,9 +2,26 @@ This project uses GitHub issues for tasks.
 
 To typecheck, lint and format run `bun run check`
 To test, run `bun run test` (never run `bun test`)
+Run those two before committing, not while working.
 To simulate fights headlessly, `bun run sim --help` — see [docs/simulation.md](./docs/simulation.md)
 
-For browser testing, `bun run dev` and learn `agent-browser --help`.
+For browser testing, `bun run dev` and learn `agent-browser --help`. To screenshot a running
+fight, use one `batch` — separate invocations refocus the tab, and the splash ignores input for
+200ms after that (`src/main.ts`), so the key never lands:
+
+```
+agent-browser batch --bail "open http://localhost:5173" "wait 1500" "press Space" \
+  "wait 6000" "find text Play click" "wait 3000" "screenshot /abs/path.png"
+```
+
+A key only dismisses the splash, the intro animation then covers Play for ~5s, the loop sits
+paused at 0s until Play, and a relative screenshot path lands in the repo root.
+
+To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored, self-contained,
+loading real assets by URL) with several variants in one file on a keypress switcher, and one of
+them a recreation of the current UI as the control. Screenshot them and compare.
+
+CSS values stick to a coarse scale — 0.2, 0.4, 0.5 — not 0.35.
 
 The `main` branch deploys to balancemender.0sk.ar
 

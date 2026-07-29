@@ -31,3 +31,7 @@ package-lock.json
 # Cloudflare Worker
 .wrangler
 .dev.vars*
+
+# Design scratch — renders in dev, must not deploy
+/public/*-mockup.html
+/*.png
