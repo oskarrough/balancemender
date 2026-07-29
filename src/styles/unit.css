@@ -127,3 +127,142 @@
 .Unit-cast .Bar {
 	flex: 1;
 }
+
+/**
+ * Auras wear the same icon as the action bar, so a Rend on a frame and a Rend in the spellbook
+ * read as one thing. Same shape, quarter the size — hence the aspect ratio rather than a height.
+ */
+.Auras {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.2rem;
+	margin: 0.2rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.Aura {
+	flex: none;
+	width: 5.4rem;
+	min-height: 0;
+	aspect-ratio: 9 / 5;
+	overflow: hidden;
+	/* Tinted, not the action bar's olive: on a frame the first question is whose side the aura is
+	   on, and colour answers it before any of the numbers do. */
+	--aura-dark: color-mix(in oklch, var(--aura-color) 55%, hsl(30, 6%, 8%));
+	--aura-bright: color-mix(in oklch, var(--aura-color), white 30%);
+	background: linear-gradient(color-mix(in oklch, var(--aura-dark), white 12%), var(--aura-dark));
+	border-color: var(--aura-bright);
+	border-right-color: var(--aura-color);
+	border-bottom-color: color-mix(in oklch, var(--aura-dark), black 40%);
+	border-left-color: color-mix(in oklch, var(--aura-color), white 15%);
+}
+
+/* Which way an aura cuts, in the two colours the health bars already use for the same idea. */
+.Aura--harmful {
+	--aura-color: var(--c-crimson-lake);
+}
+
+.Aura--helpful {
+	--aura-color: var(--c-imperial-green);
+}
+
+/* The last few seconds are when a healer has to act, so that is the only moment anything blinks. */
+.Aura--expiring {
+	animation: aura-expiring 1s ease-in-out infinite;
+}
+
+@keyframes aura-expiring {
+	50% {
+		box-shadow:
+			0 1px 4px hsla(0, 0%, 10%, 0.5),
+			0 0 0 2px var(--aura-bright);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.Aura--expiring {
+		animation: none;
+	}
+}
+
+.Aura-inner {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.2rem;
+	padding: 0.15rem 0.3rem 0;
+	z-index: 2;
+}
+
+.Aura-inner h3 {
+	font-size: 0.65rem;
+	line-height: 1.2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.Aura-inner strong {
+	flex: none;
+	font-size: 0.7rem;
+	font-variant-numeric: tabular-nums;
+}
+
+/**
+ * One pip per tick — how many instalments are still coming, without arithmetic. The pip that is
+ * next fills as its interval runs down, so the fastest-moving thing on the icon is also the one
+ * that says when the next heal lands.
+ */
+.Aura-pips {
+	position: absolute;
+	left: 0.3rem;
+	right: 0.3rem;
+	bottom: 0.35rem;
+	z-index: 2;
+	display: flex;
+	gap: 0.15rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.Aura-pips li {
+	--tick: 0%;
+	flex: 1;
+	height: 0.25rem;
+	border-radius: 999px;
+	overflow: hidden;
+	background: hsla(0, 0%, 0%, 0.45);
+	box-shadow: inset 0 0 0 1px hsla(0, 0%, 100%, 0.15);
+}
+
+.Aura-pips li::after {
+	content: '';
+	display: block;
+	width: var(--tick);
+	height: 100%;
+	background: var(--aura-bright);
+}
+
+.Aura-pips li.is-done::after {
+	width: 100%;
+}
+
+/* How long the whole aura has left, in the same left-to-right bar the health and mana use. */
+.Aura-life {
+	position: absolute;
+	inset: auto 0 0;
+	z-index: 2;
+	height: 3px;
+	background: hsla(0, 0%, 0%, 0.5);
+}
+
+.Aura-life::after {
+	content: '';
+	display: block;
+	width: var(--left);
+	height: 100%;
+	background: var(--aura-bright);
+	transition: width 100ms linear;
+}
