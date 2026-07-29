@@ -36,7 +36,7 @@ export class ShieldAura extends Aura {
 	static lifetime = 15000
 
 	/**
-	 * `pool` overrides the class default so a spell can own the number — see `PowerWordShield`,
+	 * `pool` overrides the class default so a spell can own the number — see `Shield`,
 	 * which keeps it as its `heal` where the balance lab can reach it. Same arrangement as
 	 * `PeriodicAura`'s `total`.
 	 */

@@ -153,7 +153,7 @@ Spell Implementation
         Heal – A standard, efficient heal with a moderate cast time (basic single-target heal spell).
         Flash Heal – A fast but mana-costly heal for emergencies (short cast time, higher mana per amount healed).
         Renew – A heal-over-time spell that continuously heals the target over several seconds (applied as a periodic effect).
-        Power Word: Shield – A protective shield that absorbs damage instead of healing (applies a damage absorption effect on the target).
+        Shield – A protective shield that absorbs damage instead of healing (applies a damage absorption effect on the target).
         Smite – A minor offensive spell that deals damage to the enemy (allows the healer to contribute some DPS when healing is light).
         Power Infusion – A buff spell that temporarily increases a party member's casting speed or power (enhances stats for a short duration).
 

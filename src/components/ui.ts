@@ -22,7 +22,7 @@ export function UI(game: GameLoop) {
 		'2': 'FlashHeal',
 		'3': 'GreaterHeal',
 		'4': 'Renew',
-		'5': 'PowerWordShield',
+		'5': 'Shield',
 		'6': 'Smite',
 	}
 

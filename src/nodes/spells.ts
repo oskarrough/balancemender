@@ -98,14 +98,14 @@ export class Renew extends Ability {
 }
 
 /** Shares the cast's id so absorption reports as the same ability. */
-class PowerWordShieldAura extends ShieldAura {
-	static id = 'PowerWordShield'
-	static name = 'Power Word: Shield'
+class ShieldAuraEffect extends ShieldAura {
+	static id = 'Shield'
+	static name = 'Shield'
 }
 
-export class PowerWordShield extends Ability {
-	static id = 'PowerWordShield'
-	static name = 'Power Word: Shield'
+export class Shield extends Ability {
+	static id = 'Shield'
+	static name = 'Shield'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
@@ -115,8 +115,7 @@ export class PowerWordShield extends Ability {
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
-	static icon = 'power-word-shield'
-	static effects = [new ApplyAura(PowerWordShieldAura)]
+	static effects = [new ApplyAura(ShieldAuraEffect)]
 }
 
 /** The shaman's own ability. It is registered like every other ability but not owned by the player. */

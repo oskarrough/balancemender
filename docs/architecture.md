@@ -153,7 +153,7 @@ rate already recorded and make the sweep circular.
 
 `src/balance.ts` snapshots the tunable statics of every ability, cadence, periodic aura and unit, and
 writes changes back to the classes. How big an ability lands is one number, `magnitude` — the healing
-of `Heal`, the whole heal-over-time of `Renew`, the pool of `PowerWordShield` — so an aura a spell
+of `Heal`, the whole heal-over-time of `Renew`, the pool of `Shield` — so an aura a spell
 plants needs no balance entry of its own; only one nothing applies does, like `Rend`. Everything
 reaches it through `perform({type: 'tune', …})`; `src/inspectables.ts` is what the Balance Lab lists.
 `balance.units` is keyed by the unit ids you spawn with, and retuning reaches live units by `unitId`
@@ -175,7 +175,7 @@ for no reason.
 
 By convention the id is the class name, and the class is named after the ability rather than after
 who owns it or how big it is — `QuickStab`, not `SmallAttack`. The exceptions are the two auras a
-spell plants, `RenewAura` and `PowerWordShieldAura`: each takes its spell's id so the cast and what
+spell plants, `RenewAura` and `ShieldAuraEffect`: each takes its spell's id so the cast and what
 it leaves behind report as one ability. Both are commented where they are declared.
 
 ## The combat log is the interface for analysis

@@ -31,16 +31,16 @@
 			"prompt": "A quiet green healing bloom made from simplified leaf shapes and warm gold inner light. The bloom feels ancient and restorative, like a soft recurring pulse of life rather than a burst. Dark muted green background, warm gold glow accents, clean centered silhouette."
 		},
 		{
-			"id": "power-word-shield",
+			"id": "shield",
 			"type": "spell",
-			"name": "Power Word: Shield",
+			"name": "Shield",
 			"prompt": "A translucent blue-violet ward shaped like a compact domed shield, protecting one small warm golden spark at its center. Concentric runic arcs suggest sturdy magical absorption without using letters or text. Dark indigo background, cool luminous barrier, restrained gold core, clean centered silhouette."
 		},
 		{
 			"id": "smite",
 			"type": "spell",
 			"name": "Smite",
-			"prompt": "A narrow white-gold bolt of holy force striking downward into a dark cracked stone sigil, sharp and punitive rather than restorative. A few angular radiant shards flare from the impact. Deep charcoal-blue background, high-contrast gold-white strike, clean centered silhouette."
+			"prompt": "A sharp white-gold celestial spearhead driving downward into and splitting a dark circular stone sun-disc, precise and punitive rather than restorative. A small broken halo and three angular radiant shards reinforce the impact. Keep the entire compact symbol inside generous dark padding, with a deep charcoal-blue background and a clean silhouette readable at 64x64 pixels."
 		},
 		{
 			"id": "tiny-wolf",

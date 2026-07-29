@@ -3,7 +3,7 @@ import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {SimLoop} from '../sim/run'
 import {ShieldAura} from './shield-aura'
-import {PowerWordShield} from './spells'
+import {Shield} from './spells'
 import {applyHit} from './hit'
 import type {Unit} from './unit'
 import type {Roster} from './encounter'
@@ -194,17 +194,17 @@ it('waits out its lifetime and then falls off', async () => {
  * The base effect heals whenever a magnitude is set, so a shield that called it would land its
  * whole pool as direct healing as well. Renew has the same trap and the same guard.
  */
-it('Power Word: Shield leaves a pool rather than healing', async () => {
+it('Shield leaves a pool rather than healing', async () => {
 	await start()
 	game.tank.health.set(50)
 
-	new PowerWordShield(game.player, game.tank).land()
+	new Shield(game.player, game.tank).land()
 	await settle()
 
 	expect(game.tank.health.current).toBe(50)
 	const [shield] = [...game.tank.auras]
 	expect(shield).toBeInstanceOf(ShieldAura)
-	expect((shield as ShieldAura).pool).toBe(PowerWordShield.magnitude)
+	expect((shield as ShieldAura).pool).toBe(Shield.magnitude)
 	// Shares the spell's id, so the cast and every absorb report as one ability.
-	expect(shield.id).toBe('PowerWordShield')
+	expect(shield.id).toBe('Shield')
 })

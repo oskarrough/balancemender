@@ -155,8 +155,8 @@ const shield = (partial: Partial<CombatLogEvent>) =>
 		sourceName: 'Player',
 		targetId: 'tank',
 		targetName: 'Tank',
-		abilityId: 'PowerWordShield',
-		abilityName: 'Power Word: Shield',
+		abilityId: 'Shield',
+		abilityName: 'Shield',
 		...partial,
 	})
 
