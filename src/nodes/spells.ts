@@ -64,7 +64,6 @@ export class Smite extends Ability {
 	static gcd = true
 	static minDamage = 15
 	static maxDamage = 25
-	static icon = 'heal'
 	static effects = [new Damage()]
 }
 
@@ -116,7 +115,7 @@ export class PowerWordShield extends Ability {
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
-	static icon = 'renew'
+	static icon = 'power-word-shield'
 	static effects = [new ApplyAura(PowerWordShieldAura)]
 }
 

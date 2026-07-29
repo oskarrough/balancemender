@@ -107,12 +107,32 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
  * fade-out → state reset (mid-timeline `.call`) → intro.
  */
 export function restartGame(game: GameLoop): gsap.core.Timeline {
-	const tl = gsap.timeline({onComplete: () => game.play()})
+	const animatedGame = '.Frame-game, .ActionBar, .Enemies, .PartyGroup'
+	const clearAnimationState = () => {
+		// Reset GSAP's transform cache as well as the CSS. Clearing the property alone lets a later
+		// y-only intro tween compose itself with the cached game-over scale.
+		gsap.set(animatedGame, {x: 0, y: 0, scale: 1, filter: 'none', autoAlpha: 1})
+		gsap.set(animatedGame, {clearProps: 'transform,filter,opacity,visibility'})
+	}
+	const tl = gsap.timeline({
+		onComplete: () => {
+			// The intro is built while the game-over styles still exist, so its tweens can cache those
+			// old transforms. Clean once more after its final frame, when nothing can reapply them.
+			clearAnimationState()
+			game.play()
+		},
+	})
 	const ease = 'power2.in'
 	tl.to('.GameOver', {autoAlpha: 0, duration: 0.4, ease})
 	tl.to('.ActionBar', {y: 80, autoAlpha: 0, scale: 0.95, duration: 0.4, ease}, '<')
 	tl.to('.Enemies, .PartyGroup', {y: -30, autoAlpha: 0, scale: 0.95, duration: 0.4, ease}, '<')
-	tl.call(() => game.restart())
+	tl.call(() => {
+		game.restart()
+		// Game-over and fade-out tweens leave inline transforms and filters behind. Clear them at
+		// the state boundary: the filter greys out the fresh frames, while even a zero transform on
+		// `.Frame-game` creates a stacking context over the fixed menu and intercepts its clicks.
+		clearAnimationState()
+	})
 	tl.add(buildStartGame(game))
 	return tl
 }
