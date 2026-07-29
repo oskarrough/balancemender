@@ -69,10 +69,11 @@ export function buildIntro(game: GameLoop): gsap.core.Timeline {
 /** Intro sequence. Pure — assumes the game UI is already rendered. */
 export function buildStartGame(_game: GameLoop): gsap.core.Timeline {
 	const tl = gsap.timeline()
-	tl.fromTo('.Frame', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5})
+	tl.fromTo('.AppChrome', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5})
 	tl.fromTo('.IngameMenu', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5}, '<')
-	tl.fromTo('.Frame-game', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5}, '>-0.1')
-	tl.fromTo('.ActionBar', {y: 100, autoAlpha: 0}, {y: 0, autoAlpha: 1, duration: 0.7}, '<')
+	tl.fromTo('.AppChrome-game', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5}, '>-0.1')
+	// A percentage rather than a pixel distance, so the bar keeps sliding exactly its own height in from below however tall the icons get.
+	tl.fromTo('.ActionBar', {y: '100%', autoAlpha: 0}, {y: 0, autoAlpha: 1, duration: 0.7}, '<')
 	tl.fromTo('.PartyGroup', {y: 20, autoAlpha: 0}, {y: 0, autoAlpha: 1, duration: 0.5}, '<0.2')
 	tl.fromTo('.Enemies', {x: 100, autoAlpha: 0}, {x: 0, autoAlpha: 1, duration: 1}, '<-0.1')
 	return tl
@@ -86,7 +87,12 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
 		{scale: 1, filter: 'saturate(1)'},
 		{scale: 0.9, filter: 'saturate(0.2)', duration: 0.7, ease: 'power3.out'},
 	)
-	tl.fromTo('.Frame-game', {x: 0}, {keyframes: {x: [-10, 10, -7, 7, -3, 3, 0]}, duration: 0.5, ease: 'power2.out'}, '<')
+	tl.fromTo(
+		'.AppChrome-game',
+		{x: 0},
+		{keyframes: {x: [-10, 10, -7, 7, -3, 3, 0]}, duration: 0.5, ease: 'power2.out'},
+		'<',
+	)
 	tl.fromTo(
 		'.GameOver',
 		{autoAlpha: 0, scale: 0.3, y: -60, rotation: -4},
@@ -107,7 +113,7 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
  * fade-out → state reset (mid-timeline `.call`) → intro.
  */
 export function restartGame(game: GameLoop): gsap.core.Timeline {
-	const animatedGame = '.Frame-game, .ActionBar, .Enemies, .PartyGroup'
+	const animatedGame = '.AppChrome-game, .ActionBar, .Enemies, .PartyGroup'
 	const clearAnimationState = () => {
 		// Reset GSAP's transform cache as well as the CSS. Clearing the property alone lets a later
 		// y-only intro tween compose itself with the cached game-over scale.
@@ -124,13 +130,13 @@ export function restartGame(game: GameLoop): gsap.core.Timeline {
 	})
 	const ease = 'power2.in'
 	tl.to('.GameOver', {autoAlpha: 0, duration: 0.4, ease})
-	tl.to('.ActionBar', {y: 80, autoAlpha: 0, scale: 0.95, duration: 0.4, ease}, '<')
+	tl.to('.ActionBar', {y: '100%', autoAlpha: 0, scale: 0.95, duration: 0.4, ease}, '<')
 	tl.to('.Enemies, .PartyGroup', {y: -30, autoAlpha: 0, scale: 0.95, duration: 0.4, ease}, '<')
 	tl.call(() => {
 		game.restart()
 		// Game-over and fade-out tweens leave inline transforms and filters behind. Clear them at
 		// the state boundary: the filter greys out the fresh frames, while even a zero transform on
-		// `.Frame-game` creates a stacking context over the fixed menu and intercepts its clicks.
+		// `.AppChrome-game` creates a stacking context over the fixed menu and intercepts its clicks.
 		clearAnimationState()
 	})
 	tl.add(buildStartGame(game))

@@ -114,7 +114,7 @@ have several, so it is a list rather than a field. Not the thing left sitting on
 
 **Magnitude** — how big an ability lands, in one number the effects read off it: healing for a `Heal`
 effect, the pool for a shield, the whole of a heal-over-time for the aura it plants. Never "heal
-amount" — the same field sizes Power Word: Shield, which heals nobody. Damage keeps its own
+amount" — the same field sizes Shield, which heals nobody. Damage keeps its own
 `minDamage`/`maxDamage`, because a range is not one number.
 
 **Cast** — a spell in progress. **Cast time** is how long it takes; **GCD** (global cooldown) is the
@@ -212,3 +212,17 @@ over time. Pure, so the terminal and the in-game panel agree by construction.
 
 **Seed** — the number that makes a fight reproducible: same seed, same fight. Not a word for the run
 itself — that is a fight. **Sweep** — every enemy group against every bot over many seeds.
+
+## In the UI
+
+**AppChrome** — the app shell. `.AppChrome` wraps `.AppChrome-menu` and `.AppChrome-game`, and the
+intro fades it in. It is not called a frame, because that word is taken.
+
+**Frame** — the bevel, the drop shadow and the white-on-black text that an action-bar icon and an
+aura chip share, plus `Frame-image` filling it. Composed onto both. Deliberately holds no size and no
+border colours: those are what tell the two apart, so putting either here means one of them spends
+declarations undoing the other's.
+
+**Ability** (as a class) — one square button in the action bar. **Aura** — one wide chip on a unit
+frame. Both wear `Frame`; neither wears it alone. An aura is not an ability, so nothing shared
+between them belongs under the ability's name.

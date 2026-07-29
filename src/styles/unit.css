@@ -62,6 +62,8 @@
 
 .Unit-row {
 	display: flex;
+	/* The portrait is its own object, not the cap of the health bar. */
+	gap: 0.4rem;
 }
 
 .Unit-bars {
@@ -128,10 +130,7 @@
 	flex: 1;
 }
 
-/**
- * Auras wear the same icon as the action bar, so a Rend on a frame and a Rend in the spellbook
- * read as one thing. Same shape, quarter the size — hence the aspect ratio rather than a height.
- */
+/* Auras wear the same bevel as the action bar, but a wide chip rather than a square: a chip holds a name and a countdown side by side. */
 .Auras {
 	display: flex;
 	flex-wrap: wrap;
@@ -144,11 +143,9 @@
 .Aura {
 	flex: none;
 	width: 5.4rem;
-	min-height: 0;
 	aspect-ratio: 9 / 5;
 	overflow: hidden;
-	/* Tinted, not the action bar's olive: on a frame the first question is whose side the aura is
-	   on, and colour answers it before any of the numbers do. */
+	/* Tinted, not the action bar's olive: on a frame the first question is whose side the aura is on, and colour answers that first. */
 	--aura-dark: color-mix(in oklch, var(--aura-color) 55%, hsl(30, 6%, 8%));
 	--aura-bright: color-mix(in oklch, var(--aura-color), white 30%);
 	background: linear-gradient(color-mix(in oklch, var(--aura-dark), white 12%), var(--aura-dark));
@@ -192,7 +189,6 @@
 	justify-content: space-between;
 	gap: 0.2rem;
 	padding: 0.15rem 0.3rem 0;
-	z-index: 2;
 }
 
 .Aura-inner h3 {

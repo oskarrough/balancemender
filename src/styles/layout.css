@@ -2,12 +2,12 @@ body {
 	overflow: hidden;
 }
 
-.Frame-game[disabled] {
+.AppChrome-game[disabled] {
 	opacity: 0;
 	pointer-events: 0;
 }
 
-.Frame-splash {
+.AppChrome-splash {
 	position: fixed;
 	left: 0;
 	right: 0;
@@ -35,7 +35,7 @@ body {
 	}
 }
 
-.Frame-splashImage {
+.AppChrome-splashImage {
 	display: block;
 	margin: auto;
 	width: 600px;

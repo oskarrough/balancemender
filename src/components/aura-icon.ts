@@ -39,11 +39,11 @@ export function AuraIcon(aura: Aura) {
 
 	return html`
 		<li
-			class=${`Ability Aura ${harmful ? 'Aura--harmful' : 'Aura--helpful'} ${remaining <= 3 ? 'Aura--expiring' : ''}`}
+			class=${`Frame Aura ${harmful ? 'Aura--harmful' : 'Aura--helpful'} ${remaining <= 3 ? 'Aura--expiring' : ''}`}
 			style=${`--left: ${left * 100}%; --tick: ${toNextTick * 100}%`}
 			title=${`${aura.name} — ${aura._cycles}/${aura.repeat} ticks, ${remaining.toFixed(1)}s left`}
 		>
-			<div class="Ability-inner Aura-inner">
+			<div class="Frame-inner Aura-inner">
 				<h3>${aura.name}</h3>
 				<strong>${remaining < 10 ? remaining.toFixed(1) : Math.ceil(remaining)}s</strong>
 			</div>

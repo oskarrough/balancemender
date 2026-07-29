@@ -33,13 +33,13 @@ export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string 
 
 	return html`
 		<button
-			class="Ability"
+			class="Frame Ability"
 			data-state=${state}
 			onclick=${() => game.perform({type: 'use', ability: abilityId})}
 			.disabled=${game.gameOver}
 		>
-			<img class="Ability-image" src=${iconPath(AbilityClass)} alt="" />
-			<div class="Ability-inner">
+			<img class="Frame-image" src=${iconPath(AbilityClass)} alt="" />
+			<div class="Frame-inner">
 				<h3>${AbilityClass.name}</h3>
 				<p>
 					<span>🔵 ${AbilityClass.cost ?? 0} </span>
