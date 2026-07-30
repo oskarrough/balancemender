@@ -38,7 +38,7 @@ export class HeavyBlow extends Ability {
 export class Rend extends PeriodicAura {
 	static id = 'Rend'
 	static name = 'Rend'
-	static total = -8
+	static total = -9.6
 	static interval = 1000
 	static repeat = 4
 	static delay = 1000
