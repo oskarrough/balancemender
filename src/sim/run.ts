@@ -110,29 +110,19 @@ export async function runFights(spec: FightSpec, times: number): Promise<FightRe
 }
 
 /**
- * A GameLoop that never asks the browser for a frame — the simulation supplies them.
- * Without this a simulated fight would fight the real animation frames for the clock.
+ * A GameLoop that never asks the browser for a frame — the simulation supplies them through
+ * `runFrame(time)`. Without this a simulated fight would race the real animation frames for the
+ * clock.
  */
 export class SimLoop extends GameLoop {
-	/**
-	 * Advance every task to `time` (ms since the fight started). `_runTasks` is private to
-	 * vroum's Loop and lives on the instance, so it is reached by name; a vroum upgrade that
-	 * renames it throws on the first frame, which is loud enough to need no guard.
-	 */
-	runFrame(time: number) {
-		;(this as unknown as {_runTasks(t: number): void})._runTasks(time)
-	}
-}
+	protected requestFrame() {}
 
-// `_requestNextFrame` is private too, and gets replaced on the prototype rather than
-// overridden — the effect is the same: no frame is ever requested. This one fails *quietly*
-// if it is ever renamed: the assignment would add a no-op nobody calls, vroum would go on
-// requesting real animation frames, and simulations would start racing the browser for the
-// clock. So check there is something here to replace.
-if (typeof (GameLoop.prototype as unknown as {_requestNextFrame?: unknown})._requestNextFrame !== 'function') {
-	throw new Error("vroum's Loop has no _requestNextFrame() — src/sim/run.ts drives the clock by replacing it")
+	/**
+	 * A fixed step is the whole clock here, so every step has to land in full. `--fps 5` steps
+	 * 200ms at a time, and the browser's stall clamp would quietly run that fight at half speed.
+	 */
+	maxFrameTime = Infinity
 }
-Object.assign(SimLoop.prototype, {_requestNextFrame() {}})
 
 const isAlive = (c: Unit) => c.health.current > 0
 

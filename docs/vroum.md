@@ -4,6 +4,9 @@
 [vroum v1.2.4](https://gitlab.com/jfalxa/vroum/-/tree/v1.2.4). It structures game logic as a
 `Loop`, hierarchical `Node`s and timed `Task`s with a shared mount/destroy lifecycle.
 
+We own this copy and it has diverged — fixes land here rather than waiting upstream, so a re-sync is
+a port, not a copy.
+
 ## The lifecycle rules that catch people
 
 - **`mount()` and `destroy()` run the whole prototype chain**, base class first — a subclass
@@ -16,6 +19,11 @@
   you construct it, and a dead unit is still in `encounter.party` until the microtask runs. Some of it
   chains — a death takes two hops — so `await settle()` from `test-setup.ts` rather than counting your
   own `Promise.resolve()`s.
+- **A frame is capped at `maxFrameTime` (100ms).** Animation frames stop in a backgrounded tab and at
+  a breakpoint, and a task advances one cycle per frame, so an uncapped stall pays its backlog out a
+  tick per frame — ten seconds away, ten swings in ten frames. The fight clock stops while nobody is
+  watching instead. A driver stepping in longer strides has to raise the cap: `SimLoop` sets it to
+  `Infinity`.
 - **A `Loop` is thenable**, and vroum resolves that on DESTROY — so `await game` would park on a loop
   that never dies. `GameLoop` overrides `then()` to resolve immediately, which turns a silent 5s
   timeout into an instant `undefined`. A helper that builds a game still should not return it.
@@ -24,7 +32,7 @@
 
 - **Loop** – The main game loop (extends `Task`) that drives all tasks using `requestAnimationFrame`.
   - **Lifecycle:** `mount()` starts the frame loop (resets timing and begins updates), `destroy()` stops it (cancels the animation frame).
-  - **Function:** On each frame, it updates `frameTime` and calls `run()` on each active Task in its `tasks` list.
+  - **Function:** `runFrame(time)` updates `frameTime` (clamped to `maxFrameTime`) and calls `run()` on each active Task in its `tasks` list. Override `requestFrame()` as a no-op and call `runFrame()` yourself to drive the clock at a fixed rate — that is all `SimLoop` is.
   - **Key properties:** `tasks` (array of scheduled tasks), `time`/`lastTime` (timestamp tracking), and `frameTime` (time elapsed since the previous frame).
   - **Usage:** Create a Loop (`const loop = new Loop()`) to start the game loop. Attach tasks by instantiating them with the loop (or a Node under the loop) as parent. Call `loop.disconnect()` to stop the loop when needed.
 
