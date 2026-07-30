@@ -30,8 +30,7 @@ class Rebuke extends Ability {
 	static id = 'Rebuke'
 	static name = 'Rebuke'
 	static targetRule = 'enemy' as const
-	static minDamage = 6
-	static maxDamage = 6
+	static magnitude = 6
 	static effects = [new Damage(), new ApplyAura(Mark)]
 }
 
@@ -94,10 +93,10 @@ describe('the effects themselves', () => {
 	})
 
 	/**
-	 * Rend's magnitude sits on the aura and Renew's on the spell. An apply-aura effect hands over
-	 * the ability's `heal` when it has one, which is the whole of that arrangement.
+	 * Rend owns a second outcome independently of Savage Bite's direct-hit magnitude. The
+	 * apply-aura effect must say so rather than infer ownership from whether either number exists.
 	 */
-	it('leaves an aura its own numbers when the ability owns none', async () => {
+	it('leaves an aura-owned outcome independent of the ability magnitude', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
 

@@ -65,8 +65,7 @@ export class Smite extends Ability {
 	static castTime = 1500
 	static cooldown = 0
 	static gcd = true
-	static minDamage = 15
-	static maxDamage = 25
+	static magnitude = 20
 	static effects = [new Damage()]
 }
 

@@ -38,8 +38,6 @@ export class Ability extends Task {
 	magnitude?: number
 	cooldown?: number
 	gcd = false
-	minDamage?: number
-	maxDamage?: number
 	threatMultiplier = 1
 	sound = ''
 	eventType: CombatEventType = 'SPELL_DAMAGE'
@@ -77,8 +75,6 @@ export class Ability extends Task {
 	declare static castTime?: number
 	declare static cooldown?: number
 	declare static gcd?: boolean
-	declare static minDamage?: number
-	declare static maxDamage?: number
 	static threatMultiplier = 1
 	declare static sound?: string
 	declare static eventType?: CombatEventType
@@ -109,8 +105,6 @@ export class Ability extends Task {
 			'magnitude',
 			'cooldown',
 			'gcd',
-			'minDamage',
-			'maxDamage',
 			'threatMultiplier',
 			'sound',
 			'eventType',
@@ -157,16 +151,10 @@ export class Ability extends Task {
 		this.playLandingSound()
 	}
 
-	/**
-	 * Scales whatever numeric field an effect is about to read off this ability — `magnitude` for a
-	 * heal or an aura, `minDamage`/`maxDamage` for a roll — so a sweet-spot hit rewards any ability
-	 * that opts in, whichever effects it declares, with no effect class aware the sweet spot exists.
-	 */
+	/** Scales the resolved outcome before any effect reads it. */
 	private applySweetSpotBonus() {
 		const bonus = 1 + (this.sweetSpotBonus ?? DEFAULT_SWEET_SPOT_BONUS)
 		if (this.magnitude !== undefined) this.magnitude *= bonus
-		if (this.minDamage !== undefined) this.minDamage *= bonus
-		if (this.maxDamage !== undefined) this.maxDamage *= bonus
 	}
 
 	/**

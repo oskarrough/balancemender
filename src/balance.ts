@@ -11,14 +11,13 @@ import {
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
 import {STAT_KEYS} from './nodes/stats'
+import {DAMAGE_RULES} from './nodes/effects'
 
 export const ABILITY_KEYS = [
 	'cost',
 	'magnitude',
 	'castTime',
 	'cooldown',
-	'minDamage',
-	'maxDamage',
 	'threatMultiplier',
 	'sweetSpotWindow',
 	'sweetSpotBonus',
@@ -26,7 +25,7 @@ export const ABILITY_KEYS = [
 export const CADENCE_KEYS = ['delay', 'interval'] as const
 export const UNIT_KEYS = STAT_KEYS
 export const AURA_KEYS = ['total', 'interval', 'repeat', 'delay'] as const
-export const RULE_KEYS = ['injured', 'healthy'] as const
+export const RULE_KEYS = ['injured', 'healthy', 'variance'] as const
 
 export type AbilityKey = (typeof ABILITY_KEYS)[number]
 export type CadenceKey = (typeof CADENCE_KEYS)[number]
@@ -38,7 +37,7 @@ type NumberDict = Record<string, number>
 type PartialDict = Record<string, number | undefined>
 type CadenceClass = {delay: number; interval: number}
 type AuraClass = {total: number; interval: number; repeat: number; delay: number}
-type RuleClass = {injured: number; healthy: number}
+type RuleClass = Partial<Record<RuleKey, number>>
 type UnitClass = Record<UnitKey, number>
 
 /** One tunable surface for every ability; absent keys remain absent rather than becoming zero rules. */
@@ -54,7 +53,7 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 }
 
 export const auraClasses: Record<string, AuraClass> = {Rend: Rend}
-export const ruleClasses: Record<string, RuleClass> = {Condition: CONDITION_THRESHOLDS}
+export const ruleClasses: Record<string, RuleClass> = {Condition: CONDITION_THRESHOLDS, Damage: DAMAGE_RULES}
 export const unitClasses: Record<string, UnitClass> = unitRegistry
 
 function snapshot<K extends string>(src: Record<string, NumberDict>, keys: readonly K[]) {
@@ -95,7 +94,12 @@ export const balanceCategories: Record<BalanceKind, BalanceCategory> = {
 	cadence: {keys: CADENCE_KEYS, classes: cadenceClasses, state: balance.cadences, defaults: defaults.cadences},
 	aura: {keys: AURA_KEYS, classes: auraClasses, state: balance.auras, defaults: defaults.auras},
 	unit: {keys: UNIT_KEYS, classes: unitClasses, state: balance.units, defaults: defaults.units},
-	rule: {keys: RULE_KEYS, classes: ruleClasses, state: balance.rules, defaults: defaults.rules},
+	rule: {
+		keys: RULE_KEYS,
+		classes: ruleClasses as Record<string, NumberDict>,
+		state: balance.rules,
+		defaults: defaults.rules,
+	},
 } as Record<BalanceKind, BalanceCategory>
 
 export function setBalanceValue(kind: BalanceKind, name: string, key: string, value: number) {

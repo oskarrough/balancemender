@@ -6,6 +6,9 @@ import type {Ability} from './ability'
 import type {Aura} from './aura'
 import type {Unit} from './unit'
 
+/** One spread for rolled damage. Tunable live as `rule:Damage.variance=0.2`. */
+export const DAMAGE_RULES = {variance: 0.2}
+
 /**
  * One thing an ability does when it lands. An ability owns an ordered list of these, so what it
  * does is readable from its declaration rather than from an override two files away.
@@ -39,16 +42,15 @@ function hit(ability: Ability, target: Unit, amount: number, eventType: CombatEv
 	})
 }
 
-/**
- * Damage in the ability's own range, and the flinch that sells it.
- *
- * The numbers are read off the ability at landing time rather than captured here, because `--tune`
- * and the Balance Lab retune by writing onto the class object.
- */
+/** Damage rolled around this use's magnitude, and the flinch that sells it. */
 export class Damage implements Effect {
 	apply(ability: Ability, target: Unit) {
-		// An ability that declares Damage without a range is a mistake `registry.test.ts` catches.
-		const amount = randomIntFromInterval(ability.minDamage ?? 0, ability.maxDamage ?? 0)
+		// Rounded bounds keep a low-number midpoint symmetric: 6 ±20% remains 5–7.
+		const magnitude = ability.magnitude ?? 0
+		const spread = magnitude * DAMAGE_RULES.variance
+		const min = Math.max(0, Math.round(magnitude - spread))
+		const max = Math.max(min, Math.round(magnitude + spread))
+		const amount = randomIntFromInterval(min, max)
 		hit(ability, target, -amount, ability.eventType)
 		shake(target)
 	}
@@ -69,13 +71,17 @@ export class Heal implements Effect {
  * only needs its own balance row when no ability owns its number.
  */
 export class ApplyAura implements Effect {
-	constructor(private auraClass: AuraClass) {}
+	constructor(
+		private auraClass: AuraClass,
+		private magnitudeOwner: 'ability' | 'aura' = 'ability',
+	) {}
 
 	apply(ability: Ability, target: Unit) {
 		// An earlier effect in the same list may have killed the target, and death has already
 		// cancelled its auras. Do not plant one on a corpse afterwards.
 		if (!target.alive) return
-		new this.auraClass(target, ability.parent, ability.magnitude, ability.threatMultiplier)
+		const magnitude = this.magnitudeOwner === 'ability' ? ability.magnitude : undefined
+		new this.auraClass(target, ability.parent, magnitude, ability.threatMultiplier)
 	}
 }
 

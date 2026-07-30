@@ -52,12 +52,10 @@ const LABELS: {
 	rule: Record<RuleKey, string>
 } = {
 	ability: {
-		magnitude: 'Magnitude (heal or shield)',
+		magnitude: 'Magnitude',
 		cost: 'Mana cost',
 		castTime: 'Cast time (ms)',
 		cooldown: 'Cooldown (ms)',
-		minDamage: 'Min damage',
-		maxDamage: 'Max damage',
 		threatMultiplier: 'Threat multiplier',
 		sweetSpotWindow: 'Sweet spot window (ms)',
 		sweetSpotBonus: 'Sweet spot bonus (fraction)',
@@ -70,7 +68,11 @@ const LABELS: {
 		spirit: 'Spirit',
 	},
 	cadence: {delay: 'Initial delay (ms)', interval: 'Interval (ms)'},
-	rule: {injured: 'Injured below (% health)', healthy: 'Healthy above (% health)'},
+	rule: {
+		injured: 'Injured below (% health)',
+		healthy: 'Healthy above (% health)',
+		variance: 'Damage variance (fraction)',
+	},
 }
 
 type BalancePanelKind = keyof typeof LABELS

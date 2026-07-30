@@ -9,8 +9,7 @@ export class QuickStab extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static minDamage = 5
-	static maxDamage = 7
+	static magnitude = 6
 	static sound = 'combat_air_hit'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	static effects = [new Damage()]
@@ -22,8 +21,7 @@ export class HeavyBlow extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static minDamage = 15
-	static maxDamage = 20
+	static magnitude = 17.5
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	static effects = [new Damage()]
@@ -51,12 +49,11 @@ export class SavageBite extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static minDamage = 4
-	static maxDamage = 7
+	static magnitude = 5.5
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	// The bite lands first, and the wound only if it left something alive to bleed.
-	static effects = [new Damage(), new ApplyAura(Rend)]
+	static effects = [new Damage(), new ApplyAura(Rend, 'aura')]
 }
 
 export class NastyArrow extends Ability {
@@ -65,8 +62,7 @@ export class NastyArrow extends Ability {
 	static tags = ['attack', 'ranged'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static minDamage = 120
-	static maxDamage = 180
+	static magnitude = 150
 	static sound = 'combat_arrow'
 	static eventType: CombatEventType = 'RANGE_DAMAGE'
 	static effects = [new Damage()]
@@ -78,8 +74,7 @@ export class ShieldBash extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static minDamage = 16
-	static maxDamage = 24
+	static magnitude = 20
 	static threatMultiplier = 5
 	static sound = 'combat_sword_hit'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
