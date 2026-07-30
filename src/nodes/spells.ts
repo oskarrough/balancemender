@@ -115,6 +115,12 @@ export class Wither extends Ability {
 	static effects = [new ApplyAura(WitherAura, 0.3)]
 }
 
+/** Shares the cast's id so its absorbs report as the same ability. */
+class ShieldBarrier extends BarrierAura {
+	static id = 'Shield'
+	static name = 'Shield'
+}
+
 export class Shield extends Ability {
 	static id = 'Shield'
 	static name = 'Shield'
@@ -125,9 +131,8 @@ export class Shield extends Ability {
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
-	// This direct use carries Shield's identity; another barrier ability subclasses BarrierAura.
 	// The coefficient is the size of the pool, not healing — nothing here moves a health bar.
-	static effects = [new ApplyAura(BarrierAura, 1.5)]
+	static effects = [new ApplyAura(ShieldBarrier, 1.5)]
 }
 
 /** The shaman's own ability. It is registered like every other ability but not owned by the player. */

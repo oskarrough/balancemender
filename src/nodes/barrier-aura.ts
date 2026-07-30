@@ -24,9 +24,11 @@ export class BarrierAura extends Aura {
 	 */
 	repeat = 1
 
-	/** The current direct user is Shield; another barrier ability declares its own identity in a subclass. */
-	static id = 'Shield'
-	static name = 'Shield'
+	/** Neutral identity; an ability-owned barrier borrows that ability's identity in a subclass. */
+	static id = 'Barrier'
+	static name = 'Barrier'
+	// Ability-owned subclasses inherit the mechanic label even when their id names the ability.
+	static mechanic = 'barrier'
 	static pool = 0
 	/**
 	 * How long an unspent barrier lasts, in ms. Mirrored onto `Task.delay` at construction, the way

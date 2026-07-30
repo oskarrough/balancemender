@@ -1,7 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {GameLoop} from './game-loop'
-import {SimLoop} from '../sim/run'
+import {TankGameLoop as GameLoop, TankSimLoop as SimLoop} from '../test-fixtures'
 import {BarrierAura} from './barrier-aura'
 import {Shield} from './spells'
 import {applyHit} from './hit'
@@ -59,7 +58,7 @@ describe('absorbing', () => {
 
 	it('leaves the bar alone when it covers the whole hit, and says so in the log', async () => {
 		await start()
-		new BarrierAura(game.tank, game.player, planted(100))
+		new Shield(game.player, game.tank).land()
 		await settle()
 
 		const full = game.tank.health.current
@@ -112,7 +111,7 @@ describe('absorbing', () => {
 		barrier.disconnect()
 		await settle()
 
-		expect(events('SPELL_AURA_REMOVED')[0]).toMatchObject({abilityId: 'Shield', wasted: 70})
+		expect(events('SPELL_AURA_REMOVED')[0]).toMatchObject({abilityId: 'Barrier', wasted: 70})
 	})
 
 	/**
@@ -130,7 +129,20 @@ describe('absorbing', () => {
 		await settle()
 
 		expect(events('SPELL_AURA_REMOVED')).toHaveLength(0)
-		expect(events('SPELL_AURA_REFRESH')[0]).toMatchObject({abilityId: 'Shield', wasted: 70})
+		expect(events('SPELL_AURA_REFRESH')[0]).toMatchObject({abilityId: 'Barrier', wasted: 70})
+	})
+
+	it('does not supersede a Shield from the same caster', async () => {
+		await start()
+		new Shield(game.player, game.tank).land()
+		await settle()
+		const [shield] = [...game.tank.auras]
+
+		new BarrierAura(game.tank, game.player, planted(10))
+		await settle()
+
+		expect([...game.tank.auras].map((aura) => aura.id)).toEqual(['Shield', 'Barrier'])
+		expect(shield.superseded).toBe(false)
 	})
 })
 
@@ -176,7 +188,7 @@ it('waits out its lifetime and then falls off', async () => {
 	const barrier = new BarrierAura(sim.tank, sim.player, planted(100_000))
 	await settle()
 
-	const removals = () => events('SPELL_AURA_REMOVED').filter((event) => event.abilityId === 'Shield')
+	const removals = () => events('SPELL_AURA_REMOVED').filter((event) => event.abilityId === 'Barrier')
 	for (let time = 0; time < BarrierAura.lifetime; time += 100) {
 		sim.runFrame(time)
 		await settle()
