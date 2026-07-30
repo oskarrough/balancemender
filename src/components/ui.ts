@@ -7,6 +7,7 @@ import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
 import {UnitFrame} from './unitframe'
 import {restartGame} from '../animations'
+import {bringToFront} from './floating-view.js'
 
 register()
 
@@ -61,7 +62,11 @@ export function UI(game: GameLoop) {
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
 			${game.gameOver
-				? html` <div class="GameOver" data-outcome=${game.outcome ?? 'defeat'}>
+				? html` <div
+						class="GameOver"
+						data-outcome=${game.outcome ?? 'defeat'}
+						onpointerdown=${(event: PointerEvent) => bringToFront(event.currentTarget as HTMLElement)}
+					>
 						<h2>${GAME_OVER_COPY[game.outcome ?? 'defeat'].headline}</h2>
 						<p>${GAME_OVER_COPY[game.outcome ?? 'defeat'].blurb(roundOne(game.elapsedTime / 1000))}</p>
 						<button class="Button" onclick=${() => restartGame(game)}>Play Again</button>

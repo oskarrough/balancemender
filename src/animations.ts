@@ -105,6 +105,9 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
 		{autoAlpha: 1, y: 0, duration: 0.35, stagger: 0.08, ease: 'power2.out'},
 		'<0.25',
 	)
+	// The shake leaves a zero-valued transform behind, which creates a stacking context and traps
+	// GameOver below top-level floating views regardless of its own z-index.
+	tl.set('.AppChrome-game', {clearProps: 'transform'})
 	return tl
 }
 

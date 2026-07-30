@@ -3,6 +3,17 @@ import {Draggable} from 'gsap/Draggable'
 import {gsap} from 'gsap'
 gsap.registerPlugin(Draggable)
 
+let topZ = 100
+
+/** Raise any panel above the floating views and other raiseable panels. */
+export function bringToFront(panel) {
+	const zIndexes = [...document.querySelectorAll('floating-view, .GameOver')].map((element) =>
+		Number.parseInt(getComputedStyle(element).zIndex, 10),
+	)
+	topZ = Math.max(topZ, ...zIndexes.filter(Number.isFinite)) + 1
+	panel.style.zIndex = String(topZ)
+}
+
 /** A draggable, resizable, minimizable panel with persisted layout via the store */
 class FloatingView extends HTMLElement {
 	constructor() {
@@ -31,6 +42,7 @@ class FloatingView extends HTMLElement {
 
 	connectedCallback() {
 		this.restoreLayout()
+		this.addEventListener('pointerdown', () => bringToFront(this))
 		this.draggable()
 		this.resizable()
 		this.minimizable()
@@ -60,6 +72,7 @@ class FloatingView extends HTMLElement {
 		Draggable.create(this, {
 			type: 'x,y',
 			trigger: this.querySelector(':scope > header'),
+			zIndexBoost: false,
 			bounds: this.calculateBounds(),
 			inertia: true,
 			onDragEnd: () => this.saveLayout(),
