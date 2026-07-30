@@ -107,7 +107,9 @@ export class Task extends Node implements PromiseLike<void> {
 
 		if (this.shouldTick?.() ?? true) {
 			if (this.fps === 0) {
-				this.progress = Math.min(this._cycleTime / this.duration, 1)
+				// A task with no duration is one instant per cycle, so it is complete the moment it
+				// ticks. Dividing by that zero instead left `progress` NaN on every interval task.
+				this.progress = this.duration === 0 ? 1 : Math.min(this._cycleTime / this.duration, 1)
 				this.deltaTime = this.root.frameTime
 				this.tick?.()
 				this._currentTick++

@@ -52,8 +52,12 @@ export class Node {
 	emit<Key extends keyof EventMap & string>(event: Key, data?: EventMap[Key]) {
 		const listeners = this._listeners[event]
 		if (!listeners) return
-		for (let i = 0; i < listeners.length; i++) {
-			listeners[i](data)
+		// Over a copy, because a listener may unsubscribe while it runs — `once` always does.
+		// Splicing the live array slides the next listener into an index the loop has passed, and
+		// that listener is silently skipped: on DESTROY, a child that never tears down.
+		const dispatching = listeners.slice()
+		for (let i = 0; i < dispatching.length; i++) {
+			dispatching[i](data)
 		}
 	}
 
