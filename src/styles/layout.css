@@ -66,45 +66,72 @@ body {
 	opacity: 0;
 }
 
-/* Dungeon chrome, pinned to the top edge between the menu and the monitor rather than placed in the
-   column — a fight with no dungeon run behind it then lays out exactly as it always did. */
-.RoomInfo {
+/* Dungeon chrome, pinned to the top-right corner rather than placed in the column — a fight with
+   no dungeon run behind it then lays out exactly as it always did. */
+.DungeonPager {
 	position: fixed;
 	top: 0.4rem;
-	left: 50%;
-	transform: translateX(-50%);
+	right: 0.4rem;
 	z-index: 5;
+	/* Equal 1fr tracks hold the total width steady however the dots split around the pill. */
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 0.4rem;
+	pointer-events: none;
+}
+
+.DungeonPager-dots {
 	display: flex;
 	gap: 0.4rem;
+}
+
+.DungeonPager-dots:first-child {
+	justify-content: flex-end;
+}
+
+.DungeonPager-pill {
+	display: flex;
 	margin: 0;
 	padding: 0 0.5rem;
 	border: 1px solid color-mix(in oklch, var(--c-black), transparent 80%);
 	border-radius: 1rem;
 	background: color-mix(in oklch, var(--c-snow-white), transparent 20%);
-	font-size: 0.8rem;
-	line-height: 1.6;
+	padding-top: 0.1em;
 	white-space: nowrap;
-	pointer-events: none;
+}
+
+/* One per room around the pill: filled when cleared, hollow when still ahead. Hoverable for its
+   room-name tooltip despite the container opting out of pointer events. */
+.DungeonPager-dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	border: 1px solid color-mix(in oklch, var(--c-black), transparent 60%);
+	background: color-mix(in oklch, var(--c-snow-white), transparent 20%);
+	pointer-events: auto;
+}
+
+.DungeonPager-dot[data-cleared='true'] {
+	background: color-mix(in oklch, var(--c-black), transparent 20%);
 }
 
 /* Middot between the parts, so the markup carries no punctuation of its own. */
-.RoomInfo > * + *::before {
+.DungeonPager-pill > * + *::before {
 	content: '·';
-	margin-right: 0.4rem;
-	opacity: 0.4;
+	margin-right: 0.5rem;
+	opacity: 0.5;
 }
 
-.RoomInfo-dungeon {
+.DungeonPager-dungeon {
 	font-weight: 700;
 }
 
-.RoomInfo-count {
+.DungeonPager-count {
 	font-variant-numeric: tabular-nums;
-	opacity: 0.6;
 }
 
-.RoomInfo-room {
-	opacity: 0.8;
+.DungeonPager-room {
 }
 
 .Player,

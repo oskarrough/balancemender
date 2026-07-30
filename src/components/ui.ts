@@ -24,16 +24,31 @@ const GAME_OVER_COPY: Record<
 	timeout: {headline: "Time's Up", blurb: (s) => `You held out the full ${s}s.`},
 }
 
-/** Which dungeon, how far in, which room. Nothing at all outside a dungeon run. */
-function RoomInfo(game: GameLoop) {
+/**
+ * Which dungeon, how far in, which room. Nothing at all outside a dungeon run.
+ * Pager dots flank the pill — cleared rooms filled on the left, upcoming hollow on the
+ * right, the pill itself standing in for the current room.
+ */
+function DungeonPager(game: GameLoop) {
 	const run = game.dungeonRun
 	if (!run) return null
+	const rooms = run.dungeon.rooms
+	const dot = (room: (typeof rooms)[number], cleared: boolean) =>
+		html`<i
+			class="DungeonPager-dot"
+			data-cleared=${cleared}
+			title=${cleared ? `${room.name} — cleared` : room.name}
+		></i>`
 	return html`
-		<p class="RoomInfo">
-			<span class="RoomInfo-dungeon">${run.dungeon.name}</span>
-			<span class="RoomInfo-count">${run.room + 1}/${run.dungeon.rooms.length}</span>
-			<span class="RoomInfo-room">${run.dungeon.rooms[run.room]?.name}</span>
-		</p>
+		<nav class="DungeonPager">
+			<span class="DungeonPager-dots">${rooms.slice(0, run.room).map((room) => dot(room, true))}</span>
+			<p class="DungeonPager-pill">
+				<span class="DungeonPager-dungeon">${run.dungeon.name}</span>
+				<span class="DungeonPager-count">${run.room + 1}/${rooms.length}</span>
+				<span class="DungeonPager-room">${rooms[run.room]?.name}</span>
+			</p>
+			<span class="DungeonPager-dots">${rooms.slice(run.room + 1).map((room) => dot(room, false))}</span>
+		</nav>
 	`
 }
 
@@ -113,7 +128,7 @@ export function UI(game: GameLoop) {
 
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
-			${game.gameOver ? GameOver(game) : null} ${RoomInfo(game)}
+			${game.gameOver ? GameOver(game) : null} ${DungeonPager(game)}
 
 			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>
 
