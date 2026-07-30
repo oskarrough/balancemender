@@ -11,11 +11,11 @@ fight, use one `batch` — separate invocations refocus the tab, and the splash 
 
 ```
 agent-browser batch --bail "open http://localhost:5173" "wait 1500" "press Space" \
-  "wait 6000" "find text Play click" "wait 3000" "screenshot /abs/path.png"
+  "wait 2500" "screenshot /abs/path.png"
 ```
 
-A key only dismisses the splash, the intro animation then covers Play for ~5s, the loop sits
-paused at 0s until Play, and a relative screenshot path lands in the repo root.
+A key dismisses the splash and the fight auto-starts the moment the intro animation ends, ~1.5-2s
+later — no Play click needed. A relative screenshot path lands in the repo root.
 
 To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored, self-contained,
 loading real assets by URL) with several variants in one file on a keypress switcher, and one of
