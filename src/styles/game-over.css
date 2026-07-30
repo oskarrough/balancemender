@@ -5,8 +5,8 @@
 	top: 30%;
 	left: 0;
 	right: 0;
-	width: 18rem;
-	max-width: 90vw;
+	width: 26rem;
+	max-width: 92vw;
 	margin: 0 auto;
 	z-index: 100;
 	background: var(--c-snow-white);
@@ -22,9 +22,9 @@
 /* The coloured strip is the only thing that tells victory, defeat and timeout apart. */
 .GameOver h2 {
 	margin: 0;
-	padding: 0.4rem 0.8rem;
+	padding: 0.5rem 1rem;
 	border-bottom: 1px solid var(--c-black);
-	font-size: 1.2rem;
+	font-size: 1.5rem;
 }
 
 .GameOver[data-outcome='victory'] h2 {
@@ -41,10 +41,19 @@
 }
 
 .GameOver p {
-	margin: 0.8rem;
-	font-size: 0.9rem;
+	margin: 1rem;
+	font-size: 1rem;
+}
+
+/* The run's rooms, same dots as the pager — this panel is the moment that position matters. */
+.GameOver-rooms {
+	display: flex;
+	justify-content: center;
+	gap: 0.4rem;
 }
 
 .GameOver .Button {
-	margin: 0 0.8rem 0.8rem;
+	margin: 0 1rem 1rem;
+	padding: 0.4em 0.8em 0.3em;
+	font-size: 1rem;
 }

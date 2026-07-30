@@ -11,8 +11,8 @@ body {
 
 .IngameMenu {
 	position: fixed;
-	top: 0.2rem;
-	left: 0.2rem;
+	top: 0.4rem;
+	left: 0.4rem;
 	transition: opacity 500ms;
 
 	& menu {
@@ -90,14 +90,17 @@ body {
 	justify-content: flex-end;
 }
 
+/* Same chrome family as .Button — solid snow-white, hairline black, the shared radius — so the
+   two corners of the top edge read as one designed bar. */
 .DungeonPager-pill {
 	display: flex;
+	align-items: center;
 	margin: 0;
-	padding: 0 0.5rem;
-	border: 1px solid color-mix(in oklch, var(--c-black), transparent 80%);
-	border-radius: 1rem;
-	background: color-mix(in oklch, var(--c-snow-white), transparent 20%);
-	padding-top: 0.1em;
+	padding: 0.1em 0.5rem 0;
+	min-height: 1.5rem;
+	border: 1px solid var(--c-black);
+	border-radius: var(--radius);
+	background: var(--c-snow-white);
 	white-space: nowrap;
 }
 
@@ -107,13 +110,13 @@ body {
 	width: 0.5rem;
 	height: 0.5rem;
 	border-radius: 50%;
-	border: 1px solid color-mix(in oklch, var(--c-black), transparent 60%);
-	background: color-mix(in oklch, var(--c-snow-white), transparent 20%);
+	border: 1px solid var(--c-black);
+	background: var(--c-snow-white);
 	pointer-events: auto;
 }
 
 .DungeonPager-dot[data-cleared='true'] {
-	background: color-mix(in oklch, var(--c-black), transparent 20%);
+	background: var(--c-black);
 }
 
 /* Middot between the parts, so the markup carries no punctuation of its own. */

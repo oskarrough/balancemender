@@ -1,4 +1,4 @@
-import {render} from 'uhtml'
+import {html, render} from 'uhtml'
 import {GameLoop} from './nodes/game-loop'
 import {UI} from './components/ui'
 import {Menu} from './components/menu'
@@ -7,6 +7,7 @@ import {DevConsole} from './components/dev-console'
 import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
 import {loadFightHistory} from './fight-history'
+import {dungeonRegistry} from './nodes/dungeon'
 import './components/dev-console'
 import './components/animation-debugger'
 import {applyDefaultLayout} from './components/floating-view.js'
@@ -38,41 +39,26 @@ function main() {
 			// Small breather so any final layout/paint settles before the title slams in.
 			setTimeout(() => {
 				splashIntro = buildSplashIntro()
-			}, 500)
+			}, 100)
 		})
 	const debugSplash = new URLSearchParams(window.location.search).has('debug-splash')
 
-	if (debugSplash) {
-		// Hold the splash up and hand it to the animation debugger so we can scrub the intro/outro.
-		const animDebugger = document.querySelector('animation-debugger') as AnimationDebugger | null
-		animDebugger?.init(null)
-		return
-	}
-
-	// Ignore the first pointer/key event right after the tab regains focus — clicking back
-	// into the window to refocus shouldn't count as "press any key to start".
-	let ignoreUntil = 0
-	document.addEventListener('visibilitychange', () => {
-		if (document.visibilityState === 'visible') ignoreUntil = performance.now() + 200
-	})
-
-	const startGame = (e?: Event) => {
-		if (performance.now() < ignoreUntil) return
-		// Ignore clicks/keys that originate inside a floating dev panel — those are for tooling, not "start the game".
-		if (e && (e.target as Element | null)?.closest('floating-view')) return
-		window.removeEventListener('keydown', startGame)
-		window.removeEventListener('pointerdown', startGame)
+	const startGame = (dungeonId: string) => {
 		splashIntro?.kill()
 
 		// Construct the game only now — vroum's Loop schedules `mount()` and starts ticking immediately on construction.
 		const game = new GameLoop()
-		// The default experience is the first dungeon; a plain `new GameLoop()` elsewhere (sims, tests) still gets the demo room.
-		game.perform({type: 'startDungeon', dungeon: 'WolfWoods'})
+		game.perform({type: 'startDungeon', dungeon: dungeonId})
 		// vroum's mount() runs in a microtask and sets running=true, so a synchronous pause()
 		// here would be overwritten. Queue it so it lands after mount.
 		queueMicrotask(() => game.pause())
 		const element = document.querySelector('#game')
-		if (element) game.draw = () => render(element, UI(game))
+		const menuElement = document.querySelector('#menu')
+		// The menu redraws with the game so its Play/Pause toggle tracks state changed elsewhere.
+		game.draw = () => {
+			if (element) render(element, UI(game))
+			if (menuElement) render(menuElement, () => Menu(game))
+		}
 		setupDevTools(game)
 		// @ts-ignore
 		window.balancemender = game
@@ -83,7 +69,6 @@ function main() {
 		animDebugger?.init(game)
 
 		game.render()
-		render(document.querySelector('#menu')!, () => Menu(game))
 		new InputManager(game)
 
 		const intro = buildIntro(game)
@@ -96,12 +81,32 @@ function main() {
 			queueMicrotask(() => game.play())
 		}
 	}
-	if (skipSplash) {
-		startGame()
-	} else {
-		window.addEventListener('keydown', startGame)
-		window.addEventListener('pointerdown', startGame)
+	// One step: the splash IS the dungeon list. A tap on a dungeon starts the run.
+	const prompt = document.querySelector('.Splash-prompt')
+	if (prompt && !skipSplash)
+		render(
+			prompt,
+			html`<span class="Splash-dungeonsHeading">Choose your dungeon</span>
+				<div class="Splash-dungeons">
+					${Object.values(dungeonRegistry).map(
+						(dungeon) => html`
+							<button class="Splash-dungeon" type="button" onclick=${() => startGame(dungeon.id)}>
+								${dungeon.name}
+								<small>${dungeon.rooms.length} rooms</small>
+							</button>
+						`,
+					)}
+				</div>`,
+		)
+
+	if (debugSplash) {
+		// Hold the splash up and hand it to the animation debugger so we can scrub the intro/outro.
+		const animDebugger = document.querySelector('animation-debugger') as AnimationDebugger | null
+		animDebugger?.init(null)
+		return
 	}
+
+	if (skipSplash) startGame('WolfWoods')
 }
 
 function setupDevTools(game: GameLoop) {

@@ -17,12 +17,18 @@ export function Menu(game: GameLoop) {
 		game.audio.volume = volume / 100
 	}
 
+	// Pausing stops the frames that would repaint this menu, so repaint it by hand.
+	const toggleRunning = () => {
+		if (game.running) game.pause()
+		else game.play()
+		game.render()
+	}
+
 	return html`
 		<div class="IngameMenu">
 			<menu>
+				<button class="Button" type="button" onclick=${toggleRunning}>${game.running ? 'Pause' : 'Play'}</button>
 				<button class="Button" type="button" onclick=${() => restartGame(game)}>Reset</button>
-				<button class="Button" type="button" onclick=${() => game.play()}>Play</button>
-				<button class="Button" type="button" onclick=${() => game.pause()}>Pause</button>
 				<label class="Button SoundToggle"
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
 				</label>

@@ -8,9 +8,7 @@ export interface NamedAnimation {
 	build: (game: GameLoop) => gsap.core.Timeline
 }
 
-let splashPromptPulse: gsap.core.Tween | null = null
-
-/** Splash entrance. Slams the title in, then loops a pulse on the prompt until the outro kills it. */
+/** Splash entrance. Slams the title in, then the dungeon list — quick and done, nothing loops. */
 export function buildSplashIntro(): gsap.core.Timeline {
 	const tl = gsap.timeline()
 	tl.fromTo(
@@ -21,36 +19,19 @@ export function buildSplashIntro(): gsap.core.Timeline {
 			scale: 1,
 			y: 0,
 			rotation: 0,
-			duration: 0.7,
-			stagger: 0.35,
+			duration: 0.4,
+			stagger: 0.15,
 			ease: 'back.out(1.8)',
 		},
 	)
-	tl.fromTo('.Splash-subtitle', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out'}, '>0.05')
-	tl.fromTo('.Splash-prompt', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5}, '>-0.1')
-	tl.call(() => {
-		splashPromptPulse?.kill()
-		splashPromptPulse = gsap.to('.Splash-prompt', {
-			autoAlpha: 0.3,
-			duration: 0.7,
-			repeat: -1,
-			yoyo: true,
-			ease: 'sine.inOut',
-		})
-	})
+	tl.fromTo('.Splash-subtitle', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'}, '>0.05')
+	tl.fromTo('.Splash-prompt', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'}, '<0.05')
 	return tl
 }
 
-/** Splash exit. Flashes the prompt, punches the title out, fades the overlay. */
+/** Splash exit. Punches the title out, fades the overlay. */
 export function buildSplashOutro(): gsap.core.Timeline {
-	const tl = gsap.timeline({
-		onStart: () => {
-			splashPromptPulse?.kill()
-			splashPromptPulse = null
-		},
-	})
-	tl.set('.Splash-prompt', {autoAlpha: 1})
-	tl.to('.Splash-prompt', {autoAlpha: 0, duration: 0.06, repeat: 5, yoyo: true})
+	const tl = gsap.timeline()
 	tl.to('.Splash-title', {scale: 1.25, autoAlpha: 0, duration: 0.35, ease: 'power2.in'})
 	tl.to('.Splash-subtitle, .Splash-prompt', {autoAlpha: 0, y: -20, duration: 0.25, ease: 'power2.in'}, '<')
 	tl.to('.Splash', {autoAlpha: 0, duration: 0.3, ease: 'power2.in'}, '>-0.1')
@@ -168,8 +149,6 @@ export function restartDungeon(game: GameLoop): gsap.core.Timeline {
 }
 
 const resetSplashForPreview = () => {
-	splashPromptPulse?.kill()
-	splashPromptPulse = null
 	gsap.set('.Splash', {clearProps: 'all'})
 	gsap.set('.Splash-bg, .Splash-title, .Splash-titleLine, .Splash-subtitle, .Splash-prompt', {
 		clearProps: 'all',

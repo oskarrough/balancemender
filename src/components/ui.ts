@@ -67,7 +67,7 @@ function GameOver(game: GameLoop) {
 
 	if (run && outcome === 'victory') {
 		if (run.room + 1 < run.dungeon.rooms.length) {
-			label = 'Next room'
+			label = `Next: ${run.dungeon.rooms[run.room + 1]?.name}`
 			onclick = () => nextRoom(game)
 		} else {
 			const total = run.times.reduce((sum, time) => sum + time, 0) + game.elapsedTime
@@ -78,6 +78,17 @@ function GameOver(game: GameLoop) {
 		}
 	}
 
+	// The pager's dots, repeated here: the panel is where you decide to go on, so it carries
+	// the run's position too. A won room counts as cleared even though the pager hasn't advanced.
+	const cleared = run ? run.room + (outcome === 'victory' ? 1 : 0) : 0
+	const rooms = run
+		? html`<p class="GameOver-rooms">
+				${run.dungeon.rooms.map(
+					(room, index) => html`<i class="DungeonPager-dot" data-cleared=${index < cleared} title=${room.name}></i>`,
+				)}
+			</p>`
+		: null
+
 	return html`
 		<div
 			class="GameOver"
@@ -86,6 +97,7 @@ function GameOver(game: GameLoop) {
 		>
 			<h2>${headline}</h2>
 			<p>${blurb}</p>
+			${rooms}
 			<button class="Button" onclick=${onclick}>${label}</button>
 		</div>
 	`
@@ -95,15 +107,10 @@ export function UI(game: GameLoop) {
 	const player = game.player
 	if (!player) return html`Woops, no player to heal the party...`
 
-	const SHORTCUTS: Record<string, string> = {
-		'1': 'Heal',
-		'2': 'FlashHeal',
-		'3': 'GreaterHeal',
-		'4': 'Renew',
-		'5': 'Shield',
-		'6': 'Smite',
-		'7': 'Wither',
-	}
+	// Key N is the Nth ability on the bar, matching the on-screen numbers below.
+	const SHORTCUTS: Record<string, string> = Object.fromEntries(
+		Object.keys(player.abilities).map((id, index) => [String(index + 1), id]),
+	)
 
 	function handleShortcuts({key}: {key: string}) {
 		const ability = SHORTCUTS[key]
