@@ -5,18 +5,18 @@ To test, run `bun run test` (never run `bun test`)
 Run those two before committing, not while working.
 To simulate fights headlessly, `bun run sim --help` — see [docs/simulation.md](./docs/simulation.md)
 
-For browser testing, `bun run dev` and learn `agent-browser --help`. To screenshot a running
-fight, use one `batch` — separate invocations refocus the tab, and the splash ignores input for
-200ms after that (`src/main.ts`), so the key never lands:
+For browser testing, `bun run dev` and learn `agent-browser --help`. Open
+`http://localhost:5173/?nosplash` — it skips the splash and intro so the fight is running on
+first paint (`src/main.ts`, also takes `&muted`):
 
 ```
-agent-browser batch --bail "open http://localhost:5173" "wait 1500" "press Space" \
-  "wait 2500" "screenshot /abs/path.png"
+agent-browser batch --bail "open http://localhost:5173/?nosplash" "wait 1000" "screenshot /abs/path.png"
 ```
 
-A key dismisses the splash and the fight auto-starts the moment the intro animation ends, ~1.5-2s
-later — no Play click needed. A relative screenshot path lands in the repo root. To press ability
-keys mid-fight, `focus .Game` first in the same batch — they only land where DOM focus is.
+A relative screenshot path lands in the repo root. To press ability keys mid-fight, `focus .Game`
+first in the same batch — they only land where DOM focus is. Batch `eval` mangles quoted strings;
+run `agent-browser eval '…'` as its own invocation. The dev panels start minimized —
+`dblclick floating-view>header` opens the first one (Balance Lab).
 
 To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored, self-contained,
 loading real assets by URL) with several variants in one file on a keypress switcher, and one of

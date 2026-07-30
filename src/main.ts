@@ -35,7 +35,7 @@ function main() {
 	let splashIntro: ReturnType<typeof buildSplashIntro> | null = null
 	if (!skipSplash)
 		void document.fonts.ready.then(() => {
-		// Small breather so any final layout/paint settles before the title slams in.
+			// Small breather so any final layout/paint settles before the title slams in.
 			setTimeout(() => {
 				splashIntro = buildSplashIntro()
 			}, 500)
@@ -86,9 +86,20 @@ function main() {
 
 		const intro = buildIntro(game)
 		intro.eventCallback('onComplete', () => game.play())
+		// ?nosplash jumps the whole intro to its end state — game running on first paint.
+		// progress(1) fires onComplete's play() synchronously, but the pause() queued at
+		// construction hasn't run yet and would override it — queue play() behind it.
+		if (skipSplash) {
+			intro.progress(1)
+			queueMicrotask(() => game.play())
+		}
 	}
-	window.addEventListener('keydown', startGame)
-	window.addEventListener('pointerdown', startGame)
+	if (skipSplash) {
+		startGame()
+	} else {
+		window.addEventListener('keydown', startGame)
+		window.addEventListener('pointerdown', startGame)
+	}
 }
 
 function setupDevTools(game: GameLoop) {
