@@ -27,7 +27,7 @@ export const prefer: {
 	lowestHealth: Preference
 	healerFirst: Preference
 	tankFirst: Preference
-	threat: (owner: Unit) => Preference
+	threat: (owner: Unit, mischief?: number) => Preference
 } = {
 	/** Whoever comes first. Stays with them until they die. */
 	first: {
@@ -80,11 +80,27 @@ export const prefer: {
 	/**
 	 * Highest threat, with enough hysteresis that two nearly equal units do not trade aggro every
 	 * attack. The table belongs to the enemy captured by this preference.
+	 *
+	 * `mischief` is the odds per pick of ignoring the table and biting someone at random — one
+	 * wander, then threat pulls it home. Seeded `random()`, like everything a fight replays.
 	 */
-	threat: (owner: Unit) => ({
-		prefers: (candidates: Unit[]) => highestThreat(threatTable(owner), candidates),
-		reconsiders: (current: Unit, candidates: Unit[]) => pullsAggro(threatTable(owner), current, candidates),
-	}),
+	threat: (owner: Unit, mischief = 0) => {
+		let wandering = false
+		return {
+			prefers: (candidates: Unit[]) => {
+				if (wandering) {
+					wandering = false
+					return candidates[Math.floor(random() * candidates.length)]
+				}
+				return highestThreat(threatTable(owner), candidates)
+			},
+			reconsiders: (current: Unit, candidates: Unit[]) => {
+				// Guarded so a mischief-less unit draws no random and replays untouched.
+				wandering = mischief > 0 && random() < mischief
+				return wandering || pullsAggro(threatTable(owner), current, candidates)
+			},
+		}
+	},
 }
 
 function threatTable(owner: Unit) {

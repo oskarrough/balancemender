@@ -113,6 +113,9 @@ core mechanic does not pretend one target was three.
 exceeds it by 10%, and `Targeting.pick()` is still called by a Cadence only when that enemy acts.
 Dead and removed units need no threat cleanup because `eligible()` has already removed them from the
 candidates. A later taunt can write directly into one enemy's table without changing targeting.
+A second argument, `prefer.threat(enemy, 0.2)`, is mischief: those odds per pick of biting someone
+at random instead — one wander, then threat pulls it home. The wolf runs on it; a disciplined unit
+passes nothing.
 
 ## One way to change the game
 

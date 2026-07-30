@@ -71,7 +71,8 @@ the most hurt". One object with two methods: `prefers()` picks, `reconsiders()` 
 look again once it has one. They stay together because they have to agree — a preference for the
 most hurt ally that does not re-pick heals someone already topped up. The six are `prefer.first`,
 `prefer.atRandom`, `prefer.lowestHealth`, `prefer.tankFirst`, `prefer.healerFirst` — which reads the
-`healing` tag off an ability rather than checking a class — and `prefer.threat(enemy)`. A unit's standing drivers
+`healing` tag off an ability rather than checking a class — and `prefer.threat(enemy, mischief?)`,
+whose optional second argument is the odds per pick of biting someone at random. A unit's standing drivers
 share one: `new Targeting(this, prefer.lowestHealth)`, asked one rule at a time through
 `Targeting.pick(rule)`. It remembers per rule, so a unit that both attacks and heals holds an enemy
 and an ally at once.

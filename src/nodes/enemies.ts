@@ -29,7 +29,8 @@ export class TinyWolf extends Unit {
 	name = 'Tiny wolf'
 	image = '/assets/generated/characters/tiny-wolf.png'
 	abilities = {SavageBite, QuickStab}
-	targeting = new Targeting(this, prefer.threat(this))
+	// A fifth of its picks bite someone at random — a wolf, not a soldier (#42).
+	targeting = new Targeting(this, prefer.threat(this, 0.2))
 	savageBiteCadence = new SavageBiteCadence(this)
 	quickStabCadence = new QuickStabCadence(this)
 }
