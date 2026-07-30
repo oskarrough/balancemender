@@ -210,6 +210,26 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 		}
 	}
 
+	// Logs and combat state keep their full precision. A report is the presentation boundary, so
+	// clean up accumulated IEEE-754 noise here once rather than teaching every renderer about it.
+	for (const stats of units.values()) {
+		stats.damageDone = round(stats.damageDone)
+		stats.damageTaken = round(stats.damageTaken)
+		stats.healingDone = round(stats.healingDone)
+		stats.overhealing = round(stats.overhealing)
+		stats.healingTaken = round(stats.healingTaken)
+		stats.absorbed = round(stats.absorbed)
+		stats.wasted = round(stats.wasted)
+		stats.manaSpent = round(stats.manaSpent)
+	}
+	for (const stats of abilities.values()) {
+		stats.total = round(stats.total)
+		stats.overheal = round(stats.overheal)
+		stats.min = round(stats.min)
+		stats.max = round(stats.max)
+		stats.avg = round(stats.avg)
+	}
+
 	const list = [...units.values()].filter((a) => a.name !== 'unknown')
 	const totals = {
 		damage: sum(list, (a) => a.damageDone),

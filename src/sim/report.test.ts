@@ -138,6 +138,18 @@ describe('analyze', () => {
 		expect(heal).toMatchObject({casts: 1, hits: 1, total: 40, overheal: 10, avg: 40})
 	})
 
+	it('removes floating-point noise from accumulated report values', () => {
+		const decimal = analyze([
+			event({sourceId: 'wolf', sourceName: 'Wolf', targetId: 'tank', targetName: 'Tank', value: 0.1}),
+			event({sourceId: 'wolf', sourceName: 'Wolf', targetId: 'tank', targetName: 'Tank', value: 0.2}),
+		])
+		const wolf = decimal.units.find((unit) => unit.name === 'Wolf')!
+		const tank = decimal.units.find((unit) => unit.name === 'Tank')!
+		expect(wolf.damageDone).toBe(0.3)
+		expect(tank.damageTaken).toBe(0.3)
+		expect(decimal.totals.damage).toBe(0.3)
+	})
+
 	it('survives an empty log', () => {
 		const empty = analyze([])
 		expect(empty.duration).toBe(0)
