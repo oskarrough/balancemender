@@ -130,6 +130,19 @@ export const smite: Bot = (player) => {
 	return undefined
 }
 
-export const bots = {idle, triage, renew, panic, shield, smite}
+/** Heal exactly as `triage`; keep Wither ticking on the target, then fill with Smite. */
+export const wither: Bot = (player) => {
+	const hurtAlly = mostHurt(player)
+	if (hurtAlly && hurtAlly.health.ratio <= 0.9) return triage(player)
+
+	const target = lowestHealthEnemy(player)
+	if (target && !hasAura(target, 'Wither') && castable(player, 'Wither', target)) {
+		return {ability: 'Wither', target}
+	}
+	if (target && castable(player, 'Smite', target)) return {ability: 'Smite', target}
+	return undefined
+}
+
+export const bots = {idle, triage, renew, panic, shield, smite, wither}
 
 export type BotName = keyof typeof bots

@@ -97,10 +97,28 @@ export class Renew extends Ability {
 	static effects = [new ApplyAura(RenewAura)]
 }
 
-/** Shares the cast's id so absorption reports as the same ability. */
-class ShieldAuraEffect extends ShieldAura {
-	static id = 'Shield'
-	static name = 'Shield'
+/** Renew's organic mirror: decay over time instead of life over time. Shares the cast's id. */
+class WitherAura extends PeriodicAura {
+	static id = 'Wither'
+	static name = 'Wither'
+	static interval = 2000
+	static repeat = 6
+}
+
+export class Wither extends Ability {
+	static id = 'Wither'
+	static name = 'Wither'
+	static tags = ['spell', 'attack', 'ranged'] as const
+	static school = 'holy' as const
+	static targetRule = 'enemy' as const
+	static cost = 40
+	// Signed like Smite's damage (#44). Kept on the spell, not the aura, so the Balance Lab can
+	// tune the whole DoT in one place — same as Renew's heal-over-time.
+	static magnitude = -30
+	static castTime = 0
+	static cooldown = 0
+	static gcd = true
+	static effects = [new ApplyAura(WitherAura)]
 }
 
 export class Shield extends Ability {
@@ -115,7 +133,8 @@ export class Shield extends Ability {
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
-	static effects = [new ApplyAura(ShieldAuraEffect)]
+	// ShieldAura's own id/name already default to 'Shield', so no subclass is needed here.
+	static effects = [new ApplyAura(ShieldAura)]
 }
 
 /** The shaman's own ability. It is registered like every other ability but not owned by the player. */

@@ -174,9 +174,10 @@ display-name-sensitive spell collections and a separate attack registry, so rena
 for no reason.
 
 By convention the id is the class name, and the class is named after the ability rather than after
-who owns it or how big it is — `QuickStab`, not `SmallAttack`. The exceptions are the two auras a
-spell plants, `RenewAura` and `ShieldAuraEffect`: each takes its spell's id so the cast and what
-it leaves behind report as one ability. Both are commented where they are declared.
+who owns it or how big it is — `QuickStab`, not `SmallAttack`. The exception is `RenewAura`, which
+takes its spell's id so the cast and the heal-over-time it leaves behind report as one ability —
+commented where it is declared. `Shield` needs no such subclass: `ShieldAura` is used by only one
+spell, so its own `static id`/`static name` already default to `'Shield'`.
 
 ## The combat log is the interface for analysis
 

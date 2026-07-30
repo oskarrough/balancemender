@@ -34,6 +34,7 @@ export function UI(game: GameLoop) {
 		'4': 'Renew',
 		'5': 'Shield',
 		'6': 'Smite',
+		'7': 'Wither',
 	}
 
 	function handleShortcuts({key}: {key: string}) {

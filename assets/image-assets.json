@@ -43,6 +43,12 @@
 			"prompt": "A sharp white-gold celestial spearhead driving downward into and splitting a dark circular stone sun-disc, precise and punitive rather than restorative. A small broken halo and three angular radiant shards reinforce the impact. Keep the entire compact symbol inside generous dark padding, with a deep charcoal-blue background and a clean silhouette readable at 64x64 pixels."
 		},
 		{
+			"id": "wither",
+			"type": "spell",
+			"name": "Wither",
+			"prompt": "A quiet dying leaf, curling and browning at its edges with a faint sickly grey-green light draining from its veins — Renew's leaf bloom in reverse, decay instead of growth. Dark muted background, a thin fading glow rather than a burst, clean centered silhouette."
+		},
+		{
 			"id": "tiny-wolf",
 			"type": "character",
 			"name": "Tiny wolf",
