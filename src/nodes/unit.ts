@@ -41,8 +41,8 @@ export class Unit extends Node {
 	faction: Faction = (this.constructor as typeof Unit).faction
 	/**
 	 * How this unit's standing drivers choose among the units an ability may land on. A preference
-	 * and nothing more — it holds no target the rest of the game reads back. The player has none:
-	 * the keyboard is its own driver.
+	 * and its settled picks. The UI may read a pick for target-of-target, but only a driver changes
+	 * it. The player has none: the keyboard is its own driver.
 	 */
 	targeting?: Targeting
 	/**

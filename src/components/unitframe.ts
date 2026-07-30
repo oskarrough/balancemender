@@ -14,6 +14,8 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const maxHealth = unit.health.max
 	const isCurrentTarget = player.intendedTarget === unit
 	const displayName = unit.name || unit.constructor.name
+	const target = isEnemy && isCurrentTarget ? unit.targeting?.current('enemy') : undefined
+	const targetName = target ? target.name || target.constructor.name : undefined
 	const auras: Aura[] = [...unit.auras]
 
 	/**
@@ -43,7 +45,9 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 							potentialValue: isCurrentTarget && !isEnemy && playerCast ? playerCast.magnitude : 0,
 							ability: !isEnemy ? playerCast : undefined,
 						})}
-						<div class="Unit-name">${displayName} ${isCurrentTarget ? '✓' : ''}</div>
+						<div class="Unit-name">
+							${displayName} ${isCurrentTarget ? '✓' : ''}${targetName ? ` → ${targetName}` : ''}
+						</div>
 					</div>
 					${'mana' in unit && unit.mana
 						? Meter({

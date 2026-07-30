@@ -75,7 +75,8 @@ most hurt ally that does not re-pick heals someone already topped up. The six ar
 whose optional second argument is the odds per pick of biting someone at random. A unit's standing drivers
 share one: `new Targeting(this, prefer.lowestHealth)`, asked one rule at a time through
 `Targeting.pick(rule)`. It remembers per rule, so a unit that both attacks and heals holds an enemy
-and an ally at once.
+and an ally at once. `Targeting.current(rule)` exposes that settled pick read-only so the selected
+enemy's frame can show who it is attacking.
 
 **Threat** — one enemy's numerical attention toward each opposing unit. Actual damage earns threat
 only from the enemy it landed on; effective healing earns less and is divided between every living

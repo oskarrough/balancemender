@@ -87,6 +87,8 @@ keyboard's preference is `Player.intendedTarget` — the frame the player select
 the tank; the `BotDriver`'s is whatever its bot weighed; a `Cadence` asks its unit's
 `Targeting.pick(rule)`, which is a preference and a memory per target rule and nothing else. A unit
 with no `Targeting` has no way to choose, so its Cadence says so rather than beating in silence.
+The selected enemy's frame may read that memory through `Targeting.current(rule)` to show
+target-of-target, but it cannot choose or change one.
 
 A unit used to hold one `currentTarget` that every ability read back, so `WolfShaman` could not
 both bite and mend — the two drivers would have overwritten each other's aim. Now nothing stores a

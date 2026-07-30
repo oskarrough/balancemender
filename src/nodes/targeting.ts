@@ -113,7 +113,8 @@ function threatTable(owner: Unit) {
  *
  * It remembers who it settled on per target rule, not per unit, so a unit that both attacks and
  * heals keeps an enemy and an ally at the same time instead of two drivers fighting over one slot.
- * Nobody reads what it chose afterwards: the pick is handed to the use that asked for it.
+ * The UI may observe that memory to show target-of-target; only a driver may change it through
+ * `pick()`.
  */
 export class Targeting {
 	private settled = new Map<TargetRule, Unit>()
@@ -122,6 +123,12 @@ export class Targeting {
 		public parent: Unit,
 		public preference: Preference,
 	) {}
+
+	/** Who this preference last picked for a rule, while that target remains eligible. */
+	current(rule: TargetRule): Unit | undefined {
+		const target = this.settled.get(rule)
+		return target && eligible(this.parent, rule).includes(target) ? target : undefined
+	}
 
 	/** Who to use an ability with this rule on, right now. A corpse picks nobody. */
 	pick(rule: TargetRule): Unit | undefined {

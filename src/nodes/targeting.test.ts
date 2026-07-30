@@ -33,3 +33,21 @@ describe('healerFirst', () => {
 		expect(prefer.healerFirst.reconsiders(candidates[0], candidates)).toBe(false)
 	})
 })
+
+describe('current target', () => {
+	it('exposes the last live pick without choosing one for the UI', () => {
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const wolf = game.enemies[0]
+
+		expect(wolf.targeting?.current('enemy')).toBeUndefined()
+
+		const target = wolf.targeting?.pick('enemy')
+
+		expect(target).toBeDefined()
+		expect(wolf.targeting?.current('enemy')).toBe(target)
+
+		target?.health.set(0)
+
+		expect(wolf.targeting?.current('enemy')).toBeUndefined()
+	})
+})
