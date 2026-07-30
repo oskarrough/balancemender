@@ -61,7 +61,7 @@ describe('perform', () => {
 
 	it('retunes the units already fighting, matched by id and not by class name', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		expect(game.perform({type: 'tune', of: 'unit', name: 'Tank', key: 'maxHealth', value: 50}).ok).toBe(true)
+		expect(game.perform({type: 'tune', of: 'unit', name: 'Tank', key: 'stamina', value: 50}).ok).toBe(true)
 		// A minified build mangles `constructor.name`; `unitId` is what makes this reach anyone.
 		expect(game.tank.health.max).toBe(50)
 		expect(game.tank.health.current).toBe(50)

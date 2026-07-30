@@ -14,9 +14,8 @@ export class Mana extends Resource {
 	lastCastTime = 0
 
 	/**
-	 * `regenRate` is handed in rather than hardcoded, for the same reason `max` is: it is a stat of
-	 * whoever owns the pool, so it is tunable per unit and read once at construction. Retuning it
-	 * mid-fight leaves the fight you are in alone, which is the rule the rest of balance follows.
+	 * `regenRate` is handed in rather than hardcoded, for the same reason `max` is: both are derived
+	 * from whoever owns the pool. A later spirit modifier updates the rate on this same task.
 	 */
 	constructor(parent: Unit, max = 100, regenRate = 3) {
 		super(parent, max, MANA_EVENTS)

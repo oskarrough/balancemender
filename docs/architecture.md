@@ -11,6 +11,7 @@ index.html
         └── GameLoop         (vroum Loop) the clock and the root of everything
               ├── Encounter  owns the party + enemies
               │     └── Unit…             Player, Tank, TinyWolf, WolfShaman, Nakroth
+              │           ├── Stats       base + owned modifiers → health, mana, mana regen
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   a preference its drivers ask for one target at a time
               │           ├── abilities   stable id → one-shot Ability class
@@ -168,10 +169,23 @@ The bots use their own ratios (0.4, 0.7, 0.9) and deliberately do **not** read t
 the measuring instrument every sweep quotes against, so unifying the numbers would move every win
 rate already recorded and make the sweep circular.
 
+## Stats: what a unit brings
+
+Every unit declares five base stats: stamina, intellect, strength, agility and spirit. A live
+`Stats` resolves each base plus the modifiers owned by auras on that unit. Modifiers are keyed by
+their owner rather than undone with subtraction, so one expiring aura removes exactly its own
+contribution even when copies stack or one supersedes another.
+
+Stamina is maximum health, intellect grants 15 maximum mana each, and spirit is mana regenerated
+per second. The resource pools keep their current amount when their maximum rises and clamp only
+when it falls. Strength and agility deliberately have no derived effect yet; coefficients, dodge
+and crit are later slices.
+
 ## Numbers and tuning
 
 `src/balance.ts` snapshots the tunable statics of every ability, cadence, periodic aura and unit, and
-writes changes back to the classes. How big an ability lands is one number, `magnitude` — the healing
+writes changes back to the classes. A unit's tunable numbers are its base stats; resolved modifiers
+belong to the live unit and never rewrite its template. How big an ability lands is one number, `magnitude` — the healing
 of `Heal`, the whole heal-over-time of `Renew`, the pool of `Shield` — so an aura a spell
 plants needs no balance entry of its own; only one nothing applies does, like `Rend`. Everything
 reaches it through `perform({type: 'tune', …})`; `src/inspectables.ts` is what the Balance Lab lists.

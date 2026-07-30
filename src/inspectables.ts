@@ -4,6 +4,7 @@ import {balanceCategories, type AbilityKey, type CadenceKey, type UnitKey, type 
 import type {GameAction} from './actions'
 import {abilityRegistry, type AbilityId} from './nodes/registry'
 import type {UnitId} from './nodes/unit-registry'
+import {MANA_PER_INTELLECT, STAT} from './nodes/stats'
 
 export type NumberField = {
 	kind: 'number'
@@ -51,8 +52,8 @@ const LABELS: {
 	rule: Record<RuleKey, string>
 } = {
 	ability: {
-		cost: 'Mana cost',
 		magnitude: 'Magnitude (heal or shield)',
+		cost: 'Mana cost',
 		castTime: 'Cast time (ms)',
 		cooldown: 'Cooldown (ms)',
 		minDamage: 'Min damage',
@@ -61,7 +62,13 @@ const LABELS: {
 		sweetSpotWindow: 'Sweet spot window (ms)',
 		sweetSpotBonus: 'Sweet spot bonus (fraction)',
 	},
-	unit: {maxHealth: 'Max health', maxMana: 'Max mana', manaRegen: 'Mana regen (per second)'},
+	unit: {
+		stamina: 'Stamina',
+		intellect: 'Intellect',
+		strength: 'Strength',
+		agility: 'Agility',
+		spirit: 'Spirit',
+	},
 	cadence: {delay: 'Initial delay (ms)', interval: 'Interval (ms)'},
 	rule: {injured: 'Injured below (% health)', healthy: 'Healthy above (% health)'},
 }
@@ -171,7 +178,7 @@ type Pool = {current: number; max: number; set(value: number): number}
 /** A unit already in the fight: its bars written straight to, and the buttons that end it. */
 function liveInspectable(game: GameLoop, unit: Unit): Inspectable {
 	const {health, mana} = unit
-	const poolFields = (key: string, label: string, pool: Pool): NumberField[] => [
+	const poolFields = (key: string, label: string, pool: Pool, setMax: (value: number) => void): NumberField[] => [
 		{
 			kind: 'number',
 			key,
@@ -187,13 +194,18 @@ function liveInspectable(game: GameLoop, unit: Unit): Inspectable {
 			key: `${key}Max`,
 			label: `Max ${label.toLowerCase()}`,
 			get: () => pool.max,
-			set: (value) => {
-				pool.max = value
-				if (pool.current > value) pool.set(value)
-			},
+			set: setMax,
 			min: 1,
 		},
 	]
+	const setHealthMax = (value: number) => {
+		const base = unit.stats.base(STAT.STAMINA)
+		unit.setBaseStat(STAT.STAMINA, base + value - unit.stats.stamina)
+	}
+	const setManaMax = (value: number) => {
+		const base = unit.stats.base(STAT.INTELLECT)
+		unit.setBaseStat(STAT.INTELLECT, base + value / MANA_PER_INTELLECT - unit.stats.intellect)
+	}
 
 	const actions: Action[] = [
 		{
@@ -226,7 +238,10 @@ function liveInspectable(game: GameLoop, unit: Unit): Inspectable {
 		kind: 'live',
 		title: unit.name || unit.unitId || '?',
 		subtitle: `${unit.faction} · ${unit.unitId}`,
-		fields: [...poolFields('hp', 'Health', health), ...(mana ? poolFields('mana', 'Mana', mana) : [])],
+		fields: [
+			...poolFields('hp', 'Health', health, setHealthMax),
+			...(mana ? poolFields('mana', 'Mana', mana, setManaMax) : []),
+		],
 		actions,
 	}
 }

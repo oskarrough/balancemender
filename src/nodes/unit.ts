@@ -11,15 +11,20 @@ import type {GlobalCooldown} from './global-cooldown'
 import type {Targeting} from './targeting'
 import {AbilityUse} from './ability-use'
 import type {ThreatTable} from './threat'
+import {Stats, type Stat} from './stats'
 
 /**
- * Base unit class. Subclasses declare `static maxHealth = N` and the
- * base constructor wires up the Health node — defining `health` as a field
- * initializer in a subclass would create (and orphan) a second one.
+ * Base unit class. Subclasses declare their base stats and the constructor derives the resource
+ * nodes from them — defining `health` as a field initializer in a subclass would create (and
+ * orphan) a second one.
  */
 export class Unit extends Node {
 	readonly id: string
-	static maxHealth = 100
+	static stamina = 100
+	static intellect = 0
+	static strength = 0
+	static agility = 0
+	static spirit = 0
 	/** Which side this unit fights on. Static so the registry can be read without spawning anyone. */
 	static faction: Faction = FACTION.ENEMY
 
@@ -29,6 +34,7 @@ export class Unit extends Node {
 	unitId?: UnitId
 	/** `name` before duplicate numbering, so renumbering stays idempotent. */
 	baseName?: string
+	readonly stats: Stats
 	health: Health
 	mana?: Mana
 	auras = new Set<Aura>()
@@ -107,9 +113,45 @@ export class Unit extends Node {
 	constructor(public parent: Encounter) {
 		super(parent)
 		this.id = createId()
-		this.health = new Health(this, (this.constructor as typeof Unit).maxHealth)
+		const bases = this.constructor as typeof Unit
+		this.stats = new Stats({
+			stamina: bases.stamina,
+			intellect: bases.intellect,
+			strength: bases.strength,
+			agility: bases.agility,
+			spirit: bases.spirit,
+		})
+		this.health = new Health(this, this.stats.maxHealth)
 		this.health.on(HEALTH_EVENTS.EMPTY, this.onHealthEmpty)
 		if (this.faction === FACTION.ENEMY) this.threat = new Map(parent.party.map((unit) => [unit, 0] as const))
+	}
+
+	setBaseStat(stat: Stat, value: number) {
+		this.stats.setBase(stat, value)
+		this.syncDerivedStats()
+	}
+
+	addStatModifier(owner: object, stat: Stat, amount: number) {
+		this.stats.addModifier(owner, stat, amount)
+		this.syncDerivedStats()
+	}
+
+	removeStatModifier(owner: object) {
+		if (this.stats.removeModifier(owner)) this.syncDerivedStats()
+	}
+
+	/**
+	 * A higher maximum grants no free health or mana. A lower one only clamps what no longer fits,
+	 * matching the live Balance Lab's existing retune rule.
+	 */
+	private syncDerivedStats() {
+		this.health.max = this.stats.maxHealth
+		if (this.health.current > this.health.max) this.health.set(this.health.max)
+
+		if (!this.mana) return
+		this.mana.max = this.stats.maxMana
+		if (this.mana.current > this.mana.max) this.mana.set(this.mana.max)
+		this.mana.regen.regenRate = this.stats.manaRegen
 	}
 
 	/**

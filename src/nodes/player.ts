@@ -6,9 +6,11 @@ import type {AbilityClass} from './ability'
 import type {Encounter} from './encounter'
 
 export class Player extends Unit {
-	static maxHealth = 160
-	static maxMana = 600
-	static manaRegen = 9
+	static stamina = 160
+	static intellect = 40
+	static strength = 5
+	static agility = 10
+	static spirit = 9
 	static faction = FACTION.PARTY
 	name = 'Player'
 	image = '/assets/generated/characters/player.png'
@@ -17,8 +19,7 @@ export class Player extends Unit {
 
 	constructor(public parent: Encounter) {
 		super(parent)
-		const stats = this.constructor as typeof Player
-		this.mana = new Mana(this, stats.maxMana, stats.manaRegen)
+		this.mana = new Mana(this, this.stats.maxMana, this.stats.manaRegen)
 	}
 
 	/**

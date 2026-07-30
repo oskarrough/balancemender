@@ -6,7 +6,11 @@ import {Mend} from './spells'
 import {NastyArrowCadence, HeavyBlowCadence, MendCadence, QuickStabCadence, SavageBiteCadence} from './cadence'
 
 export class Nakroth extends Unit {
-	static maxHealth = 500
+	static stamina = 500
+	static intellect = 0
+	static strength = 25
+	static agility = 8
+	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Nakroth the Destroyer'
 	abilities = {HeavyBlow, NastyArrow}
@@ -16,7 +20,11 @@ export class Nakroth extends Unit {
 }
 
 export class TinyWolf extends Unit {
-	static maxHealth = 240
+	static stamina = 240
+	static intellect = 0
+	static strength = 10
+	static agility = 20
+	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Tiny wolf'
 	image = '/assets/generated/characters/tiny-wolf.png'
@@ -33,7 +41,11 @@ export class TinyWolf extends Unit {
  * only because a pack this size does not need more damage in it.
  */
 export class WolfShaman extends Unit {
-	static maxHealth = 180
+	static stamina = 180
+	static intellect = 20
+	static strength = 5
+	static agility = 12
+	static spirit = 5
 	static faction = FACTION.ENEMY
 	name = 'Wolf shaman'
 	abilities = {Mend}

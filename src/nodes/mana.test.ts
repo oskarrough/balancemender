@@ -3,6 +3,7 @@ import {GameLoop} from './game-loop'
 import {Player} from './player'
 import {runFight} from '../sim/run'
 import {analyze} from '../sim/report'
+import {MANA_PER_INTELLECT} from './stats'
 
 /**
  * The five-second rule is the whole mechanic: casting suppresses your own regeneration, so a lull
@@ -25,21 +26,19 @@ describe('mana regeneration', () => {
 		expect(mana.regen.shouldTick()).toBe(true)
 
 		mana.regen.tick()
-		expect(mana.current).toBe(100 + Player.manaRegen)
+		expect(mana.current).toBe(100 + Player.spirit)
 
 		game.disconnect()
 	})
 
-	it('takes its rate from the unit, so the Balance Lab can tune it', () => {
+	it('derives its rate from spirit, so the Balance Lab can tune it', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		// Captured before the tune, because the tune rewrites the static this came from.
-		const shipped = Player.manaRegen
+		const shipped = Player.spirit
 		expect(game.player.mana.regen.regenRate).toBe(shipped)
 
-		expect(game.perform({type: 'tune', of: 'unit', name: 'Player', key: 'manaRegen', value: 40}).ok).toBe(true)
-		// Read at construction, not per tick, so the fight you are in keeps the rate it started with
-		// — the same rule the rest of balance follows.
-		expect(game.player.mana.regen.regenRate).toBe(shipped)
+		expect(game.perform({type: 'tune', of: 'unit', name: 'Player', key: 'spirit', value: 40}).ok).toBe(true)
+		expect(game.player.mana.regen.regenRate).toBe(40)
 
 		const next = new GameLoop({party: ['Tank'], enemies: []})
 		expect(next.player.mana.regen.regenRate).toBe(40)
@@ -59,6 +58,6 @@ describe('mana regeneration', () => {
 		expect(fight.outcome).toBe('victory')
 
 		const player = analyze(fight.events, fight).units.find((unit) => unit.name === 'Player')
-		expect(player!.manaSpent).toBeGreaterThan(Player.maxMana)
+		expect(player!.manaSpent).toBeGreaterThan(Player.intellect * MANA_PER_INTELLECT)
 	})
 })

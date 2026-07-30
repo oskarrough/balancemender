@@ -5,7 +5,11 @@ import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
 
 export class Tank extends Unit {
-	static maxHealth = 300
+	static stamina = 300
+	static intellect = 0
+	static strength = 20
+	static agility = 5
+	static spirit = 0
 	static faction = FACTION.PARTY
 	abilities = {ShieldBash}
 	targeting = new Targeting(this, prefer.healerFirst)

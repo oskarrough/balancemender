@@ -120,10 +120,7 @@ const findUnit = (game: GameLoop, id: string): Unit | undefined => game.encounte
 function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: number) {
 	for (const unit of game.encounter.units) {
 		if (unit.unitId !== unitId) continue
-		const resource = key === 'maxHealth' ? unit.health : unit.mana
-		if (!resource) continue
-		resource.max = value
-		if (resource.current > value) resource.set(value)
+		unit.setBaseStat(key, value)
 	}
 }
 

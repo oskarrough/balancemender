@@ -14,6 +14,11 @@ yet. Definitions only — the reasoning lives in [architecture.md](./architectur
 unit's `id`, unique per spawned instance. Anything keyed across a fight uses the instance `id`; names
 change mid-fight when a duplicate is spawned.
 
+**Stat** — one of the five primary numbers a unit brings: stamina, intellect, strength, agility and
+spirit. Its resolved value is the unit's base plus modifiers owned by live auras. Stamina determines
+maximum health, intellect maximum mana, and spirit mana regeneration; strength and agility have no
+derived effect until later coefficient, dodge or crit work.
+
 **Character** — a named unit. Someone rather than something: a proper noun, a hand-tuned kit, unique
 in a fight. `Nakroth the Destroyer` is the only one today; `Diablo` and `Mephisto` are the shape of
 the rest. A wolf is a unit and never a character — spawn three and they are interchangeable, which is

@@ -10,6 +10,7 @@ import {
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
+import {STAT_KEYS} from './nodes/stats'
 
 export const ABILITY_KEYS = [
 	'cost',
@@ -23,7 +24,7 @@ export const ABILITY_KEYS = [
 	'sweetSpotBonus',
 ] as const
 export const CADENCE_KEYS = ['delay', 'interval'] as const
-export const UNIT_KEYS = ['maxHealth', 'maxMana', 'manaRegen'] as const
+export const UNIT_KEYS = STAT_KEYS
 export const AURA_KEYS = ['total', 'interval', 'repeat', 'delay'] as const
 export const RULE_KEYS = ['injured', 'healthy'] as const
 
@@ -38,7 +39,7 @@ type PartialDict = Record<string, number | undefined>
 type CadenceClass = {delay: number; interval: number}
 type AuraClass = {total: number; interval: number; repeat: number; delay: number}
 type RuleClass = {injured: number; healthy: number}
-type UnitClass = {maxHealth: number; maxMana?: number; manaRegen?: number}
+type UnitClass = Record<UnitKey, number>
 
 /** One tunable surface for every ability; absent keys remain absent rather than becoming zero rules. */
 export const abilityClasses = abilityRegistry
