@@ -135,7 +135,8 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.2rem;
-	margin: 0.2rem 0 0;
+	/* Lines up under the health bar instead of the avatar, so a narrow chip doesn't leave the whole row reading empty. */
+	margin: 0.2rem 0 0 3.4rem;
 	padding: 0;
 	list-style: none;
 }

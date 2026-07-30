@@ -1,15 +1,15 @@
 import {html} from 'uhtml'
-import {roundOne} from '../utils'
 import {GameLoop} from '../nodes/game-loop'
 
+/**
+ * Time/FPS/GCD live in the Fight report panel now — this is only the god mode / infinite mana
+ * indicator, which has to stay visible without opening a panel, so it renders nothing when
+ * neither flag is on.
+ */
 export function Monitor(loop: GameLoop) {
-	const player = loop.player
-	const fps = loop.deltaTime > 0 ? Math.round(1000 / loop.deltaTime) : 0
+	if (!loop.godMode && !loop.infiniteMana) return ''
 
 	return html` <ul class="Monitor">
-		<li><em>Time</em> ${roundOne(loop.elapsedTime / 1000)}s</li>
-		<li><em>FPS</em> ${fps}</li>
-		<li><em>GCD</em> ${player.gcd ? 'on' : 'off'}</li>
 		${loop.godMode ? html`<li class="Monitor-godMode"><em>God mode ON</li>` : ''}
 		${loop.infiniteMana ? html`<li class="Monitor-infiniteMana"><em>Inf. mana</em> ON</li>` : ''}
 	</ul>`

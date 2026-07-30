@@ -80,10 +80,6 @@ div.Bar-potentialValue {
 	--bg: var(--mana);
 }
 
-[data-type='cd'] {
-	--bg: rgb(from var(--cast) r g b / 0.8);
-}
-
 [data-type='cast'] {
 	--bg: var(--cast);
 	/* because of the label */
