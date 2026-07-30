@@ -6,6 +6,7 @@ import {buildSplashIntro, buildIntro} from './animations'
 import {DevConsole} from './components/dev-console'
 import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
+import {loadFightHistory} from './fight-history'
 import './components/dev-console'
 import './components/animation-debugger'
 import {applyDefaultLayout} from './components/floating-view.js'
@@ -24,6 +25,8 @@ function main() {
 	// Panels upgrade synchronously when floating-view.js defines the element, so they have
 	// their intrinsic size by now and the rails can stack them.
 	applyDefaultLayout()
+
+	void loadFightHistory().catch((err) => console.error('Failed to load fight history', err))
 
 	// Wait for web fonts before animating the splash — otherwise "Rubik 80s Fade" swaps in mid-tween
 	// and re-rasterizes the giant title, which reads as jank no matter what GSAP does.
@@ -79,7 +82,7 @@ function main() {
 		new InputManager(game)
 
 		const intro = buildIntro(game)
-		intro.eventCallback('onComplete', () => setTimeout(() => game.play(), 700))
+		intro.eventCallback('onComplete', () => game.play())
 	}
 	window.addEventListener('keydown', startGame)
 	window.addEventListener('pointerdown', startGame)

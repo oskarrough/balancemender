@@ -1,5 +1,25 @@
 import type {CombatEventType, CombatLogEvent} from '../combatlog'
-import type {Outcome, UnitInfo} from './run'
+import type {GameLoop} from '../nodes/game-loop'
+
+export type Outcome = 'victory' | 'defeat' | 'timeout'
+
+/** Who was in a fight. Not a `Roster` — that is the spec you spawn *from*. */
+export interface UnitInfo {
+	id: string
+	name: string
+	maxHealth: number
+	faction: string
+}
+
+/** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
+export function unitsOf(game: GameLoop): UnitInfo[] {
+	return game.encounter.units.map((c) => ({
+		id: c.id,
+		name: c.name || c.constructor.name,
+		maxHealth: c.health.max,
+		faction: c.faction,
+	}))
+}
 
 /**
  * Everything in here is a pure function over a combat log. That is the point: a fight

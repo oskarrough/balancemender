@@ -5,8 +5,9 @@ import {combatLogs, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent
 import {setSeed} from '../rng'
 import {DEMO_ROSTER, Roster} from '../nodes/encounter'
 import type {Unit} from '../nodes/unit'
+import {unitsOf, type Outcome, type UnitInfo} from './report'
 
-export type Outcome = 'victory' | 'defeat' | 'timeout'
+export {unitsOf, type Outcome, type UnitInfo}
 
 export interface FightSpec extends Roster {
 	/** How the healer plays. See `src/nodes/bot.ts`. */
@@ -17,14 +18,6 @@ export interface FightSpec extends Roster {
 	maxDuration?: number
 	/** Frames per second to simulate. The browser runs ~60. */
 	fps?: number
-}
-
-/** Who was in a fight. Not a `Roster` — that is the spec you spawn *from*. */
-export interface UnitInfo {
-	id: string
-	name: string
-	maxHealth: number
-	faction: string
 }
 
 export interface FightResult {
@@ -136,16 +129,6 @@ if (typeof (GameLoop.prototype as unknown as {_requestNextFrame?: unknown})._req
 Object.assign(SimLoop.prototype, {_requestNextFrame() {}})
 
 const isAlive = (c: Unit) => c.health.current > 0
-
-/** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
-export function unitsOf(game: GameLoop): UnitInfo[] {
-	return game.encounter.units.map((c) => ({
-		id: c.id,
-		name: c.name || c.constructor.name,
-		maxHealth: c.health.max,
-		faction: c.faction,
-	}))
-}
 
 /** Let vroum's queued mount/disconnect microtasks run. */
 const flush = () => Promise.resolve()

@@ -5,6 +5,7 @@ import {analyze, FightReport as Report, Series} from '../sim/report'
 import {unitsOf, runFights} from '../sim/run'
 import {deathOf, formatAggregate, percentOf as percent} from '../sim/format'
 import {bots, BotName} from '../nodes/bot'
+import {listFights, getFight, fightHistoryEvents, type StoredFightMeta} from '../fight-history'
 
 /**
  * The fight you are playing, read the same way a simulated fight is read: `analyze()` over
@@ -18,6 +19,8 @@ export class FightReportView extends HTMLElement {
 	private bot: BotName = 'triage'
 	private runs = 5
 	private onLogUpdate = () => this.schedule()
+	private onHistoryChange = () => this.render()
+	private selectedFightId: string | null = null
 
 	private get game(): GameLoop | undefined {
 		return currentGame()
@@ -25,11 +28,13 @@ export class FightReportView extends HTMLElement {
 
 	connectedCallback() {
 		combatEvents.addEventListener('combatlog-update', this.onLogUpdate)
+		fightHistoryEvents.addEventListener('change', this.onHistoryChange)
 		this.render()
 	}
 
 	disconnectedCallback() {
 		combatEvents.removeEventListener('combatlog-update', this.onLogUpdate)
+		fightHistoryEvents.removeEventListener('change', this.onHistoryChange)
 		cancelAnimationFrame(this.pending)
 	}
 
@@ -70,16 +75,24 @@ export class FightReportView extends HTMLElement {
 			render(this, () => html`<p>Waiting for game…</p>`)
 			return
 		}
-		const report = analyze(combatLogs, {units: unitsOf(game), duration: game.elapsedTime})
+		const stored = this.selectedFightId ? getFight(this.selectedFightId) : undefined
+		const viewingHistory = this.selectedFightId !== null && !!stored
+		const report = stored
+			? analyze(stored.events, {units: stored.units, duration: stored.duration})
+			: analyze(combatLogs, {units: unitsOf(game), duration: game.elapsedTime})
+		const duration = stored ? stored.duration : game.elapsedTime
+		const fps = game.deltaTime > 0 ? Math.round(1000 / game.deltaTime) : 0
 
 		render(
 			this,
 			() => html`
 				<div class="FightReport">
+					${this.history()}
 					<p class="FightReport-summary">
-						<strong>${(game.elapsedTime / 1000).toFixed(1)}s</strong> · ${report.events} events · ${report.totals.hps}
-						hps · ${report.totals.dps} dps ·
+						<strong>${(duration / 1000).toFixed(1)}s</strong> · ${report.events} events · ${report.totals.hps} hps ·
+						${report.totals.dps} dps ·
 						${percent(report.totals.overhealing, report.totals.overhealing + report.totals.healing)} overheal
+						${stored ? '' : html` · ${fps} fps · gcd ${game.player?.gcd ? 'on' : 'off'}`}
 					</p>
 
 					<ul class="FightReport-units">
@@ -151,25 +164,71 @@ export class FightReportView extends HTMLElement {
 								</table>
 							`
 						: ''}
-
-					<div class="FightReport-controls">
-						<select
-							onchange=${(e: Event) => {
-								this.bot = (e.target as HTMLSelectElement).value as BotName
-							}}
-						>
-							${Object.keys(bots).map(
-								(name) => html`<option value=${name} selected=${name === this.bot}>${name}</option>`,
-							)}
-						</select>
-						<button class="Button" onclick=${() => this.simulate()} disabled=${this.busy}>
-							Simulate ${this.runs}×
-						</button>
-					</div>
-					${this.simulation ? html`<pre class="FightReport-sim">${this.simulation}</pre>` : ''}
+					${viewingHistory
+						? ''
+						: html`
+								<div class="FightReport-controls">
+									<select
+										onchange=${(e: Event) => {
+											this.bot = (e.target as HTMLSelectElement).value as BotName
+										}}
+									>
+										${Object.keys(bots).map(
+											(name) => html`<option value=${name} selected=${name === this.bot}>${name}</option>`,
+										)}
+									</select>
+									<button class="Button" onclick=${() => this.simulate()} disabled=${this.busy}>
+										Simulate ${this.runs}×
+									</button>
+								</div>
+								${this.simulation ? html`<pre class="FightReport-sim">${this.simulation}</pre>` : ''}
+							`}
 				</div>
 			`,
 		)
+	}
+
+	/** Past fights, newest first, plus a Live entry that returns to the current fight. */
+	private history() {
+		const fights = listFights()
+		if (!fights.length) return ''
+		return html`
+			<ul class="FightReport-history">
+				<li>
+					<button
+						class="FightReport-historyItem"
+						data-active=${this.selectedFightId === null}
+						onclick=${() => {
+							this.selectedFightId = null
+							this.render()
+						}}
+					>
+						Live
+					</button>
+				</li>
+				${fights.map((fight) => this.historyItem(fight))}
+			</ul>
+		`
+	}
+
+	private historyItem(fight: StoredFightMeta) {
+		const date = new Date(fight.timestamp)
+		const when = date.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})
+		return html`
+			<li>
+				<button
+					class="FightReport-historyItem"
+					data-outcome=${fight.outcome}
+					data-active=${this.selectedFightId === fight.id}
+					onclick=${() => {
+						this.selectedFightId = fight.id
+						this.render()
+					}}
+				>
+					${fight.outcome} · ${(fight.duration / 1000).toFixed(1)}s · ${when}
+				</button>
+			</li>
+		`
 	}
 
 	private unit(unit: Series, report: Report) {

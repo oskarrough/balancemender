@@ -1,13 +1,15 @@
 import {Loop} from '../vroum'
-import {log} from '../utils'
+import {log, logger} from '../utils'
 import type {Player} from './player'
 import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
 import {Encounter, DEMO_ROSTER, Roster} from './encounter'
 import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
-import {logCombat, setCombatClock, clearLogs} from '../combatlog'
+import {logCombat, setCombatClock, clearLogs, combatLogs} from '../combatlog'
 import {perform, type GameAction} from '../actions'
+import {unitsOf, type Outcome} from '../sim/report'
+import {saveFight} from '../fight-history'
 
 declare global {
 	interface Window {
@@ -29,6 +31,9 @@ export function currentGame(): GameLoop | undefined {
 /** The clock and the root of everything. See [architecture](../../docs/architecture.md). */
 export class GameLoop extends Loop {
 	gameOver = false
+
+	/** How the fight ended — unset until `gameOver` flips. See `Outcome` in the glossary. */
+	outcome?: Outcome
 
 	/** How long a cast locks the caster out of the next one. See `GlobalCooldown`. */
 	gcd = 1500
@@ -55,6 +60,9 @@ export class GameLoop extends Loop {
 	}
 
 	private _muted = true
+
+	/** Guards against `onGameOver` firing twice — the tick loop and the animation debugger both can. */
+	private fightSaved = false
 
 	audio = new AudioPlayer(this)
 	encounter: Encounter
@@ -99,10 +107,12 @@ export class GameLoop extends Loop {
 		clearLogs()
 		this.encounter = new Encounter(this, roster)
 		this.gameOver = false
+		this.outcome = undefined
 		this.elapsedTime = 0
 		// Stamped against a clock that just went back to zero, so it would otherwise read as
 		// having happened in this fight's future and never expire.
 		this.lastRefusal = undefined
+		this.fightSaved = false
 		this.render()
 	}
 
@@ -140,8 +150,14 @@ export class GameLoop extends Loop {
 	}
 
 	tick() {
-		if (this.encounter.isPartyDefeated() || this.encounter.isEnemiesDefeated()) {
+		// Checked in this order so a mutual wipe (both sides dead the same tick) reads as a
+		// defeat, matching the sim's `runFight()`.
+		if (this.encounter.isPartyDefeated()) {
 			this.gameOver = true
+			this.outcome = 'defeat'
+		} else if (this.encounter.isEnemiesDefeated()) {
+			this.gameOver = true
+			this.outcome = 'victory'
 		}
 		if (this.gameOver) this.onGameOver()
 		this.render()
@@ -158,9 +174,25 @@ export class GameLoop extends Loop {
 		// gameOver/render are already set/done by tick() before this fires;
 		// also set here so the debugger's manual trigger works from any state.
 		this.gameOver = true
+		// The debugger's manual trigger flips gameOver without going through tick(), so fall
+		// back to reading the encounter directly rather than showing no outcome at all.
+		if (!this.outcome) this.outcome = this.encounter.isPartyDefeated() ? 'defeat' : 'victory'
+		const outcome = this.outcome
 		this.render()
-		// Only worth animating for someone who is watching it.
-		if (this.draw) buildGameOver(this)
+		// Only worth animating — or saving — for someone who is watching it. Headless SimLoop
+		// fights have no draw and must never be persisted.
+		if (this.draw) {
+			buildGameOver(this)
+			if (!this.fightSaved) {
+				this.fightSaved = true
+				saveFight({
+					outcome,
+					duration: Math.round(this.elapsedTime),
+					events: combatLogs.slice(),
+					units: unitsOf(this),
+				}).catch((err) => logger.error({err}, 'Failed to save fight history'))
+			}
+		}
 	}
 
 	/** Reset state for a fresh encounter. Does not animate — pair with `restartGame()` for the visual transition. */

@@ -72,6 +72,9 @@ export type CombatEventType =
 
 export const combatLogs: CombatLogEvent[] = []
 
+/** Bump when an event shape changes — stored fights carry this and get dropped on mismatch. */
+export const COMBATLOG_SCHEMA = 1
+
 /**
  * Where `time` comes from. The GameLoop points this at its own `elapsedTime` when it mounts,
  * so events are stamped with fight time rather than wall time — a simulated fight runs far
