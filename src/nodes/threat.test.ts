@@ -7,6 +7,7 @@ import {ApplyAura} from './effects'
 import {PeriodicAura} from './periodic-aura'
 import {HEALING_THREAT_MULTIPLIER} from './threat'
 import {settle} from '../test-setup'
+import {prefer, Targeting} from './targeting'
 
 let game!: GameLoop
 afterEach(() => game.disconnect())
@@ -101,6 +102,7 @@ describe('threat targeting', () => {
 	it('starts tied on the tank and switches only after a challenger exceeds 110%', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
+		wolf.targeting = new Targeting(wolf, prefer.threat(wolf))
 		const table = wolf.threat
 		if (!table) throw new Error('Tiny wolf needs a threat table')
 
