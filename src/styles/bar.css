@@ -51,6 +51,16 @@ div.Bar-potentialValue {
 	opacity: 0.6;
 }
 
+/* The sweet spot zone (#33) — the last stretch of a cast bar a tap-to-confirm must land in. */
+div.Bar-sweetSpot {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 100%;
+	background: var(--c-lemon-yellow);
+	opacity: 0.4;
+}
+
 .Bar span {
 	user-select: none;
 	font-size: 13px;

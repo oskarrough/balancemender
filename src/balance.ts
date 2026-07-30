@@ -11,7 +11,16 @@ import {
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
 
-export const ABILITY_KEYS = ['cost', 'magnitude', 'castTime', 'cooldown', 'minDamage', 'maxDamage'] as const
+export const ABILITY_KEYS = [
+	'cost',
+	'magnitude',
+	'castTime',
+	'cooldown',
+	'minDamage',
+	'maxDamage',
+	'sweetSpotWindow',
+	'sweetSpotBonus',
+] as const
 export const CADENCE_KEYS = ['delay', 'interval'] as const
 export const UNIT_KEYS = ['maxHealth', 'maxMana', 'manaRegen'] as const
 export const AURA_KEYS = ['total', 'interval', 'repeat', 'delay'] as const

@@ -33,6 +33,12 @@ floating-combat-text.damage {
 	text-shadow: 0.1rem 0.1rem 0px var(--red);
 }
 
+/* A sweet-spot heal (#33) — same number, reads as a crit. */
+floating-combat-text.sweet-spot {
+	color: var(--c-lemon-yellow);
+	font-size: 3rem;
+}
+
 @keyframes fct-up {
 	0% {
 		transform: scale(1) translateY(0%);

@@ -49,6 +49,9 @@ export class GreaterHeal extends Ability {
 	static cooldown = 0
 	static gcd = true
 	static effects = [new HealEffect()]
+	// Sweet spot experiment (#33): the one line it takes to opt an ability in. A long enough cast
+	// to give the default window something to land in; no override needed to try the defaults.
+	static sweetSpot = true
 }
 
 /** The player's holy ranged attack. Its inherited event type records the hit as spell damage. */

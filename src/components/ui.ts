@@ -77,7 +77,12 @@ export function UI(game: GameLoop) {
 					? html`
 							<div class="CastBar" style="min-height: 2.5rem">
 								<p>Casting ${casting.name} ${roundOne(timeSinceCast / 1000)}</p>
-								${Meter({type: 'cast', value: timeSinceCast, max: casting.delay})}
+								${Meter({
+									type: 'cast',
+									value: timeSinceCast,
+									max: casting.delay,
+									sweetSpotWindow: casting.sweetSpotWindow,
+								})}
 							</div>
 						`
 					: null}

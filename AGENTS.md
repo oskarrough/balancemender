@@ -15,7 +15,8 @@ agent-browser batch --bail "open http://localhost:5173" "wait 1500" "press Space
 ```
 
 A key dismisses the splash and the fight auto-starts the moment the intro animation ends, ~1.5-2s
-later — no Play click needed. A relative screenshot path lands in the repo root.
+later — no Play click needed. A relative screenshot path lands in the repo root. To press ability
+keys mid-fight, `focus .Game` first in the same batch — they only land where DOM focus is.
 
 To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored, self-contained,
 loading real assets by URL) with several variants in one file on a keypress switcher, and one of

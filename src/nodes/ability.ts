@@ -13,6 +13,15 @@ export type AbilitySchool = 'physical' | 'holy' | 'fire'
 export type AbilityClass = typeof Ability
 
 /**
+ * Sweet spot fallbacks (#33), used whenever a `sweetSpot` ability doesn't override its own dial —
+ * so `static sweetSpot = true` is the whole of enabling it on a new spell. A spell that wants its
+ * own timing or reward adds `static sweetSpotWindow` / `static sweetSpotBonus` alongside it, which
+ * also makes that one spell's dial reachable from the Balance Lab.
+ */
+export const DEFAULT_SWEET_SPOT_WINDOW = 500
+export const DEFAULT_SWEET_SPOT_BONUS = 0.5
+
+/**
  * One use of anything a unit can do. The Task is always one-shot; a Cadence or another driver
  * decides when to create the next use. Cast rules are opt-in static data on concrete abilities.
  */
@@ -40,6 +49,19 @@ export class Ability extends Task {
 	effects: readonly Effect[] = []
 	private used = false
 
+	/** Opts into the tap-to-confirm sweet spot (#33). Resolved from the static the same as everything else. */
+	sweetSpot = false
+	/**
+	 * Whether this cast was tapped-to-confirm inside its sweet spot window (#33). Set by
+	 * `AbilityUse.confirmSweetSpot`, read by `land()` to reward it — generic to whatever effects
+	 * the ability declares, so no effect class has to know the sweet spot exists.
+	 */
+	sweetSpotHit = false
+	/** Resolved to a default in the constructor once `sweetSpot` is on, so every reader — the cast
+	 * bar, the confirm check, the bonus below — sees a real number without repeating `?? DEFAULT`. */
+	sweetSpotWindow?: number
+	sweetSpotBonus?: number
+
 	static id = ''
 	static name = ''
 	static tags: readonly AbilityTag[] = []
@@ -47,6 +69,8 @@ export class Ability extends Task {
 	static targetRule: TargetRule = 'enemy'
 	static icon = ''
 	static effects: readonly Effect[] = []
+	/** Per-spell opt-in for the tap-to-confirm sweet spot (#33). Off unless a subclass says so. */
+	static sweetSpot = false
 	declare static cost?: number
 	declare static magnitude?: number
 	declare static castTime?: number
@@ -56,6 +80,10 @@ export class Ability extends Task {
 	declare static maxDamage?: number
 	declare static sound?: string
 	declare static eventType?: CombatEventType
+	/** The last stretch of the cast, in ms, a confirming tap must land in. A balance dial. */
+	declare static sweetSpotWindow?: number
+	/** Extra magnitude a sweet-spot hit adds, as a fraction — 0.5 is +50%. A balance dial. */
+	declare static sweetSpotBonus?: number
 
 	constructor(
 		public parent: Unit,
@@ -83,7 +111,14 @@ export class Ability extends Task {
 			'maxDamage',
 			'sound',
 			'eventType',
+			'sweetSpot',
+			'sweetSpotWindow',
+			'sweetSpotBonus',
 		)
+		if (this.sweetSpot) {
+			this.sweetSpotWindow ??= DEFAULT_SWEET_SPOT_WINDOW
+			this.sweetSpotBonus ??= DEFAULT_SWEET_SPOT_BONUS
+		}
 		this.delay = (this.constructor as AbilityClass).castTime ?? 0
 	}
 
@@ -114,8 +149,21 @@ export class Ability extends Task {
 		// only eligibility can. Landing on someone who has left logs a hit naming a unit the report
 		// has never heard of, and plants auras on a node vroum has already detached.
 		if (!this.target.alive || !eligible(this.parent, this.targetRule).includes(this.target)) return
+		if (this.sweetSpotHit) this.applySweetSpotBonus()
 		for (const effect of this.effects) effect.apply(this, this.target)
 		this.playLandingSound()
+	}
+
+	/**
+	 * Scales whatever numeric field an effect is about to read off this ability — `magnitude` for a
+	 * heal or an aura, `minDamage`/`maxDamage` for a roll — so a sweet-spot hit rewards any ability
+	 * that opts in, whichever effects it declares, with no effect class aware the sweet spot exists.
+	 */
+	private applySweetSpotBonus() {
+		const bonus = 1 + (this.sweetSpotBonus ?? DEFAULT_SWEET_SPOT_BONUS)
+		if (this.magnitude !== undefined) this.magnitude *= bonus
+		if (this.minDamage !== undefined) this.minDamage *= bonus
+		if (this.maxDamage !== undefined) this.maxDamage *= bonus
 	}
 
 	/**

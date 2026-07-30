@@ -13,6 +13,8 @@ export interface Hit {
 	abilityId: string
 	abilityName: string
 	eventType: CombatEventType
+	/** Landed via a sweet-spot tap-to-confirm (#33) — the floating number reads differently. */
+	sweetSpot?: boolean
 }
 
 /**
@@ -22,7 +24,15 @@ export interface Hit {
  *
  * Returns what actually landed, which is less than `amount` when a heal tops off a full bar.
  */
-export function applyHit({source, target, amount: incoming, abilityId, abilityName, eventType}: Hit): number {
+export function applyHit({
+	source,
+	target,
+	amount: incoming,
+	abilityId,
+	abilityName,
+	eventType,
+	sweetSpot,
+}: Hit): number {
 	// Shields take their share before anything else here runs, so `landed`, the floating number and
 	// the death check all follow from what got through and none of them has to know shields exist.
 	const amount = throughShields(target, incoming)
@@ -34,7 +44,7 @@ export function applyHit({source, target, amount: incoming, abilityId, abilityNa
 	const landed = Math.abs(target.health.current - before)
 
 	// A fully absorbed hit moved nothing, and `-0` floating over the unit would claim otherwise.
-	if (amount !== 0) fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`)
+	if (amount !== 0) fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`, sweetSpot ? 'sweet-spot' : undefined)
 
 	const eventFields = {
 		sourceId: source.id,

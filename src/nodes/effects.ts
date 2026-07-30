@@ -32,6 +32,9 @@ function hit(ability: Ability, target: Unit, amount: number, eventType: CombatEv
 		abilityId: ability.id,
 		abilityName: ability.name,
 		eventType,
+		// The ability already scaled its own magnitude for a sweet-spot hit (#33) — this only
+		// tells the floating number to look different, generic to any ability that opts in.
+		sweetSpot: ability.sweetSpotHit,
 	})
 }
 

@@ -57,6 +57,8 @@ const LABELS: {
 		cooldown: 'Cooldown (ms)',
 		minDamage: 'Min damage',
 		maxDamage: 'Max damage',
+		sweetSpotWindow: 'Sweet spot window (ms)',
+		sweetSpotBonus: 'Sweet spot bonus (fraction)',
 	},
 	unit: {maxHealth: 'Max health', maxMana: 'Max mana', manaRegen: 'Mana regen (per second)'},
 	cadence: {delay: 'Initial delay (ms)', interval: 'Interval (ms)'},

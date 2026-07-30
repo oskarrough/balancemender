@@ -45,11 +45,12 @@ function containerFor(unitId: string) {
 	return container
 }
 
-/** Floats a number over the frame of the unit it happened to. */
-export function fct(unitId: string, text: string | number) {
+/** Floats a number over the frame of the unit it happened to. `variant` adds a modifier class, e.g. `sweet-spot`. */
+export function fct(unitId: string, text: string | number, variant?: string) {
 	const container = containerFor(unitId)
 	if (!container) return
 	const element = document.createElement('floating-combat-text')
 	element.textContent = String(text)
+	if (variant) element.classList.add(variant)
 	container.appendChild(element)
 }

@@ -1,7 +1,7 @@
 import {logCombat} from '../combatlog'
 import type {ActionResult} from '../actions'
 import {AudioPlayer} from './audio'
-import type {Ability, AbilityClass} from './ability'
+import {DEFAULT_SWEET_SPOT_WINDOW, type Ability, type AbilityClass} from './ability'
 import type {GameLoop} from './game-loop'
 import {GlobalCooldown} from './global-cooldown'
 import {eligible} from './target-rule'
@@ -31,6 +31,15 @@ const failureMessage: Record<AbilityFailure, string> = {
 /** The one lookup, validation and execution boundary for every ability use. */
 export class AbilityUse {
 	static use(unit: Unit, abilityId: string, target?: Unit): ActionResult<Ability> {
+		// Tap-to-confirm (#33): pressing the very spell already casting, while it opts into a sweet
+		// spot, is not a second cast attempt — it never hits `already-casting`, it confirms instead.
+		// A castTime-0 ability needs no guard against this: `currentAbility` holds it for at most
+		// the one frame between mount and its own tick, not a window a second keypress can land in.
+		const casting = unit.currentAbility
+		if (casting?.sweetSpot && casting.id === abilityId) {
+			return this.confirmSweetSpot(casting)
+		}
+
 		const AbilityClass = unit.abilities[abilityId]
 		if (!AbilityClass) return {ok: false, error: `Ability ${abilityId} not found in abilities`}
 		const failure = this.validate(unit, AbilityClass, target)
@@ -44,6 +53,31 @@ export class AbilityUse {
 		} else {
 			ability.executeNow()
 		}
+		return {ok: true, value: ability}
+	}
+
+	/**
+	 * The tap-to-confirm half of the sweet spot (#33). `ability.elapsedTime` is time since the cast
+	 * started; a tap inside the last `sweetSpotWindow` ms of `ability.delay` (the cast time) marks
+	 * the ability so its effects can reward it — a tap outside logs a miss and changes nothing.
+	 */
+	static confirmSweetSpot(ability: Ability): ActionResult<Ability> {
+		const unit = ability.parent
+		// Resolved onto the instance in the constructor whenever `sweetSpot` is on; the fallback
+		// here is only for safety, not the mechanism a spell relies on to get a working default.
+		const sweetSpotWindow = ability.sweetSpotWindow ?? DEFAULT_SWEET_SPOT_WINDOW
+		const remaining = ability.delay - ability.elapsedTime
+		const hit = remaining >= 0 && remaining <= sweetSpotWindow
+		if (hit) ability.sweetSpotHit = true
+
+		logCombat({
+			timestamp: Date.now(),
+			eventType: hit ? 'SWEET_SPOT_HIT' : 'SWEET_SPOT_MISS',
+			sourceId: unit.id,
+			sourceName: unit.name,
+			abilityId: ability.id,
+			abilityName: ability.name,
+		})
 		return {ok: true, value: ability}
 	}
 
