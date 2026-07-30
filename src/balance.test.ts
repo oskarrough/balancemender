@@ -9,6 +9,9 @@ import {
 	type BalanceKind,
 } from './balance'
 import {GameLoop} from './nodes/game-loop'
+import {TankGameLoop} from './test-fixtures'
+import {Renew} from './nodes/spells'
+import {settle} from './test-setup'
 
 describe('parsing a tune', () => {
 	it('reads kind, stable id, key and value', () => {
@@ -40,6 +43,7 @@ describe('applying a tune', () => {
 			'cadence:SavageBiteCadence.interval=5000',
 			'rule:Damage.variance=0.1',
 			'effect:SavageBite.rend.coefficient=0.4',
+			'effect:Shield.barrier.coefficient=1.2',
 			'aura:Rend.interval=1500',
 		])
 		expect(balance.abilities.Heal.cost).toBe(10)
@@ -48,6 +52,7 @@ describe('applying a tune', () => {
 		expect(balance.cadences.SavageBiteCadence.interval).toBe(5000)
 		expect(balance.rules.Damage.variance).toBe(0.1)
 		expect(balance.effects['SavageBite.rend'].coefficient).toBe(0.4)
+		expect(balance.effects['Shield.barrier'].coefficient).toBe(1.2)
 		expect(balance.auras.Rend.interval).toBe(1500)
 	})
 
@@ -60,6 +65,19 @@ describe('applying a tune', () => {
 		applyTunes(['cadence:SavageBiteCadence.delay=123'])
 		const game = new GameLoop({party: [], enemies: ['TinyWolf']})
 		expect(game.enemies[0]).toMatchObject({savageBiteCadence: {delay: 123}})
+		game.disconnect()
+	})
+
+	it('snapshots aura tuning onto the next aura applied', async () => {
+		applyTunes(['aura:Renew.maxStacks=2'])
+		const game = new TankGameLoop({party: ['Tank'], enemies: []})
+
+		new Renew(game.player, game.tank).land()
+		await settle()
+		new Renew(game.player, game.tank).land()
+		await settle()
+
+		expect([...game.tank.auras].filter((aura) => aura.id === 'Renew')).toHaveLength(2)
 		game.disconnect()
 	})
 

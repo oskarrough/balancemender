@@ -1,5 +1,4 @@
 import {abilityRegistry} from './nodes/registry'
-import {Rend} from './nodes/attack'
 import {
 	NastyArrowCadence,
 	HeavyBlowCadence,
@@ -11,7 +10,7 @@ import {
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
 import {STAT_KEYS} from './nodes/stats'
-import {DAMAGE_RULES} from './nodes/effects'
+import {ApplyAura, DAMAGE_RULES} from './nodes/effects'
 
 export const ABILITY_KEYS = [
 	'cost',
@@ -24,7 +23,7 @@ export const ABILITY_KEYS = [
 export const EFFECT_KEYS = ['coefficient'] as const
 export const CADENCE_KEYS = ['delay', 'interval'] as const
 export const UNIT_KEYS = STAT_KEYS
-export const AURA_KEYS = ['interval', 'repeat', 'delay'] as const
+export const AURA_KEYS = ['interval', 'repeat', 'delay', 'maxStacks'] as const
 export const RULE_KEYS = ['injured', 'healthy', 'variance'] as const
 
 export type AbilityKey = (typeof ABILITY_KEYS)[number]
@@ -37,7 +36,6 @@ export type RuleKey = (typeof RULE_KEYS)[number]
 type NumberDict = Record<string, number>
 type PartialDict = Record<string, number | undefined>
 type CadenceClass = {delay: number; interval: number}
-type AuraClass = {interval: number; repeat: number; delay: number}
 type UnitClass = Record<UnitKey, number>
 
 /** One tunable surface for every ability; absent keys remain absent rather than becoming zero rules. */
@@ -70,7 +68,20 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	MendCadence,
 }
 
-export const auraClasses: Record<string, AuraClass> = {Rend: Rend}
+/**
+ * One row per aura a fight can carry, keyed by aura id and walked out of the abilities that plant
+ * them — a new spell's aura is tunable without a list here to remember. A row holds what is left
+ * once the planting effect owns the size: the timing, and how many copies stack.
+ *
+ * Its own namespace, so an aura that borrows its ability's id keeps its own row: `aura:Renew` is
+ * the heal-over-time, `ability:Renew` the cast that plants it.
+ */
+export const auraClasses: Record<string, NumberDict> = {}
+for (const AbilityClass of Object.values(abilityRegistry)) {
+	for (const effect of AbilityClass.effects) {
+		if (effect instanceof ApplyAura) auraClasses[effect.auraClass.id] = effect.auraClass as unknown as NumberDict
+	}
+}
 export const ruleClasses: Record<string, NumberDict> = {Condition: CONDITION_THRESHOLDS, Damage: DAMAGE_RULES}
 export const unitClasses: Record<string, UnitClass> = unitRegistry
 
@@ -88,7 +99,7 @@ const defaults = {
 	abilities: snapshot(abilityClasses as unknown as Record<string, NumberDict>, ABILITY_KEYS),
 	effects: snapshot(effectClasses, EFFECT_KEYS),
 	cadences: snapshot(cadenceClasses as Record<string, NumberDict>, CADENCE_KEYS),
-	auras: snapshot(auraClasses as Record<string, NumberDict>, AURA_KEYS),
+	auras: snapshot(auraClasses, AURA_KEYS),
 	units: snapshot(unitClasses as Record<string, NumberDict>, UNIT_KEYS),
 	rules: snapshot(ruleClasses, RULE_KEYS),
 }

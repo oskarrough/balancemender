@@ -6,6 +6,7 @@ import {
 	type EffectKey,
 	type CadenceKey,
 	type UnitKey,
+	type AuraKey,
 	type RuleKey,
 } from './balance'
 import type {GameAction} from './actions'
@@ -41,7 +42,7 @@ export type Action = {
 
 export type Inspectable = {
 	id: string
-	kind: 'ability' | 'effect' | 'cadence' | 'unit' | 'rule' | 'live' | 'globals'
+	kind: 'ability' | 'effect' | 'cadence' | 'aura' | 'unit' | 'rule' | 'live' | 'globals'
 	title: string
 	subtitle?: string
 	fields: Field[]
@@ -57,6 +58,7 @@ const LABELS: {
 	effect: Record<EffectKey, string>
 	unit: Record<UnitKey, string>
 	cadence: Record<CadenceKey, string>
+	aura: Record<AuraKey, string>
 	rule: Record<RuleKey, string>
 } = {
 	ability: {
@@ -76,6 +78,12 @@ const LABELS: {
 		spirit: 'Spirit',
 	},
 	cadence: {delay: 'Initial delay (ms)', interval: 'Interval (ms)'},
+	aura: {
+		interval: 'Tick interval (ms)',
+		repeat: 'Ticks',
+		delay: 'First tick delay (ms)',
+		maxStacks: 'Max stacks (per caster)',
+	},
 	rule: {
 		injured: 'Injured below (% health)',
 		healthy: 'Healthy above (% health)',
@@ -98,9 +106,6 @@ type PanelSpec = {
 /**
  * One section per balance kind. They differ only in what they are called and whether a panel
  * offers to *do* something as well as tune something — the rest falls out of `balance.ts`.
- *
- * `aura` has no section: `Rend` is the only free-standing one, and what is left on it once the
- * effect that plants it owns its size is timing, reachable as `--tune aura:Rend.interval`.
  */
 const PANELS: PanelSpec[] = [
 	{
@@ -139,6 +144,13 @@ const PANELS: PanelSpec[] = [
 		subtitle: (name) => `effect:${name}`,
 	},
 	{kind: 'cadence', section: 'Cadences', subtitle: (name) => `cadence:${name}`},
+	{
+		// What the effect that plants it does not own: how it ticks, and how many copies stack.
+		kind: 'aura',
+		section: 'Auras',
+		subtitle: (name) => `aura:${name}`,
+		min: 0,
+	},
 	{
 		kind: 'rule',
 		section: 'Rules',

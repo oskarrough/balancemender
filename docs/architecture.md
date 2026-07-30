@@ -9,8 +9,9 @@ are the way they are — mostly the traps, each of which has cost someone an aft
 index.html
   └── src/main.ts            splash → on first keypress, builds the game
         └── GameLoop         (vroum Loop) the clock and the root of everything
+              ├── dungeonRun progress through a Dungeon (data in nodes/dungeon.ts), if any
               ├── Encounter  owns the party + enemies
-              │     └── Unit…             Player, Tank, TinyWolf, WolfShaman, Nakroth
+              │     └── Unit…             Player, Tank, WolfPup, TinyWolf, WolfShaman, Nakroth
               │           ├── Stats       base + owned modifiers → health, mana, mana regen
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   a preference its drivers ask for one target at a time
@@ -190,9 +191,11 @@ effect yet; dodge and crit are later slices.
 
 ## Numbers and tuning
 
-`src/balance.ts` snapshots the tunable statics of every ability, effect, cadence, periodic aura and
-unit, and writes changes back to the classes. A unit's tunable numbers are its base stats; resolved
-modifiers belong to the live unit and never rewrite its template.
+`src/balance.ts` snapshots the tunable statics of every ability, effect, cadence, aura and unit, and
+writes changes back to the classes. Aura rows are walked out of the abilities that plant them, in a
+namespace of their own: `aura:Renew.maxStacks` is the heal-over-time, `ability:Renew.cost` the cast.
+A unit's tunable numbers are its base stats; resolved modifiers belong to the live unit and never
+rewrite its template.
 
 How big an outcome lands belongs to the effect that lands it. Each effect authors a `coefficient`,
 one use snapshots the caster's power into a `Landing`, and every effect resolves `magnitude = power ×
@@ -223,11 +226,10 @@ display-name-sensitive spell collections and a separate attack registry, so rena
 for no reason.
 
 By convention the id is the class name, and the class is named after the ability rather than after
-who owns it or how big it is — `QuickStab`, not `SmallAttack`. The exception is `RenewAura`, which
-takes its spell's id so the cast and the heal-over-time it leaves behind report as one ability —
-commented where it is declared. `Shield` uses `BarrierAura` directly, so that class currently
-defaults its `static id`/`static name` to `'Shield'`; another barrier ability declares its own
-identity in a subclass.
+who owns it or how big it is — `QuickStab`, not `SmallAttack`. Mechanic bases keep neutral identities
+(`Periodic`, `Barrier`). Ability-owned subclasses such as `RenewAura` and `ShieldBarrier` take their
+spell's id so the cast and the aura it leaves behind report as one ability — commented where they
+are declared.
 
 ## The combat log is the interface for analysis
 
@@ -259,7 +261,8 @@ the instalments went, and that is the aura's own `harms`. An `ApplyAura` effect 
 sizes it, handing over what its coefficient resolved to along with the ability's school, ready for
 physical mitigation before barriers. `maxStacks`
 defaults to 1, so recasting replaces what is there — raise it only for an aura that is _meant_ to
-stack, because unbounded is not a design.
+stack, because unbounded is not a design. Copies are counted per caster, so two healers never
+overwrite each other; the rules and what they are for are on the `Aura` class itself.
 
 `interval` is both the default wait before the first tick and the gap between later ticks. The
 default is derived from the aura's subclass interval, so a periodic effect waits one full tick even

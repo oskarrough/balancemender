@@ -11,6 +11,13 @@ import type {Unit} from './unit'
  * This class is only about an aura's presence — how it attaches, how it stacks, how it goes
  * away. What an aura *does* while it is there belongs to a subclass: see `PeriodicAura` for one
  * that lands in instalments.
+ *
+ * Stacking, as we currently understand it — still provisional:
+ * 1. One aura of a given id per caster (`stackKey`), so healers never overwrite each other.
+ * 2. A subclass may opt into a fixed cap with `maxStacks`, tunable as `aura:Id.maxStacks`.
+ * 3. Different ids always coexist, periodic or barrier alike.
+ * 4. Anything more exotic — strongest-wins, shared stacks, curse slots — waits for an ability
+ *    whose fantasy needs it.
  */
 export class Aura extends Task {
 	id = 'Aura'
@@ -50,6 +57,12 @@ export class Aura extends Task {
 	 */
 	static name = 'Aura'
 	static maxStacks = 1
+	/**
+	 * What the mechanic is called, for the balance row of an effect that plants it. Defaults to the
+	 * id, and is worth declaring only where an ability-owned subclass borrows the ability's id —
+	 * `ShieldBarrier` inherits `barrier` while its cast and absorbs report together as Shield.
+	 */
+	declare static mechanic?: string
 
 	/** `parent` is the unit it lands on; `caster` is who to credit it to. */
 	constructor(

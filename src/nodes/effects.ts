@@ -63,7 +63,10 @@ export interface Effect {
 }
 
 /** An aura an effect can plant. Whatever it lands arrives resolved, as `magnitude`. */
-type AuraClass = (new (parent: Unit, caster: Unit, planted?: PlantedAura) => Aura) & {id: string}
+type AuraClass = (new (parent: Unit, caster: Unit, planted?: PlantedAura) => Aura) & {
+	id: string
+	mechanic?: string
+}
 
 /** What an ability hands the aura it plants. Each kind of aura reads the parts that mean something to it. */
 export interface PlantedAura {
@@ -130,11 +133,12 @@ export class ApplyAura implements Effect {
 	readonly label: string
 
 	constructor(
-		private auraClass: AuraClass,
+		/** Public because `balance.ts` walks the registry through here to find the auras a fight can carry. */
+		readonly auraClass: AuraClass,
 		public coefficient: number,
 	) {
-		// The aura's own id, not its class name: a minified build keeps the id and loses the name.
-		this.label = auraClass.id.toLowerCase()
+		// Declared data, not the class name: a minified build keeps these and loses the name.
+		this.label = (auraClass.mechanic ?? auraClass.id).toLowerCase()
 	}
 
 	apply(landing: Landing) {
