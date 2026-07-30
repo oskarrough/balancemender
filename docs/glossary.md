@@ -36,6 +36,12 @@ without spawning one.
 the description it is built from, `{party: ['Tank'], enemies: ['TinyWolf']}` — a request, never a
 record. Who actually fought is the report's `units`.
 
+**Dungeon** — an ordered sequence of rooms played back to back. Described by data, never live in
+the game tree; the game holds progress through one as a dungeon run.
+
+**Room** — one planned fight in a dungeon: the roster to build it from, plus how the scene is
+dressed. Not "stage" or "phase" — those words stay free for a boss that fights in several.
+
 **Fight** — one run of an encounter, and the sim layer's word: `FightSpec` is the roster plus how to
 run it (a bot, a seed, a duration), and `FightResult` and `FightReport` are what came of one. Say
 "encounter" for the thing in the tree and "fight" for a run of it — never "fight" for the object

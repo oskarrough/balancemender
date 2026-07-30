@@ -4,6 +4,8 @@ import {setBalanceValue, resetBalance, AbilityKey, EffectKey, CadenceKey, AuraKe
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
 import type {Roster} from './nodes/encounter'
+// Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
+import {dungeonRegistry} from './nodes/dungeon'
 import type {UnitId} from './nodes/unit-registry'
 
 /**
@@ -40,6 +42,10 @@ export type GameAction =
 	| {type: 'healParty'}
 	/** Start a different fight. */
 	| {type: 'loadEncounter'; roster: Roster}
+	/** Start a dungeon from its first room, by dungeon id. */
+	| {type: 'startDungeon'; dungeon: string}
+	/** Move on to the next room of the dungeon you cleared. */
+	| {type: 'nextRoom'}
 	/** Replay the fight you are in. */
 	| {type: 'restart'}
 	| {type: 'set'; key: 'godMode' | 'infiniteMana' | 'muted'; value: boolean}
@@ -97,8 +103,31 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			return ok(undefined)
 
 		case 'loadEncounter':
+			// Loading an arbitrary fight steps off the dungeon.
+			game.dungeonRun = undefined
 			game.loadEncounter(action.roster)
 			return ok(undefined)
+
+		case 'startDungeon': {
+			const dungeon = dungeonRegistry[action.dungeon]
+			if (!dungeon) return fail(`Unknown dungeon: ${action.dungeon}`)
+			game.dungeonRun = {dungeon, room: 0, times: []}
+			game.loadEncounter(dungeon.rooms[0].roster)
+			return ok(dungeon)
+		}
+
+		case 'nextRoom': {
+			const run = game.dungeonRun
+			if (!run) return fail('Not in a dungeon')
+			if (!game.gameOver || game.outcome !== 'victory') return fail('The room is not cleared yet')
+			const next = run.room + 1
+			if (next >= run.dungeon.rooms.length) return fail('The dungeon is finished')
+			// loadEncounter zeroes the fight clock, so bank this room's time before it does.
+			run.times.push(game.elapsedTime)
+			run.room = next
+			game.loadEncounter(run.dungeon.rooms[next].roster)
+			return ok(next)
+		}
 
 		case 'restart':
 			game.loadEncounter(game.encounter.roster)

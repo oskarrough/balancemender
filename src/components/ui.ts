@@ -6,7 +6,7 @@ import {AbilityIcon} from './ability-icon'
 import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
 import {UnitFrame} from './unitframe'
-import {restartGame} from '../animations'
+import {nextRoom, restartDungeon, restartGame} from '../animations'
 import {bringToFront} from './floating-view.js'
 
 register()
@@ -22,6 +22,58 @@ const GAME_OVER_COPY: Record<
 	victory: {headline: 'Victory!', blurb: (s) => `Cleared in ${s}s.`},
 	defeat: {headline: 'Defeated', blurb: (s) => `You lasted ${s}s.`},
 	timeout: {headline: "Time's Up", blurb: (s) => `You held out the full ${s}s.`},
+}
+
+/** Which dungeon, how far in, which room. Nothing at all outside a dungeon run. */
+function RoomInfo(game: GameLoop) {
+	const run = game.dungeonRun
+	if (!run) return null
+	return html`
+		<p class="RoomInfo">
+			<span class="RoomInfo-dungeon">${run.dungeon.name}</span>
+			<span class="RoomInfo-count">${run.room + 1}/${run.dungeon.rooms.length}</span>
+			<span class="RoomInfo-room">${run.dungeon.rooms[run.room]?.name}</span>
+		</p>
+	`
+}
+
+/**
+ * The post-fight panel. A win splits three ways: a room cleared leads on to the next one, the last
+ * room ends the run on its total time, and anything else replays what you just fought.
+ */
+function GameOver(game: GameLoop) {
+	const outcome = game.outcome ?? 'defeat'
+	const run = game.dungeonRun
+	const copy = GAME_OVER_COPY[outcome]
+	let headline = copy.headline
+	let blurb = copy.blurb(roundOne(game.elapsedTime / 1000))
+	let label = 'Play Again'
+	let onclick = () => restartGame(game)
+
+	if (run && outcome === 'victory') {
+		if (run.room + 1 < run.dungeon.rooms.length) {
+			label = 'Next room'
+			onclick = () => nextRoom(game)
+		} else {
+			const total = run.times.reduce((sum, time) => sum + time, 0) + game.elapsedTime
+			headline = 'Dungeon cleared!'
+			blurb = `${run.dungeon.name} cleared in ${roundOne(total / 1000)}s.`
+			label = 'Play Again'
+			onclick = () => restartDungeon(game)
+		}
+	}
+
+	return html`
+		<div
+			class="GameOver"
+			data-outcome=${outcome}
+			onpointerdown=${(event: PointerEvent) => bringToFront(event.currentTarget as HTMLElement)}
+		>
+			<h2>${headline}</h2>
+			<p>${blurb}</p>
+			<button class="Button" onclick=${onclick}>${label}</button>
+		</div>
+	`
 }
 
 export function UI(game: GameLoop) {
@@ -61,17 +113,7 @@ export function UI(game: GameLoop) {
 
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
-			${game.gameOver
-				? html` <div
-						class="GameOver"
-						data-outcome=${game.outcome ?? 'defeat'}
-						onpointerdown=${(event: PointerEvent) => bringToFront(event.currentTarget as HTMLElement)}
-					>
-						<h2>${GAME_OVER_COPY[game.outcome ?? 'defeat'].headline}</h2>
-						<p>${GAME_OVER_COPY[game.outcome ?? 'defeat'].blurb(roundOne(game.elapsedTime / 1000))}</p>
-						<button class="Button" onclick=${() => restartGame(game)}>Play Again</button>
-					</div>`
-				: null}
+			${game.gameOver ? GameOver(game) : null} ${RoomInfo(game)}
 
 			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>
 

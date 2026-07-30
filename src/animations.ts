@@ -112,11 +112,11 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
 }
 
 /**
- * Game-over → fresh encounter transition: fade-out → state reset (mid-timeline `.call`, where
- * `game.play()` also fires) → a snappy fade-in. No intro replay — that's first-load only, so a
- * restart is near-instant instead of paying its ~1.5s runtime again.
+ * Game-over → fresh encounter transition: fade-out → `load` swaps the encounter (mid-timeline
+ * `.call`, where `game.play()` also fires) → a snappy fade-in. No intro replay — that's first-load
+ * only, so a restart is near-instant instead of paying its ~1.5s runtime again.
  */
-export function restartGame(game: GameLoop): gsap.core.Timeline {
+function toFreshEncounter(game: GameLoop, load: () => void): gsap.core.Timeline {
 	const animatedGame = '.AppChrome-game, .ActionBar, .Enemies, .PartyGroup'
 	const clearAnimationState = () => {
 		// Reset GSAP's transform cache as well as the CSS. Clearing the property alone lets a later
@@ -136,7 +136,7 @@ export function restartGame(game: GameLoop): gsap.core.Timeline {
 	tl.to('.ActionBar', {y: '100%', autoAlpha: 0, scale: 0.95, duration: 0.4, ease}, '<')
 	tl.to('.Enemies, .PartyGroup', {y: -30, autoAlpha: 0, scale: 0.95, duration: 0.4, ease}, '<')
 	tl.call(() => {
-		game.restart()
+		load()
 		// Game-over and fade-out tweens leave inline transforms and filters behind. Clear them at
 		// the state boundary: the filter greys out the fresh frames, while even a zero transform on
 		// `.AppChrome-game` creates a stacking context over the fixed menu and intercepts its clicks.
@@ -147,6 +147,24 @@ export function restartGame(game: GameLoop): gsap.core.Timeline {
 	})
 	tl.fromTo(animatedGame, {autoAlpha: 0}, {autoAlpha: 1, duration: 0.2})
 	return tl
+}
+
+/** Replay the same encounter. */
+export function restartGame(game: GameLoop): gsap.core.Timeline {
+	return toFreshEncounter(game, () => game.restart())
+}
+
+/** On to the next room of the dungeon run — the action records the room's time and loads it. */
+export function nextRoom(game: GameLoop): gsap.core.Timeline {
+	return toFreshEncounter(game, () => game.perform({type: 'nextRoom'}))
+}
+
+/** Back to the first room of the same dungeon, with a fresh clock. */
+export function restartDungeon(game: GameLoop): gsap.core.Timeline {
+	return toFreshEncounter(game, () => {
+		const dungeon = game.dungeonRun?.dungeon.id
+		if (dungeon) game.perform({type: 'startDungeon', dungeon})
+	})
 }
 
 const resetSplashForPreview = () => {

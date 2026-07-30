@@ -66,6 +66,47 @@ body {
 	opacity: 0;
 }
 
+/* Dungeon chrome, pinned to the top edge between the menu and the monitor rather than placed in the
+   column — a fight with no dungeon run behind it then lays out exactly as it always did. */
+.RoomInfo {
+	position: fixed;
+	top: 0.4rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	display: flex;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0 0.5rem;
+	border: 1px solid color-mix(in oklch, var(--c-black), transparent 80%);
+	border-radius: 1rem;
+	background: color-mix(in oklch, var(--c-snow-white), transparent 20%);
+	font-size: 0.8rem;
+	line-height: 1.6;
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+/* Middot between the parts, so the markup carries no punctuation of its own. */
+.RoomInfo > * + *::before {
+	content: '·';
+	margin-right: 0.4rem;
+	opacity: 0.4;
+}
+
+.RoomInfo-dungeon {
+	font-weight: 700;
+}
+
+.RoomInfo-count {
+	font-variant-numeric: tabular-nums;
+	opacity: 0.6;
+}
+
+.RoomInfo-room {
+	opacity: 0.8;
+}
+
 .Player,
 .PartyMember,
 .Enemy {
