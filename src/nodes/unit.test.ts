@@ -106,6 +106,7 @@ describe('UNIT_CONDITION', () => {
 				abilityId: 'SavageBite',
 				abilityName: 'Bite',
 				eventType: 'SWING_DAMAGE',
+				school: 'physical',
 			})
 
 		hit(-game.tank.health.max * 0.5)
@@ -132,6 +133,7 @@ describe('UNIT_CONDITION', () => {
 			abilityId: 'SavageBite',
 			abilityName: 'Bite',
 			eventType: 'SWING_DAMAGE',
+			school: 'physical',
 		})
 
 		expect(conditions()).toHaveLength(0)

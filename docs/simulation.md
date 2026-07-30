@@ -134,6 +134,18 @@ instance and the sweep hands back your baseline. The tell is a table identical a
 you tried. A field with no home in `balance.ts` (`ManaRegen.fiveSecondRule` today) wants one —
 failing that, write it on the instance from inside a method.
 
+How big an outcome lands is authored on the effect that lands it, as a share of caster power rather
+than as hit points — one row per outcome, so a composite ability's parts tune separately:
+
+```sh
+bun run sweep --tune 'effect:Renew.renew.coefficient=1.4'
+bun run sweep --tune 'effect:SavageBite.rend.coefficient=0.6'
+bun run sweep --tune 'rule:Damage.variance=0.1'
+```
+
+The first two affect the next ability use or aura application. The damage rule is read when a hit
+lands, and changes only direct rolled damage—not healing, barriers, or periodic totals.
+
 ## The pieces
 
 | file                | what it does                                               |

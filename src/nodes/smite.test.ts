@@ -5,6 +5,7 @@ import {SimLoop} from '../sim/run'
 import {smite as smiteBot} from './bot'
 import {GameLoop} from './game-loop'
 import {Smite} from './spells'
+import {STAT} from './stats'
 
 let game: GameLoop | undefined
 
@@ -59,6 +60,7 @@ describe('Smite', () => {
 		await settle()
 		clearLogs()
 		const wolf = sim.enemies[0]
+		wolf.setBaseStat(STAT.INTELLECT, 40)
 		wolf.abilities = {Smite}
 		const healthBefore = sim.tank.health.current
 

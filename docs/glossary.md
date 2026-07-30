@@ -16,8 +16,12 @@ change mid-fight when a duplicate is spawned.
 
 **Stat** — one of the five primary numbers a unit brings: stamina, intellect, strength, agility and
 spirit. Its resolved value is the unit's base plus modifiers owned by live auras. Stamina determines
-maximum health, intellect maximum mana, and spirit mana regeneration; strength and agility have no
-derived effect until later coefficient, dodge or crit work.
+maximum health, intellect maximum mana and spell power, strength attack power, and spirit mana
+regeneration; agility has no derived effect until later dodge or crit work.
+
+**Spell power** and **attack power** — derived output of the caster. Spell power is
+`intellect × 2.5`; attack power is `strength × 2`. Physical abilities use attack power and every
+other school uses spell power. There is one attack power for both melee and ranged abilities.
 
 **Character** — a named unit. Someone rather than something: a proper noun, a hand-tuned kit, unique
 in a fight. `Nakroth the Destroyer` is the only one today; `Diablo` and `Mephisto` are the shape of
@@ -121,16 +125,26 @@ choosing its execution path.
 
 **School** — the flavour of an ability's power or damage: `physical`, `holy`, `fire`, and so on.
 Separate from tags: Fireball is a spell and an attack of the fire school; Savage Bite is an attack of
-the physical school.
+the physical school. School selects power too: physical takes attack power, everything else spell
+power.
 
 **Effect** — one thing an ability does when it lands: heal, damage, or apply an aura. An ability may
 have several, so it is a list rather than a field. Not the thing left sitting on the unit afterwards
 — that is an aura.
 
-**Magnitude** — how big an ability lands, in one number the effects read off it: healing for a `Heal`
-effect, the pool for a barrier, the whole of a heal-over-time for the aura it plants. Never "heal
-amount" — the same field sizes Shield, which heals nobody. Damage keeps its own
-`minDamage`/`maxDamage`, because a range is not one number.
+**Coefficient** — the fraction of its caster's power one effect claims. Authored on the effect,
+because the effect is the thing with a size: `new ApplyAura(RenewAura, 1.2)` is 120% of spell power,
+and Savage Bite sizes its bite and its bleed separately. Always positive — which way an outcome goes
+is what kind of effect it is, never the sign of how big it is.
+
+**Landing** — one ability arriving on one target, with the caster's side already worked out: the
+power, read once when the use was constructed, and whatever scales the whole use, like a sweet-spot
+hit. Effects resolve against it, so nothing about an outcome is mutable state on the use.
+
+**Magnitude** — how big one outcome landed, in hit points: healing for a `Heal` effect, damage before
+variance, the pool for a barrier, the whole of a periodic aura. Resolved from `power × coefficient`
+at the moment it lands; never an authored synonym for coefficient and never "heal amount" — the same
+number sizes Shield, which heals nobody.
 
 **Cast** — a spell in progress. **Cast time** is how long it takes; **GCD** (global cooldown) is the
 shared pause every cast starts, running alongside the cast rather than after it, which is why a cast
@@ -199,7 +213,7 @@ persistence is the behavior the Task represents.
 ## Tuning and measuring
 
 **Balance number** — a number the game plays by, reachable from the Balance Lab, the dev console and
-`--tune`. Five **kinds**: `ability`, `cadence`, `aura`, `unit`, `rule`.
+`--tune`. Six **kinds**: `ability`, `effect`, `cadence`, `aura`, `unit`, `rule`.
 
 **Rule** — a balance number the whole game reads rather than one belonging to an ability or a unit,
 such as where the injured line sits. Read live where it is used, so a retune lands on the fight
@@ -207,10 +221,12 @@ already running rather than on the next cast.
 
 **Tune** — changing one balance number: `kind:Name.key=value`, e.g. `rule:Condition.injured=30`.
 
-**Statics are the template, instance fields are the state.** A class declares `static magnitude`;
-`applyStatics()` copies it onto the instance at construction. So a retune reaches the next use, never
-the one already in flight; cadence timing reaches the next driver spawned, never a schedule already
-running — and patching a prototype does nothing.
+**Statics are the template, instance fields are the state.** A class declares its dials;
+construction copies them and reads the caster's current power into the use's landing. So a retune or
+stat buff reaches the next use, never the one already in flight; cadence timing reaches the next
+driver spawned, never a schedule already running — and patching a prototype does nothing. An
+effect's coefficient is template data too, shared by every use, which is what makes retuning it
+reach the next use and nothing in flight.
 
 **Bot** — a stand-in for the player, deciding what to cast next: `idle`, `triage`, `renew`, `panic`,
 `shield`, `smite`. Which ability, never which target — that is a **preference**. Bots are also the measuring

@@ -21,7 +21,7 @@ describe('parsing a tune', () => {
 	})
 
 	it('refuses what it cannot reach', () => {
-		expect(() => parseTune('Rend.total=-8')).toThrow(/kind:Name.key=value/)
+		expect(() => parseTune('Rend.coefficient=-0.4')).toThrow(/kind:Name.key=value/)
 		expect(() => parseTune('spell:Heal.cost=40')).toThrow(/Unknown tune kind/)
 		expect(() => parseTune('ability:Fireball.cost=1')).toThrow(/Unknown ability/)
 		expect(() => parseTune('ability:Heal.damage=5')).toThrow(/Unknown ability key/)
@@ -35,16 +35,20 @@ describe('applying a tune', () => {
 	it('writes spell- and attack-tagged abilities through one surface', () => {
 		applyTunes([
 			'ability:Heal.cost=10',
-			'ability:SavageBite.magnitude=2',
+			'effect:SavageBite.damage.coefficient=0.2',
 			'ability:ShieldBash.threatMultiplier=7',
 			'cadence:SavageBiteCadence.interval=5000',
 			'rule:Damage.variance=0.1',
+			'effect:SavageBite.rend.coefficient=0.4',
+			'aura:Rend.interval=1500',
 		])
 		expect(balance.abilities.Heal.cost).toBe(10)
-		expect(balance.abilities.SavageBite.magnitude).toBe(2)
+		expect(balance.effects['SavageBite.damage'].coefficient).toBe(0.2)
 		expect(balance.abilities.ShieldBash.threatMultiplier).toBe(7)
 		expect(balance.cadences.SavageBiteCadence.interval).toBe(5000)
 		expect(balance.rules.Damage.variance).toBe(0.1)
+		expect(balance.effects['SavageBite.rend'].coefficient).toBe(0.4)
+		expect(balance.auras.Rend.interval).toBe(1500)
 	})
 
 	it('keeps opt-in keys absent and refuses tuning them', () => {

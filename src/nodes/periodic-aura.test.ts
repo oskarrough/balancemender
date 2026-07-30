@@ -7,6 +7,7 @@ import {PeriodicAura} from './periodic-aura'
 import {SavageBite} from './attack'
 import {Renew} from './spells'
 import {combatLogs, clearLogs} from '../combatlog'
+import {planted} from './effects'
 
 /**
  * `maxStacks` is what stops "cast it again" from being the best button in the game. Renew is
@@ -51,23 +52,23 @@ describe('stack rule', () => {
 			static maxStacks = 3
 		}
 
-		const planted = []
+		const applied = []
 		for (let i = 0; i < 4; i++) {
-			planted.push(new Lifebloom(game.tank, game.player))
+			applied.push(new Lifebloom(game.tank, game.player))
 			await settle()
 		}
 
 		const stacks = aurasNamed(game.tank, 'Lifebloom')
 		expect(stacks).toHaveLength(3)
-		expect(stacks).toEqual(planted.slice(1))
-		expect(planted[0].superseded).toBe(true)
+		expect(stacks).toEqual(applied.slice(1))
+		expect(applied[0].superseded).toBe(true)
 	})
 
 	it('counts casters separately, so two healers can each keep one up', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 
-		new PeriodicAura(game.tank, game.player, 50)
-		new PeriodicAura(game.tank, game.tank, 50)
+		new PeriodicAura(game.tank, game.player, planted(50))
+		new PeriodicAura(game.tank, game.tank, planted(50))
 		await settle()
 
 		expect(aurasNamed(game.tank, 'Periodic')).toHaveLength(2)
@@ -90,7 +91,8 @@ describe('stack rule', () => {
 
 		class Sunder extends PeriodicAura {
 			static name = 'Sunder'
-			static total = -10
+			static harms = true
+			static total = 10
 			static maxStacks = 5
 		}
 		new Sunder(game.tank, game.player)
@@ -108,7 +110,7 @@ describe('stack rule', () => {
 	 */
 	it('survives being disconnected twice', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		const aura = new PeriodicAura(game.tank, game.player, -10)
+		const aura = new PeriodicAura(game.tank, game.player, planted(10))
 		await settle()
 
 		expect(() => {

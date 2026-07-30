@@ -160,9 +160,10 @@ one. That is the only reason there is no separate enemy registry.
 is what keeps it safe to ask anywhere, and what would break if a threshold `--tune` can move
 mid-fight were compared against a latched state. No ability reads it yet; the fight report does.
 
-Its thresholds are the only balance number of kind `rule`, and the only one read live where it is
-used rather than copied onto an instance at construction — so `rule:Condition.injured=30` lands on
-the fight already in progress. `gcd` and the five-second rule belong here too, one day.
+Its thresholds are balance numbers of kind `rule`, read live where they are used rather than copied
+onto an instance at construction — so `rule:Condition.injured=30` lands on the fight already in
+progress. Damage variance is another live rule; `gcd` and the five-second rule belong here too, one
+day.
 
 Crossing a line logs `UNIT_CONDITION` from `applyHit`, for the same reason `UNIT_DIED` is: the
 analyzer could replay the health bar, but not what counts as injured, and one holding the old number
@@ -181,25 +182,35 @@ Every unit declares five base stats: stamina, intellect, strength, agility and s
 their owner rather than undone with subtraction, so one expiring aura removes exactly its own
 contribution even when copies stack or one supersedes another.
 
-Stamina is maximum health, intellect grants 15 maximum mana each, and spirit is mana regenerated
-per second. The resource pools keep their current amount when their maximum rises and clamp only
-when it falls. Strength and agility deliberately have no derived effect yet; coefficients, dodge
-and crit are later slices.
+Stamina is maximum health, intellect grants 15 maximum mana and 2.5 spell power each, strength
+grants 2 attack power, and spirit is mana regenerated per second. Physical abilities scale from
+attack power; every other school scales from spell power. The resource pools keep their current
+amount when their maximum rises and clamp only when it falls. Agility deliberately has no derived
+effect yet; dodge and crit are later slices.
 
 ## Numbers and tuning
 
-`src/balance.ts` snapshots the tunable statics of every ability, cadence, periodic aura and unit, and
-writes changes back to the classes. A unit's tunable numbers are its base stats; resolved modifiers
-belong to the live unit and never rewrite its template. How big an ability lands is one number, `magnitude` — the healing
-of `Heal`, the whole heal-over-time of `Renew`, the pool of `Shield` — so an aura a spell
-plants needs no balance entry of its own; only one nothing applies does, like `Rend`. Everything
-reaches it through `perform({type: 'tune', …})`; `src/inspectables.ts` is what the Balance Lab lists.
+`src/balance.ts` snapshots the tunable statics of every ability, effect, cadence, periodic aura and
+unit, and writes changes back to the classes. A unit's tunable numbers are its base stats; resolved
+modifiers belong to the live unit and never rewrite its template.
+
+How big an outcome lands belongs to the effect that lands it. Each effect authors a `coefficient`,
+one use snapshots the caster's power into a `Landing`, and every effect resolves `magnitude = power ×
+coefficient` against it as it lands: healing for `Heal`, the whole heal-over-time for `Renew`, the
+pool for `Shield`, the midpoint before a damage roll. So an ability with two outcomes sizes them
+independently — Savage Bite's bite and its bleed — without either one having to say who owns the
+number. The rows are named for the ability and the outcome: `effect:SavageBite.rend.coefficient`.
+
+Everything reaches it through `perform({type: 'tune', …})`; `src/inspectables.ts` is what the Balance
+Lab lists.
+
 `balance.units` is keyed by the unit ids you spawn with, and retuning reaches live units by `unitId`
 — never by class name.
 
-Ability changes apply to newly constructed uses, so healing and damage both change on the next use.
-Cadence timing is snapshotted when its unit is constructed, so retuning it affects newly spawned
-drivers, not a schedule already running. A `rule` is the exception, above.
+Ability changes and stat buffs apply to newly constructed uses, so healing and damage both change on
+the next use, never one in flight. Cadence timing is snapshotted when its unit is constructed, so
+retuning it affects newly spawned drivers, not a schedule already running. A `rule` is the exception,
+above: `rule:Damage.variance` is read when damage lands.
 
 ### Ids and names
 
@@ -243,11 +254,12 @@ Getting logged is not left to the caller: **every change to a health bar goes th
 in [`hit.ts`](../src/nodes/hit.ts), which applies it, floats the number, records the event and
 announces the death. The `Damage` and `Heal` effects and `PeriodicAura` are its only callers, and do
 nothing else about it. That is also why `PeriodicAura` is one class for both heals and damage over
-time: once the health change moved into `applyHit`, nothing else about them differed. An `ApplyAura`
-effect hands the aura the ability's `magnitude` in place of its own `total`, which is how `Renew`
-keeps its number where the Balance Lab can tune it. `maxStacks` defaults to 1, so recasting replaces
-what is there — raise it only for an aura that is _meant_ to stack, because unbounded is not a
-design.
+time: once the health change moved into `applyHit`, the only thing left that differed was which way
+the instalments went, and that is the aura's own `harms`. An `ApplyAura` effect plants an aura and
+sizes it, handing over what its coefficient resolved to along with the ability's school, ready for
+physical mitigation before barriers. `maxStacks`
+defaults to 1, so recasting replaces what is there — raise it only for an aura that is _meant_ to
+stack, because unbounded is not a design.
 
 `interval` is both the default wait before the first tick and the gap between later ticks. The
 default is derived from the aura's subclass interval, so a periodic effect waits one full tick even

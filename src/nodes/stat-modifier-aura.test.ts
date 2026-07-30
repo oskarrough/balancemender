@@ -4,6 +4,7 @@ import {SimLoop} from '../sim/run'
 import {settle} from '../test-setup'
 import {STAT} from './stats'
 import {StatModifierAura} from './stat-modifier-aura'
+import {planted} from './effects'
 
 class Fortitude extends StatModifierAura {
 	static id = 'Fortitude'
@@ -25,7 +26,7 @@ describe('StatModifierAura', () => {
 		game = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const originalHealth = game.tank.health.current
 		// An applying ability can override the aura class's default with its own magnitude.
-		new Fortitude(game.tank, game.player, 25)
+		new Fortitude(game.tank, game.player, planted(25))
 		await settle()
 
 		expect(game.tank.stats.stamina).toBe(325)

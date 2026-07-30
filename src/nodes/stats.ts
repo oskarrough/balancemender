@@ -1,3 +1,5 @@
+import type {AbilitySchool} from './ability'
+
 export const STAT = {
 	STAMINA: 'stamina',
 	INTELLECT: 'intellect',
@@ -10,6 +12,8 @@ export type Stat = (typeof STAT)[keyof typeof STAT]
 export const STAT_KEYS = Object.values(STAT)
 export type StatValues = Record<Stat, number>
 export const MANA_PER_INTELLECT = 15
+export const SPELL_POWER_PER_INTELLECT = 2.5
+export const ATTACK_POWER_PER_STRENGTH = 2
 
 type Modifier = {stat: Stat; amount: number}
 
@@ -76,5 +80,17 @@ export class Stats {
 
 	get manaRegen() {
 		return Math.max(0, this.spirit)
+	}
+
+	get spellPower() {
+		return Math.max(0, this.intellect * SPELL_POWER_PER_INTELLECT)
+	}
+
+	get attackPower() {
+		return Math.max(0, this.strength * ATTACK_POWER_PER_STRENGTH)
+	}
+
+	powerFor(school: AbilitySchool) {
+		return school === 'physical' ? this.attackPower : this.spellPower
 	}
 }

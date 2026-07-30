@@ -1,5 +1,6 @@
 import {applyStatics} from '../utils'
 import {Aura} from './aura'
+import type {PlantedAura} from './effects'
 import {STAT, type Stat} from './stats'
 import type {Unit} from './unit'
 
@@ -19,13 +20,13 @@ export class StatModifierAura extends Aura {
 	static lifetime = 15000
 
 	/**
-	 * `modifier` overrides the class default so an ability can own the number as its magnitude, the
-	 * same way Renew owns its periodic total and Shield owns its absorption pool.
+	 * Like every plantable aura, the effect that plants it sizes it — here the size is how much of
+	 * the stat it adds. A class default stands in for one constructed without a landing behind it.
 	 */
-	constructor(parent: Unit, caster: Unit, modifier?: number) {
+	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
 		super(parent, caster)
 		applyStatics(this, 'stat', 'modifier')
-		if (modifier !== undefined) this.modifier = modifier
+		if (planted) this.modifier = planted.magnitude
 		this.delay = (this.constructor as typeof StatModifierAura).lifetime
 	}
 

@@ -47,8 +47,8 @@ public surface of a directory, or `--json` to work over it.
 class or field, and fold a term into it rather than inventing a second word for something. The
 words that catch people out: everything a unit can do is an **ability** (a spell and an attack are
 tags on one, not two classes), one **use** of it is a one-shot Task, a **driver** decides when,
-`magnitude` is how big it lands, and an **id** is what the code files an ability under while a
-**name** is only what the player reads.
+`magnitude` is how big one of its outcomes lands, and an **id** is what the code files an ability
+under while a **name** is only what the player reads.
 
 ## Answering "what happens if…" questions
 
@@ -66,7 +66,7 @@ shape of the difficulty curve. For that, sweep:
 
 ```
 bun run sweep                                    # the shape of the curve
-bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
+bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'effect:SavageBite.rend.coefficient=0.8'
 ```
 
 Read the `idle` column first — it is the control group. A retune that lifts a win rate by making
@@ -82,10 +82,11 @@ fight worth tuning. Between two retunes that win equally often, the one that lea
 made the healer better and the one that lowered it made the fight easier.
 
 `--tune 'kind:Name.key=value'` changes a balance number for the run, so a candidate never needs a
-source edit you have to remember to undo. The kinds are `ability`, `cadence`, `aura`, `unit` and
-`rule` — spells and attacks are both abilities, `cadence` is how often a unit uses one, and a rule
+source edit you have to remember to undo. The kinds are `ability`, `effect`, `cadence`, `aura`,
+`unit` and `rule` — spells and attacks are both abilities, an `effect` is one outcome of one ability
+(`Ability.outcome`), `cadence` is how often a unit uses one, and a rule
 is a number the whole game reads, like where the injured line sits (`rule:Condition.injured=30`),
-which unlike the rest lands on the fight already running. How much an ability lands for is
-`magnitude` (`ability:Renew.magnitude=140`); damage is `minDamage`/`maxDamage`. Redirect `--json`
-to a file rather than piping it; a pipe truncates at 64KB and the parse error looks like a bug in
-the report.
+which unlike the rest lands on the fight already running. How big an outcome lands is authored as a
+share of the caster's power on the effect that lands it (`effect:Renew.renew.coefficient=1.4`) and
+resolved into a magnitude for each use; rolled damage uses `rule:Damage.variance`. Redirect `--json` to a file rather than piping it; a pipe truncates at
+64KB and the parse error looks like a bug in the report.

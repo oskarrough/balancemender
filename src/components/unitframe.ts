@@ -42,7 +42,10 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 							value: health,
 							max: maxHealth,
 							// Only show potential healing on the current target for party members
-							potentialValue: isCurrentTarget && !isEnemy && playerCast ? playerCast.magnitude : 0,
+							potentialValue:
+								isCurrentTarget && !isEnemy && playerCast
+									? playerCast.magnitudes.reduce((total, one) => total + one, 0)
+									: 0,
 							ability: !isEnemy ? playerCast : undefined,
 						})}
 						<div class="Unit-name">

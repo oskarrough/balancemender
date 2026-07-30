@@ -4,7 +4,7 @@
  *   bun run sweep
  *   bun run sweep --seeds 25
  *   bun run sweep --enemies 'TinyWolf*3, Nakroth' --bots triage,renew
- *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.total=-16'
+ *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.coefficient=-0.8'
  *
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the question
  * above it: is the difficulty curve the shape we think it is? How to read the table is in
@@ -58,7 +58,7 @@ bun run sweep [options]
   --bots     <list>    comma separated (default all: ${Object.keys(bots).join(', ')})
   --seeds    <n>       how many seeds per combination, starting at 1 (default 10)
   --duration <s>       give up after n seconds of fight time (default 120)
-  --tune     <spec>    change a balance number first, e.g. 'aura:Rend.total=-16'
+  --tune     <spec>    change a balance number first, e.g. 'aura:Rend.coefficient=-0.8'
                        kind:Name.key=value — ability, cadence, aura, unit or rule. Repeatable.
   --json               print rows as JSON instead of a table
 

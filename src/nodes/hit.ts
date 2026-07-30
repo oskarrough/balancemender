@@ -3,6 +3,7 @@ import {fct} from '../components/floating-combat-text'
 import {BarrierAura} from './barrier-aura'
 import type {Unit} from './unit'
 import {generateThreat} from './threat'
+import type {AbilitySchool} from './ability'
 
 export interface Hit {
 	/** Who to credit it to. */
@@ -14,6 +15,8 @@ export interface Hit {
 	abilityId: string
 	abilityName: string
 	eventType: CombatEventType
+	/** Carried through resolution so physical mitigation can be inserted before barriers. */
+	school: AbilitySchool
 	/** How strongly the ability earns attention. Defaults to ordinary 1:1 threat. */
 	threatMultiplier?: number
 	/** Landed via a sweet-spot tap-to-confirm (#33) — the floating number reads differently. */

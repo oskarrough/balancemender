@@ -1,6 +1,13 @@
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
-import {balanceCategories, type AbilityKey, type CadenceKey, type UnitKey, type RuleKey} from './balance'
+import {
+	balanceCategories,
+	type AbilityKey,
+	type EffectKey,
+	type CadenceKey,
+	type UnitKey,
+	type RuleKey,
+} from './balance'
 import type {GameAction} from './actions'
 import {abilityRegistry, type AbilityId} from './nodes/registry'
 import type {UnitId} from './nodes/unit-registry'
@@ -34,7 +41,7 @@ export type Action = {
 
 export type Inspectable = {
 	id: string
-	kind: 'ability' | 'cadence' | 'unit' | 'rule' | 'live' | 'globals'
+	kind: 'ability' | 'effect' | 'cadence' | 'unit' | 'rule' | 'live' | 'globals'
 	title: string
 	subtitle?: string
 	fields: Field[]
@@ -47,12 +54,12 @@ export type Inspectable = {
  */
 const LABELS: {
 	ability: Record<AbilityKey, string>
+	effect: Record<EffectKey, string>
 	unit: Record<UnitKey, string>
 	cadence: Record<CadenceKey, string>
 	rule: Record<RuleKey, string>
 } = {
 	ability: {
-		magnitude: 'Magnitude',
 		cost: 'Mana cost',
 		castTime: 'Cast time (ms)',
 		cooldown: 'Cooldown (ms)',
@@ -60,6 +67,7 @@ const LABELS: {
 		sweetSpotWindow: 'Sweet spot window (ms)',
 		sweetSpotBonus: 'Sweet spot bonus (fraction)',
 	},
+	effect: {coefficient: 'Power coefficient'},
 	unit: {
 		stamina: 'Stamina',
 		intellect: 'Intellect',
@@ -91,7 +99,8 @@ type PanelSpec = {
  * One section per balance kind. They differ only in what they are called and whether a panel
  * offers to *do* something as well as tune something — the rest falls out of `balance.ts`.
  *
- * `aura` has no section: `Rend` is the only free-standing one, reachable as `--tune aura:Rend.total`.
+ * `aura` has no section: `Rend` is the only free-standing one, and what is left on it once the
+ * effect that plants it owns its size is timing, reachable as `--tune aura:Rend.interval`.
  */
 const PANELS: PanelSpec[] = [
 	{
@@ -122,6 +131,12 @@ const PANELS: PanelSpec[] = [
 							},
 						},
 					],
+	},
+	{
+		kind: 'effect',
+		section: 'Effects',
+		// Named for the ability and the outcome, because an ability can have more than one.
+		subtitle: (name) => `effect:${name}`,
 	},
 	{kind: 'cadence', section: 'Cadences', subtitle: (name) => `cadence:${name}`},
 	{
@@ -163,6 +178,7 @@ function balancePanels(game: GameLoop, spec: PanelSpec): Inspectable[] {
 					set: (value) => {
 						tune(game, kind, name, key, value)
 					},
+					step: key === 'coefficient' || key === 'variance' ? 0.1 : undefined,
 					min: spec.min,
 				}),
 			),

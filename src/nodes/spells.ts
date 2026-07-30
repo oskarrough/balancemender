@@ -16,11 +16,10 @@ export class Heal extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 50
-	static magnitude = 80
 	static castTime = 2000
 	static cooldown = 0
 	static gcd = true
-	static effects = [new HealEffect()]
+	static effects = [new HealEffect(0.8)]
 }
 
 export class FlashHeal extends Ability {
@@ -30,11 +29,10 @@ export class FlashHeal extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 80
-	static magnitude = 100
 	static castTime = 1000
 	static cooldown = 0
 	static gcd = true
-	static effects = [new HealEffect()]
+	static effects = [new HealEffect(1)]
 }
 
 export class GreaterHeal extends Ability {
@@ -44,11 +42,10 @@ export class GreaterHeal extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 100
-	static magnitude = 145
 	static castTime = 3000
 	static cooldown = 0
 	static gcd = true
-	static effects = [new HealEffect()]
+	static effects = [new HealEffect(1.45)]
 	// Sweet spot experiment (#33): the one line it takes to opt an ability in. A long enough cast
 	// to give the default window something to land in; no override needed to try the defaults.
 	static sweetSpot = true
@@ -65,8 +62,7 @@ export class Smite extends Ability {
 	static castTime = 1500
 	static cooldown = 0
 	static gcd = true
-	static magnitude = 20
-	static effects = [new Damage()]
+	static effects = [new Damage(0.2)]
 }
 
 /**
@@ -89,20 +85,19 @@ export class Renew extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 60
-	// The size of the whole heal-over-time, kept here where the balance lab can reach it. The
-	// apply-aura effect hands it to the aura.
-	static magnitude = 120
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
 	static sound = 'spell_rejuvenation'
-	static effects = [new ApplyAura(RenewAura)]
+	// The coefficient sizes the whole heal-over-time, tunable as `effect:Renew.renew`.
+	static effects = [new ApplyAura(RenewAura, 1.2)]
 }
 
 /** Renew's organic mirror: decay over time instead of life over time. Shares the cast's id. */
 class WitherAura extends PeriodicAura {
 	static id = 'Wither'
 	static name = 'Wither'
+	static harms = true
 	static interval = 2000
 	static repeat = 6
 }
@@ -114,13 +109,10 @@ export class Wither extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'enemy' as const
 	static cost = 40
-	// Signed like Smite's damage (#44). Kept on the spell, not the aura, so the Balance Lab can
-	// tune the whole DoT in one place — same as Renew's heal-over-time.
-	static magnitude = -30
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
-	static effects = [new ApplyAura(WitherAura)]
+	static effects = [new ApplyAura(WitherAura, 0.3)]
 }
 
 export class Shield extends Ability {
@@ -130,13 +122,12 @@ export class Shield extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 60
-	/** The size of the pool, not healing — nothing here moves a health bar. */
-	static magnitude = 150
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
 	// This direct use carries Shield's identity; another barrier ability subclasses BarrierAura.
-	static effects = [new ApplyAura(BarrierAura)]
+	// The coefficient is the size of the pool, not healing — nothing here moves a health bar.
+	static effects = [new ApplyAura(BarrierAura, 1.5)]
 }
 
 /** The shaman's own ability. It is registered like every other ability but not owned by the player. */
@@ -147,9 +138,8 @@ export class Mend extends Ability {
 	static school = 'holy' as const
 	static targetRule = 'ally' as const
 	static cost = 0
-	static magnitude = 80
 	static castTime = 2500
 	static cooldown = 0
 	static gcd = true
-	static effects = [new HealEffect()]
+	static effects = [new HealEffect(1.6)]
 }

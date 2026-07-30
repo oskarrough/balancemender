@@ -15,19 +15,20 @@ import {DAMAGE_RULES} from './nodes/effects'
 
 export const ABILITY_KEYS = [
 	'cost',
-	'magnitude',
 	'castTime',
 	'cooldown',
 	'threatMultiplier',
 	'sweetSpotWindow',
 	'sweetSpotBonus',
 ] as const
+export const EFFECT_KEYS = ['coefficient'] as const
 export const CADENCE_KEYS = ['delay', 'interval'] as const
 export const UNIT_KEYS = STAT_KEYS
-export const AURA_KEYS = ['total', 'interval', 'repeat', 'delay'] as const
+export const AURA_KEYS = ['interval', 'repeat', 'delay'] as const
 export const RULE_KEYS = ['injured', 'healthy', 'variance'] as const
 
 export type AbilityKey = (typeof ABILITY_KEYS)[number]
+export type EffectKey = (typeof EFFECT_KEYS)[number]
 export type CadenceKey = (typeof CADENCE_KEYS)[number]
 export type UnitKey = (typeof UNIT_KEYS)[number]
 export type AuraKey = (typeof AURA_KEYS)[number]
@@ -36,12 +37,29 @@ export type RuleKey = (typeof RULE_KEYS)[number]
 type NumberDict = Record<string, number>
 type PartialDict = Record<string, number | undefined>
 type CadenceClass = {delay: number; interval: number}
-type AuraClass = {total: number; interval: number; repeat: number; delay: number}
-type RuleClass = Partial<Record<RuleKey, number>>
+type AuraClass = {interval: number; repeat: number; delay: number}
 type UnitClass = Record<UnitKey, number>
 
 /** One tunable surface for every ability; absent keys remain absent rather than becoming zero rules. */
 export const abilityClasses = abilityRegistry
+
+/**
+ * How big an outcome lands belongs to the effect that lands it, so that is what a coefficient is
+ * tuned on: `effect:SavageBite.rend.coefficient=0.6`. Rows are named for the ability that declares
+ * the effect and the effect's own label, and built by walking the registry — a new ability's
+ * outcomes are tunable without a list here to remember to update.
+ */
+export const effectClasses: Record<string, NumberDict> = {}
+for (const [abilityId, AbilityClass] of Object.entries(abilityRegistry)) {
+	const labels: Record<string, number> = {}
+	for (const effect of AbilityClass.effects) {
+		if (effect.coefficient === undefined) continue
+		// Two of a kind on one ability still get one row each, in the order they land.
+		const seen = (labels[effect.label] = (labels[effect.label] ?? 0) + 1)
+		const label = seen > 1 ? `${effect.label}${seen}` : effect.label
+		effectClasses[`${abilityId}.${label}`] = effect as unknown as NumberDict
+	}
+}
 
 export const cadenceClasses: Record<string, CadenceClass> = {
 	QuickStabCadence,
@@ -53,7 +71,7 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 }
 
 export const auraClasses: Record<string, AuraClass> = {Rend: Rend}
-export const ruleClasses: Record<string, RuleClass> = {Condition: CONDITION_THRESHOLDS, Damage: DAMAGE_RULES}
+export const ruleClasses: Record<string, NumberDict> = {Condition: CONDITION_THRESHOLDS, Damage: DAMAGE_RULES}
 export const unitClasses: Record<string, UnitClass> = unitRegistry
 
 function snapshot<K extends string>(src: Record<string, NumberDict>, keys: readonly K[]) {
@@ -68,14 +86,15 @@ function snapshot<K extends string>(src: Record<string, NumberDict>, keys: reado
 
 const defaults = {
 	abilities: snapshot(abilityClasses as unknown as Record<string, NumberDict>, ABILITY_KEYS),
+	effects: snapshot(effectClasses, EFFECT_KEYS),
 	cadences: snapshot(cadenceClasses as Record<string, NumberDict>, CADENCE_KEYS),
 	auras: snapshot(auraClasses as Record<string, NumberDict>, AURA_KEYS),
 	units: snapshot(unitClasses as Record<string, NumberDict>, UNIT_KEYS),
-	rules: snapshot(ruleClasses as Record<string, NumberDict>, RULE_KEYS),
+	rules: snapshot(ruleClasses, RULE_KEYS),
 }
 
 export const balance = structuredClone(defaults)
-export type BalanceKind = 'ability' | 'cadence' | 'aura' | 'unit' | 'rule'
+export type BalanceKind = 'ability' | 'effect' | 'cadence' | 'aura' | 'unit' | 'rule'
 
 interface BalanceCategory {
 	keys: readonly string[]
@@ -91,12 +110,13 @@ export const balanceCategories: Record<BalanceKind, BalanceCategory> = {
 		state: balance.abilities,
 		defaults: defaults.abilities,
 	},
+	effect: {keys: EFFECT_KEYS, classes: effectClasses, state: balance.effects, defaults: defaults.effects},
 	cadence: {keys: CADENCE_KEYS, classes: cadenceClasses, state: balance.cadences, defaults: defaults.cadences},
 	aura: {keys: AURA_KEYS, classes: auraClasses, state: balance.auras, defaults: defaults.auras},
 	unit: {keys: UNIT_KEYS, classes: unitClasses, state: balance.units, defaults: defaults.units},
 	rule: {
 		keys: RULE_KEYS,
-		classes: ruleClasses as Record<string, NumberDict>,
+		classes: ruleClasses,
 		state: balance.rules,
 		defaults: defaults.rules,
 	},

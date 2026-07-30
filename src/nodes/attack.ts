@@ -9,10 +9,9 @@ export class QuickStab extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static magnitude = 6
 	static sound = 'combat_air_hit'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-	static effects = [new Damage()]
+	static effects = [new Damage(0.3)]
 }
 
 export class HeavyBlow extends Ability {
@@ -21,10 +20,9 @@ export class HeavyBlow extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static magnitude = 17.5
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-	static effects = [new Damage()]
+	static effects = [new Damage(0.35)]
 }
 
 /**
@@ -36,7 +34,7 @@ export class HeavyBlow extends Ability {
 export class Rend extends PeriodicAura {
 	static id = 'Rend'
 	static name = 'Rend'
-	static total = -9.6
+	static harms = true
 	static interval = 1000
 	static repeat = 4
 	static delay = 1000
@@ -49,11 +47,11 @@ export class SavageBite extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static magnitude = 5.5
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-	// The bite lands first, and the wound only if it left something alive to bleed.
-	static effects = [new Damage(), new ApplyAura(Rend, 'aura')]
+	// The bite lands first, and the wound only if it left something alive to bleed. Two outcomes,
+	// each with its own size: `effect:SavageBite.damage` and `effect:SavageBite.rend`.
+	static effects = [new Damage(0.275), new ApplyAura(Rend, 0.48)]
 }
 
 export class NastyArrow extends Ability {
@@ -62,10 +60,9 @@ export class NastyArrow extends Ability {
 	static tags = ['attack', 'ranged'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static magnitude = 150
 	static sound = 'combat_arrow'
 	static eventType: CombatEventType = 'RANGE_DAMAGE'
-	static effects = [new Damage()]
+	static effects = [new Damage(3)]
 }
 
 export class ShieldBash extends Ability {
@@ -74,9 +71,8 @@ export class ShieldBash extends Ability {
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targetRule = 'enemy' as const
-	static magnitude = 20
 	static threatMultiplier = 5
 	static sound = 'combat_sword_hit'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-	static effects = [new Damage()]
+	static effects = [new Damage(0.5)]
 }

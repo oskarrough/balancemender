@@ -1,6 +1,6 @@
 import {log} from './utils'
 import {AudioPlayer} from './nodes/audio'
-import {setBalanceValue, resetBalance, AbilityKey, CadenceKey, AuraKey, UnitKey, RuleKey} from './balance'
+import {setBalanceValue, resetBalance, AbilityKey, EffectKey, CadenceKey, AuraKey, UnitKey, RuleKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
 import type {Roster} from './nodes/encounter'
@@ -29,6 +29,8 @@ export type GameAction =
 	/** Stop the cast in progress. */
 	| {type: 'interrupt'}
 	| {type: 'tune'; of: 'ability'; name: string; key: AbilityKey; value: number}
+	/** How big one of an ability's outcomes lands, named `Ability.effect`. */
+	| {type: 'tune'; of: 'effect'; name: string; key: EffectKey; value: number}
 	| {type: 'tune'; of: 'cadence'; name: string; key: CadenceKey; value: number}
 	| {type: 'tune'; of: 'aura'; name: string; key: AuraKey; value: number}
 	| {type: 'tune'; of: 'unit'; name: string; key: UnitKey; value: number}

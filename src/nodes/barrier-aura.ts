@@ -1,6 +1,7 @@
 import {applyStatics, log} from '../utils'
 import {logCombat, type CombatLogEvent} from '../combatlog'
 import {Aura} from './aura'
+import type {PlantedAura} from './effects'
 import type {Unit} from './unit'
 
 /**
@@ -32,19 +33,18 @@ export class BarrierAura extends Aura {
 	 * `Ability.castTime` is.
 	 *
 	 * Not a balance number: `AURA_KEYS` holds a periodic aura's dials, which a barrier has none of,
-	 * and the number worth tuning — the pool — already rides on the casting spell's `magnitude`.
+	 * and the pool already arrives as the planting effect's resolved magnitude.
 	 */
 	static lifetime = 15000
 
 	/**
-	 * `pool` overrides the class default so an ability can own the number — see `Shield`,
-	 * which keeps it as its `magnitude` where the Balance Lab can reach it. Same arrangement as
-	 * `PeriodicAura`'s `total`.
+	 * The effect that planted this barrier sizes its pool — see `Shield`, whose apply-aura effect
+	 * owns the coefficient. A class default only stands in for a barrier constructed without one.
 	 */
-	constructor(parent: Unit, caster: Unit, pool?: number) {
+	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
 		super(parent, caster)
 		applyStatics(this, 'pool')
-		if (pool !== undefined) this.pool = pool
+		if (planted) this.pool = planted.magnitude
 		this.delay = (this.constructor as typeof BarrierAura).lifetime
 	}
 

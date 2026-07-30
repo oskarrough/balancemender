@@ -3,6 +3,7 @@ import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {abilityRegistry} from './registry'
+import {STAT} from './stats'
 
 describe('abilities', () => {
 	it('keeps ordinary attacks synchronous, free and independent from a concurrent cast', async () => {
@@ -43,5 +44,22 @@ describe('abilities', () => {
 			expect(Object.hasOwn(AbilityClass, 'interval'), AbilityClass.id).toBe(false)
 			expect(Object.hasOwn(AbilityClass, 'repeat'), AbilityClass.id).toBe(false)
 		}
+	})
+
+	it('snapshots power into a use, so a mid-cast buff reaches only the next one', async () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		await settle()
+		const use = new abilityRegistry.Heal(game.player, game.tank)
+		await settle()
+		expect(use.magnitudes).toEqual([80])
+
+		const buff = {}
+		game.player.addStatModifier(buff, STAT.INTELLECT, 10)
+
+		expect(use.magnitudes).toEqual([80])
+		expect(abilityRegistry.Heal.magnitudesFor(game.player)).toEqual([100])
+
+		game.disconnect()
+		await settle()
 	})
 })

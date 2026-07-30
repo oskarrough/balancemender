@@ -24,6 +24,7 @@ describe('generating threat', () => {
 			abilityId: 'Test',
 			abilityName: 'Test',
 			eventType: 'SWING_DAMAGE',
+			school: 'physical',
 			threatMultiplier: 3,
 		})
 
@@ -44,6 +45,7 @@ describe('generating threat', () => {
 				abilityId: 'Heal',
 				abilityName: 'Heal',
 				eventType: 'SPELL_HEAL',
+				school: 'holy',
 			})
 
 		heal()
@@ -76,9 +78,9 @@ describe('generating threat', () => {
 			static id = 'Test'
 			static name = 'Test'
 			static targetRule = 'ally' as const
-			static magnitude = 20
+			static school = 'holy' as const
 			static threatMultiplier = 3
-			static effects = [new ApplyAura(TestAura)]
+			static effects = [new ApplyAura(TestAura, 0.2)]
 		}
 
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']})

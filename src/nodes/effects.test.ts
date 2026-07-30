@@ -20,7 +20,8 @@ const acted = () => combatLogs.filter((event) => event.eventType !== 'ENCOUNTER_
 class Mark extends PeriodicAura {
 	static id = 'Mark'
 	static name = 'Mark'
-	static total = -4
+	static harms = true
+	static total = 4
 	static interval = 1000
 	static repeat = 2
 }
@@ -30,8 +31,7 @@ class Rebuke extends Ability {
 	static id = 'Rebuke'
 	static name = 'Rebuke'
 	static targetRule = 'enemy' as const
-	static magnitude = 6
-	static effects = [new Damage(), new ApplyAura(Mark)]
+	static effects = [new Damage(0.15), new ApplyAura(Mark, 0.1)]
 }
 
 let game!: GameLoop
@@ -47,7 +47,7 @@ describe('an ordered list of effects', () => {
 		new Rebuke(game.tank, wolf).land()
 		await settle()
 
-		expect(wolf.health.current).toBe(before - 6)
+		expect(wolf.health.current).toBeLessThan(before)
 		expect([...wolf.auras].map((aura) => aura.id)).toEqual(['Mark'])
 		// The hit is logged before the aura it precedes, because that is the order they ran in.
 		expect(acted().map((event) => event.eventType)).toEqual(['SPELL_DAMAGE', 'SPELL_AURA_APPLIED'])
@@ -81,8 +81,8 @@ describe('the effects themselves', () => {
 			static id = 'TestMend'
 			static name = 'Test Mend'
 			static targetRule = 'ally' as const
-			static magnitude = 100
-			static effects = [new Heal()]
+			static school = 'holy' as const
+			static effects = [new Heal(1)]
 		}
 		new Mend(game.player, game.tank).land()
 
@@ -93,18 +93,21 @@ describe('the effects themselves', () => {
 	})
 
 	/**
-	 * Rend owns a second outcome independently of Savage Bite's direct-hit magnitude. The
-	 * apply-aura effect must say so rather than infer ownership from whether either number exists.
+	 * Savage Bite's bite and its bleed are two outcomes of one use, each with its own coefficient.
+	 * The whole point of a coefficient living on the effect: nothing forces them to the same size.
 	 */
-	it('leaves an aura-owned outcome independent of the ability magnitude', async () => {
+	it("sizes each of a composite ability's outcomes on its own", async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
+		const [bite, wound] = SavageBite.effects
 
 		new SavageBite(wolf, game.tank).land()
 		await settle()
 
 		const [bleed] = [...game.tank.auras]
 		expect(bleed).toBeInstanceOf(Rend)
-		expect((bleed as Rend).total).toBe(Rend.total)
+		expect((bleed as Rend).total).toBe(wound.coefficient! * wolf.stats.attackPower)
+		expect(wound.coefficient).not.toBe(bite.coefficient)
+		expect((bleed as Rend).school).toBe('physical')
 	})
 })

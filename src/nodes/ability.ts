@@ -4,7 +4,7 @@ import {applyStatics} from '../utils'
 import {AudioPlayer} from './audio'
 import {AbilityUse} from './ability-use'
 import {eligible, type TargetRule} from './target-rule'
-import type {Effect} from './effects'
+import {Landing, type Effect} from './effects'
 import type {Unit} from './unit'
 
 export const ABILITY_TAGS = ['spell', 'attack', 'healing', 'melee', 'ranged'] as const
@@ -35,7 +35,6 @@ export class Ability extends Task {
 	targetRule: TargetRule = 'enemy'
 	icon = ''
 	cost?: number
-	magnitude?: number
 	cooldown?: number
 	gcd = false
 	threatMultiplier = 1
@@ -46,6 +45,8 @@ export class Ability extends Task {
 	 * here — no subclass reaches into the lifecycle to add an outcome of its own.
 	 */
 	effects: readonly Effect[] = []
+	/** This use's resolved caster side, snapshotted at construction. Effects land against it. */
+	readonly landing: Landing
 	private used = false
 
 	/** Opts into the tap-to-confirm sweet spot (#33). Resolved from the static the same as everything else. */
@@ -71,7 +72,6 @@ export class Ability extends Task {
 	/** Per-spell opt-in for the tap-to-confirm sweet spot (#33). Off unless a subclass says so. */
 	static sweetSpot = false
 	declare static cost?: number
-	declare static magnitude?: number
 	declare static castTime?: number
 	declare static cooldown?: number
 	declare static gcd?: boolean
@@ -82,6 +82,27 @@ export class Ability extends Task {
 	declare static sweetSpotWindow?: number
 	/** Extra magnitude a sweet-spot hit adds, as a fraction — 0.5 is +50%. A balance dial. */
 	declare static sweetSpotBonus?: number
+
+	/**
+	 * What each of this ability's outcomes would land for, in hit points, if this caster used it
+	 * now — one number per effect that has a size. What the action bar reads.
+	 */
+	static magnitudesFor(caster: Unit): number[] {
+		const power = caster.stats.powerFor(this.school)
+		return this.effects.flatMap((effect) =>
+			effect.coefficient === undefined ? [] : [Math.round(power * effect.coefficient)],
+		)
+	}
+
+	/**
+	 * The same numbers for a use already in flight, resolved against its snapshotted landing rather
+	 * than against the caster as they are now.
+	 */
+	get magnitudes(): number[] {
+		return this.effects.flatMap((effect) =>
+			effect.coefficient === undefined ? [] : [Math.round(this.landing.resolve(effect.coefficient))],
+		)
+	}
 
 	constructor(
 		public parent: Unit,
@@ -102,7 +123,6 @@ export class Ability extends Task {
 			'icon',
 			'effects',
 			'cost',
-			'magnitude',
 			'cooldown',
 			'gcd',
 			'threatMultiplier',
@@ -112,6 +132,9 @@ export class Ability extends Task {
 			'sweetSpotWindow',
 			'sweetSpotBonus',
 		)
+		// The caster's power is read here and nowhere else, so it is the power they had when the cast
+		// began. Everything this use lands resolves against this landing.
+		this.landing = new Landing(this, target, parent.stats.powerFor(this.school))
 		if (this.sweetSpot) {
 			this.sweetSpotWindow ??= DEFAULT_SWEET_SPOT_WINDOW
 			this.sweetSpotBonus ??= DEFAULT_SWEET_SPOT_BONUS
@@ -146,15 +169,13 @@ export class Ability extends Task {
 		// only eligibility can. Landing on someone who has left logs a hit naming a unit the report
 		// has never heard of, and plants auras on a node vroum has already detached.
 		if (!this.target.alive || !eligible(this.parent, this.targetRule).includes(this.target)) return
-		if (this.sweetSpotHit) this.applySweetSpotBonus()
-		for (const effect of this.effects) effect.apply(this, this.target)
+		// A sweet-spot hit scales the whole landing rather than any one outcome, so no effect class
+		// has to know the sweet spot exists.
+		const landing = this.sweetSpotHit
+			? this.landing.scaled(1 + (this.sweetSpotBonus ?? DEFAULT_SWEET_SPOT_BONUS))
+			: this.landing
+		for (const effect of this.effects) effect.apply(landing)
 		this.playLandingSound()
-	}
-
-	/** Scales the resolved outcome before any effect reads it. */
-	private applySweetSpotBonus() {
-		const bonus = 1 + (this.sweetSpotBonus ?? DEFAULT_SWEET_SPOT_BONUS)
-		if (this.magnitude !== undefined) this.magnitude *= bonus
 	}
 
 	/**

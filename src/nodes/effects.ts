@@ -2,7 +2,7 @@ import {applyHit} from './hit'
 import {naturalizeNumber, randomIntFromInterval} from '../utils'
 import type {CombatEventType} from '../combatlog'
 // Type-only: ability.ts imports the `Effect` type back from here.
-import type {Ability} from './ability'
+import type {Ability, AbilitySchool} from './ability'
 import type {Aura} from './aura'
 import type {Unit} from './unit'
 
@@ -10,24 +10,77 @@ import type {Unit} from './unit'
 export const DAMAGE_RULES = {variance: 0.2}
 
 /**
+ * One ability landing on one target, with the caster's side already worked out.
+ *
+ * The power is read once, when the use is constructed, and carried here — so a buff or a retune
+ * that arrives mid-cast reaches the next use and never the one in flight. Effects resolve their
+ * own outcome against it, which is why no use has to hold a mutable magnitude for them to read.
+ */
+export class Landing {
+	constructor(
+		readonly ability: Ability,
+		readonly target: Unit,
+		readonly power: number,
+		/** What scales every outcome of this landing, over and above its coefficients — see #33. */
+		readonly bonus = 1,
+	) {}
+
+	/** The same landing, everything it lands scaled. */
+	scaled(factor: number) {
+		return new Landing(this.ability, this.target, this.power, this.bonus * factor)
+	}
+
+	/** In hit points: what a coefficient claims of this caster's power, this time. */
+	resolve(coefficient: number) {
+		return this.power * coefficient * this.bonus
+	}
+
+	get caster() {
+		return this.ability.parent
+	}
+}
+
+/**
  * One thing an ability does when it lands. An ability owns an ordered list of these, so what it
  * does is readable from its declaration rather than from an override two files away.
+ *
+ * An effect that lands an amount authors its own `coefficient`, because the effect is the thing
+ * with a size: a composite ability sizes its parts independently, and every coefficient in the
+ * game is tunable as `effect:Ability.name`.
  *
  * Deliberately not a vroum node: a child cannot run in the frame it is constructed, so an effect
  * node would have its lifecycle bypassed and be run by hand anyway. Everything here is
  * instantaneous; anything that lasts is an aura, and an aura is a Task.
  *
- * Effects hold no state, so one instance is shared by every use of the ability that declares it.
+ * Effects hold no per-use state, so one instance is shared by every use of the ability that
+ * declares it. A coefficient is authored template data, which is what makes retuning one safe.
  */
 export interface Effect {
-	apply(ability: Ability, target: Unit): void
+	/** Names this effect's row in the Balance Lab, under the ability that declares it. */
+	readonly label: string
+	coefficient?: number
+	apply(landing: Landing): void
 }
 
-/** An aura class an effect can plant: `PeriodicAura` and `BarrierAura` both take a magnitude. */
-type AuraClass = new (parent: Unit, caster: Unit, magnitude?: number, threatMultiplier?: number) => Aura
+/** An aura an effect can plant. Whatever it lands arrives resolved, as `magnitude`. */
+type AuraClass = (new (parent: Unit, caster: Unit, planted?: PlantedAura) => Aura) & {id: string}
+
+/** What an ability hands the aura it plants. Each kind of aura reads the parts that mean something to it. */
+export interface PlantedAura {
+	magnitude: number
+	threatMultiplier: number
+	school: AbilitySchool
+}
+
+/** One of those, for the effect that plants an aura and for anything standing in for one. */
+export const planted = (magnitude: number, threatMultiplier = 1, school: AbilitySchool = 'physical'): PlantedAura => ({
+	magnitude,
+	threatMultiplier,
+	school,
+})
 
 /** Every health change an effect makes is credited to the ability that declared it. */
-function hit(ability: Ability, target: Unit, amount: number, eventType: CombatEventType) {
+function hit({ability, target, bonus}: Landing, amount: number, eventType: CombatEventType) {
 	applyHit({
 		source: ability.parent,
 		target,
@@ -36,52 +89,61 @@ function hit(ability: Ability, target: Unit, amount: number, eventType: CombatEv
 		abilityName: ability.name,
 		eventType,
 		threatMultiplier: ability.threatMultiplier,
-		// The ability already scaled its own magnitude for a sweet-spot hit (#33) — this only
-		// tells the floating number to look different, generic to any ability that opts in.
-		sweetSpot: ability.sweetSpotHit,
+		school: ability.school,
+		// The landing already carries the bonus a sweet-spot hit earned (#33) — this only tells the
+		// floating number to look different, generic to any ability that opts in.
+		sweetSpot: bonus !== 1,
 	})
 }
 
-/** Damage rolled around this use's magnitude, and the flinch that sells it. */
+/** Damage rolled around what this landing resolves to, and the flinch that sells it. */
 export class Damage implements Effect {
-	apply(ability: Ability, target: Unit) {
+	readonly label = 'damage'
+
+	constructor(public coefficient: number) {}
+
+	apply(landing: Landing) {
 		// Rounded bounds keep a low-number midpoint symmetric: 6 ±20% remains 5–7.
-		const magnitude = ability.magnitude ?? 0
-		const spread = magnitude * DAMAGE_RULES.variance
+		const magnitude = landing.resolve(this.coefficient)
+		const spread = magnitude * Math.max(0, DAMAGE_RULES.variance)
 		const min = Math.max(0, Math.round(magnitude - spread))
 		const max = Math.max(min, Math.round(magnitude + spread))
 		const amount = randomIntFromInterval(min, max)
-		hit(ability, target, -amount, ability.eventType)
-		shake(target)
+		hit(landing, -amount, landing.ability.eventType)
+		shake(landing.target)
 	}
 }
 
 /** A direct heal, varied by a few percent so no two land identically. */
 export class Heal implements Effect {
-	apply(ability: Ability, target: Unit) {
-		hit(ability, target, naturalizeNumber(ability.magnitude), 'SPELL_HEAL')
+	readonly label = 'heal'
+
+	constructor(public coefficient: number) {}
+
+	apply(landing: Landing) {
+		hit(landing, naturalizeNumber(landing.resolve(this.coefficient)), 'SPELL_HEAL')
 	}
 }
 
-/**
- * Leave an aura behind.
- *
- * The aura is sized by the ability's `magnitude` when it has one, which is what keeps Renew tunable
- * as `ability:Renew.magnitude` while Rend's size stays on the aura as `aura:Rend.total` — an aura
- * only needs its own balance row when no ability owns its number.
- */
+/** Leave an aura behind, sized by this effect's own coefficient. */
 export class ApplyAura implements Effect {
+	readonly label: string
+
 	constructor(
 		private auraClass: AuraClass,
-		private magnitudeOwner: 'ability' | 'aura' = 'ability',
-	) {}
+		public coefficient: number,
+	) {
+		// The aura's own id, not its class name: a minified build keeps the id and loses the name.
+		this.label = auraClass.id.toLowerCase()
+	}
 
-	apply(ability: Ability, target: Unit) {
+	apply(landing: Landing) {
+		const {target, ability} = landing
 		// An earlier effect in the same list may have killed the target, and death has already
 		// cancelled its auras. Do not plant one on a corpse afterwards.
 		if (!target.alive) return
-		const magnitude = this.magnitudeOwner === 'ability' ? ability.magnitude : undefined
-		new this.auraClass(target, ability.parent, magnitude, ability.threatMultiplier)
+		const magnitude = landing.resolve(this.coefficient)
+		new this.auraClass(target, ability.parent, planted(magnitude, ability.threatMultiplier, ability.school))
 	}
 }
 

@@ -30,6 +30,7 @@ describe('applyHit', () => {
 			abilityId: 'Heal',
 			abilityName: 'Heal',
 			eventType: 'SPELL_HEAL',
+			school: 'holy',
 		})
 
 		expect(landed).toBe(10)
@@ -51,6 +52,7 @@ describe('applyHit', () => {
 			abilityId: 'Test',
 			abilityName: 'Test',
 			eventType: 'SWING_DAMAGE',
+			school: 'physical',
 		})
 
 		expect(combatLogs.at(-1)).toMatchObject({eventType: 'SWING_DAMAGE', value: 5})
@@ -68,6 +70,7 @@ describe('applyHit', () => {
 				abilityId: 'ShieldBash',
 				abilityName: 'Shield Bash',
 				eventType: 'SWING_DAMAGE',
+				school: 'physical',
 			})
 
 		hit(-wolf.health.max)
@@ -88,7 +91,8 @@ describe('PeriodicAura', () => {
 
 		class Poison extends PeriodicAura {
 			static name = 'Poison'
-			static total = -50
+			static harms = true
+			static total = 50
 			static interval = 1
 			static repeat = 5
 		}
@@ -127,6 +131,6 @@ describe('PeriodicAura', () => {
 		const healed = combatLogs
 			.filter((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
 			.reduce((total, event) => total + (event.value ?? 0), 0)
-		expect(healed).toBe(Renew.magnitude)
+		expect(healed).toBe(Renew.magnitudesFor(game.player)[0])
 	})
 })
