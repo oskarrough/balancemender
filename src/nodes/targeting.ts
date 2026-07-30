@@ -2,6 +2,7 @@ import type {Unit} from './unit'
 import {Tank} from './party-units'
 import {random} from '../rng'
 import {eligible, type TargetRule} from './target-rule'
+import {highestThreat, pullsAggro} from './threat'
 
 export {eligible, type TargetRule} from './target-rule'
 
@@ -26,6 +27,7 @@ export const prefer: {
 	lowestHealth: Preference
 	healerFirst: Preference
 	tankFirst: Preference
+	threat: (owner: Unit) => Preference
 } = {
 	/** Whoever comes first. Stays with them until they die. */
 	first: {
@@ -74,6 +76,20 @@ export const prefer: {
 		reconsiders: (current: Unit, candidates: Unit[]) =>
 			!(current instanceof Tank) && candidates.some((c) => c instanceof Tank),
 	},
+
+	/**
+	 * Highest threat, with enough hysteresis that two nearly equal units do not trade aggro every
+	 * attack. The table belongs to the enemy captured by this preference.
+	 */
+	threat: (owner: Unit) => ({
+		prefers: (candidates: Unit[]) => highestThreat(threatTable(owner), candidates),
+		reconsiders: (current: Unit, candidates: Unit[]) => pullsAggro(threatTable(owner), current, candidates),
+	}),
+}
+
+function threatTable(owner: Unit) {
+	if (!owner.threat) throw new Error(`${owner.name || owner.id} cannot prefer threat without a threat table`)
+	return owner.threat
 }
 
 /**

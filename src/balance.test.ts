@@ -33,9 +33,15 @@ describe('applying a tune', () => {
 	afterEach(() => resetBalance())
 
 	it('writes spell- and attack-tagged abilities through one surface', () => {
-		applyTunes(['ability:Heal.cost=10', 'ability:SavageBite.minDamage=2', 'cadence:SavageBiteCadence.interval=5000'])
+		applyTunes([
+			'ability:Heal.cost=10',
+			'ability:SavageBite.minDamage=2',
+			'ability:ShieldBash.threatMultiplier=7',
+			'cadence:SavageBiteCadence.interval=5000',
+		])
 		expect(balance.abilities.Heal.cost).toBe(10)
 		expect(balance.abilities.SavageBite.minDamage).toBe(2)
+		expect(balance.abilities.ShieldBash.threatMultiplier).toBe(7)
 		expect(balance.cadences.SavageBiteCadence.interval).toBe(5000)
 	})
 

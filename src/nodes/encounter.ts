@@ -59,8 +59,13 @@ export class Encounter extends Node {
 		}
 		const unit = new Klass(this) as Unit
 		unit.unitId = id
-		if (unit.faction === FACTION.PARTY) this.party.push(unit)
-		else this.enemies.push(unit)
+		if (unit.faction === FACTION.PARTY) {
+			this.party.push(unit)
+			// A party unit joining an existing fight enters every enemy's table at zero.
+			for (const enemy of this.enemies) enemy.threat?.set(unit, 0)
+		} else {
+			this.enemies.push(unit)
+		}
 		this.renumber()
 		return unit
 	}

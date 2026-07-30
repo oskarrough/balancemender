@@ -37,7 +37,12 @@ export class PeriodicAura extends Aura {
 	 * `total` overrides the class default, so a spell can own its own number — see `Renew`, which
 	 * keeps it on the spell where the balance lab can reach it.
 	 */
-	constructor(parent: Unit, caster: Unit, total?: number) {
+	constructor(
+		parent: Unit,
+		caster: Unit,
+		total?: number,
+		public threatMultiplier = 1,
+	) {
 		super(parent, caster)
 		applyStatics(this, 'total', 'interval', 'repeat')
 		this.delay = this.interval
@@ -54,6 +59,7 @@ export class PeriodicAura extends Aura {
 			abilityId: this.id,
 			abilityName: this.name,
 			eventType: this.total >= 0 ? 'SPELL_PERIODIC_HEAL' : 'SPELL_PERIODIC_DAMAGE',
+			threatMultiplier: this.threatMultiplier,
 		})
 	}
 

@@ -2,6 +2,7 @@ import {logCombat, CombatEventType} from '../combatlog'
 import {fct} from '../components/floating-combat-text'
 import {ShieldAura} from './shield-aura'
 import type {Unit} from './unit'
+import {generateThreat} from './threat'
 
 export interface Hit {
 	/** Who to credit it to. */
@@ -13,6 +14,8 @@ export interface Hit {
 	abilityId: string
 	abilityName: string
 	eventType: CombatEventType
+	/** How strongly the ability earns attention. Defaults to ordinary 1:1 threat. */
+	threatMultiplier?: number
 	/** Landed via a sweet-spot tap-to-confirm (#33) — the floating number reads differently. */
 	sweetSpot?: boolean
 }
@@ -31,6 +34,7 @@ export function applyHit({
 	abilityId,
 	abilityName,
 	eventType,
+	threatMultiplier = 1,
 	sweetSpot,
 }: Hit): number {
 	// Shields take their share before anything else here runs, so `landed`, the floating number and
@@ -42,6 +46,7 @@ export function applyHit({
 	if (amount >= 0) target.health.heal(amount)
 	else target.health.damage(-amount)
 	const landed = Math.abs(target.health.current - before)
+	generateThreat(source, target, landed, incoming > 0, threatMultiplier)
 
 	// A fully absorbed hit moved nothing, and `-0` floating over the unit would claim otherwise.
 	if (amount !== 0) fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`, sweetSpot ? 'sweet-spot' : undefined)

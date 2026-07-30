@@ -21,7 +21,7 @@ export interface Effect {
 }
 
 /** An aura class an effect can plant: `PeriodicAura` and `ShieldAura` both take a magnitude. */
-type AuraClass = new (parent: Unit, caster: Unit, magnitude?: number) => Aura
+type AuraClass = new (parent: Unit, caster: Unit, magnitude?: number, threatMultiplier?: number) => Aura
 
 /** Every health change an effect makes is credited to the ability that declared it. */
 function hit(ability: Ability, target: Unit, amount: number, eventType: CombatEventType) {
@@ -32,6 +32,7 @@ function hit(ability: Ability, target: Unit, amount: number, eventType: CombatEv
 		abilityId: ability.id,
 		abilityName: ability.name,
 		eventType,
+		threatMultiplier: ability.threatMultiplier,
 		// The ability already scaled its own magnitude for a sweet-spot hit (#33) — this only
 		// tells the floating number to look different, generic to any ability that opts in.
 		sweetSpot: ability.sweetSpotHit,
@@ -74,7 +75,7 @@ export class ApplyAura implements Effect {
 		// An earlier effect in the same list may have killed the target, and death has already
 		// cancelled its auras. Do not plant one on a corpse afterwards.
 		if (!target.alive) return
-		new this.auraClass(target, ability.parent, ability.magnitude)
+		new this.auraClass(target, ability.parent, ability.magnitude, ability.threatMultiplier)
 	}
 }
 

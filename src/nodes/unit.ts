@@ -10,6 +10,7 @@ import type {Ability, AbilityClass} from './ability'
 import type {GlobalCooldown} from './global-cooldown'
 import type {Targeting} from './targeting'
 import {AbilityUse} from './ability-use'
+import type {ThreatTable} from './threat'
 
 /**
  * Base unit class. Subclasses declare `static maxHealth = N` and the
@@ -38,6 +39,11 @@ export class Unit extends Node {
 	 * the keyboard is its own driver.
 	 */
 	targeting?: Targeting
+	/**
+	 * What an enemy currently thinks of each opposing unit. Party units have no table: threat is a
+	 * PvE enemy concern, even though both factions use the same Unit class.
+	 */
+	readonly threat?: ThreatTable
 
 	/**
 	 * Still standing. This — not membership of `encounter.party`/`enemies` — is who is in the
@@ -103,6 +109,7 @@ export class Unit extends Node {
 		this.id = createId()
 		this.health = new Health(this, (this.constructor as typeof Unit).maxHealth)
 		this.health.on(HEALTH_EVENTS.EMPTY, this.onHealthEmpty)
+		if (this.faction === FACTION.ENEMY) this.threat = new Map(parent.party.map((unit) => [unit, 0] as const))
 	}
 
 	/**

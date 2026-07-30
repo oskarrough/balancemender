@@ -80,6 +80,7 @@ export class ShieldBash extends Ability {
 	static targetRule = 'enemy' as const
 	static minDamage = 16
 	static maxDamage = 24
+	static threatMultiplier = 5
 	static sound = 'combat_sword_hit'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	static effects = [new Damage()]

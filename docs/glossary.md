@@ -64,13 +64,21 @@ the ability, because it never changes with who is using it or when. `TargetRule`
 not the ability: the keyboard, a `BotDriver` weighing the fight, or a standing rule like "always
 the most hurt". One object with two methods: `prefers()` picks, `reconsiders()` decides whether to
 look again once it has one. They stay together because they have to agree — a preference for the
-most hurt ally that does not re-pick heals someone already topped up. The five are `prefer.first`,
-`prefer.atRandom`, `prefer.lowestHealth`, `prefer.tankFirst` and `prefer.healerFirst` — which reads
-the `healing` tag off an ability rather than checking a class, so a unit becomes worth killing first
-by being given a heal and in no other way. A unit's standing drivers
+most hurt ally that does not re-pick heals someone already topped up. The six are `prefer.first`,
+`prefer.atRandom`, `prefer.lowestHealth`, `prefer.tankFirst`, `prefer.healerFirst` — which reads the
+`healing` tag off an ability rather than checking a class — and `prefer.threat(enemy)`. A unit's standing drivers
 share one: `new Targeting(this, prefer.lowestHealth)`, asked one rule at a time through
 `Targeting.pick(rule)`. It remembers per rule, so a unit that both attacks and heals holds an enemy
 and an ally at once.
+
+**Threat** — one enemy's numerical attention toward each opposing unit. Actual damage earns threat
+only from the enemy it landed on; effective healing earns less and is divided between every living
+enemy that observed it. Overhealing earns none. Every party unit enters every enemy's table at zero,
+and dead entries may remain because eligibility already keeps corpses out of targeting.
+
+**Aggro** — being the unit an enemy currently attacks. Highest threat takes aggro, but a challenger
+must exceed the current target by 10%, so two close scores do not trade it back and forth. The enemy
+checks only when one of its cadences asks for another target, never every frame.
 
 **Selected target** — the one the player clicked, on `Player.selectedTarget`. UI state; no other
 driver reads or writes it, so clicking a frame never moves anyone else's aim.

@@ -18,6 +18,7 @@ export const ABILITY_KEYS = [
 	'cooldown',
 	'minDamage',
 	'maxDamage',
+	'threatMultiplier',
 	'sweetSpotWindow',
 	'sweetSpotBonus',
 ] as const

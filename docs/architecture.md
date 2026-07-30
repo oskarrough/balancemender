@@ -15,6 +15,7 @@ index.html
               │           ├── Targeting   a preference its drivers ask for one target at a time
               │           ├── abilities   stable id → one-shot Ability class
               │           ├── Cadence     (Task) requests an ability on an interval
+              │           ├── threat      enemy-local attention table
               │           └── auras       HOT / DoT (Tasks)
               ├── AudioPlayer
               └── tick() → game.draw(), which main.ts points at components/ui.ts
@@ -93,6 +94,24 @@ else's aim: a `BotDriver` healing the tank no longer drags the player's selectio
 
 Enemy casts are drawn on the caster's own unit frame; the player's has its own `CastingInfo` panel. A
 cast nobody can see warns nobody.
+
+### Threat is local to each enemy
+
+Every enemy owns a `Map<Unit, number>` whose party entries begin at zero. Actual damage adds threat
+only to the enemy it landed on. Effective healing adds half as much, divided between every living
+enemy observing it; overhealing moves no health and adds none. Both are credited from `applyHit()`,
+after shields and health-bar clamping have determined what actually landed, so direct and periodic
+effects cannot disagree.
+
+An ability's `threatMultiplier` rides with its hit, including into an aura it plants. Shield Bash
+uses a high multiplier; it still earns attention only from the enemy it struck. Holding a pack
+therefore needs the tank to work across that pack or gain a multi-target threat ability later — the
+core mechanic does not pretend one target was three.
+
+`prefer.threat(enemy)` picks the highest entry. It keeps the current target until a challenger
+exceeds it by 10%, and `Targeting.pick()` is still called by a Cadence only when that enemy acts.
+Dead and removed units need no threat cleanup because `eligible()` has already removed them from the
+candidates. A later taunt can write directly into one enemy's table without changing targeting.
 
 ## One way to change the game
 

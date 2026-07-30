@@ -57,6 +57,7 @@ const LABELS: {
 		cooldown: 'Cooldown (ms)',
 		minDamage: 'Min damage',
 		maxDamage: 'Max damage',
+		threatMultiplier: 'Threat multiplier',
 		sweetSpotWindow: 'Sweet spot window (ms)',
 		sweetSpotBonus: 'Sweet spot bonus (fraction)',
 	},

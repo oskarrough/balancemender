@@ -40,6 +40,7 @@ export class Ability extends Task {
 	gcd = false
 	minDamage?: number
 	maxDamage?: number
+	threatMultiplier = 1
 	sound = ''
 	eventType: CombatEventType = 'SPELL_DAMAGE'
 	/**
@@ -78,6 +79,7 @@ export class Ability extends Task {
 	declare static gcd?: boolean
 	declare static minDamage?: number
 	declare static maxDamage?: number
+	static threatMultiplier = 1
 	declare static sound?: string
 	declare static eventType?: CombatEventType
 	/** The last stretch of the cast, in ms, a confirming tap must land in. A balance dial. */
@@ -109,6 +111,7 @@ export class Ability extends Task {
 			'gcd',
 			'minDamage',
 			'maxDamage',
+			'threatMultiplier',
 			'sound',
 			'eventType',
 			'sweetSpot',
