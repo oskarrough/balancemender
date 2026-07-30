@@ -185,7 +185,7 @@ Content
     All these abilities utilize the core timing mechanics and resource systems.
     Allied NPCs: 2 AI-controlled party members – one Tank and one DPS – to form the rest of the party.
     They have basic AI to perform their roles (the tank will attempt to hold boss aggro and the DPS will deal damage).
-    Boss Encounters: 2–3 boss fights with distinct mechanics to showcase different challenges.
+    Boss Fights: 2–3 boss fights with distinct mechanics to showcase different challenges.
     For example, one boss might hit very hard infrequently (testing burst healing), while another applies steady damage or debuffs.
     Loot System: A basic loot table with around 10 items of varying rarity that can drop from bosses.
     This includes common gear upgrades and a couple of very rare items (~2% drop rate) to entice replay.

@@ -112,11 +112,11 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
 }
 
 /**
- * Game-over → fresh encounter transition: fade-out → `load` swaps the encounter (mid-timeline
+ * Game-over → fresh fight transition: fade-out → `load` swaps the fight (mid-timeline
  * `.call`, where `game.play()` also fires) → a snappy fade-in. No intro replay — that's first-load
  * only, so a restart is near-instant instead of paying its ~1.5s runtime again.
  */
-function toFreshEncounter(game: GameLoop, load: () => void): gsap.core.Timeline {
+function toFreshFight(game: GameLoop, load: () => void): gsap.core.Timeline {
 	const animatedGame = '.AppChrome-game, .ActionBar, .Enemies, .PartyGroup'
 	const clearAnimationState = () => {
 		// Reset GSAP's transform cache as well as the CSS. Clearing the property alone lets a later
@@ -149,19 +149,19 @@ function toFreshEncounter(game: GameLoop, load: () => void): gsap.core.Timeline 
 	return tl
 }
 
-/** Replay the same encounter. */
+/** Replay the same fight. */
 export function restartGame(game: GameLoop): gsap.core.Timeline {
-	return toFreshEncounter(game, () => game.restart())
+	return toFreshFight(game, () => game.restart())
 }
 
 /** On to the next room of the dungeon run — the action records the room's time and loads it. */
 export function nextRoom(game: GameLoop): gsap.core.Timeline {
-	return toFreshEncounter(game, () => game.perform({type: 'nextRoom'}))
+	return toFreshFight(game, () => game.perform({type: 'nextRoom'}))
 }
 
 /** Back to the first room of the same dungeon, with a fresh clock. */
 export function restartDungeon(game: GameLoop): gsap.core.Timeline {
-	return toFreshEncounter(game, () => {
+	return toFreshFight(game, () => {
 		const dungeon = game.dungeonRun?.dungeon.id
 		if (dungeon) game.perform({type: 'startDungeon', dungeon})
 	})

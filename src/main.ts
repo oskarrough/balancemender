@@ -66,7 +66,7 @@ function main() {
 
 		// Construct the game only now — vroum's Loop schedules `mount()` and starts ticking immediately on construction.
 		const game = new GameLoop()
-		// The default experience is the first dungeon; a plain `new GameLoop()` elsewhere (sims, tests) still gets the demo roster.
+		// The default experience is the first dungeon; a plain `new GameLoop()` elsewhere (sims, tests) still gets the demo room.
 		game.perform({type: 'startDungeon', dungeon: 'WolfWoods'})
 		// vroum's mount() runs in a microtask and sets running=true, so a synchronous pause()
 		// here would be overwritten. Queue it so it lands after mount.

@@ -12,7 +12,7 @@ assertion is not buried in pino, and `settle()` for vroum's deferred lifecycle. 
 ## Where things are
 
 Read [docs/architecture.md](./docs/architecture.md) first — it is the map. In short: `src/nodes/` is
-the game (loop, encounter, units, abilities, auras, resources), `src/components/` is the UI re-rendered
+the game (loop, fight, units, abilities, auras, resources), `src/components/` is the UI re-rendered
 every frame, `src/actions.ts` is the one interpreter — `game.perform(action)` — every mutation goes
 through, `src/balance.ts` the tunable numbers, `src/combatlog.ts` the event stream every fight writes,
 and `src/sim/` runs fights without a browser. [docs/combat.md](./docs/combat.md) is why the fight

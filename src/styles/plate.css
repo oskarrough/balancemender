@@ -1,5 +1,5 @@
 /* The bevel, the drop shadow and the white-on-black text an action bar icon and an aura chip share. */
-.Frame {
+.Plate {
 	--radius: 0.2em;
 	position: relative;
 	border-radius: var(--radius);
@@ -17,7 +17,7 @@
 }
 
 /* Deliberately no size and no border colours here: those are what tell the two apart. */
-.Frame-image {
+.Plate-image {
 	position: absolute;
 	inset: 0;
 	width: 100%;
@@ -29,7 +29,7 @@
 	pointer-events: none;
 }
 
-.Frame-inner {
+.Plate-inner {
 	position: relative;
 	z-index: 2;
 }

@@ -65,23 +65,25 @@ bun run sim [options]
 const tuned = attempt(() => applyTunes(args.tune ?? []).map(formatTune))
 
 // parseUnits validates against the unit registry and throws with the list of known units.
-const spec = attempt(() => ({
-	// `--party=` is a real answer — the player alone — so only an absent flag takes the default.
-	party: args.party !== undefined ? parseUnits(args.party) : undefined,
-	enemies: args.enemies ? parseUnits(args.enemies) : undefined,
+const trial = attempt(() => ({
+	room: {
+		// `--party=` is a real answer — the player alone — so only an absent flag takes the default.
+		party: args.party !== undefined ? parseUnits(args.party) : undefined,
+		enemies: args.enemies ? parseUnits(args.enemies) : undefined,
+	},
 	bot: (args.bot ?? 'triage') as keyof typeof bots,
 	seed: num('seed', args.seed, 1),
 	maxDuration: num('duration', args.duration, 120) * 1000,
 }))
 
-if (!(spec.bot in bots)) {
-	bail(`Unknown bot "${spec.bot}". Known: ${Object.keys(bots).join(', ')}`)
+if (!(trial.bot in bots)) {
+	bail(`Unknown bot "${trial.bot}". Known: ${Object.keys(bots).join(', ')}`)
 }
 
 const repeat = num('repeat', args.repeat, 0)
 
 if (repeat > 1) {
-	const results = await runFights(spec, repeat)
+	const results = await runFights(trial, repeat)
 	if (args.json) {
 		console.log(
 			JSON.stringify(
@@ -95,7 +97,7 @@ if (repeat > 1) {
 		printTunes()
 	}
 } else {
-	const result = await runFight(spec)
+	const result = await runFight(trial)
 	if (args.json) {
 		console.log(
 			JSON.stringify(

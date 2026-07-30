@@ -1,16 +1,4 @@
-import type {Roster} from './encounter'
-
-/**
- * One fight in a dungeon: who you face, plus how the scene is dressed.
- *
- * Extends the roster rather than holding one, so a room reads as `room.enemies` and passes
- * anywhere a `Roster` is wanted. `FightSpec` adds to a room the same way — see `src/sim/run.ts`.
- */
-export interface Room extends Roster {
-	name?: string
-	/** Nothing renders this yet. */
-	wallpaper?: string
-}
+import type {Room} from './fight'
 
 /** An ordered sequence of rooms played back to back. */
 export interface Dungeon {

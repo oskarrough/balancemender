@@ -8,7 +8,7 @@ minutes of fight resolve in a fraction of a second, and the keyboard becomes a `
 performing the same `{type: 'use'}` action a keypress does.
 
 ```
-roster ──▶ GameLoop + BotDriver ──▶ combat log ──▶ analyze() ──▶ report
+room ──▶ GameLoop + BotDriver ──▶ combat log ──▶ analyze() ──▶ report
    (or you, playing, in the browser) ──▶  ▲
 ```
 
@@ -101,7 +101,7 @@ running — a live frame landing mid-simulation would write into its log.
 Fights are deterministic per seed, so they make ordinary assertions:
 
 ```ts
-const fight = await runFight({enemies: ['TinyWolf', 'TinyWolf'], bot: 'triage', seed: 3})
+const fight = await runFight({room: {enemies: ['TinyWolf', 'TinyWolf']}, bot: 'triage', seed: 3})
 expect(fight.outcome).toBe('victory')
 expect(analyze(fight.events).totals.overhealing).toBeLessThan(500)
 ```
@@ -118,7 +118,7 @@ triage while anyone needs healing before attacking the lowest-health enemy. Ever
 spell to fall back on, deliberately: one whose whole output is a single spell stops
 measuring play and starts measuring that spell's availability (#41). Comparing bots on one
 composition usually tells you more than
-comparing compositions — `idle` dying in 15s while `triage` lasts 47s is the encounter's actual
+comparing compositions — `idle` dying in 15s while `triage` lasts 47s is the fight's actual
 demand. A `BotDriver` is a normal Task, so one can play in the browser:
 
 ```js
@@ -140,8 +140,8 @@ instance and the sweep hands back your baseline. The tell is a table identical a
 you tried. A field with no home in `balance.ts` (`ManaRegen.fiveSecondRule` today) wants one —
 failing that, write it on the instance from inside a method.
 
-How big an outcome lands is authored on the effect that lands it, as a share of caster power rather
-than as hit points — one row per outcome, so a composite ability's parts tune separately:
+Effect size is authored on the effect that lands it, as a share of caster power rather than as hit
+points — one row per effect, so a composite ability's parts tune separately:
 
 ```sh
 bun run sweep --tune 'effect:Renew.renew.coefficient=1.4'

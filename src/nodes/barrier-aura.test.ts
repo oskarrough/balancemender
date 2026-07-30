@@ -5,7 +5,7 @@ import {BarrierAura} from './barrier-aura'
 import {Shield} from './spells'
 import {applyHit} from './hit'
 import type {Unit} from './unit'
-import type {Roster} from './encounter'
+import type {Room} from './fight'
 import {combatLogs, clearLogs} from '../combatlog'
 import {planted} from './effects'
 
@@ -17,7 +17,7 @@ import {planted} from './effects'
 
 const events = (eventType: string) => combatLogs.filter((event) => event.eventType === eventType)
 
-const ROSTER: Roster = {party: ['Tank'], enemies: ['TinyWolf']}
+const ROOM: Room = {party: ['Tank'], enemies: ['TinyWolf']}
 
 let game!: GameLoop
 beforeEach(() => clearLogs())
@@ -28,7 +28,7 @@ afterEach(() => game.disconnect())
  * afterwards rather than a return value: a vroum Loop is thenable, so `await`ing one never
  * resolves.
  */
-const start = async (loop: GameLoop = new GameLoop(ROSTER)) => {
+const start = async (loop: GameLoop = new GameLoop(ROOM)) => {
 	game = loop
 	await settle()
 }
@@ -182,7 +182,7 @@ describe('a killing blow through a barrier', () => {
  * the game uses the dials that way, so it is worth watching a clock actually do it.
  */
 it('waits out its lifetime and then falls off', async () => {
-	const sim = new SimLoop(ROSTER)
+	const sim = new SimLoop(ROOM)
 	await start(sim)
 	// Far more than a wolf can chew through, so what ends this barrier is the clock.
 	const barrier = new BarrierAura(sim.tank, sim.player, planted(100_000))

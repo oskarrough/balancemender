@@ -14,7 +14,7 @@ export function addThreat(table: ThreatTable, unit: Unit, amount: number) {
 	table.set(unit, (table.get(unit) ?? 0) + amount)
 }
 
-/** Highest threat wins; an exact tie keeps encounter order stable. */
+/** Highest threat wins; an exact tie keeps fight order stable. */
 export function highestThreat(table: ThreatTable, candidates: Unit[]): Unit | undefined {
 	let highest: Unit | undefined
 	for (const candidate of candidates) {

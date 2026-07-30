@@ -147,7 +147,7 @@ for (const group of enemyGroups) {
 
 		for (let seed = 1; seed <= seeds; seed++) {
 			const result: FightResult = await runFight({
-				enemies: group.enemies,
+				room: {enemies: group.enemies},
 				bot: bot as keyof typeof bots,
 				seed,
 				maxDuration,

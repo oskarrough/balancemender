@@ -3,8 +3,8 @@ import {log, logger} from '../utils'
 import type {Player} from './player'
 import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
-import {Encounter, DEMO_ROSTER, Roster} from './encounter'
-import type {Dungeon, Room} from './dungeon'
+import {Fight, DEMO_ROOM, Room} from './fight'
+import type {Dungeon} from './dungeon'
 import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
 import {logCombat, setCombatClock, clearLogs, combatLogs} from '../combatlog'
@@ -34,7 +34,7 @@ export function currentGame(): GameLoop | undefined {
  * already cleared. The room you are in is not in `times` yet — it reads `elapsedTime`.
  *
  * Data, not a `Node`. A run has nothing to tick, so it is state the game holds rather than a
- * branch of the tree. The `Encounter` is the live thing; this only says which one to build next.
+ * branch of the tree. The `Fight` is the live thing; this only says which one to build next.
  */
 export interface DungeonRun {
 	dungeon: Dungeon
@@ -79,17 +79,17 @@ export class GameLoop extends Loop {
 	private fightSaved = false
 
 	audio = new AudioPlayer(this)
-	encounter: Encounter
+	fight: Fight
 
 	/**
 	 * Progress through a dungeon, or undefined for a one-off fight. See `DungeonRun`.
 	 */
 	dungeonRun?: DungeonRun
 
-	/** Pass a roster to start on something other than the demo encounter. */
-	constructor(roster: Roster = DEMO_ROSTER) {
+	/** Pass a room to start on something other than the demo fight. */
+	constructor(room: Room = DEMO_ROOM) {
 		super()
-		this.encounter = new Encounter(this, roster)
+		this.fight = new Fight(this, room)
 	}
 
 	godMode = false
@@ -117,14 +117,14 @@ export class GameLoop extends Loop {
 		return result
 	}
 
-	/** Walk into a room: build its encounter and tear down the one you were in. */
+	/** Walk into a room: build its fight and tear down the one you were in. */
 	enter(room: Room) {
 		this.pause()
-		this.encounter.disconnect()
+		this.fight.disconnect()
 		// The fight clock restarts, so the log has to as well — otherwise the last fight's
 		// damage gets divided by this fight's duration and every rate reads high.
 		clearLogs()
-		this.encounter = new Encounter(this, room)
+		this.fight = new Fight(this, room)
 		this.gameOver = false
 		this.outcome = undefined
 		this.elapsedTime = 0
@@ -146,36 +146,36 @@ export class GameLoop extends Loop {
 	}
 
 	get party() {
-		return this.encounter.party
+		return this.fight.party
 	}
 
 	get enemies() {
-		return this.encounter.enemies
+		return this.fight.enemies
 	}
 
 	get player(): Player {
-		return this.encounter.player
+		return this.fight.player
 	}
 
-	/** The active encounter's tank, if its roster has one. */
+	/** The active fight's tank, if its room has one. */
 	get tank(): Tank | undefined {
-		return this.encounter.tank
+		return this.fight.tank
 	}
 
 	mount() {
 		log('game:mount')
 		// Stamp combat events with fight time instead of wall time.
 		setCombatClock(() => this.elapsedTime)
-		logCombat({timestamp: Date.now(), eventType: 'ENCOUNTER_START'})
+		logCombat({timestamp: Date.now(), eventType: 'FIGHT_START'})
 	}
 
 	tick() {
 		// Checked in this order so a mutual wipe (both sides dead the same tick) reads as a
 		// defeat, matching the sim's `runFight()`.
-		if (this.encounter.isPartyDefeated()) {
+		if (this.fight.isPartyDefeated()) {
 			this.gameOver = true
 			this.outcome = 'defeat'
-		} else if (this.encounter.isEnemiesDefeated()) {
+		} else if (this.fight.isEnemiesDefeated()) {
 			this.gameOver = true
 			this.outcome = 'victory'
 		}
@@ -188,15 +188,15 @@ export class GameLoop extends Loop {
 	}
 
 	onGameOver() {
-		logCombat({timestamp: Date.now(), eventType: 'ENCOUNTER_END'})
+		logCombat({timestamp: Date.now(), eventType: 'FIGHT_END'})
 		this.audio.stop()
 		this.pause()
 		// gameOver/render are already set/done by tick() before this fires;
 		// also set here so the debugger's manual trigger works from any state.
 		this.gameOver = true
 		// The debugger's manual trigger flips gameOver without going through tick(), so fall
-		// back to reading the encounter directly rather than showing no outcome at all.
-		if (!this.outcome) this.outcome = this.encounter.isPartyDefeated() ? 'defeat' : 'victory'
+		// back to reading the fight directly rather than showing no outcome at all.
+		if (!this.outcome) this.outcome = this.fight.isPartyDefeated() ? 'defeat' : 'victory'
 		const outcome = this.outcome
 		this.render()
 		// Only worth animating — or saving — for someone who is watching it. Headless SimLoop
@@ -215,8 +215,8 @@ export class GameLoop extends Loop {
 		}
 	}
 
-	/** Reset state for a fresh encounter. Does not animate — pair with `restartGame()` for the visual transition. */
+	/** Reset state for a fresh fight. Does not animate — pair with `restartGame()` for the visual transition. */
 	restart() {
-		this.enter(this.encounter.roster)
+		this.enter(this.fight.room)
 	}
 }

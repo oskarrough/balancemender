@@ -8,46 +8,46 @@ import type {TinyWolf} from './enemies'
 import {eligible} from './targeting'
 
 /**
- * One spawn door. Whatever adds a unit — boot, a roster, the dev console, a simulation —
- * ends up in `Encounter.spawn()`, so these assertions hold for all of them.
+ * One spawn door. Whatever adds a unit — boot, a room, the dev console, a simulation —
+ * ends up in `Fight.spawn()`, so these assertions hold for all of them.
  */
 
 let game!: GameLoop
 afterEach(() => game.disconnect())
 
-const names = () => game.encounter.units.map((unit) => unit.name)
+const names = () => game.fight.units.map((unit) => unit.name)
 
-describe('Encounter.spawn', () => {
+describe('Fight.spawn', () => {
 	// `unitId` too, because a minified build mangles `constructor.name` and nothing else would say so.
-	it('builds the fight from a roster, player included', () => {
+	it('builds the fight from a room, player included', () => {
 		game = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		expect(names()).toEqual(['Tank', 'Player', 'Tiny wolf'])
-		expect(game.encounter.units.map((u) => u.unitId)).toEqual(['Tank', 'Player', 'TinyWolf'])
+		expect(game.fight.units.map((u) => u.unitId)).toEqual(['Tank', 'Player', 'TinyWolf'])
 		expect(game.tank).toBeDefined()
 	})
 
-	it('exposes an absent tank without throwing in a player-only encounter', () => {
+	it('exposes an absent tank without throwing in a player-only fight', () => {
 		game = new GameLoop({party: [], enemies: []})
 		expect(game.tank).toBeUndefined()
 	})
 
 	it('routes a unit to its own faction rather than the caller picking a side', () => {
 		game = new GameLoop({party: [], enemies: []})
-		game.encounter.spawn('Tank')
-		game.encounter.spawn('Nakroth')
+		game.fight.spawn('Tank')
+		game.fight.spawn('Nakroth')
 		expect(game.party.map((u) => u.name)).toEqual(['Player', 'Tank'])
 		expect(game.enemies.map((u) => u.name)).toEqual(['Nakroth the Destroyer'])
 	})
 
-	it('numbers duplicates as they come and go, not just those in the starting roster', () => {
+	it('numbers duplicates as they come and go, not just those in the starting room', () => {
 		game = new GameLoop({party: [], enemies: ['TinyWolf']})
 		expect(names()).toContain('Tiny wolf')
 
-		game.encounter.spawn('TinyWolf')
+		game.fight.spawn('TinyWolf')
 		expect(names()).toContain('Tiny wolf 1')
 		expect(names()).toContain('Tiny wolf 2')
 
-		game.encounter.remove(game.enemies[0].id)
+		game.fight.remove(game.enemies[0].id)
 		expect(game.enemies.map((u) => u.name)).toEqual(['Tiny wolf'])
 	})
 
@@ -60,7 +60,7 @@ describe('Encounter.spawn', () => {
 })
 
 /**
- * One death door. `Unit` routes every death to `Encounter.onDeath()`, which stops the unit
+ * One death door. `Unit` routes every death to `Fight.onDeath()`, which stops the unit
  * without taking it out of the fight — see the comment there for why the dead stay in the arrays.
  */
 describe('death', () => {
@@ -74,11 +74,11 @@ describe('death', () => {
 		expect(first.alive).toBe(false)
 		expect(game.enemies).toHaveLength(2)
 		expect(unitsOf(game).map((unit) => unit.name)).toContain(first.name)
-		expect(game.encounter.isEnemiesDefeated()).toBe(false)
+		expect(game.fight.isEnemiesDefeated()).toBe(false)
 
 		second.health.set(0)
 		await settle()
-		expect(game.encounter.isEnemiesDefeated()).toBe(true)
+		expect(game.fight.isEnemiesDefeated()).toBe(true)
 	})
 
 	/**
@@ -86,15 +86,15 @@ describe('death', () => {
 	 * for every unit every frame — which reaches back up through `parent`. So the moment the
 	 * player died, every render threw, the Game Over screen included.
 	 */
-	it('leaves the dead attached to the encounter, so the UI can still read them', async () => {
+	it('leaves the dead attached to the fight, so the UI can still read them', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		await settle()
 
 		for (const member of game.party) member.health.set(0)
 		await settle()
 
-		expect(game.encounter.isPartyDefeated()).toBe(true)
-		expect(game.player.parent).toBe(game.encounter)
+		expect(game.fight.isPartyDefeated()).toBe(true)
+		expect(game.player.parent).toBe(game.fight)
 		expect(() => game.player.intendedTarget).not.toThrow()
 	})
 
@@ -148,13 +148,13 @@ describe('death', () => {
 		tankGame.perform({type: 'healParty'})
 		await settle()
 		expect(tankGame.tank.alive).toBe(true)
-		expect(tankGame.tank.parent).toBe(tankGame.encounter)
+		expect(tankGame.tank.parent).toBe(tankGame.fight)
 		expect(eligible(wolf, 'enemy')).toContain(tankGame.tank)
 	})
 })
 
 describe('restart', () => {
-	it('replays the roster you were fighting, not the demo one', () => {
+	it('replays the room you were fighting, not the demo one', () => {
 		game = new GameLoop({party: [], enemies: ['Nakroth']})
 		game.restart()
 		expect(game.enemies.map((u) => u.name)).toEqual(['Nakroth the Destroyer'])

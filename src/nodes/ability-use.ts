@@ -4,7 +4,7 @@ import {AudioPlayer} from './audio'
 import {DEFAULT_SWEET_SPOT_WINDOW, type Ability, type AbilityClass} from './ability'
 import type {GameLoop} from './game-loop'
 import {GlobalCooldown} from './global-cooldown'
-import {eligible} from './target-rule'
+import {eligible} from './targets'
 import type {Unit} from './unit'
 
 export type AbilityFailure =
@@ -99,7 +99,7 @@ export class AbilityUse {
 	static whyNotUse(unit: Unit, AbilityClass?: AbilityClass, target?: Unit): AbilityFailure | undefined {
 		if (!AbilityClass) return 'missing-ability'
 		if (!target?.alive) return 'missing-target'
-		if (!eligible(unit, AbilityClass.targetRule).includes(target)) return 'invalid-target'
+		if (!eligible(unit, AbilityClass.targets).includes(target)) return 'invalid-target'
 		if (this.cooldownRemaining(unit, AbilityClass) > 0) return 'cooldown'
 		if (AbilityClass.cost && unit.mana && unit.mana.current < AbilityClass.cost) return 'missing-mana'
 		return undefined

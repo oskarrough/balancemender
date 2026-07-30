@@ -39,16 +39,16 @@ export function AuraIcon(aura: Aura) {
 
 	return html`
 		<li
-			class=${`Frame Aura ${harmful ? 'Aura--harmful' : 'Aura--helpful'} ${remaining <= 3 ? 'Aura--expiring' : ''}`}
+			class=${`Plate AuraIcon ${harmful ? 'AuraIcon--harmful' : 'AuraIcon--helpful'} ${remaining <= 3 ? 'AuraIcon--expiring' : ''}`}
 			style=${`--left: ${left * 100}%; --tick: ${toNextTick * 100}%`}
 			title=${`${aura.name} — ${aura._cycles}/${aura.repeat} ticks, ${remaining.toFixed(1)}s left`}
 		>
-			<div class="Frame-inner Aura-inner">
+			<div class="Plate-inner AuraIcon-inner">
 				<h3>${aura.name}</h3>
 				<strong>${remaining < 10 ? remaining.toFixed(1) : Math.ceil(remaining)}s</strong>
 			</div>
 			${aura.repeat > 1
-				? html`<ol class="Aura-pips">
+				? html`<ol class="AuraIcon-pips">
 						${pips.map(
 							(i) =>
 								html`<li
@@ -58,7 +58,7 @@ export function AuraIcon(aura: Aura) {
 						)}
 					</ol>`
 				: null}
-			<div class="Aura-life"></div>
+			<div class="AuraIcon-life"></div>
 		</li>
 	`
 }

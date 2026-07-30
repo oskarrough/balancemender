@@ -78,7 +78,7 @@ describe('generating threat', () => {
 		class TestAbility extends Ability {
 			static id = 'Test'
 			static name = 'Test'
-			static targetRule = 'ally' as const
+			static targets = 'ally' as const
 			static school = 'holy' as const
 			static threatMultiplier = 3
 			static effects = [new ApplyAura(TestAura, 0.2)]

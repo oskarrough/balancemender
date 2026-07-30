@@ -61,6 +61,11 @@ export class Task extends Node implements PromiseLike<void> {
 		this.elapsedTime = 0
 		this._cycleTime = 0
 		this._firstRun = true
+		// A remount is a fresh start, and these two carry the old one. Left standing, a task that
+		// finished its `repeat` cycles disconnects again on its first frame back, and `begin()` —
+		// which only fires on cycle zero — never fires again.
+		this._cycles = 0
+		this._currentTick = 0
 
 		if (this.fps !== 0) {
 			this._tickInterval = 1000 / this.fps

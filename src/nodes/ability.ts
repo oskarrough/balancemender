@@ -3,7 +3,7 @@ import type {CombatEventType} from '../combatlog'
 import {applyStatics} from '../utils'
 import {AudioPlayer} from './audio'
 import {AbilityUse} from './ability-use'
-import {eligible, type TargetRule} from './target-rule'
+import {eligible, type Targets} from './targets'
 import {Landing, type Effect} from './effects'
 import type {Unit} from './unit'
 
@@ -32,7 +32,7 @@ export class Ability extends Task {
 	name = ''
 	tags: readonly AbilityTag[] = []
 	school: AbilitySchool = 'physical'
-	targetRule: TargetRule = 'enemy'
+	targets: Targets = 'enemy'
 	icon = ''
 	cost?: number
 	cooldown?: number
@@ -42,7 +42,7 @@ export class Ability extends Task {
 	eventType: CombatEventType = 'SPELL_DAMAGE'
 	/**
 	 * What this ability does when it lands, in order. Everything an ability does to the world is in
-	 * here — no subclass reaches into the lifecycle to add an outcome of its own.
+	 * here — no subclass reaches into the lifecycle to add an effect of its own.
 	 */
 	effects: readonly Effect[] = []
 	/** This use's resolved caster side, snapshotted at construction. Effects land against it. */
@@ -66,7 +66,7 @@ export class Ability extends Task {
 	static name = ''
 	static tags: readonly AbilityTag[] = []
 	static school: AbilitySchool = 'physical'
-	static targetRule: TargetRule = 'enemy'
+	static targets: Targets = 'enemy'
 	static icon = ''
 	static effects: readonly Effect[] = []
 	/** Per-spell opt-in for the tap-to-confirm sweet spot (#33). Off unless a subclass says so. */
@@ -119,7 +119,7 @@ export class Ability extends Task {
 			'name',
 			'tags',
 			'school',
-			'targetRule',
+			'targets',
 			'icon',
 			'effects',
 			'cost',
@@ -165,11 +165,11 @@ export class Ability extends Task {
 	land() {
 		// Eligibility was settled when the use was requested, but a cast outlives the moment it
 		// started: the target can die, and it can be removed from the fight outright. Removal is not
-		// death — `Encounter.remove()` leaves the health bar full — so `alive` cannot see it and
+		// death — `Fight.remove()` leaves the health bar full — so `alive` cannot see it and
 		// only eligibility can. Landing on someone who has left logs a hit naming a unit the report
 		// has never heard of, and plants auras on a node vroum has already detached.
-		if (!this.target.alive || !eligible(this.parent, this.targetRule).includes(this.target)) return
-		// A sweet-spot hit scales the whole landing rather than any one outcome, so no effect class
+		if (!this.target.alive || !eligible(this.parent, this.targets).includes(this.target)) return
+		// A sweet-spot hit scales the whole landing rather than any one effect, so no effect class
 		// has to know the sweet spot exists.
 		const landing = this.sweetSpotHit
 			? this.landing.scaled(1 + (this.sweetSpotBonus ?? DEFAULT_SWEET_SPOT_BONUS))

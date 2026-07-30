@@ -7,7 +7,7 @@ describe('the ability registry', () => {
 	})
 
 	/**
-	 * Every registered ability does something, and everything it does has a size. An outcome
+	 * Every registered ability does something, and everything it does has a size. An effect
 	 * without a coefficient lands nothing, so this is where that stops being silent.
 	 */
 	it('gives every declared effect a size to land', () => {

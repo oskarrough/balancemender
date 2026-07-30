@@ -14,14 +14,14 @@ export const DAMAGE_RULES = {variance: 0.2}
  *
  * The power is read once, when the use is constructed, and carried here — so a buff or a retune
  * that arrives mid-cast reaches the next use and never the one in flight. Effects resolve their
- * own outcome against it, which is why no use has to hold a mutable magnitude for them to read.
+ * own size against it, which is why no use has to hold a mutable magnitude for them to read.
  */
 export class Landing {
 	constructor(
 		readonly ability: Ability,
 		readonly target: Unit,
 		readonly power: number,
-		/** What scales every outcome of this landing, over and above its coefficients — see #33. */
+		/** What scales every effect of this landing, over and above its coefficients — see #33. */
 		readonly bonus = 1,
 	) {}
 

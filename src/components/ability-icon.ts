@@ -21,9 +21,9 @@ export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string 
 	const cooldownLeft = AbilityUse.cooldownRemaining(player, AbilityClass)
 	const cooldown = AbilityClass.cooldown ?? 0
 	const cooldownSweep = cooldown ? (cooldownLeft / cooldown) * 360 : 0
-	// One number per outcome the ability lands, so a composite reads as what it does.
+	// One number per effect the ability lands, so a composite reads as what it does.
 	const magnitudes = AbilityClass.magnitudesFor(player).join(' + ') || 0
-	const outcome = AbilityClass.tags.includes('attack')
+	const effect = AbilityClass.tags.includes('attack')
 		? html`<span>🔴 ${magnitudes}</span>`
 		: html`<span>🟢 ${magnitudes}</span>`
 
@@ -34,28 +34,28 @@ export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string 
 
 	return html`
 		<button
-			class="Frame Ability"
+			class="Plate AbilityIcon"
 			data-state=${state}
 			onclick=${() => game.perform({type: 'use', ability: abilityId})}
 			.disabled=${game.gameOver}
 		>
-			<img class="Frame-image" src=${iconPath(AbilityClass)} alt="" />
-			<div class="Frame-inner">
+			<img class="Plate-image" src=${iconPath(AbilityClass)} alt="" />
+			<div class="Plate-inner">
 				<h3>${AbilityClass.name}</h3>
 				<p>
 					<span>🔵 ${AbilityClass.cost ?? 0} </span>
-					${outcome}
+					${effect}
 					<span>⏲ ${(AbilityClass.castTime ?? 0) / 1000}s</span>
 					${cooldown ? html`<span>⏳ ${cooldown / 1000}s</span>` : null}
 				</p>
 			</div>
-			<div class="Ability-gcd" style=${`--progress: ${angle}deg`}></div>
+			<div class="AbilityIcon-gcd" style=${`--progress: ${angle}deg`}></div>
 			${cooldownLeft > 0
-				? html`<div class="Ability-cooldown" style=${`--progress: ${cooldownSweep}deg`}>
+				? html`<div class="AbilityIcon-cooldown" style=${`--progress: ${cooldownSweep}deg`}>
 						<strong>${Math.ceil(cooldownLeft / 1000)}</strong>
 					</div>`
 				: null}
-			${shortcut ? html`<small class="Ability-shortcut">${shortcut}</small>` : html``}
+			${shortcut ? html`<small class="AbilityIcon-shortcut">${shortcut}</small>` : html``}
 		</button>
 	`
 }

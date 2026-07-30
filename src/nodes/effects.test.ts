@@ -14,8 +14,8 @@ import {combatLogs, clearLogs} from '../combatlog'
 
 const abilityEvents = (abilityId: string) => combatLogs.filter((event) => event.abilityId === abilityId)
 
-/** The encounter logs its own start on a later microtask, and it is not something an ability did. */
-const acted = () => combatLogs.filter((event) => event.eventType !== 'ENCOUNTER_START')
+/** The fight logs its own start on a later microtask, and it is not something an ability did. */
+const acted = () => combatLogs.filter((event) => event.eventType !== 'FIGHT_START')
 
 class Mark extends PeriodicAura {
 	static id = 'Mark'
@@ -26,11 +26,11 @@ class Mark extends PeriodicAura {
 	static repeat = 2
 }
 
-/** Both kinds of outcome in one ability, which nothing in the game has yet and the base must allow. */
+/** Both kinds of effect in one ability, which nothing in the game has yet and the base must allow. */
 class Rebuke extends Ability {
 	static id = 'Rebuke'
 	static name = 'Rebuke'
-	static targetRule = 'enemy' as const
+	static targets = 'enemy' as const
 	static effects = [new Damage(0.15), new ApplyAura(Mark, 0.1)]
 }
 
@@ -80,7 +80,7 @@ describe('the effects themselves', () => {
 		class Mend extends Ability {
 			static id = 'TestMend'
 			static name = 'Test Mend'
-			static targetRule = 'ally' as const
+			static targets = 'ally' as const
 			static school = 'holy' as const
 			static effects = [new Heal(1)]
 		}

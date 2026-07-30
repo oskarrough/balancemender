@@ -3,8 +3,7 @@ import {AudioPlayer} from '../nodes/audio'
 import {BotDriver, Bot, BotName} from '../nodes/bot'
 import {combatLogs, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
 import {setSeed} from '../rng'
-import {DEMO_ROSTER, Roster} from '../nodes/encounter'
-import type {Room} from '../nodes/dungeon'
+import {DEMO_ROOM, Room} from '../nodes/fight'
 import type {Unit} from '../nodes/unit'
 import {unitsOf, type Outcome, type UnitInfo} from './report'
 
@@ -12,10 +11,11 @@ export {unitsOf, type Outcome, type UnitInfo}
 
 /**
  * A room, plus the four things a browser would have supplied: who drives, how the dice fall, how
- * time steps, when to give up. Extending `Room` means an authored dungeon room can be simulated
- * as written — `runFight({...WolfWoods.rooms[3], bot: 'triage'})`.
+ * time steps, when to give up. Wraps a room rather than extending it, so an authored dungeon room
+ * can be run as written — `runFight({room: WolfWoods.rooms[3], bot: 'triage'})`.
  */
-export interface FightSpec extends Room {
+export interface Trial {
+	room?: Room
 	/** How the healer plays. See `src/nodes/bot.ts`. */
 	bot?: BotName | Bot
 	/** Fix the dice so the fight replays exactly. `null` for real randomness. */
@@ -27,7 +27,7 @@ export interface FightSpec extends Room {
 }
 
 export interface FightResult {
-	spec: FightSpec
+	trial: Trial
 	seed: number | null
 	outcome: Outcome
 	/** Fight time in ms. */
@@ -44,9 +44,9 @@ export interface FightResult {
  * substitutions: the browser's frame clock is replaced by a fixed step, so a two-minute
  * fight resolves in milliseconds, and the healer is played by a `BotDriver`.
  */
-export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
-	const {bot = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = spec
-	const lineup: Roster = {party: spec.party ?? DEMO_ROSTER.party, enemies: spec.enemies ?? DEMO_ROSTER.enemies}
+export async function runFight(trial: Trial = {}): Promise<FightResult> {
+	const {room = DEMO_ROOM, bot = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = trial
+	const lineup: Room = {party: room.party ?? DEMO_ROOM.party, enemies: room.enemies ?? DEMO_ROOM.enemies}
 
 	// Everything below borrows process-global state. It all has to happen inside the try,
 	// or a throw while building the fight leaves the live game holding a silenced logger,
@@ -83,7 +83,7 @@ export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
 		const outcome: Outcome = !survivors.party ? 'defeat' : !survivors.enemies ? 'victory' : 'timeout'
 
 		return {
-			spec,
+			trial,
 			seed,
 			outcome,
 			duration: Math.round(game.elapsedTime),
@@ -101,11 +101,11 @@ export async function runFight(spec: FightSpec = {}): Promise<FightResult> {
 	}
 }
 
-/** Run the same fight `times` over, one seed apart, to see how often it goes each way. */
-export async function runFights(spec: FightSpec, times: number): Promise<FightResult[]> {
-	const base = spec.seed ?? 1
+/** Run the same room `times` over, one seed apart, to see how often it goes each way. */
+export async function runFights(trial: Trial, times: number): Promise<FightResult[]> {
+	const base = trial.seed ?? 1
 	const results: FightResult[] = []
-	for (let i = 0; i < times; i++) results.push(await runFight({...spec, seed: base + i}))
+	for (let i = 0; i < times; i++) results.push(await runFight({...trial, seed: base + i}))
 	return results
 }
 

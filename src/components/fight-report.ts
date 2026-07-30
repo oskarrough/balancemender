@@ -59,7 +59,7 @@ export class FightReportView extends HTMLElement {
 			// `unitId`, not `constructor.name` — the production build minifies class names.
 			const enemies = game.enemies.flatMap((enemy) => enemy.unitId ?? [])
 			const party = game.party.filter((member) => member !== game.player).flatMap((member) => member.unitId ?? [])
-			const results = await runFights({party, enemies, bot: this.bot}, this.runs)
+			const results = await runFights({room: {party, enemies}, bot: this.bot}, this.runs)
 			this.simulation = formatAggregate(results)
 		} catch (error) {
 			this.simulation = String(error)

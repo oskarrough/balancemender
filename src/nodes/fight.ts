@@ -6,18 +6,25 @@ import {FACTION} from './types'
 import type {GameLoop} from './game-loop'
 import type {Unit} from './unit'
 
-/** Who is in an encounter. This is the only way to describe one — there are no encounter subclasses. */
-export interface Roster {
+/**
+ * The plan for one fight: who fights, plus how the scene is dressed. Every fight is built from a
+ * room, even a bare one outside any dungeon — the sim's ad-hoc groups included. The dungeon just
+ * orders rooms — see `src/nodes/dungeon.ts`.
+ */
+export interface Room {
 	/** Allies besides the player, who is always added. */
 	party?: UnitId[]
 	enemies?: UnitId[]
+	name?: string
+	/** Nothing renders this yet. */
+	wallpaper?: string
 }
 
-/** The roster a fresh boot starts from. */
-export const DEMO_ROSTER: Roster = {party: ['Tank'], enemies: ['TinyWolf']}
+/** The room a fresh boot starts from. */
+export const DEMO_ROOM: Room = {party: ['Tank'], enemies: ['TinyWolf']}
 
 /**
- * Owns the party + enemies, built from a `Roster`.
+ * Owns the party + enemies, built from a `Room`.
  *
  * Everything that adds a unit — boot, the dev console, the Balance Lab, a simulation,
  * a test — goes through `spawn()`. There is deliberately no second way to do it.
@@ -25,22 +32,22 @@ export const DEMO_ROSTER: Roster = {party: ['Tank'], enemies: ['TinyWolf']}
  * `player` and `tank` are resolved once and read directly thereafter — the UI hits
  * them every render, so a per-access `find()` was wasteful.
  */
-export class Encounter extends Node {
+export class Fight extends Node {
 	party: Unit[] = []
 	enemies: Unit[] = []
 	player!: Player
-	/** Undefined in a roster without one — the first room of a dungeon is the player alone. */
+	/** Undefined in a room without one — the first room of a dungeon is the player alone. */
 	tank?: Tank
 
 	constructor(
 		public parent: GameLoop,
-		public roster: Roster = DEMO_ROSTER,
+		public room: Room = DEMO_ROOM,
 	) {
 		super(parent)
-		for (const id of roster.party ?? []) this.spawn(id)
+		for (const id of room.party ?? []) this.spawn(id)
 		this.player = this.spawn('Player') as Player
 		this.player.selectedTarget = this.player
-		for (const id of roster.enemies ?? []) this.spawn(id)
+		for (const id of room.enemies ?? []) this.spawn(id)
 		this.tank = this.party.find((unit): unit is Tank => unit instanceof Tank)
 	}
 
@@ -50,7 +57,7 @@ export class Encounter extends Node {
 	}
 
 	/**
-	 * Add a unit to the encounter. The class's own `faction` decides which side it joins,
+	 * Add a unit to the fight. The class's own `faction` decides which side it joins,
 	 * so callers never pick the array themselves.
 	 */
 	spawn(id: UnitId): Unit {

@@ -1,10 +1,10 @@
 import type {Unit} from './unit'
 import {Tank} from './party-units'
 import {random} from '../rng'
-import {eligible, type TargetRule} from './target-rule'
+import {eligible, type Targets} from './targets'
 import {highestThreat, pullsAggro} from './threat'
 
-export {eligible, type TargetRule} from './target-rule'
+export {eligible, type Targets} from './targets'
 
 /**
  * Which of the eligible units to take. A property of the driver, not of the ability.
@@ -111,34 +111,34 @@ function threatTable(owner: Unit) {
 /**
  * A unit's standing preference, asked once per use of an ability.
  *
- * It remembers who it settled on per target rule, not per unit, so a unit that both attacks and
+ * It remembers one pick per `targets` value, not per unit, so a unit that both attacks and
  * heals keeps an enemy and an ally at the same time instead of two drivers fighting over one slot.
  * The UI may observe that memory to show target-of-target; only a driver may change it through
  * `pick()`.
  */
 export class Targeting {
-	private settled = new Map<TargetRule, Unit>()
+	private settled = new Map<Targets, Unit>()
 
 	constructor(
 		public parent: Unit,
 		public preference: Preference,
 	) {}
 
-	/** Who this preference last picked for a rule, while that target remains eligible. */
-	current(rule: TargetRule): Unit | undefined {
-		const target = this.settled.get(rule)
-		return target && eligible(this.parent, rule).includes(target) ? target : undefined
+	/** Who this preference last picked for `targets`, while that target remains eligible. */
+	current(targets: Targets): Unit | undefined {
+		const target = this.settled.get(targets)
+		return target && eligible(this.parent, targets).includes(target) ? target : undefined
 	}
 
-	/** Who to use an ability with this rule on, right now. A corpse picks nobody. */
-	pick(rule: TargetRule): Unit | undefined {
+	/** Who to use an ability with `targets` on, right now. A corpse picks nobody. */
+	pick(targets: Targets): Unit | undefined {
 		if (!this.parent.alive) return undefined
-		const candidates = eligible(this.parent, rule)
-		const current = this.settled.get(rule)
+		const candidates = eligible(this.parent, targets)
+		const current = this.settled.get(targets)
 		const keep = current && candidates.includes(current) && !this.preference.reconsiders(current, candidates)
 		const target = keep ? current : this.preference.prefers(candidates)
-		if (target) this.settled.set(rule, target)
-		else this.settled.delete(rule)
+		if (target) this.settled.set(targets, target)
+		else this.settled.delete(targets)
 		return target
 	}
 }

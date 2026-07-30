@@ -12,7 +12,7 @@ index.html
   └── src/main.ts            splash → on first keypress, builds the game
         └── GameLoop         (vroum Loop) the clock and the root of everything
               ├── dungeonRun progress through a Dungeon (data in nodes/dungeon.ts), if any
-              ├── Encounter  owns the party + enemies
+              ├── Fight  owns the party + enemies
               │     └── Unit…             Player, Tank, WolfPup, TinyWolf, WolfShaman, Nakroth
               │           ├── Stats       base + owned modifiers → health, mana, mana regen
               │           ├── Health/Mana (Resource nodes, emit change events)
@@ -46,7 +46,7 @@ balancemender.perform({type: 'tune', of: 'ability', name: 'Heal', key: 'cost', v
 
 The dev console is a text adapter over this and nothing more. Adding a capability means one more case
 in the union, not a new command plus a panel button plus a test helper. Spawning goes further: every
-unit that joins an encounter goes through `Encounter.spawn(unitId)`, so faction routing, duplicate
+unit that joins a fight goes through `Fight.spawn(unitId)`, so faction routing, duplicate
 numbering and unknown-id errors are written once.
 
 `src/balance.ts` snapshots the tunable statics of every ability, effect, cadence, aura and unit and
@@ -56,7 +56,7 @@ key spellings are in [glossary.md](./glossary.md#tuning-and-measuring).
 ## The combat log is the interface for analysis
 
 Everything that happens in a fight goes through `logCombat()` in `src/combatlog.ts`: casts, hits,
-heals (with the overhealed portion), auras coming and going, condition changes, deaths, encounter
+heals (with the overhealed portion), auras coming and going, condition changes, deaths, fight
 start and end. Events are stamped with `time`, milliseconds into the fight, so a fight simulated in
 200ms of wall clock reads the same as one played for real. That single stream feeds the Combat log
 panel, the Fight report panel and the headless simulator in `src/sim/` — log a new mechanic and it

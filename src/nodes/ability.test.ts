@@ -12,7 +12,7 @@ describe('abilities', () => {
 			static name = 'Wind up'
 			static tags = ['spell'] as const
 			static school = 'physical' as const
-			static targetRule = 'enemy' as const
+			static targets = 'enemy' as const
 			static castTime = 5000
 			static gcd = true
 		}

@@ -3,7 +3,7 @@ import {FACTION} from './types'
 import {Mana} from './mana'
 import {playerAbilities} from './registry'
 import type {AbilityClass} from './ability'
-import type {Encounter} from './encounter'
+import type {Fight} from './fight'
 
 export class Player extends Unit {
 	static stamina = 160
@@ -17,7 +17,7 @@ export class Player extends Unit {
 	mana: Mana
 	abilities: Record<string, AbilityClass> = playerAbilities
 
-	constructor(public parent: Encounter) {
+	constructor(public parent: Fight) {
 		super(parent)
 		this.mana = new Mana(this, this.stats.maxMana, this.stats.manaRegen)
 	}

@@ -14,9 +14,9 @@ a port, not a copy.
   `GameLoop.mount()` wiring listeners both happen.
 - **The Loop is one of its own tasks**, so `game.elapsedTime` is the fight clock. Everything
   time-based reads it: the five-second rule, cast bookkeeping, the combat log's `time`. It resets when
-  an encounter is loaded.
+  a fight is loaded.
 - **`connect()`/`disconnect()` are deferred to a microtask.** A node is not mounted on the line after
-  you construct it, and a dead unit is still in `encounter.party` until the microtask runs. Some of it
+  you construct it, and a dead unit is still in `fight.party` until the microtask runs. Some of it
   chains — a death takes two hops — so `await settle()` from `test-setup.ts` rather than counting your
   own `Promise.resolve()`s. Disconnecting twice is safe — teardown runs once — so two callers that
   can both reach a node need no guard of their own.
@@ -44,9 +44,9 @@ a port, not a copy.
   - **Usage:** Subclass Node for game entities or components. Attach a Node to a parent by passing the parent to its constructor (`new MyNode(parent)`) or using `node.connect(parent)` – this triggers the mount lifecycle. Override `mount()`/`destroy()` in your subclass to handle setup/teardown logic.
 
 - **Task** – A Node that encapsulates time-based behavior (update logic, animations, effects) and runs within the Loop.
-  - **Lifecycle:** Inherits Node's lifecycle – on `mount()` it resets timing and registers itself with the root Loop's task list (starting its schedule), and on `destroy()` it stops and removes itself from the Loop. You can also override optional hooks: `mount()` (runs once at start), `beforeCycle()` (each cycle start), `tick()` (each tick/frame – your main update logic), and `afterCycle()` (end of each cycle).
+  - **Lifecycle:** Inherits Node's lifecycle – on `mount()` it resets timing and registers itself with the root Loop's task list (starting its schedule), and on `destroy()` it stops and removes itself from the Loop. You can also override optional hooks: `mount()` (runs once at start), `begin()` (once, entering the first cycle), `beforeCycle()` (each cycle start), `tick()` (each tick/frame – your main update logic), and `afterCycle()` (end of each cycle).
   - **Timing control:** Important properties to configure task timing: `delay` (start offset in ms), `interval` (pause between repeat cycles), `duration` (length of each cycle in ms), `fps` and `ticks` (fixed-rate tick scheduling), and `repeat` (number of cycles, default infinite).
-  - **State properties:** `elapsedTime` (ms elapsed since mount), `deltaTime` (time since this task's previous tick), `progress` (the current cycle's completion ratio), `running` (whether active or paused), and `done` (true when the task has finished).
+  - **State properties:** `elapsedTime` (ms elapsed since mount), `deltaTime` (how long the frame took — only a task with `fps` set reads it as the time since its own previous tick), `progress` (the current cycle's completion ratio, and 1 for a cycle with no duration), `running` (whether active or paused), and `done` (true when the task has finished).
   - **Methods:** Implement your game logic in `tick()` – it's called automatically on each frame (after any delay) as long as `running` is true. Use `play()` and `pause()` to control the task's execution (these also emit Task.PLAY/PAUSE events). You can override `shouldTick()` to skip a tick (e.g. if a condition isn't met) or `shouldEnd()` to stop early (custom end condition) – otherwise the Task ends when the set `repeat` cycles finish.
   - **Usage:** Subclass `Task` for any timed behavior (e.g. a damage-over-time effect or an animation update). Override the relevant hooks (`tick()` at minimum, plus others as needed for setup or per-cycle logic). Instantiate the task with a parent that is in the Loop (often the Loop itself or a Node under it) – this auto-mounts and starts the task. The Loop will then run the task's `tick()` each frame until it completes or you manually pause/stop it. Developers can quickly chain game actions by creating Task instances, and the framework handles the scheduling so you can focus on the logic.
 

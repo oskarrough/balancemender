@@ -18,7 +18,7 @@ const event = (partial: Partial<CombatLogEvent>): CombatLogEvent => ({
 
 // Every event the game logs carries both an id and a name for whoever it touches, so these do too.
 const fight: CombatLogEvent[] = [
-	event({time: 0, eventType: 'ENCOUNTER_START'}),
+	event({time: 0, eventType: 'FIGHT_START'}),
 	event({
 		time: 1000,
 		eventType: 'SWING_DAMAGE',
@@ -214,12 +214,12 @@ describe('injuredTime', () => {
 	it('adds up the stretches a unit spent injured', () => {
 		const report = analyze(
 			[
-				event({time: 0, eventType: 'ENCOUNTER_START'}),
+				event({time: 0, eventType: 'FIGHT_START'}),
 				hurt({time: 1000, condition: 'injured'}),
 				hurt({time: 3000, condition: 'steady'}),
 				hurt({time: 5000, condition: 'injured'}),
 				hurt({time: 6000, condition: 'healthy'}),
-				event({time: 8000, eventType: 'ENCOUNTER_END'}),
+				event({time: 8000, eventType: 'FIGHT_END'}),
 			],
 			{units},
 		)
@@ -229,7 +229,7 @@ describe('injuredTime', () => {
 	})
 
 	it('closes a stretch still open when the fight ends', () => {
-		const report = analyze([event({time: 0, eventType: 'ENCOUNTER_START'}), hurt({time: 2000, condition: 'injured'})], {
+		const report = analyze([event({time: 0, eventType: 'FIGHT_START'}), hurt({time: 2000, condition: 'injured'})], {
 			units,
 			duration: 10_000,
 		})
@@ -241,10 +241,10 @@ describe('injuredTime', () => {
 	it('stops the clock at death rather than at the end of the fight', () => {
 		const report = analyze(
 			[
-				event({time: 0, eventType: 'ENCOUNTER_START'}),
+				event({time: 0, eventType: 'FIGHT_START'}),
 				hurt({time: 1000, condition: 'injured'}),
 				event({time: 4000, eventType: 'UNIT_DIED', targetId: 'tank', targetName: 'Tank'}),
-				event({time: 9000, eventType: 'ENCOUNTER_END'}),
+				event({time: 9000, eventType: 'FIGHT_END'}),
 			],
 			{units},
 		)

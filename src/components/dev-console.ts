@@ -126,7 +126,7 @@ export class DevConsole extends HTMLElement {
 						)
 					}
 					if (args[0] === 'removeall') {
-						for (const e of game.encounter.enemies.slice()) game.perform({type: 'remove', unit: e.id})
+						for (const e of game.fight.enemies.slice()) game.perform({type: 'remove', unit: e.id})
 						this.logToConsole('All enemies removed')
 					} else if (args[0] === 'spawn') {
 						const unit = args[1] as UnitId

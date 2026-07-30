@@ -30,7 +30,7 @@ export function register() {
  * One FCT container per unit frame, cached by unit id — hits land many times a second
  * and each would otherwise cost a DOM query. uhtml patches the frames in place, so a cached
  * container survives re-renders; it only goes stale when the frame leaves the DOM (a unit
- * died, the encounter reloaded), which `isConnected` catches.
+ * died, the fight reloaded), which `isConnected` catches.
  */
 const containers = new Map<string, Element>()
 

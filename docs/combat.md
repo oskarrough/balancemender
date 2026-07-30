@@ -18,7 +18,7 @@ versus Attack branch in the class tree.
 
 What an ability does when it lands is an ordered list of effects it declares —
 [`effects.ts`](../src/nodes/effects.ts) holds `Damage`, `Heal` and `ApplyAura`. Nothing overrides the
-lifecycle to add an outcome, and an effect reads its numbers off the ability as it lands, so tuning
+lifecycle to add an effect, and an effect reads its numbers off the ability as it lands, so tuning
 still reaches it. Effects are plain objects, not nodes: a vroum child cannot run in the frame it is
 constructed, and nothing instantaneous needs a lifecycle.
 
@@ -34,15 +34,15 @@ Validation and every effect then see the same unit, and a cast holds the target 
 
 What a cast cannot hold still is the world around it, and `Ability.land()` re-checks eligibility for
 exactly two reasons. The target can die. It can also be **removed** from the fight, and removal is not
-death — `Encounter.remove()` splices the unit out but leaves its health bar full, so `alive` still
+death — `Fight.remove()` splices the unit out but leaves its health bar full, so `alive` still
 reads true. A guard that only asked `alive` healed a unit that was no longer in the fight and mounted
 auras on a node vroum had already detached, which threw inside a microtask where nothing could catch
 it.
 
-Who is eligible comes from the ability (`targetRule`); which of them comes from the driver. The
+Who is eligible comes from the ability (`targets`); which of them comes from the driver. The
 keyboard's preference is `Player.intendedTarget` — the frame the player selected, falling back to the
-tank; the `BotDriver`'s is whatever its bot weighed; a `Cadence` asks its unit's `Targeting.pick(rule)`,
-which is a preference and a memory per target rule and nothing else. A unit with no `Targeting` has no
+tank; the `BotDriver`'s is whatever its bot weighed; a `Cadence` asks its unit's `Targeting.pick(targets)`,
+which is a preference and a memory per targets value and nothing else. A unit with no `Targeting` has no
 way to choose, so its Cadence says so rather than beating in silence. The selected enemy's frame may
 read that memory through `Targeting.current(rule)` to show target-of-target, but it cannot choose or
 change one.

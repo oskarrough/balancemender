@@ -91,10 +91,10 @@
 [data-event-type='UNIT_DIED'] {
 	color: var(--c-prussian-blue);
 }
-[data-event-type='ENCOUNTER_START'] {
+[data-event-type='FIGHT_START'] {
 	color: var(--c-imperial-green);
 }
-[data-event-type='ENCOUNTER_END'] {
+[data-event-type='FIGHT_END'] {
 	color: var(--c-crimson-lake);
 }
 [data-event-type='SWEET_SPOT_HIT'] {

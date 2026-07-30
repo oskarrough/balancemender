@@ -1,5 +1,5 @@
 /* One button in the action bar. Square, so the art reads as an icon rather than a banner with a label beside it. */
-.Ability {
+.AbilityIcon {
 	flex: none;
 	width: 5rem;
 	aspect-ratio: 1;
@@ -7,30 +7,30 @@
 	border-color: hsl(0, 0%, 86%) hsl(0, 0%, 70%) hsl(0, 0%, 35%) hsl(0, 0%, 73%);
 }
 
-.Ability:hover {
+.AbilityIcon:hover {
 	background: conic-gradient(hsl(60, 7%, 15%) 25%, hsl(20, 5%, 20%));
 }
 
-.Ability:hover .Frame-image {
+.AbilityIcon:hover .Plate-image {
 	filter: saturate(1) contrast(1);
 }
 
-.Ability:hover .Ability-gcd {
+.AbilityIcon:hover .AbilityIcon-gcd {
 	border-color: var(--yellow);
 }
 
-.Ability:active .Ability-gcd {
+.AbilityIcon:active .AbilityIcon-gcd {
 	border-color: initial;
 }
 
 /* The inner layer spans the icon, so the caption and the stats can pin themselves to its edges. */
-.Ability .Frame-inner {
+.AbilityIcon .Plate-inner {
 	position: absolute;
 	inset: 0;
 }
 
 /* A square has no room to set the name beside the art, so it becomes a caption across the foot. */
-.Ability h3 {
+.AbilityIcon h3 {
 	position: absolute;
 	inset: auto 0 0;
 	padding: 0 0.2rem;
@@ -44,7 +44,7 @@
 }
 
 /* What it costs and what it does, only while the pointer is on it — the art and the keybind identify it otherwise. */
-.Ability p {
+.AbilityIcon p {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
@@ -54,11 +54,11 @@
 	opacity: 0;
 }
 
-.Ability:hover p {
+.AbilityIcon:hover p {
 	opacity: 1;
 }
 
-.Ability-gcd {
+.AbilityIcon-gcd {
 	--color: rgba(200, 220, 270, 1);
 	position: absolute;
 	inset: 0;
@@ -69,7 +69,7 @@
 	border: 2px groove hsla(0, 0%, 100%, 0.7);
 }
 
-.Ability-gcd::before {
+.AbilityIcon-gcd::before {
 	display: block;
 	content: '';
 	width: 100%;
@@ -89,26 +89,26 @@
 
 	The global cooldown is deliberately absent: it is up for a fraction of a second after every
 	cast and applies to every icon at once, so drawn here it would strobe the whole bar. It has
-	the `.Ability-gcd` sweep, which is a clock and not a state.
+	the `.AbilityIcon-gcd` sweep, which is a clock and not a state.
 */
-.Ability[data-state='unaffordable'] .Frame-image,
-.Ability[data-state='blocked'] .Frame-image {
+.AbilityIcon[data-state='unaffordable'] .Plate-image,
+.AbilityIcon[data-state='blocked'] .Plate-image {
 	filter: saturate(0.1) contrast(0.8) brightness(0.5);
 }
 
 /* Out of mana reads blue, the same colour the mana bar uses, so the link needs no explaining. */
-.Ability[data-state='unaffordable'] {
+.AbilityIcon[data-state='unaffordable'] {
 	border-color: hsl(0, 0%, 40%);
 	box-shadow: inset 0 0 0.8rem hsla(210, 60%, 50%, 0.35);
 }
 
-.Ability[data-state='unaffordable'] h3,
-.Ability[data-state='blocked'] h3 {
+.AbilityIcon[data-state='unaffordable'] h3,
+.AbilityIcon[data-state='blocked'] h3 {
 	opacity: 0.5;
 }
 
 /* A cooldown is the one unavailability with a known end, so it gets the countdown and a sweep. */
-.Ability-cooldown {
+.AbilityIcon-cooldown {
 	position: absolute;
 	inset: 0;
 	z-index: 3;
@@ -119,7 +119,7 @@
 	background: conic-gradient(hsla(0 0% 0% / 0.65) var(--progress), hsla(0 0% 0% / 0.15) var(--progress));
 }
 
-.Ability-cooldown strong {
+.AbilityIcon-cooldown strong {
 	font-size: 1.6rem;
 	color: var(--white);
 	text-shadow:
@@ -127,7 +127,7 @@
 		0 0 6px black;
 }
 
-.Ability-shortcut {
+.AbilityIcon-shortcut {
 	position: absolute;
 	top: 0.5em;
 	left: 0.5em;

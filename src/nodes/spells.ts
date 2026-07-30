@@ -14,7 +14,7 @@ export class Heal extends Ability {
 	static name = 'Heal'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
-	static targetRule = 'ally' as const
+	static targets = 'ally' as const
 	static cost = 50
 	static castTime = 2000
 	static cooldown = 0
@@ -27,7 +27,7 @@ export class FlashHeal extends Ability {
 	static name = 'Flash Heal'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
-	static targetRule = 'ally' as const
+	static targets = 'ally' as const
 	static cost = 80
 	static castTime = 1000
 	static cooldown = 0
@@ -40,7 +40,7 @@ export class GreaterHeal extends Ability {
 	static name = 'Greater Heal'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
-	static targetRule = 'ally' as const
+	static targets = 'ally' as const
 	static cost = 100
 	static castTime = 3000
 	static cooldown = 0
@@ -57,7 +57,7 @@ export class Smite extends Ability {
 	static name = 'Smite'
 	static tags = ['spell', 'attack', 'ranged'] as const
 	static school = 'holy' as const
-	static targetRule = 'enemy' as const
+	static targets = 'enemy' as const
 	static cost = 40
 	static castTime = 1500
 	static cooldown = 0
@@ -83,7 +83,7 @@ export class Renew extends Ability {
 	static name = 'Renew'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
-	static targetRule = 'ally' as const
+	static targets = 'ally' as const
 	static cost = 60
 	static castTime = 0
 	static cooldown = 0
@@ -107,7 +107,7 @@ export class Wither extends Ability {
 	static name = 'Wither'
 	static tags = ['spell', 'attack', 'ranged'] as const
 	static school = 'holy' as const
-	static targetRule = 'enemy' as const
+	static targets = 'enemy' as const
 	static cost = 40
 	static castTime = 0
 	static cooldown = 0
@@ -126,7 +126,7 @@ export class Shield extends Ability {
 	static name = 'Shield'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
-	static targetRule = 'ally' as const
+	static targets = 'ally' as const
 	static cost = 60
 	static castTime = 0
 	static cooldown = 0
@@ -141,7 +141,7 @@ export class Mend extends Ability {
 	static name = 'Mend'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
-	static targetRule = 'ally' as const
+	static targets = 'ally' as const
 	static cost = 0
 	static castTime = 2500
 	static cooldown = 0

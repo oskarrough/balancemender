@@ -5,7 +5,7 @@ import {Tank} from './party-units'
 import {Player} from './player'
 
 /**
- * Every spawnable unit, by id. `Encounter.spawn()` reads this and routes by the class's own
+ * Every spawnable unit, by id. `Fight.spawn()` reads this and routes by the class's own
  * faction, so party and enemies go through one door.
  *
  * Ids are stable strings, unlike `constructor.name`, which the production build minifies. They are

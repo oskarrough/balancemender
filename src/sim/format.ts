@@ -1,5 +1,5 @@
 import {analyze, healerOf, margin, FightReport, Series} from './report'
-import type {FightResult, FightSpec, Outcome} from './run'
+import type {FightResult, Trial, Outcome} from './run'
 
 /** Plain-text fight reports. No colours, so they pipe and diff cleanly. */
 
@@ -7,10 +7,10 @@ const BLOCKS = '▁▂▃▄▅▆▇█'
 const OUTCOMES: Outcome[] = ['victory', 'defeat', 'timeout']
 
 /** Who fought and how the healer played, with the defaults `runFight` would have filled in. */
-const lineup = (spec: FightSpec) => ({
-	party: spec.party ?? ['Tank'],
-	enemies: spec.enemies ?? ['TinyWolf'],
-	bot: typeof spec.bot === 'string' ? spec.bot : (spec.bot?.name ?? 'triage'),
+const lineup = (trial: Trial) => ({
+	party: trial.room?.party ?? ['Tank'],
+	enemies: trial.room?.enemies ?? ['TinyWolf'],
+	bot: typeof trial.bot === 'string' ? trial.bot : (trial.bot?.name ?? 'triage'),
 })
 
 /** A health bar over time: one block per column, `·` once the unit is dead. */
@@ -25,7 +25,7 @@ export function sparkline(points: number[]) {
 
 export function formatFight(result: FightResult, report = analyze(result.events, result)): string {
 	const lines: string[] = []
-	const {party, enemies, bot} = lineup(result.spec)
+	const {party, enemies, bot} = lineup(result.trial)
 
 	lines.push(
 		`${[...party, 'Player'].join(' + ')}  vs  ${enemies.join(' + ')}`,
@@ -96,7 +96,7 @@ export function formatAggregate(results: FightResult[]): string {
 	const runtime = avg(durations)
 	const outcomes = count(results.map((r) => r.outcome))
 	const deaths = count(reports.flatMap((r) => r.deaths.map((d) => d.name)))
-	const {party, enemies, bot} = lineup(results[0].spec)
+	const {party, enemies, bot} = lineup(results[0].trial)
 	const victories = outcomes.get('victory') ?? 0
 	const absorbed = avg(healers.map((h) => h?.absorbed ?? 0))
 	const wasted = avg(healers.map((h) => h?.wasted ?? 0))

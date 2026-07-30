@@ -42,10 +42,10 @@ type UnitClass = Record<UnitKey, number>
 export const abilityClasses = abilityRegistry
 
 /**
- * How big an outcome lands belongs to the effect that lands it, so that is what a coefficient is
+ * Effect size belongs to the effect that lands it, so that is what a coefficient is
  * tuned on: `effect:SavageBite.rend.coefficient=0.6`. Rows are named for the ability that declares
  * the effect and the effect's own label, and built by walking the registry — a new ability's
- * outcomes are tunable without a list here to remember to update.
+ * effects are tunable without a list here to remember to update.
  */
 export const effectClasses: Record<string, NumberDict> = {}
 for (const [abilityId, AbilityClass] of Object.entries(abilityRegistry)) {

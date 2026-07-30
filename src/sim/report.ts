@@ -3,7 +3,7 @@ import type {GameLoop} from '../nodes/game-loop'
 
 export type Outcome = 'victory' | 'defeat' | 'timeout'
 
-/** Who was in a fight. Not a `Roster` — that is the spec you spawn *from*. */
+/** Who was in a fight. Not a `Room` — that is the plan you spawn *from*. */
 export interface UnitInfo {
 	id: string
 	name: string
@@ -13,7 +13,7 @@ export interface UnitInfo {
 
 /** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
 export function unitsOf(game: GameLoop): UnitInfo[] {
-	return game.encounter.units.map((c) => ({
+	return game.fight.units.map((c) => ({
 		id: c.id,
 		name: c.name || c.constructor.name,
 		maxHealth: c.health.max,
@@ -33,7 +33,7 @@ const HEAL: CombatEventType[] = ['SPELL_HEAL', 'SPELL_PERIODIC_HEAL']
 const AURA_ENDED: CombatEventType[] = ['SPELL_AURA_REMOVED', 'SPELL_AURA_REFRESH']
 
 export interface UnitStats {
-	/** The unit's id. Names change mid-fight — `Encounter.renumber()` sees to that. */
+	/** The unit's id. Names change mid-fight — `Fight.renumber()` sees to that. */
 	id?: string
 	name: string
 	faction?: string

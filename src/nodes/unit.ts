@@ -1,7 +1,7 @@
 import {Node} from '../vroum'
 import {Health, HEALTH_EVENTS} from './health'
 import {Mana} from './mana'
-import type {Encounter} from './encounter'
+import type {Fight} from './fight'
 import type {Aura} from './aura'
 import {createId, log} from '../utils'
 import {Faction, FACTION, Condition, CONDITION_THRESHOLDS} from './types'
@@ -52,8 +52,8 @@ export class Unit extends Node {
 	readonly threat?: ThreatTable
 
 	/**
-	 * Still standing. This — not membership of `encounter.party`/`enemies` — is who is in the
-	 * fight: the dead stay in those arrays. See `Encounter.onDeath()`.
+	 * Still standing. This — not membership of `fight.party`/`enemies` — is who is in the
+	 * fight: the dead stay in those arrays. See `Fight.onDeath()`.
 	 */
 	get alive() {
 		return this.health.current > 0
@@ -110,7 +110,7 @@ export class Unit extends Node {
 		return AbilityUse.use(this, abilityId, target)
 	}
 
-	constructor(public parent: Encounter) {
+	constructor(public parent: Fight) {
 		super(parent)
 		this.id = createId()
 		const bases = this.constructor as typeof Unit
@@ -155,9 +155,9 @@ export class Unit extends Node {
 	}
 
 	/**
-	 * Dying is the encounter's business, not the unit's. This used to call `this.disconnect()`,
+	 * Dying is the fight's business, not the unit's. This used to call `this.disconnect()`,
 	 * which left the corpse half in and half out: vroum's teardown nulls `parent`, but the unit
-	 * stayed in `encounter.party`, so anything that walked that array and reached back up the
+	 * stayed in `fight.party`, so anything that walked that array and reached back up the
 	 * tree — `Player.intendedTarget` reads `this.parent.tank` — threw from the first death onwards.
 	 */
 	private onHealthEmpty = () => {

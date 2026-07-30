@@ -166,7 +166,7 @@ const LAYOUT = {
 	narrow: 900,
 	/** Width to leave clear down the middle for the party frames (.PartyMember is max-width 20rem) */
 	gameColumn: 360,
-	/** Height to leave clear at the bottom for .ActionBar — one .Ability tall (5rem), of which the last 4px sit below the fold */
+	/** Height to leave clear at the bottom for .ActionBar — one .AbilityIcon tall (5rem), of which the last 4px sit below the fold */
 	actionBar: 80,
 }
 

@@ -3,7 +3,7 @@ import {AudioPlayer} from './nodes/audio'
 import {setBalanceValue, resetBalance, AbilityKey, EffectKey, CadenceKey, AuraKey, UnitKey, RuleKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
-import type {Room} from './nodes/dungeon'
+import type {Room} from './nodes/fight'
 // Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
 import {dungeonRegistry} from './nodes/dungeon'
 import type {UnitId} from './nodes/unit-registry'
@@ -31,7 +31,7 @@ export type GameAction =
 	/** Stop the cast in progress. */
 	| {type: 'interrupt'}
 	| {type: 'tune'; of: 'ability'; name: string; key: AbilityKey; value: number}
-	/** How big one of an ability's outcomes lands, named `Ability.effect`. */
+	/** How big one of an ability's effects lands, named `Ability.effect`. */
 	| {type: 'tune'; of: 'effect'; name: string; key: EffectKey; value: number}
 	| {type: 'tune'; of: 'cadence'; name: string; key: CadenceKey; value: number}
 	| {type: 'tune'; of: 'aura'; name: string; key: AuraKey; value: number}
@@ -64,10 +64,10 @@ export const fail = (error: string): ActionResult<never> => ({ok: false, error})
 export function perform(game: GameLoop, action: GameAction): ActionResult<unknown> {
 	switch (action.type) {
 		case 'spawn':
-			return ok(game.encounter.spawn(action.unit))
+			return ok(game.fight.spawn(action.unit))
 
 		case 'remove':
-			return game.encounter.remove(action.unit) ? ok(action.unit) : fail(`No unit with id ${action.unit}`)
+			return game.fight.remove(action.unit) ? ok(action.unit) : fail(`No unit with id ${action.unit}`)
 
 		case 'target': {
 			const unit = findUnit(game, action.unit)
@@ -130,7 +130,7 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 		}
 
 		case 'restart':
-			game.enter(game.encounter.roster)
+			game.enter(game.fight.room)
 			return ok(undefined)
 
 		case 'set':
@@ -142,14 +142,14 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 	}
 }
 
-const findUnit = (game: GameLoop, id: string): Unit | undefined => game.encounter.units.find((unit) => unit.id === id)
+const findUnit = (game: GameLoop, id: string): Unit | undefined => game.fight.units.find((unit) => unit.id === id)
 
 /**
  * A retuned unit type applies to the ones already fighting, matched by `unitId` — never by
  * class name, which the production build minifies into nonsense.
  */
 function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: number) {
-	for (const unit of game.encounter.units) {
+	for (const unit of game.fight.units) {
 		if (unit.unitId !== unitId) continue
 		unit.setBaseStat(key, value)
 	}

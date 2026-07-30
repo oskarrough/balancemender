@@ -28,7 +28,7 @@ describe('ability use rules', () => {
 	})
 
 	/**
-	 * Removal is not death: `Encounter.remove()` splices the unit out and leaves its health bar
+	 * Removal is not death: `Fight.remove()` splices the unit out and leaves its health bar
 	 * alone, so `alive` still reads true. A guard that asked only that healed someone who had left
 	 * the fight, and logged a hit naming a unit the report has never heard of.
 	 */

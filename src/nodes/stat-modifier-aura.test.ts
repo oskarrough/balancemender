@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe('StatModifierAura', () => {
 	it('modifies one stat for its lifetime, then restores its own contribution', async () => {
-		// Keep the encounter running while the clock advances; an empty enemy side ends immediately.
+		// Keep the fight running while the clock advances; an empty enemy side ends immediately.
 		game = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const originalHealth = game.tank.health.current
 		// An applying ability can override the aura class's default with its own magnitude.

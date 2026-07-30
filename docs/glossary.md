@@ -2,9 +2,8 @@
 
 What the words mean here. Reach for this before naming a new class or field, and fold new terms in
 rather than inventing synonyms: a second word for something that already has one is how two halves of
-the codebase stop being able to read each other. A few of these name things the code has not grown
-yet. Definitions only — the reasoning lives in [combat.md](./combat.md) and
-[architecture.md](./architecture.md).
+the codebase stop being able to read each other. Definitions only — the reasoning lives in
+[combat.md](./combat.md) and [architecture.md](./architecture.md).
 
 ## The fight
 
@@ -24,34 +23,24 @@ regeneration; agility has no derived effect until later dodge or crit work.
 `intellect × 2.5`; attack power is `strength × 2`. Physical abilities use attack power and every
 other school uses spell power. There is one attack power for both melee and ranged abilities.
 
-**Character** — a named unit. Someone rather than something: a proper noun, a hand-tuned kit, unique
-in a fight. `Nakroth the Destroyer` is the only one today; `Diablo` and `Mephisto` are the shape of
-the rest. A wolf is a unit and never a character — spawn three and they are interchangeable, which is
-why `renumber()` gives you "Tiny wolf 1" and "Tiny wolf 2". A character should never be renumbered,
-and nothing in the code knows the difference.
-
 **Faction** — `'party'` or `'enemy'`. A static, so the registry can say which side a unit fights on
 without spawning one.
 
-**Encounter** — the live thing in the game tree holding a party and a set of enemies. **Roster** is
-the description it is built from, `{party: ['Tank'], enemies: ['TinyWolf']}` — a request, never a
-record. Who actually fought is the report's `units`.
+**Room** — the plan for one fight: who fights, `{party: ['Tank'], enemies: ['TinyWolf']}`, plus how
+the scene is dressed. Every fight is built from a room, even a bare one outside any dungeon — the
+sim's ad-hoc groups included. A request, never a record: who actually fought is the report's
+`units`. Not "stage" or "phase" — those stay free for a boss that fights in several.
+
+**Fight** — the live thing in the game tree: the party and the enemies built from a room, and the
+clock they share. `FightResult` and `FightReport` are what came of one.
 
 **Dungeon** — an ordered sequence of rooms played back to back. Described by data, never live in
 the game tree; the game holds progress through one as a dungeon run.
 
-**Room** — one planned fight in a dungeon: the roster to build it from, plus how the scene is
-dressed. Not "stage" or "phase" — those words stay free for a boss that fights in several.
-
-**Fight** — one run of an encounter, and the sim layer's word: `FightSpec` is the roster plus how to
-run it (a bot, a seed, a duration), and `FightResult` and `FightReport` are what came of one. Say
-"encounter" for the thing in the tree and "fight" for a run of it — never "fight" for the object
-itself, however natural it reads.
-
-**Spawn** — the one way a unit joins a fight. `Encounter.spawn(unitId)` routes it to a side by the
+**Spawn** — the one way a unit joins a fight. `Fight.spawn(unitId)` routes it to a side by the
 class's own faction, so nothing picks the array itself.
 
-**Alive** — health above zero. Not "in `encounter.party`" — the dead stay in those arrays.
+**Alive** — health above zero. Not "in `fight.party`" — the dead stay in those arrays.
 
 **Condition** — how hurt a unit is: `injured` below 35% health, `healthy` above 80%, `steady`
 between. A pure function of the health bar with no memory, and separate from `alive` (a corpse reads
@@ -60,34 +49,30 @@ between. A pure function of the health bar with no memory, and separate from `al
 **Hurt** — time spent `injured`. Per unit in the fight report (`injuredTime`); in the sweep, `hurt%`
 is the party's worst-off member as a share of the fight.
 
-### Role words
+## Targeting
 
 A unit gets a different word depending on the relationship being discussed. Never general synonyms
-for "unit" — reach for them only when the relationship is the point.
-
-**Player** the one at the keyboard · **caster** whoever is casting · **attacker** whoever is swinging
-· **source** and **target** the two ends of a hit · **ally** a unit of your own faction.
+for "unit" — reach for them only when the relationship is the point: **player** the one at the
+keyboard · **caster** whoever is casting · **attacker** whoever is swinging · **source** and
+**target** the two ends of a hit · **ally** a unit of your own faction.
 
 **Target** — who a use of an ability lands on. It belongs to that one use: the driver hands it to
 `useAbility(id, target)`, validation and every effect see the same one, and no unit stores it.
 Picking it is two separate questions, and they are two words:
 
-**Target rule** — which units an ability may land on at all: `enemy`, `ally`, `self`. A property of
-the ability, because it never changes with who is using it or when. `TargetRule` is the type and
-`eligible(unit, rule)` answers it.
+**Targets** — which units an ability may land on at all: `enemy`, `ally`, `self`. A property of the
+ability, because it never changes with who is using it or when. "Fireball targets an enemy."
+`eligible(unit, targets)` answers it.
 
-**Preference** — which of the eligible units to pick. A property of the _driver_, not the unit and
-not the ability: the keyboard, a `BotDriver` weighing the fight, or a standing rule like "always
-the most hurt". One object with two methods: `prefers()` picks, `reconsiders()` decides whether to
-look again once it has one. They stay together because they have to agree — a preference for the
-most hurt ally that does not re-pick heals someone already topped up. The six are `prefer.first`,
-`prefer.atRandom`, `prefer.lowestHealth`, `prefer.tankFirst`, `prefer.healerFirst` — which reads the
-`healing` tag off an ability rather than checking a class — and `prefer.threat(enemy, mischief?)`,
-whose optional second argument is the odds per pick of biting someone at random. A unit's standing drivers
-share one: `new Targeting(this, prefer.lowestHealth)`, asked one rule at a time through
-`Targeting.pick(rule)`. It remembers per rule, so a unit that both attacks and heals holds an enemy
-and an ally at once. `Targeting.current(rule)` exposes that settled pick read-only so the selected
-enemy's frame can show who it is attacking.
+**Preference** — which of the eligible units to pick. A property of the _driver_ — the keyboard, a
+`BotDriver` weighing the fight, or a standing rule like "always the most hurt" — never of the unit
+or the ability. One object with two methods that have to agree: `prefers()` picks, `reconsiders()`
+decides whether to look again once it has one — a preference for the most hurt ally that does not
+re-pick heals someone already topped up. The six are `prefer.first`, `prefer.atRandom`,
+`prefer.lowestHealth`, `prefer.tankFirst`, `prefer.healerFirst` and `prefer.threat`. A unit's
+standing drivers share one through `Targeting`, which remembers one pick per `targets` value — so a
+unit that both attacks and heals holds an enemy and an ally at once — and exposes the settled pick
+read-only through `current()`.
 
 **Threat** — one enemy's numerical attention toward each opposing unit. Actual damage earns threat
 only from the enemy it landed on; effective healing earns less and is divided between every living
@@ -98,13 +83,13 @@ and dead entries may remain because eligibility already keeps corpses out of tar
 must exceed the current target by 10%, so two close scores do not trade it back and forth. The enemy
 checks only when one of its cadences asks for another target, never every frame.
 
-**Selected target** — the one the player clicked, on `Player.selectedTarget`. UI state; no other
-driver reads or writes it, so clicking a frame never moves anyone else's aim.
-
-**Intended target** — who a keypress would land on: the selected target, or the tank while nothing
-is selected. `Player.intendedTarget`, and the whole of the keyboard's preference — the unit frames
-tick it, the action bar greys itself out against it, and `{type: 'use'}` falls back to it when the
-caller names no target. Only the player has one; every other driver asks `Targeting.pick()`.
+**Selected** and **intended target** — the player targets by hand. Selected is the unit they
+clicked, `Player.selectedTarget` — UI state no other driver reads or writes, so clicking a frame
+never moves anyone else's aim. Intended is who a keypress would land on: the selected target, or the
+tank while nothing is selected — `Player.intendedTarget`; the unit frames tick it, the action bar
+greys itself out against it, `{type: 'use'}` falls back to it. Deliberately not a `Preference`: a
+human choosing is input, not policy. Every other driver asks `Targeting.pick()`, and in the sim a
+bot's preference stands in for the hand.
 
 ## Doing things
 
@@ -113,13 +98,14 @@ There is one for using an ability, `{type: 'use', ability}` — not one per kind
 some abilities run and not a separate thing to ask for.
 
 **Event** — a record of something that happened, in the combat log. Never refused, never a request.
-Keep the two words apart. The `SPELL_*` event names are the one exception to everything here:
-renaming them would break every log already recorded, so they stay, and WoW lives with the same wart.
+Keep the two words apart. The `SPELL_*` event names are the one deliberate wart: they are WoW's
+combat-log lingua franca, so swings and auras file under them too.
 
 **Ability** — something a unit can use: what it requires and what it does, with no opinion about
-when. One live use is a one-shot Task; a driver decides when to create it. **Use** is the verb for the
-whole category, and the combat log already files everything under it: `Hit.abilityId` is set by
-spells, swings and auras alike.
+when. One live use is a one-shot Task; a driver decides when to create it. A unit's own abilities
+live on `unit.abilities`, keyed by ability id; the global registry is only the catalog. **Use** is
+the verb for the whole category, and the combat log already files everything under it:
+`Hit.abilityId` is set by spells, swings and auras alike.
 
 **Spell** — a magical ability. **Attack** — an ability that strikes or otherwise directly harms a
 target. Tags, not subclasses, and they may overlap: Flash Heal is a spell, Savage Bite is an attack,
@@ -159,33 +145,21 @@ costs the longer of the two and not the sum; **cooldown** is one ability's own w
 a spell and **swings** an attack; it **uses** either.
 
 **Id** and **name** — every ability and aura has both. The **id** is what everything files it under:
-registry, a unit's ability collection, balance, `--tune`, the log's `abilityId`, cooldowns, stack
-keys. The **name** is what a player reads and is used for nothing else. Conventionally the id is the
-class name (`FlashHeal`) and the name the same words as prose (`Flash Heal`). Name the class after
-the ability, not after who owns it or how big it is: `QuickStab`, never `SmallAttack`. Renaming an
-ability should touch one line. Mechanic bases keep neutral identities (`Periodic`, `Barrier`), while
-an ability-owned subclass such as `RenewAura` takes its spell's id, so a cast and the aura it leaves
+registry, a unit's abilities, balance, `--tune`, the log's `abilityId`, cooldowns, stack keys. The
+**name** is what a player reads and is used for nothing else. Conventionally the id is the class name
+(`FlashHeal`) and the name the same words as prose (`Flash Heal`). Name the class after the ability,
+not after who owns it or how big it is: `QuickStab`, never `SmallAttack`. Renaming an ability should
+touch one line. Mechanic bases keep neutral identities (`Periodic`, `Barrier`), while an
+ability-owned subclass such as `RenewAura` takes its spell's id, so a cast and the aura it leaves
 behind report as one ability.
-
-**Ability collection** — what one unit may use, keyed by stable ability id. Every driver looks up
-through this collection; the global ability registry is only the catalog.
 
 **Busy** — time a unit was committed to a cast or its GCD, and so unable to act. Logged per cast as
 `busyFor` so the report never has to know how long a GCD lasts.
 
-**Driver** — what decides when an ability is used: the keyboard, a `BotDriver` running a bot, or a
-`Cadence` ticking on an interval. Using is shared through `AbilityUse`; only deciding differs.
-
-**Cadence** — the driver that uses an ability at a fixed interval, and the whole of what the
-`Cadence` class does: no casting logic, only _when_. Say "a boss ability on a 12s cadence".
-Repetition belongs to the cadence and never to the ability. `shouldUse()` is where a unit with real
-decisions puts them; by default the schedule is the whole decision. Not a "caster" — that is the role
-word for whoever is casting.
-
 **Aura** — something that sits on a unit for a while: a source, a lifetime, and a place in the unit's
-`auras` set until it expires. What an apply-aura effect leaves behind. **Buff** and **debuff** are
-the same thing by polarity, helpful or harmful — prose words, because nothing in the code branches on
-which. `SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the combat log.
+`auras` set until it expires. What an apply-aura effect leaves behind. Helpful or harmful is only
+prose — a buff or a debuff; nothing in the code branches on which.
+`SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the combat log.
 
 **Barrier** — an aura with a finite pool that absorbs later damage before it reaches the health bar.
 `Shield` is the ability that applies the only barrier today; absorb is what the barrier does.
@@ -203,10 +177,19 @@ heal that landed on a full bar and did nothing.
 **Five-second rule** — mana only regenerates after five seconds without spending any, so a lull is
 worth something.
 
-### Task dials
+## Timing
+
+**Driver** — what decides when an ability is used: the keyboard, a `BotDriver` running a bot, or a
+`Cadence` ticking on an interval. Using is shared through `AbilityUse`; only deciding differs.
+
+**Cadence** — the driver that uses an ability at a fixed interval, and the whole of what the
+`Cadence` class does: no casting logic, only _when_. Say "a boss ability on a 12s cadence".
+Repetition belongs to the cadence and never to the ability. `shouldUse()` is where a unit with real
+decisions puts them; by default the schedule is the whole decision. Not a "caster" — that is the role
+word for whoever is casting.
 
 Everything in the game is a vroum `Task`, and four fields say when it runs. They mean the same thing
-everywhere, so read them before inventing a timing word.
+everywhere, so read them before inventing a timing word:
 
 **`delay`** how long before the first tick — an ability's wind-up, a cadence's opening wait, an
 aura's wait before its first instalment · **`interval`** the gap _between_ cycles, never before the
@@ -241,14 +224,18 @@ effect's coefficient is template data too, shared by every use, which is what ma
 reach the next use and nothing in flight.
 
 **Bot** — a stand-in for the player, deciding what to cast next: `idle`, `triage`, `renew`, `panic`,
-`shield`, `smite`. Which ability, never which target — that is a **preference**. Bots are also the measuring
-instrument: every win rate a sweep prints is really "with this bot playing", which is why they never
-read the game's own thresholds. `BotDriver` is only the Task that runs one, so a fight can go with
-nobody at the keyboard — the bot decides, the driver casts, through the same `perform()` the keyboard
-does.
+`shield`, `smite`. Which ability, never which target — that is a **preference**. Bots are also the
+measuring instrument: every win rate a sweep prints is really "with this bot playing", which is why
+they never read the game's own thresholds. `BotDriver` is only the Task that runs one, so a fight can
+go with nobody at the keyboard — the bot decides, the driver casts, through the same `perform()` the
+keyboard does.
 
 **Idle** — the bot that casts nothing, and so the **control group**: what happens to this fight
 without a healer at all.
+
+**Trial** — a room plus how to run it without a browser: a bot, a seed, a duration.
+`runFight(trial)` returns a `FightResult`; `analyze()` turns one into a `FightReport`. You play a
+room; you run a trial of one — 200 seeds is 200 trials of the same room.
 
 **Outcome** — how a fight ended: `victory` (every enemy dead, even if the healer died on the way),
 `defeat`, or `timeout`.
@@ -257,18 +244,21 @@ without a healer at all.
 over time. Pure, so the terminal and the in-game panel agree by construction.
 
 **Seed** — the number that makes a fight reproducible: same seed, same fight. Not a word for the run
-itself — that is a fight. **Sweep** — every enemy group against every bot over many seeds.
+itself — that is a trial. **Sweep** — every enemy group against every bot over many seeds.
 
 ## In the UI
 
 **AppChrome** — the app shell. `.AppChrome` wraps `.AppChrome-menu` and `.AppChrome-game`, and the
-intro fades it in. It is not called a frame, because that word is taken.
+intro fades it in.
 
-**Frame** — the bevel, the drop shadow and the white-on-black text that an action-bar icon and an
-aura chip share, plus `Frame-image` filling it. Composed onto both. Deliberately holds no size and no
+**Plate** — the bevel, the drop shadow and the white-on-black text that an ability icon and an aura
+icon share, plus `Plate-image` filling it. Composed onto both. Deliberately holds no size and no
 border colours: those are what tell the two apart, so putting either here means one of them spends
 declarations undoing the other's.
 
-**Ability** (as a class) — one square button in the action bar. **Aura** — one wide chip on a unit
-frame. Both wear `Frame`; neither wears it alone. An aura is not an ability, so nothing shared
-between them belongs under the ability's name.
+**AbilityIcon** and **AuraIcon** — the two wearers of Plate: the square action-bar button and the
+wide chip on a unit frame. Neither wears it alone, and an aura icon is not an ability icon — nothing
+shared between them belongs under either name.
+
+**UnitFrame** — one unit's widget: avatar, health and mana bars, cast bar and aura icons. The
+component; its element classes are `.Unit`, `.PartyMember`, `.Enemy`.

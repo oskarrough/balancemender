@@ -10,7 +10,7 @@ import {parseUnits} from './roster'
  */
 
 describe('running a fight', () => {
-	it('plays the demo encounter to a result', async () => {
+	it('plays the demo fight to a result', async () => {
 		const fight = await runFight({seed: 1})
 		expect(fight.outcome).toBe('victory')
 		expect(fight.duration).toBeGreaterThan(1000)
@@ -40,13 +40,13 @@ describe('running a fight', () => {
 	})
 
 	it('names duplicate units apart so the report can tell them apart', async () => {
-		const fight = await runFight({enemies: ['TinyWolf', 'TinyWolf'], maxDuration: 10_000})
+		const fight = await runFight({room: {enemies: ['TinyWolf', 'TinyWolf']}, maxDuration: 10_000})
 		expect(fight.units.map((unit) => unit.name)).toContain('Tiny wolf 1')
 		expect(fight.units.map((unit) => unit.name)).toContain('Tiny wolf 2')
 	})
 
 	it('rejects unknown units with the list of known ones', async () => {
-		await expect(runFight({enemies: ['Murloc' as never]})).rejects.toThrow(/Unknown unit.*TinyWolf/s)
+		await expect(runFight({room: {enemies: ['Murloc' as never]}})).rejects.toThrow(/Unknown unit.*TinyWolf/s)
 	})
 
 	it('leaves the combat log it borrowed the way it found it', async () => {
@@ -81,7 +81,7 @@ describe('running a fight', () => {
 		logCombat({timestamp: 1, eventType: 'GAME_PAUSE'})
 		const level = logger.level
 
-		await expect(runFight({enemies: ['Murloc' as never]})).rejects.toThrow()
+		await expect(runFight({room: {enemies: ['Murloc' as never]}})).rejects.toThrow()
 
 		// The live game keeps its log, its logger and a real clock — not a half-torn-down simulation.
 		expect(combatLogs).toHaveLength(1)
@@ -92,9 +92,9 @@ describe('running a fight', () => {
 
 describe('healing changes the outcome', () => {
 	it('a party that is healed outlasts one that is not', async () => {
-		const spec = {enemies: ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never, seed: 3}
-		const unhealed = await runFight({...spec, bot: 'idle'})
-		const healed = await runFight({...spec, bot: 'triage'})
+		const trial = {room: {enemies: ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never}, seed: 3}
+		const unhealed = await runFight({...trial, bot: 'idle'})
+		const healed = await runFight({...trial, bot: 'triage'})
 
 		expect(unhealed.outcome).toBe('defeat')
 		expect(healed.duration).toBeGreaterThan(unhealed.duration)
@@ -110,9 +110,9 @@ describe('healing changes the outcome', () => {
 	// sweep has this at 25/25 either way, so a retune that makes the boss merely *usually*
 	// winnable is a real change and should fail here rather than hide behind seed 1.
 	it.each([1, 2, 3, 4, 5])('makes the boss winnable by healing and only by healing (seed %i)', async (seed) => {
-		const spec = {enemies: ['Nakroth'] as never, seed}
-		const unhealed = await runFight({...spec, bot: 'idle'})
-		const healed = await runFight({...spec, bot: 'triage'})
+		const trial = {room: {enemies: ['Nakroth'] as never}, seed}
+		const unhealed = await runFight({...trial, bot: 'idle'})
+		const healed = await runFight({...trial, bot: 'triage'})
 
 		expect(unhealed.outcome).toBe('defeat')
 		expect(healed.outcome).toBe('victory')
@@ -132,7 +132,7 @@ describe('healing changes the outcome', () => {
 
 	it('keeps three wolves within reach', async () => {
 		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
-		const outcomes = await Promise.all(SEEDS.map((seed) => runFight({enemies: three, bot: 'triage', seed})))
+		const outcomes = await Promise.all(SEEDS.map((seed) => runFight({room: {enemies: three}, bot: 'triage', seed})))
 		const wins = outcomes.filter((fight) => fight.outcome === 'victory').length / SEEDS.length
 		expect(wins).toBeGreaterThan(0.55)
 	})
@@ -140,16 +140,16 @@ describe('healing changes the outcome', () => {
 	it.each([1, 2, 3, 4, 5])('makes three wolves need a healer and five a wall (seed %i)', async (seed) => {
 		// Still not a fight healing is irrelevant to — the control group has to keep losing it.
 		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
-		expect((await runFight({enemies: three, bot: 'idle', seed})).outcome).toBe('defeat')
+		expect((await runFight({room: {enemies: three}, bot: 'idle', seed})).outcome).toBe('defeat')
 
 		const five = ['TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf'] as never
-		expect((await runFight({enemies: five, bot: 'triage', seed})).outcome).toBe('defeat')
+		expect((await runFight({room: {enemies: five}, bot: 'triage', seed})).outcome).toBe('defeat')
 	})
 
 	it('spamming the expensive heal overheals more than triaging', async () => {
-		const spec = {enemies: ['TinyWolf', 'TinyWolf'] as never, seed: 5, maxDuration: 40_000}
+		const trial = {room: {enemies: ['TinyWolf', 'TinyWolf'] as never}, seed: 5, maxDuration: 40_000}
 		const overheal = async (bot: 'panic' | 'triage') => {
-			const {totals} = analyze((await runFight({...spec, bot})).events)
+			const {totals} = analyze((await runFight({...trial, bot})).events)
 			return totals.overhealing / (totals.overhealing + totals.healing)
 		}
 		expect(await overheal('panic')).toBeGreaterThan(await overheal('triage'))

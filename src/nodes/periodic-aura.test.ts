@@ -144,7 +144,7 @@ describe('the wolf bleed', () => {
 	})
 
 	/**
-	 * A bite can be the killing blow, and `Encounter.onDeath` has already cancelled the auras a
+	 * A bite can be the killing blow, and `Fight.onDeath` has already cancelled the auras a
 	 * fresh wound would be joining. Planting one anyway leaves a Task mounted on a corpse.
 	 */
 	it('does not wound a target the same bite just killed', async () => {

@@ -123,7 +123,7 @@ const PANELS: PanelSpec[] = [
 		section: 'Units',
 		subtitle: () => 'Unit defaults',
 		min: 0,
-		// The player is spawned with the encounter; a second one would just stand there.
+		// The player is spawned with the fight; a second one would just stand there.
 		actions: (game, name) =>
 			name === 'Player'
 				? []
@@ -140,7 +140,7 @@ const PANELS: PanelSpec[] = [
 	{
 		kind: 'effect',
 		section: 'Effects',
-		// Named for the ability and the outcome, because an ability can have more than one.
+		// Named for the ability and the effect, because an ability can have more than one.
 		subtitle: (name) => `effect:${name}`,
 	},
 	{kind: 'cadence', section: 'Cadences', subtitle: (name) => `cadence:${name}`},
@@ -199,7 +199,7 @@ function balancePanels(game: GameLoop, spec: PanelSpec): Inspectable[] {
 }
 
 export function liveInspectables(game: GameLoop): Inspectable[] {
-	const units: Unit[] = [...(game.party ?? []), ...(game.encounter?.enemies ?? [])]
+	const units: Unit[] = [...(game.party ?? []), ...(game.fight?.enemies ?? [])]
 	return units.map((unit) => liveInspectable(game, unit))
 }
 
@@ -316,7 +316,7 @@ export function globalsInspectable(game: GameLoop): Inspectable {
 		],
 		actions: [
 			button('Heal party', {type: 'healParty'}),
-			button('Restart encounter', {type: 'restart'}),
+			button('Restart fight', {type: 'restart'}),
 			button('Reset balance', {type: 'resetBalance'}, 'danger'),
 		],
 	}

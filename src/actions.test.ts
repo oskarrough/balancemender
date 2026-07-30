@@ -71,7 +71,7 @@ describe('perform', () => {
 		game.perform({type: 'resetBalance'})
 	})
 
-	it('spawns and removes through the encounter door', () => {
+	it('spawns and removes through the fight door', () => {
 		game = new GameLoop({party: [], enemies: []})
 		const spawned = game.perform({type: 'spawn', unit: 'Nakroth'})
 		expect(spawned.ok).toBe(true)
@@ -149,8 +149,8 @@ describe('every player ability', () => {
 		game = sim
 		await settle()
 		const AbilityClass = playerAbilities[ability as keyof typeof playerAbilities]
-		const target = AbilityClass.targetRule === 'enemy' ? sim.enemies[0] : sim.tank
-		if (AbilityClass.targetRule === 'ally') sim.tank.health.set(1)
+		const target = AbilityClass.targets === 'enemy' ? sim.enemies[0] : sim.tank
+		if (AbilityClass.targets === 'ally') sim.tank.health.set(1)
 
 		expect(sim.perform({type: 'use', ability, target: target.id}).ok).toBe(true)
 		for (let time = 0; time < 5000; time += 16) {

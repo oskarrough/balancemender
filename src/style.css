@@ -1,7 +1,7 @@
 @import url('styles/reset.css');
-/* Frame is the bevel Ability and Aura are both built on; neither depends on load order any more. */
-@import url('styles/frame.css');
-@import url('styles/ability.css');
+/* Plate is the bevel Ability and Aura are both built on; neither depends on load order any more. */
+@import url('styles/plate.css');
+@import url('styles/ability-icon.css');
 @import url('styles/bar.css');
 @import url('styles/log.css');
 @import url('styles/layout.css');

@@ -55,7 +55,7 @@ export class Cadence extends Task {
 
 		// Having nobody eligible right now is the other thing entirely, and not a failure at all.
 		// Wait for the next beat rather than spend it on a refusal.
-		const target = targeting.pick(AbilityClass.targetRule)
+		const target = targeting.pick(AbilityClass.targets)
 		if (!target) return
 
 		this.use(target)

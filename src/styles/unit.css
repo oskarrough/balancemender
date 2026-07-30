@@ -141,7 +141,7 @@
 	list-style: none;
 }
 
-.Aura {
+.AuraIcon {
 	flex: none;
 	width: 5.4rem;
 	aspect-ratio: 9 / 5;
@@ -157,16 +157,16 @@
 }
 
 /* Which way an aura cuts, in the two colours the health bars already use for the same idea. */
-.Aura--harmful {
+.AuraIcon--harmful {
 	--aura-color: var(--c-crimson-lake);
 }
 
-.Aura--helpful {
+.AuraIcon--helpful {
 	--aura-color: var(--c-imperial-green);
 }
 
 /* The last few seconds are when a healer has to act, so that is the only moment anything blinks. */
-.Aura--expiring {
+.AuraIcon--expiring {
 	animation: aura-expiring 1s ease-in-out infinite;
 }
 
@@ -179,12 +179,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.Aura--expiring {
+	.AuraIcon--expiring {
 		animation: none;
 	}
 }
 
-.Aura-inner {
+.AuraIcon-inner {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
@@ -192,7 +192,7 @@
 	padding: 0.15rem 0.3rem 0;
 }
 
-.Aura-inner h3 {
+.AuraIcon-inner h3 {
 	font-size: 0.65rem;
 	line-height: 1.2;
 	overflow: hidden;
@@ -200,7 +200,7 @@
 	white-space: nowrap;
 }
 
-.Aura-inner strong {
+.AuraIcon-inner strong {
 	flex: none;
 	font-size: 0.7rem;
 	font-variant-numeric: tabular-nums;
@@ -211,7 +211,7 @@
  * next fills as its interval runs down, so the fastest-moving thing on the icon is also the one
  * that says when the next heal lands.
  */
-.Aura-pips {
+.AuraIcon-pips {
 	position: absolute;
 	left: 0.3rem;
 	right: 0.3rem;
@@ -224,7 +224,7 @@
 	list-style: none;
 }
 
-.Aura-pips li {
+.AuraIcon-pips li {
 	--tick: 0%;
 	flex: 1;
 	height: 0.25rem;
@@ -234,7 +234,7 @@
 	box-shadow: inset 0 0 0 1px hsla(0, 0%, 100%, 0.15);
 }
 
-.Aura-pips li::after {
+.AuraIcon-pips li::after {
 	content: '';
 	display: block;
 	width: var(--tick);
@@ -242,12 +242,12 @@
 	background: var(--aura-bright);
 }
 
-.Aura-pips li.is-done::after {
+.AuraIcon-pips li.is-done::after {
 	width: 100%;
 }
 
 /* How long the whole aura has left, in the same left-to-right bar the health and mana use. */
-.Aura-life {
+.AuraIcon-life {
 	position: absolute;
 	inset: auto 0 0;
 	z-index: 2;
@@ -255,7 +255,7 @@
 	background: hsla(0, 0%, 0%, 0.5);
 }
 
-.Aura-life::after {
+.AuraIcon-life::after {
 	content: '';
 	display: block;
 	width: var(--left);
