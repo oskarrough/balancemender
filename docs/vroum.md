@@ -18,7 +18,8 @@ a port, not a copy.
 - **`connect()`/`disconnect()` are deferred to a microtask.** A node is not mounted on the line after
   you construct it, and a dead unit is still in `encounter.party` until the microtask runs. Some of it
   chains — a death takes two hops — so `await settle()` from `test-setup.ts` rather than counting your
-  own `Promise.resolve()`s.
+  own `Promise.resolve()`s. Disconnecting twice is safe — teardown runs once — so two callers that
+  can both reach a node need no guard of their own.
 - **A frame is capped at `maxFrameTime` (100ms).** Animation frames stop in a backgrounded tab and at
   a breakpoint, and a task advances one cycle per frame, so an uncapped stall pays its backlog out a
   tick per frame — ten seconds away, ten swings in ten frames. The fight clock stops while nobody is

@@ -101,23 +101,6 @@ describe('stack rule', () => {
 
 		expect(auraEvents('Sunder').map((event) => event.extraInfo)).toEqual([undefined, '2 stacks'])
 	})
-
-	/**
-	 * vroum's `disconnect()` queues `_runDestroy` unconditionally, so a second call runs teardown
-	 * on a node whose `root` has already been reset to itself and throws out of `Task.destroy`.
-	 * Auras are the node type several unrelated callers can reach — see `detached`.
-	 */
-	it('survives being disconnected twice', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: []})
-		const aura = new PeriodicAura(game.tank, game.player, planted(10))
-		await settle()
-
-		expect(() => {
-			aura.disconnect()
-			aura.disconnect()
-		}).not.toThrow()
-		await settle()
-	})
 })
 
 describe('tick timing', () => {

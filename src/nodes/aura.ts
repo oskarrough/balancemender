@@ -39,13 +39,6 @@ export class Aura extends Task {
 	superseded = false
 
 	/**
-	 * Already torn down. vroum's `disconnect()` is not idempotent — the second run finds `root`
-	 * reset to the node itself and throws from `Task.destroy`. Two unrelated callers can reach an
-	 * aura, `supersede()` and `Encounter.onDeath()`, so the guard lives here, not at each of them.
-	 */
-	private detached = false
-
-	/**
 	 * Stable key — `balance.auras`, `--tune`, the log's `abilityId`, the stack key. See
 	 * `Ability.id`. An aura a spell owns takes that spell's id (`Renew`) so the cast and the ticks
 	 * report as one thing; a free-standing one keeps its own (`Rend`).
@@ -116,13 +109,6 @@ export class Aura extends Task {
 		this.parent.auras.delete(this)
 		this.pause()
 		this.disconnect()
-	}
-
-	/** Idempotent, unlike the base — see `detached`. */
-	disconnect() {
-		if (this.detached) return
-		this.detached = true
-		super.disconnect()
 	}
 
 	destroy() {
