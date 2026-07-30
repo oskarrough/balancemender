@@ -89,10 +89,17 @@ export class FightReportView extends HTMLElement {
 				<div class="FightReport">
 					${this.history()}
 					<p class="FightReport-summary">
-						<strong>${(duration / 1000).toFixed(1)}s</strong> · ${report.events} events · ${report.totals.hps} hps ·
-						${report.totals.dps} dps ·
-						${percent(report.totals.overhealing, report.totals.overhealing + report.totals.healing)} overheal
-						${stored ? '' : html` · ${fps} fps · gcd ${game.player?.gcd ? 'on' : 'off'}`}
+						<strong class="FightReport-stat" data-stat="duration">${(duration / 1000).toFixed(1)}s</strong> ·
+						<span class="FightReport-stat" data-stat="events">${report.events} events</span> ·
+						<span class="FightReport-stat" data-stat="rate">${report.totals.hps} hps</span> ·
+						<span class="FightReport-stat" data-stat="rate">${report.totals.dps} dps</span> ·
+						<span class="FightReport-stat" data-stat="overheal"
+							>${percent(report.totals.overhealing, report.totals.overhealing + report.totals.healing)} overheal</span
+						>
+						${stored
+							? ''
+							: html` · <span class="FightReport-stat" data-stat="fps">${fps} fps</span> ·
+									<span class="FightReport-stat" data-stat="gcd">gcd ${game.player?.gcd ? 'on' : 'off'}</span>`}
 					</p>
 
 					<ul class="FightReport-units">

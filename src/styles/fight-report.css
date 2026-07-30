@@ -8,6 +8,34 @@
 
 .FightReport-summary {
 	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
+}
+
+.FightReport-stat {
+	display: inline-block;
+	text-align: right;
+	white-space: nowrap;
+
+	&[data-stat='duration'] {
+		min-width: 6ch;
+	}
+
+	&[data-stat='events'] {
+		min-width: 9ch;
+	}
+
+	&[data-stat='rate'] {
+		min-width: 8ch;
+	}
+
+	&[data-stat='overheal'] {
+		min-width: 12ch;
+	}
+
+	&[data-stat='fps'],
+	&[data-stat='gcd'] {
+		min-width: 7ch;
+	}
 }
 
 .FightReport-units {
