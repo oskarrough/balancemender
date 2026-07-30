@@ -66,7 +66,8 @@ const tuned = attempt(() => applyTunes(args.tune ?? []).map(formatTune))
 
 // parseUnits validates against the unit registry and throws with the list of known units.
 const spec = attempt(() => ({
-	party: args.party ? parseUnits(args.party) : undefined,
+	// `--party=` is a real answer — the player alone — so only an absent flag takes the default.
+	party: args.party !== undefined ? parseUnits(args.party) : undefined,
 	enemies: args.enemies ? parseUnits(args.enemies) : undefined,
 	bot: (args.bot ?? 'triage') as keyof typeof bots,
 	seed: num('seed', args.seed, 1),
