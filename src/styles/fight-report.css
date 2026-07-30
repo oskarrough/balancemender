@@ -112,24 +112,12 @@
 }
 
 .FightReport-history {
-	list-style: none;
-	display: flex;
-	gap: 0.2rem;
-	overflow-x: auto;
-}
-
-.FightReport-historyItem {
-	white-space: nowrap;
 	font-size: 0.7rem;
-	opacity: 0.6;
+	max-width: 100%;
 
-	&[data-active='true'] {
-		opacity: 1;
+	&[data-outcome='defeat'] {
+		color: var(--c-crimson-lake);
 	}
-}
-
-.FightReport-historyItem[data-outcome='defeat'] {
-	color: var(--c-crimson-lake);
 }
 
 .FightReport-controls {

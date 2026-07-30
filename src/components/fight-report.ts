@@ -195,46 +195,34 @@ export class FightReportView extends HTMLElement {
 		)
 	}
 
-	/** Past fights, newest first, plus a Live entry that returns to the current fight. */
+	/** Past fights, newest first, plus a Live entry that returns to the current fight. A dropdown, because chips stopped scaling past a handful of fights. */
 	private history() {
 		const fights = listFights()
 		if (!fights.length) return ''
+		const selected = this.selectedFightId
 		return html`
-			<ul class="FightReport-history">
-				<li>
-					<button
-						class="FightReport-historyItem"
-						data-active=${this.selectedFightId === null}
-						onclick=${() => {
-							this.selectedFightId = null
-							this.render()
-						}}
-					>
-						Live
-					</button>
-				</li>
-				${fights.map((fight) => this.historyItem(fight))}
-			</ul>
+			<select
+				class="FightReport-history"
+				data-outcome=${fights.find((f) => f.id === selected)?.outcome ?? 'live'}
+				onchange=${(event: Event) => {
+					const value = (event.target as HTMLSelectElement).value
+					this.selectedFightId = value === 'live' ? null : value
+					this.render()
+				}}
+			>
+				<option value="live" ?selected=${selected === null}>Live</option>
+				${fights.map((fight) => this.historyOption(fight))}
+			</select>
 		`
 	}
 
-	private historyItem(fight: StoredFightMeta) {
+	private historyOption(fight: StoredFightMeta) {
 		const date = new Date(fight.timestamp)
 		const when = date.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})
 		return html`
-			<li>
-				<button
-					class="FightReport-historyItem"
-					data-outcome=${fight.outcome}
-					data-active=${this.selectedFightId === fight.id}
-					onclick=${() => {
-						this.selectedFightId = fight.id
-						this.render()
-					}}
-				>
-					${fight.outcome} · ${(fight.duration / 1000).toFixed(1)}s · ${when}
-				</button>
-			</li>
+			<option value=${fight.id} ?selected=${this.selectedFightId === fight.id}>
+				${fight.outcome} · ${(fight.duration / 1000).toFixed(1)}s · ${when}
+			</option>
 		`
 	}
 

@@ -6,7 +6,7 @@ import {COMBATLOG_SCHEMA, type CombatLogEvent} from './combatlog'
 const DB_NAME = 'balancemender-fight-history-v1'
 const TABLE = 'fights'
 
-export const MAX_FIGHTS = 20
+export const MAX_FIGHTS = 40
 
 export interface StoredFightMeta {
 	id: string
