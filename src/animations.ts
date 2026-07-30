@@ -109,23 +109,23 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
 }
 
 /**
- * Game-over → fresh encounter transition, composed into a single scrubbable timeline:
- * fade-out → state reset (mid-timeline `.call`) → intro.
+ * Game-over → fresh encounter transition: fade-out → state reset (mid-timeline `.call`, where
+ * `game.play()` also fires) → a snappy fade-in. No intro replay — that's first-load only, so a
+ * restart is near-instant instead of paying its ~1.5s runtime again.
  */
 export function restartGame(game: GameLoop): gsap.core.Timeline {
 	const animatedGame = '.AppChrome-game, .ActionBar, .Enemies, .PartyGroup'
 	const clearAnimationState = () => {
 		// Reset GSAP's transform cache as well as the CSS. Clearing the property alone lets a later
-		// y-only intro tween compose itself with the cached game-over scale.
+		// y-only tween compose itself with the cached game-over scale.
 		gsap.set(animatedGame, {x: 0, y: 0, scale: 1, filter: 'none', autoAlpha: 1})
 		gsap.set(animatedGame, {clearProps: 'transform,filter,opacity,visibility'})
 	}
 	const tl = gsap.timeline({
 		onComplete: () => {
-			// The intro is built while the game-over styles still exist, so its tweens can cache those
-			// old transforms. Clean once more after its final frame, when nothing can reapply them.
+			// The fade-in tween below is built while the game-over styles still exist, so it can cache
+			// those old transforms. Clean once more after its final frame, when nothing can reapply them.
 			clearAnimationState()
-			game.play()
 		},
 	})
 	const ease = 'power2.in'
@@ -138,8 +138,11 @@ export function restartGame(game: GameLoop): gsap.core.Timeline {
 		// the state boundary: the filter greys out the fresh frames, while even a zero transform on
 		// `.AppChrome-game` creates a stacking context over the fixed menu and intercepts its clicks.
 		clearAnimationState()
+		// Fires here, not on the timeline's onComplete below — the player can act while the
+		// fade-in below is still playing.
+		game.play()
 	})
-	tl.add(buildStartGame(game))
+	tl.fromTo(animatedGame, {autoAlpha: 0}, {autoAlpha: 1, duration: 0.2})
 	return tl
 }
 
