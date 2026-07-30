@@ -23,7 +23,7 @@ export interface Effect {
 	apply(ability: Ability, target: Unit): void
 }
 
-/** An aura class an effect can plant: `PeriodicAura` and `ShieldAura` both take a magnitude. */
+/** An aura class an effect can plant: `PeriodicAura` and `BarrierAura` both take a magnitude. */
 type AuraClass = new (parent: Unit, caster: Unit, magnitude?: number, threatMultiplier?: number) => Aura
 
 /** Every health change an effect makes is credited to the ability that declared it. */

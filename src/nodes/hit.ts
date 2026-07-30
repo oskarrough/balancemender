@@ -1,6 +1,6 @@
 import {logCombat, CombatEventType} from '../combatlog'
 import {fct} from '../components/floating-combat-text'
-import {ShieldAura} from './shield-aura'
+import {BarrierAura} from './barrier-aura'
 import type {Unit} from './unit'
 import {generateThreat} from './threat'
 
@@ -37,9 +37,9 @@ export function applyHit({
 	threatMultiplier = 1,
 	sweetSpot,
 }: Hit): number {
-	// Shields take their share before anything else here runs, so `landed`, the floating number and
-	// the death check all follow from what got through and none of them has to know shields exist.
-	const amount = throughShields(target, incoming)
+	// Barriers take their share before anything else here runs, so `landed`, the floating number and
+	// the death check all follow from what got through and none of them has to know barriers exist.
+	const amount = throughBarriers(target, incoming)
 
 	const before = target.health.current
 	const conditionBefore = target.condition
@@ -83,16 +83,16 @@ export function applyHit({
 }
 
 /**
- * What is left of a hit once the target's shields have eaten their share. Only damage is
- * absorbable — a heal passes straight through. Oldest shield first: `auras` is in insertion order,
+ * What is left of a hit once the target's barriers have eaten their share. Only damage is
+ * absorbable — a heal passes straight through. Oldest barrier first: `auras` is in insertion order,
  * which is the order stacking already reads.
  */
-function throughShields(target: Unit, amount: number): number {
+function throughBarriers(target: Unit, amount: number): number {
 	if (amount >= 0) return amount
 
 	let remaining = -amount
 	for (const aura of target.auras) {
-		if (!(aura instanceof ShieldAura)) continue
+		if (!(aura instanceof BarrierAura)) continue
 		remaining -= aura.absorb(remaining)
 		if (remaining <= 0) break
 	}

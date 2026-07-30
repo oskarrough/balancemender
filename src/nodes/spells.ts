@@ -1,7 +1,7 @@
 import {Ability} from './ability'
 import {ApplyAura, Damage, Heal as HealEffect} from './effects'
 import {PeriodicAura} from './periodic-aura'
-import {ShieldAura} from './shield-aura'
+import {BarrierAura} from './barrier-aura'
 
 /**
  * Magical healing abilities opt into mana, cast timing and the global cooldown independently.
@@ -135,8 +135,8 @@ export class Shield extends Ability {
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
-	// ShieldAura's own id/name already default to 'Shield', so no subclass is needed here.
-	static effects = [new ApplyAura(ShieldAura)]
+	// This direct use carries Shield's identity; another barrier ability subclasses BarrierAura.
+	static effects = [new ApplyAura(BarrierAura)]
 }
 
 /** The shaman's own ability. It is registered like every other ability but not owned by the player. */

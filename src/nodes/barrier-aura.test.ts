@@ -2,7 +2,7 @@ import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {SimLoop} from '../sim/run'
-import {ShieldAura} from './shield-aura'
+import {BarrierAura} from './barrier-aura'
 import {Shield} from './spells'
 import {applyHit} from './hit'
 import type {Unit} from './unit'
@@ -10,7 +10,7 @@ import type {Roster} from './encounter'
 import {combatLogs, clearLogs} from '../combatlog'
 
 /**
- * A shield is the one thing in the game that works by *not* moving a health bar, so most of what
+ * A barrier is the one thing in the game that works by *not* moving a health bar, so most of what
  * is asserted here is something that did not happen — and the log entry that is the only reason
  * anyone could tell it happened at all.
  */
@@ -46,7 +46,7 @@ const bite = (target: Unit, damage: number) =>
 describe('absorbing', () => {
 	it('takes its share off a hit before the health bar moves', async () => {
 		await start()
-		new ShieldAura(game.tank, game.player, 20)
+		new BarrierAura(game.tank, game.player, 20)
 		await settle()
 
 		const full = game.tank.health.current
@@ -57,7 +57,7 @@ describe('absorbing', () => {
 
 	it('leaves the bar alone when it covers the whole hit, and says so in the log', async () => {
 		await start()
-		new ShieldAura(game.tank, game.player, 100)
+		new BarrierAura(game.tank, game.player, 100)
 		await settle()
 
 		const full = game.tank.health.current
@@ -66,7 +66,7 @@ describe('absorbing', () => {
 		expect(game.tank.health.current).toBe(full)
 		expect(events('SPELL_ABSORBED')).toHaveLength(1)
 		expect(events('SPELL_ABSORBED')[0]).toMatchObject({
-			// The shield's caster, never whoever swung: prevention is credited the way healing is.
+			// The barrier's caster, never whoever swung: prevention is credited the way healing is.
 			sourceId: game.player.id,
 			targetId: game.tank.id,
 			abilityId: 'Shield',
@@ -76,7 +76,7 @@ describe('absorbing', () => {
 
 	it('spends the pool, lets the remainder land, and is gone', async () => {
 		await start()
-		new ShieldAura(game.tank, game.player, 20)
+		new BarrierAura(game.tank, game.player, 20)
 		await settle()
 
 		bite(game.tank, 50)
@@ -88,11 +88,11 @@ describe('absorbing', () => {
 		expect([...game.tank.auras]).toHaveLength(0)
 	})
 
-	it('walks shields oldest first', async () => {
+	it('walks barriers oldest first', async () => {
 		await start()
 		// Two casters, or the second would supersede the first rather than join it — see `stackKey`.
-		const first = new ShieldAura(game.tank, game.player, 10)
-		const second = new ShieldAura(game.tank, game.tank, 10)
+		const first = new BarrierAura(game.tank, game.player, 10)
+		const second = new BarrierAura(game.tank, game.tank, 10)
 		await settle()
 
 		bite(game.tank, 15)
@@ -103,28 +103,28 @@ describe('absorbing', () => {
 
 	it('reports the pool nobody spent when it falls off', async () => {
 		await start()
-		const shield = new ShieldAura(game.tank, game.player, 100)
+		const barrier = new BarrierAura(game.tank, game.player, 100)
 		await settle()
 
 		bite(game.tank, 30)
-		shield.disconnect()
+		barrier.disconnect()
 		await settle()
 
 		expect(events('SPELL_AURA_REMOVED')[0]).toMatchObject({abilityId: 'Shield', wasted: 70})
 	})
 
 	/**
-	 * A shield recast early wastes what was left just as surely as one that timed out — but the
+	 * A barrier recast early wastes what was left just as surely as one that timed out — but the
 	 * copy it replaces is superseded, and superseding logs no removal. The refresh carries it, or
-	 * nothing does and re-shielding looks free.
+	 * nothing does and reapplying a barrier looks free.
 	 */
 	it('reports the pool nobody spent when a recast replaces it', async () => {
 		await start()
-		new ShieldAura(game.tank, game.player, 100)
+		new BarrierAura(game.tank, game.player, 100)
 		await settle()
 
 		bite(game.tank, 30)
-		new ShieldAura(game.tank, game.player, 100)
+		new BarrierAura(game.tank, game.player, 100)
 		await settle()
 
 		expect(events('SPELL_AURA_REMOVED')).toHaveLength(0)
@@ -134,13 +134,13 @@ describe('absorbing', () => {
 
 /**
  * Absorb, then damage, then decide who died — in that order. Getting it wrong kills a unit the
- * shield was holding up, and no assertion on health alone would notice.
+ * barrier was holding up, and no assertion on health alone would notice.
  */
-describe('a killing blow through a shield', () => {
-	it('does not kill what the shield covered', async () => {
+describe('a killing blow through a barrier', () => {
+	it('does not kill what the barrier covered', async () => {
 		await start()
 		game.tank.health.set(40)
-		new ShieldAura(game.tank, game.player, 100)
+		new BarrierAura(game.tank, game.player, 100)
 		await settle()
 
 		bite(game.tank, 80)
@@ -150,10 +150,10 @@ describe('a killing blow through a shield', () => {
 		expect(events('UNIT_DIED')).toHaveLength(0)
 	})
 
-	it('still kills with what the shield could not cover', async () => {
+	it('still kills with what the barrier could not cover', async () => {
 		await start()
 		game.tank.health.set(40)
-		new ShieldAura(game.tank, game.player, 10)
+		new BarrierAura(game.tank, game.player, 10)
 		await settle()
 
 		bite(game.tank, 80)
@@ -170,24 +170,24 @@ describe('a killing blow through a shield', () => {
 it('waits out its lifetime and then falls off', async () => {
 	const sim = new SimLoop(ROSTER)
 	await start(sim)
-	// Far more than a wolf can chew through, so what ends this shield is the clock.
-	const shield = new ShieldAura(sim.tank, sim.player, 100_000)
+	// Far more than a wolf can chew through, so what ends this barrier is the clock.
+	const barrier = new BarrierAura(sim.tank, sim.player, 100_000)
 	await settle()
 
 	const removals = () => events('SPELL_AURA_REMOVED').filter((event) => event.abilityId === 'Shield')
-	for (let time = 0; time < ShieldAura.lifetime; time += 100) {
+	for (let time = 0; time < BarrierAura.lifetime; time += 100) {
 		sim.runFrame(time)
 		await settle()
 	}
 	expect(removals()).toHaveLength(0)
-	expect(sim.tank.auras.has(shield)).toBe(true)
+	expect(sim.tank.auras.has(barrier)).toBe(true)
 
-	sim.runFrame(ShieldAura.lifetime + 100)
+	sim.runFrame(BarrierAura.lifetime + 100)
 	await settle()
 
 	expect(removals()).toHaveLength(1)
 	expect(removals()[0].wasted).toBeGreaterThan(0)
-	expect(sim.tank.auras.has(shield)).toBe(false)
+	expect(sim.tank.auras.has(barrier)).toBe(false)
 })
 
 /**
@@ -202,9 +202,9 @@ it('Shield leaves a pool rather than healing', async () => {
 	await settle()
 
 	expect(game.tank.health.current).toBe(50)
-	const [shield] = [...game.tank.auras]
-	expect(shield).toBeInstanceOf(ShieldAura)
-	expect((shield as ShieldAura).pool).toBe(Shield.magnitude)
+	const [barrier] = [...game.tank.auras]
+	expect(barrier).toBeInstanceOf(BarrierAura)
+	expect((barrier as BarrierAura).pool).toBe(Shield.magnitude)
 	// Shares the spell's id, so the cast and every absorb report as one ability.
-	expect(shield.id).toBe('Shield')
+	expect(barrier.id).toBe('Shield')
 })

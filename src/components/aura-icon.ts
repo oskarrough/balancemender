@@ -5,7 +5,7 @@ import {PeriodicAura} from '../nodes/periodic-aura'
 /**
  * Where an aura is in its life. `elapsedTime` is the aura's own clock, and cycle `n` fires at
  * `delay + interval * n`, so the last tick — and the removal with it — lands at
- * `delay + interval * (repeat - 1)`. A `ShieldAura` has `repeat = 1`, which collapses that to its
+ * `delay + interval * (repeat - 1)`. A `BarrierAura` has `repeat = 1`, which collapses that to its
  * lifetime, and the same two numbers read as a plain countdown.
  */
 function timing(aura: Aura) {

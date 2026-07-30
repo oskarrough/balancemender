@@ -103,7 +103,7 @@ cast nobody can see warns nobody.
 Every enemy owns a `Map<Unit, number>` whose party entries begin at zero. Actual damage adds threat
 only to the enemy it landed on. Effective healing adds half as much, divided between every living
 enemy observing it; overhealing moves no health and adds none. Both are credited from `applyHit()`,
-after shields and health-bar clamping have determined what actually landed, so direct and periodic
+after barriers and health-bar clamping have determined what actually landed, so direct and periodic
 effects cannot disagree.
 
 An ability's `threatMultiplier` rides with its hit, including into an aura it plants. Shield Bash
@@ -214,8 +214,9 @@ for no reason.
 By convention the id is the class name, and the class is named after the ability rather than after
 who owns it or how big it is — `QuickStab`, not `SmallAttack`. The exception is `RenewAura`, which
 takes its spell's id so the cast and the heal-over-time it leaves behind report as one ability —
-commented where it is declared. `Shield` needs no such subclass: `ShieldAura` is used by only one
-spell, so its own `static id`/`static name` already default to `'Shield'`.
+commented where it is declared. `Shield` uses `BarrierAura` directly, so that class currently
+defaults its `static id`/`static name` to `'Shield'`; another barrier ability declares its own
+identity in a subclass.
 
 ## The combat log is the interface for analysis
 

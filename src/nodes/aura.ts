@@ -83,7 +83,7 @@ export class Aura extends Task {
 		// `supersede` deletes from the set this walked.
 		const replaced = existing.slice(0, Math.max(0, existing.length + 1 - this.maxStacks))
 		// What a pushed-off copy leaves unfinished rides on the refresh, because `supersede()` logs
-		// no removal of its own: recast a shield with half its pool left and that half is wasted
+		// no removal of its own: replace a barrier with half its pool left and that half is wasted
 		// exactly as if it had timed out.
 		const unfinished = Object.assign({}, ...replaced.map((stale) => stale.removalFields()))
 		for (const stale of replaced) stale.supersede()
@@ -122,7 +122,7 @@ export class Aura extends Task {
 
 	/**
 	 * What this aura leaves unfinished, for its own removal event. Nothing by default: a periodic
-	 * aura has already landed what it landed, while `ShieldAura` reports the pool nobody spent.
+	 * aura has already landed what it landed, while `BarrierAura` reports the pool nobody spent.
 	 */
 	protected removalFields(): Partial<CombatLogEvent> {
 		return {}

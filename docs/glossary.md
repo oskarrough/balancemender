@@ -128,7 +128,7 @@ have several, so it is a list rather than a field. Not the thing left sitting on
 — that is an aura.
 
 **Magnitude** — how big an ability lands, in one number the effects read off it: healing for a `Heal`
-effect, the pool for a shield, the whole of a heal-over-time for the aura it plants. Never "heal
+effect, the pool for a barrier, the whole of a heal-over-time for the aura it plants. Never "heal
 amount" — the same field sizes Shield, which heals nobody. Damage keeps its own
 `minDamage`/`maxDamage`, because a range is not one number.
 
@@ -163,6 +163,9 @@ word for whoever is casting.
 `auras` set until it expires. What an apply-aura effect leaves behind. **Buff** and **debuff** are
 the same thing by polarity, helpful or harmful — prose words, because nothing in the code branches on
 which. `SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the combat log.
+
+**Barrier** — an aura with a finite pool that absorbs later damage before it reaches the health bar.
+`Shield` is the ability that applies the only barrier today; absorb is what the barrier does.
 
 **Periodic aura** — an aura that lands an instalment on a cadence. Heal-over-time and
 damage-over-time are one class, and a negative `total` is the whole of what makes it a DoT.

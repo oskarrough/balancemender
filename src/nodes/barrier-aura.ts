@@ -11,44 +11,45 @@ import type {Unit} from './unit'
  *
  * Attaching, stacking and going away all live on `Aura`. This class is only the pool.
  */
-export class ShieldAura extends Aura {
-	/** Damage this shield can still swallow. It empties, and the shield is over. */
+export class BarrierAura extends Aura {
+	/** Damage this barrier can still swallow. It empties, and the barrier is over. */
 	pool = 0
 
 	/**
-	 * A shield has no cadence, so the task dials say only "wait, then be done": one cycle
+	 * A barrier has no cadence, so the task dials say only "wait, then be done": one cycle
 	 * (`repeat = 1`) that does not start until the whole lifetime has passed (`delay`, set from
 	 * `lifetime` below). vroum disconnects a task once its cycles reach `repeat`, so the single
 	 * tick *is* the expiry — there is no instalment here to mistake it for.
 	 */
 	repeat = 1
 
+	/** The current direct user is Shield; another barrier ability declares its own identity in a subclass. */
 	static id = 'Shield'
 	static name = 'Shield'
 	static pool = 0
 	/**
-	 * How long an unspent shield lasts, in ms. Mirrored onto `Task.delay` at construction, the way
+	 * How long an unspent barrier lasts, in ms. Mirrored onto `Task.delay` at construction, the way
 	 * `Ability.castTime` is.
 	 *
-	 * Not a balance number: `AURA_KEYS` holds a periodic aura's dials, which a shield has none of,
+	 * Not a balance number: `AURA_KEYS` holds a periodic aura's dials, which a barrier has none of,
 	 * and the number worth tuning — the pool — already rides on the casting spell's `magnitude`.
 	 */
 	static lifetime = 15000
 
 	/**
-	 * `pool` overrides the class default so a spell can own the number — see `Shield`,
-	 * which keeps it as its `heal` where the balance lab can reach it. Same arrangement as
+	 * `pool` overrides the class default so an ability can own the number — see `Shield`,
+	 * which keeps it as its `magnitude` where the Balance Lab can reach it. Same arrangement as
 	 * `PeriodicAura`'s `total`.
 	 */
 	constructor(parent: Unit, caster: Unit, pool?: number) {
 		super(parent, caster)
 		applyStatics(this, 'pool')
 		if (pool !== undefined) this.pool = pool
-		this.delay = (this.constructor as typeof ShieldAura).lifetime
+		this.delay = (this.constructor as typeof BarrierAura).lifetime
 	}
 
 	/**
-	 * Take what this shield can of an incoming hit, and say how much that was. The caller
+	 * Take what this barrier can of an incoming hit, and say how much that was. The caller
 	 * subtracts it before anything touches the health bar — see `applyHit`.
 	 */
 	absorb(damage: number): number {
@@ -59,7 +60,7 @@ export class ShieldAura extends Aura {
 		logCombat({
 			timestamp: Date.now(),
 			eventType: 'SPELL_ABSORBED',
-			// The shield's caster, not whoever swung: this is the shield doing something, and the
+			// The barrier's caster, not whoever swung: this is the barrier doing something, and the
 			// report credits prevention the way it credits healing.
 			sourceId: this.casterId,
 			sourceName: this.casterName,
@@ -70,9 +71,9 @@ export class ShieldAura extends Aura {
 			value: absorbed,
 		})
 
-		// An empty shield is a spent one. It leaves `auras` here rather than on the microtask
+		// An empty barrier is a spent one. It leaves `auras` here rather than on the microtask
 		// `disconnect()` defers to, so a second hit in the same tick — and the unit frame — never
-		// walk a shield with nothing left in it. Same reason `supersede()` does it by hand.
+		// walk a barrier with nothing left in it. Same reason `supersede()` does it by hand.
 		if (this.pool <= 0) {
 			log('aura:spent', this.name)
 			this.parent.auras.delete(this)

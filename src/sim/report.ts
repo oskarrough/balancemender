@@ -29,7 +29,7 @@ export function unitsOf(game: GameLoop): UnitInfo[] {
 
 const DAMAGE: CombatEventType[] = ['SPELL_DAMAGE', 'SPELL_PERIODIC_DAMAGE', 'SWING_DAMAGE', 'RANGE_DAMAGE']
 const HEAL: CombatEventType[] = ['SPELL_HEAL', 'SPELL_PERIODIC_HEAL']
-/** Both carry `wasted` when the aura was a shield with pool left — see `ShieldAura.removalFields`. */
+/** Both carry `wasted` when a barrier has pool left — see `BarrierAura.removalFields`. */
 const AURA_ENDED: CombatEventType[] = ['SPELL_AURA_REMOVED', 'SPELL_AURA_REFRESH']
 
 export interface UnitStats {
@@ -44,13 +44,13 @@ export interface UnitStats {
 	overhealing: number
 	healingTaken: number
 	/**
-	 * Damage this unit's shields swallowed before it reached a health bar. Credited to the
-	 * shield's caster, the way `healingDone` credits the healer rather than the target.
+	 * Damage this unit's barriers swallowed before it reached a health bar. Credited to the
+	 * barrier's caster, the way `healingDone` credits the healer rather than the target.
 	 */
 	absorbed: number
 	/**
-	 * Absorption a shield lost unspent, to a timeout or a recast. Overheal's counterpart for a
-	 * preventive spell: without it, a shield that expired untouched and one that soaked a killing
+	 * Absorption a barrier lost unspent, to a timeout or a refresh. Overheal's counterpart for a
+	 * preventive ability: without it, a barrier that expired untouched and one that soaked a killing
 	 * blow read the same.
 	 */
 	wasted: number
@@ -159,11 +159,11 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			target(event).healingTaken += value - overheal
 			ability(abilities, event.abilityId, event.abilityName, value, overheal)
 		} else if (event.eventType === 'SPELL_ABSORBED') {
-			// Credited to the shield's caster, the way healing is — see `ShieldAura.absorb`.
+			// Credited to the barrier's caster, the way healing is — see `BarrierAura.absorb`.
 			source(event).absorbed += value
 			ability(abilities, event.abilityId, event.abilityName, value, 0)
 		} else if (AURA_ENDED.includes(event.eventType)) {
-			// `wasted` is only present on a shield's own removal/refresh — everything else in
+			// `wasted` is only present on a barrier's own removal/refresh — everything else in
 			// `AURA_ENDED` leaves it undefined, so this is a no-op for periodic auras.
 			if (event.wasted) source(event).wasted += event.wasted
 		} else if (event.eventType === 'SPELL_CAST_START') {
