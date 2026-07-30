@@ -8,16 +8,28 @@ interface MeterProps {
 	type: string
 	/** How much of the bar the player's cast in flight would add, drawn ahead of the filled part. */
 	potentialValue?: number
+	/** Damage the target's barriers can still swallow, drawn past the fill as extra effective health. */
+	absorbValue?: number
 	ability?: Ability
 	/** The last stretch of a cast bar a sweet-spot tap must land in, in ms (#33). */
 	sweetSpotWindow?: number
 }
 
-export function Meter({value, max, type, potentialValue = 0, ability, sweetSpotWindow}: MeterProps) {
+export function Meter({value, max, type, potentialValue = 0, absorbValue = 0, ability, sweetSpotWindow}: MeterProps) {
 	if (!value) value = 0
 	if (!max) max = 0
 
 	const percent = toPercent(value, max)
+
+	/**
+	 * Absorption reads as health you have not lost yet, so it extends the fill rather than sitting
+	 * inside it. A pool larger than the missing health has nowhere left to draw — it is clamped to
+	 * the end of the bar and the edge is capped, because a bar silently drawing less than the pool
+	 * would understate how much the unit can take.
+	 */
+	const absorbWanted = toPercent(absorbValue, max)
+	const absorbPercent = Math.min(absorbWanted, 100 - percent)
+	const absorbCapped = absorbWanted > 100 - percent
 
 	// An instant ability with instalments left has already landed some of what it promised.
 	if (ability?.delay === 0) {
@@ -26,7 +38,16 @@ export function Meter({value, max, type, potentialValue = 0, ability, sweetSpotW
 
 	return html` <div class="Bar" data-type=${type}>
 		<div class="Bar-value" style=${`width: ${percent}%`}></div>
-		<div class="Bar-potentialValue" style=${`left: ${percent}%; width: ${toPercent(potentialValue, max)}%`}></div>
+		${absorbPercent > 0
+			? html`<div
+					class=${`Bar-absorb ${absorbCapped ? 'Bar-absorb--capped' : ''}`}
+					style=${`left: ${percent}%; width: ${absorbPercent}%`}
+				></div>`
+			: null}
+		<div
+			class="Bar-potentialValue"
+			style=${`left: ${percent + absorbPercent}%; width: ${Math.min(toPercent(potentialValue, max), 100 - percent - absorbPercent)}%`}
+		></div>
 		${sweetSpotWindow
 			? html`<div class="Bar-sweetSpot" style=${`width: ${toPercent(sweetSpotWindow, max)}%`}></div>`
 			: null}

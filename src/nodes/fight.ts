@@ -5,6 +5,7 @@ import {unitRegistry, UnitId} from './unit-registry'
 import {FACTION} from './types'
 import type {GameLoop} from './game-loop'
 import type {Unit} from './unit'
+import type {PlayerAbilityId} from './registry'
 
 /**
  * The plan for one fight: who fights, plus how the scene is dressed. Every fight is built from a
@@ -18,6 +19,8 @@ export interface Room {
 	name?: string
 	/** Nothing renders this yet. */
 	wallpaper?: string
+	/** Spells the player learns on walking in; only dungeon runs read it. */
+	grants?: PlayerAbilityId[]
 }
 
 /** The room a fresh boot starts from. */

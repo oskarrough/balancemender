@@ -4,6 +4,7 @@ import type {Player} from './player'
 import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
 import {Fight, DEMO_ROOM, Room} from './fight'
+import {playerAbilities} from './registry'
 import type {Dungeon} from './dungeon'
 import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
@@ -125,6 +126,12 @@ export class GameLoop extends Loop {
 		// damage gets divided by this fight's duration and every rate reads high.
 		clearLogs()
 		this.fight = new Fight(this, room)
+		if (this.dungeonRun) {
+			// Dungeon runs start with 2 spells and learn one per room, accumulated so far.
+			const run = this.dungeonRun
+			const granted = run.dungeon.rooms.slice(0, run.room + 1).flatMap((r) => r.grants ?? [])
+			this.player.abilities = Object.fromEntries(granted.map((id) => [id, playerAbilities[id]]))
+		}
 		this.gameOver = false
 		this.outcome = undefined
 		this.elapsedTime = 0

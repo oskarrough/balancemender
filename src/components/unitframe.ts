@@ -2,6 +2,7 @@ import {Unit} from '../nodes/unit'
 import {Player} from '../nodes/player'
 import type {GameLoop} from '../nodes/game-loop'
 import type {Aura} from '../nodes/aura'
+import {BarrierAura} from '../nodes/barrier-aura'
 import type {Ability} from '../nodes/ability'
 import {Meter} from './bar'
 import {AuraIcon} from './aura-icon'
@@ -17,6 +18,8 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const target = isEnemy && isCurrentTarget ? unit.targeting?.current('enemy') : undefined
 	const targetName = target ? target.name || target.constructor.name : undefined
 	const auras: Aura[] = [...unit.auras]
+	// Barriers stack, and the bar cares about the total rather than which spell left it.
+	const absorb = auras.reduce((total, aura) => total + (aura instanceof BarrierAura ? aura.pool : 0), 0)
 
 	/**
 	 * What this unit is casting. Not `playerCast` above, which is the player's own cast, passed in
@@ -46,6 +49,7 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 								isCurrentTarget && !isEnemy && playerCast
 									? playerCast.magnitudes.reduce((total, one) => total + one, 0)
 									: 0,
+							absorbValue: absorb,
 							ability: !isEnemy ? playerCast : undefined,
 						})}
 						<div class="Unit-name">
@@ -63,12 +67,11 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 						: null}
 				</div>
 			</div>
-			${casting && casting.delay > 0
-				? html`<div class="Unit-cast">
-						<small>${casting.name}</small>
-						${Meter({type: 'cast', value: castElapsed, max: casting.delay})}
-					</div>`
-				: null}
+			<div class="Unit-cast">
+				${casting && casting.delay > 0
+					? html`<small>${casting.name}</small> ${Meter({type: 'cast', value: castElapsed, max: casting.delay})}`
+					: null}
+			</div>
 			${auras.length > 0
 				? html`<ul class="Auras">
 						${auras.map(AuraIcon)}

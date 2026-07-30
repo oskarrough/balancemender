@@ -89,10 +89,18 @@ export class SavageBiteCadence extends Cadence {
 	static interval = 3800
 }
 
+/** Long enough between leaps that a heal always fits in the gap, and the first one is not a surprise. */
+export class PounceCadence extends Cadence {
+	static abilityId = 'Pounce'
+	static delay = 5000
+	static interval = 4500
+}
+
+/** Nakroth's telegraphed nuke. The interval is the boss's difficulty dial: every 2s shaved is one more wind-up to answer per fight (playtest wanted him meaner than 12s). */
 export class NastyArrowCadence extends Cadence {
 	static abilityId = 'NastyArrow'
 	static delay = 8000
-	static interval = 12000
+	static interval = 10000
 }
 
 export class ShieldBashCadence extends Cadence {
@@ -110,4 +118,22 @@ export class MendCadence extends Cadence {
 	static abilityId = 'Mend'
 	static delay = 4000
 	static interval = 16000
+}
+
+export class WorryCadence extends Cadence {
+	static abilityId = 'Worry'
+	static delay = 3000
+	static interval = 5000
+}
+
+export class AmbushCadence extends Cadence {
+	static abilityId = 'Ambush'
+	static delay = 6000
+	static interval = 8000
+}
+
+export class BloodhowlCadence extends Cadence {
+	static abilityId = 'Bloodhowl'
+	static delay = 5000
+	static interval = 12000
 }

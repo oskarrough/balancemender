@@ -119,6 +119,19 @@ The bots use their own ratios (0.4, 0.7, 0.9) and deliberately do **not** read t
 the measuring instrument every sweep quotes against, so unifying the numbers would move every win rate
 already recorded and make the sweep circular.
 
+## Danger is burst, not dps
+
+Sustained damage cannot kill anyone a healer is watching: Heal repays 80 hp every 2s, so any enemy
+below ~40 dps only slows the fight, at _any_ stat value — measured up to 10× the wolf pup's
+strength, the sim's death rate stayed at zero. Turning sustained numbers up produces mana-starved
+timeouts before it ever produces deaths, which is a worse fight than an easy one. Watch `timeout%`
+next to `win%` when tuning.
+
+What kills is a hit bigger than the heal window, and it must be telegraphed to be fair: give the
+ability a `castTime` and the enemy's unit frame shows the wind-up (Pounce). So an enemy's threat
+level lives in its burst abilities, its lifespan in its stamina — and in a tankless room stamina is
+really a mana tax on the player, which is what decides how forgiving the room is.
+
 ## Stats: what a unit brings
 
 A live `Stats` resolves each base stat plus the modifiers owned by auras on that unit. Modifiers are

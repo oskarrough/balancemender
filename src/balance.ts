@@ -6,6 +6,10 @@ import {
 	QuickStabCadence,
 	ShieldBashCadence,
 	SavageBiteCadence,
+	PounceCadence,
+	WorryCadence,
+	AmbushCadence,
+	BloodhowlCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
@@ -66,6 +70,10 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	NastyArrowCadence,
 	ShieldBashCadence,
 	MendCadence,
+	PounceCadence,
+	WorryCadence,
+	AmbushCadence,
+	BloodhowlCadence,
 }
 
 /**

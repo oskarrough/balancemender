@@ -22,10 +22,16 @@ bun run sim --enemies 'TinyWolf*3' --bot panic     # three wolves, a bad healer
 bun run sim --repeat 20                            # 20 seeds, summarised
 bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
 bun run sim --json > fight.json                    # every event, for your own analysis
+bun run sim --party= --enemies WolfPup             # no tank — the dungeon's first room
 ```
 
 `--help` lists the flags for both commands. **Redirect `--json`, never pipe it** — a fight's events
 run to hundreds of kilobytes and a pipe truncates mid-object, which reads as a bug in the report.
+
+**An empty party needs `--party=`, glued together.** `--party ''` exits with "argument is
+ambiguous" — `parseArgs` cannot tell an empty value from a missing one. It is the only way to
+simulate room one, where the player is alone. `sweep` has no `--party` at all and always brings the
+tank, so a solo room belongs to `sim` or to `runFight({room})` directly.
 
 One fight prints health over time, per-unit and per-ability totals, and deaths:
 

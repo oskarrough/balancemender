@@ -44,6 +44,25 @@
 	transition: width 150ms ease-out;
 }
 
+/*
+	Absorption, past the end of the fill. Deliberately not a palette hue: health, mana and cast own
+	the colours here, and a barrier is not a fourth resource — it is the bar reading further than it
+	otherwise would, so it is drawn as light over the groove.
+*/
+div.Bar-absorb {
+	position: absolute;
+	top: 0;
+	/* Translucent, so the groove reads through it: a big barrier on a nearly-dead unit must not
+	   out-shout the sliver of actual health, which is still the thing being healed. */
+	background: linear-gradient(hsla(0, 0%, 100%, 0.5), hsla(0, 0%, 100%, 0.25));
+	box-shadow: inset 0 1px 0 hsla(0, 0%, 100%, 0.35);
+}
+
+/* More pool than bar. The cap says the number kept going even though the pixels could not. */
+div.Bar-absorb--capped {
+	border-right: 2px solid var(--c-lemon-yellow);
+}
+
 div.Bar-potentialValue {
 	position: absolute;
 	top: 0;

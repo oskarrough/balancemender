@@ -41,7 +41,7 @@ describe('a cadence', () => {
 		expect([wolf.quickStabCadence.delay, wolf.quickStabCadence.interval]).toEqual([0, 1600])
 		expect([wolf.savageBiteCadence.delay, wolf.savageBiteCadence.interval]).toEqual([4000, 3800])
 		expect([nakroth.heavyBlowCadence.delay, nakroth.heavyBlowCadence.interval]).toEqual([4000, 3800])
-		expect([nakroth.nastyArrowCadence.delay, nakroth.nastyArrowCadence.interval]).toEqual([8000, 12000])
+		expect([nakroth.nastyArrowCadence.delay, nakroth.nastyArrowCadence.interval]).toEqual([8000, 10000])
 		for (let time = 0; time <= 8000; time += 100) {
 			sim.runFrame(time)
 			await settle()

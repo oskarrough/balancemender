@@ -3,6 +3,7 @@ import {combatEvents} from '../combatlog'
 import {runFight} from './run'
 import {analyze} from './report'
 import {parseUnits} from './roster'
+import {WolfWoods} from '../nodes/dungeon'
 
 /**
  * These run the actual game — real loop, real spells, real combat log — on a stepped clock.
@@ -153,6 +154,25 @@ describe('healing changes the outcome', () => {
 			return totals.overhealing / (totals.overhealing + totals.healing)
 		}
 		expect(await overheal('panic')).toBeGreaterThan(await overheal('triage'))
+	})
+})
+
+/**
+ * The first room used to have no losing state at all: a player who only healed out-regenerated a
+ * 2 dps pup until the clock ran out, and one who only attacked was never below 90%. `Pounce` is
+ * what makes it a fight, so these pin that it stayed one.
+ */
+describe('the first room', () => {
+	const room = WolfWoods.rooms[0]
+
+	it('kills a player who never fights back', async () => {
+		const fight = await runFight({room, bot: 'triage', seed: 1})
+		expect(fight.outcome).toBe('defeat')
+	})
+
+	it('is won by one who does', async () => {
+		const fight = await runFight({room, bot: 'smite', seed: 1})
+		expect(fight.outcome).toBe('victory')
 	})
 })
 

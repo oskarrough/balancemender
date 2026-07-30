@@ -98,6 +98,10 @@ describe('the categories', () => {
 			'NastyArrowCadence',
 			'ShieldBashCadence',
 			'MendCadence',
+			'PounceCadence',
+			'WorryCadence',
+			'AmbushCadence',
+			'BloodhowlCadence',
 		])
 	})
 
