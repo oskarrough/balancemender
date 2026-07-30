@@ -2,11 +2,6 @@ body {
 	overflow: hidden;
 }
 
-.AppChrome-game[disabled] {
-	opacity: 0;
-	pointer-events: 0;
-}
-
 .AppChrome-splash {
 	position: fixed;
 	left: 0;
@@ -166,23 +161,6 @@ body {
 	z-index: 5;
 	bottom: 7rem;
 	min-width: 12rem;
-}
-
-.GameOver {
-	max-width: 30em;
-	margin: 3rem auto;
-	position: fixed;
-	top: 30%;
-	left: 0;
-	right: 0;
-	z-index: 100;
-	background-color: var(--c-crimson-lake);
-	color: var(--c-snow-white);
-	text-align: center;
-	padding: 2rem;
-	border: 0.4rem solid var(--c-vermilion);
-	border-left-color: var(--c-scarlet-lake);
-	border-bottom: 0.4rem solid var(--c-violet-pale);
 }
 
 balance-lab {

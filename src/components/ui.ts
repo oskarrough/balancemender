@@ -13,6 +13,16 @@ register()
 /** How long a refused action stays on screen, in fight-clock milliseconds. */
 const REFUSAL_DURATION = 1200
 
+/** Headline and blurb per `Outcome` — same panel structure, different voice and accent colour. */
+const GAME_OVER_COPY: Record<
+	NonNullable<GameLoop['outcome']>,
+	{headline: string; blurb: (seconds: number) => string}
+> = {
+	victory: {headline: 'Victory!', blurb: (s) => `Cleared in ${s}s.`},
+	defeat: {headline: 'Defeated', blurb: (s) => `You lasted ${s}s.`},
+	timeout: {headline: "Time's Up", blurb: (s) => `You held out the full ${s}s.`},
+}
+
 export function UI(game: GameLoop) {
 	const player = game.player
 	if (!player) return html`Woops, no player to heal the party...`
@@ -50,9 +60,9 @@ export function UI(game: GameLoop) {
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
 			${game.gameOver
-				? html` <div class="GameOver">
-						<h2>Game Over!</h2>
-						<p>You survived for ${roundOne(game.elapsedTime / 1000)} seconds</p>
+				? html` <div class="GameOver" data-outcome=${game.outcome ?? 'defeat'}>
+						<h2>${GAME_OVER_COPY[game.outcome ?? 'defeat'].headline}</h2>
+						<p>${GAME_OVER_COPY[game.outcome ?? 'defeat'].blurb(roundOne(game.elapsedTime / 1000))}</p>
 						<button class="Button" onclick=${() => restartGame(game)}>Play Again</button>
 					</div>`
 				: null}

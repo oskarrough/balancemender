@@ -1,0 +1,50 @@
+/* The post-fight panel. Same bordered-white-panel look as floating-view, small and centered
+   instead of chrome-red — a beat between fights, not a ceremony. */
+.GameOver {
+	position: fixed;
+	top: 30%;
+	left: 0;
+	right: 0;
+	width: 18rem;
+	max-width: 90vw;
+	margin: 0 auto;
+	z-index: 100;
+	background: var(--c-snow-white);
+	color: var(--c-black);
+	text-align: center;
+	border: 1px solid var(--c-black);
+	border-bottom-width: 0.2rem;
+	border-radius: var(--radius);
+	box-shadow: 0 0.4rem 1rem hsla(0, 0%, 10%, 0.4);
+	overflow: hidden;
+}
+
+/* The coloured strip is the only thing that tells victory, defeat and timeout apart. */
+.GameOver h2 {
+	margin: 0;
+	padding: 0.4rem 0.8rem;
+	border-bottom: 1px solid var(--c-black);
+	font-size: 1.2rem;
+}
+
+.GameOver[data-outcome='victory'] h2 {
+	background: var(--c-marigold);
+}
+
+.GameOver[data-outcome='defeat'] h2 {
+	background: var(--c-crimson-lake);
+	color: var(--c-snow-white);
+}
+
+.GameOver[data-outcome='timeout'] h2 {
+	background: var(--c-blue-gray);
+}
+
+.GameOver p {
+	margin: 0.8rem;
+	font-size: 0.9rem;
+}
+
+.GameOver .Button {
+	margin: 0 0.8rem 0.8rem;
+}
