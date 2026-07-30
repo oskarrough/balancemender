@@ -93,6 +93,8 @@ export class Node {
 	}
 
 	private _runDestroy = () => {
+		if (!this.mounted) return
+
 		this._runLifeCycleChain('destroy')
 		this.emit(Node.DESTROY, this)
 		this._listeners = {}
