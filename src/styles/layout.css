@@ -186,8 +186,37 @@ balance-lab {
 .BalanceLab-nav summary {
 	cursor: pointer;
 	opacity: 0.7;
-	padding: 0.1rem 0;
+	padding: 0.1rem 0.2rem;
 	user-select: none;
+	list-style: none;
+	border-radius: 2px;
+}
+
+.BalanceLab-nav summary::-webkit-details-marker {
+	display: none;
+}
+
+.BalanceLab-nav summary:hover {
+	background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.BalanceLab-nav summary.is-active {
+	background: color-mix(in srgb, currentColor 20%, transparent);
+	opacity: 1;
+}
+
+.BalanceLab-toggle {
+	display: inline-block;
+	width: 1em;
+	cursor: pointer;
+}
+
+.BalanceLab-toggle::before {
+	content: '▸';
+}
+
+.BalanceLab-nav details[open] .BalanceLab-toggle::before {
+	content: '▾';
 }
 
 .BalanceLab-nav ul {
@@ -216,23 +245,29 @@ balance-lab {
 	background: color-mix(in srgb, currentColor 20%, transparent);
 }
 
-.BalanceLab-pickTitle {
-	display: block;
-	font-weight: 500;
+.BalanceLab-pick {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 0.4rem;
 }
 
-.BalanceLab-pick small {
-	display: block;
-	opacity: 0.55;
-	font-size: 0.85em;
+.BalanceLab-pickTitle {
+	font-weight: 500;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
+.BalanceLab-pickHint {
+	opacity: 0.5;
+	font-variant-numeric: tabular-nums;
+}
+
 .BalanceLab-inspector {
 	display: block;
 	min-width: 0;
+	overflow-x: auto;
 }
 
 .BalanceInspector-empty {
@@ -274,6 +309,41 @@ balance-lab {
 .BalanceInspector-row input[type='checkbox'] {
 	justify-self: start;
 	margin: 0;
+}
+
+.BalanceInspector-sheet {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.BalanceInspector-sheet th {
+	text-align: left;
+	font-weight: 400;
+	opacity: 0.6;
+	padding: 0.1rem 0.2rem;
+}
+
+.BalanceInspector-sheet td {
+	padding: 0.1rem 0.2rem;
+	border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.BalanceInspector-sheet td:first-child {
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.BalanceInspector-sheet input[type='number'] {
+	width: 4rem;
+	border: 0;
+	background: none;
+	border-bottom: 1px dashed color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.BalanceInspector-sheet input[type='number']:hover,
+.BalanceInspector-sheet input[type='number']:focus {
+	background: color-mix(in srgb, var(--c-lemon-yellow) 40%, transparent);
+	border-bottom-style: solid;
 }
 
 .BalanceInspector-actions {

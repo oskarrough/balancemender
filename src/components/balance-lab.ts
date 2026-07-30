@@ -48,12 +48,19 @@ export class BalanceLab extends HTMLElement {
 		return allInspectables(game)
 	}
 
-	private findSelected(sections: InspectableSection[]): Inspectable | null {
+	private findSelected(sections: InspectableSection[]): Inspectable | InspectableSection | null {
 		for (const s of sections) {
+			if (`section:${s.section}` === this.selectedId) return s
 			const found = s.items.find((i) => i.id === this.selectedId)
 			if (found) return found
 		}
 		return null
+	}
+
+	/** The one number that identifies an item at a glance — its first tunable. */
+	private hint(item: Inspectable): string {
+		const field = item.fields.find((f) => f.kind === 'number')
+		return field ? String(field.get()) : ''
 	}
 
 	/** Re-pull the live data into the inspector without rebuilding the nav. */
@@ -79,7 +86,19 @@ export class BalanceLab extends HTMLElement {
 					${sections.map(
 						(sec) => html`
 							<details open>
-								<summary>${sec.section}</summary>
+								<summary
+									class=${`section:${sec.section}` === this.selectedId ? 'is-active' : ''}
+									onclick=${(e: Event) => {
+										// Selecting a section shouldn't also collapse it — the triangle still toggles.
+										if (!(e.target as Element).closest('.BalanceLab-toggle')) {
+											e.preventDefault()
+											this.select(`section:${sec.section}`)
+										}
+									}}
+								>
+									<span class="BalanceLab-toggle"></span>
+									${sec.section} ${sec.items.length > 1 ? html`<small>· ${sec.items.length}</small>` : ''}
+								</summary>
 								<ul>
 									${sec.items.map(
 										(item) => html`
@@ -89,7 +108,7 @@ export class BalanceLab extends HTMLElement {
 													onclick=${() => this.select(item.id)}
 												>
 													<span class="BalanceLab-pickTitle">${item.title}</span>
-													${item.subtitle ? html`<small>${item.subtitle}</small>` : ''}
+													<span class="BalanceLab-pickHint">${this.hint(item)}</span>
 												</button>
 											</li>
 										`,
