@@ -4,6 +4,22 @@
 [vroum v1.2.4](https://gitlab.com/jfalxa/vroum/-/tree/v1.2.4). It structures game logic as a
 `Loop`, hierarchical `Node`s and timed `Task`s with a shared mount/destroy lifecycle.
 
+## The lifecycle rules that catch people
+
+- **`mount()` and `destroy()` run the whole prototype chain**, base class first — a subclass
+  `mount()` does not replace its parent's. That is why `Loop.mount()` starting the frame loop and
+  `GameLoop.mount()` wiring listeners both happen.
+- **The Loop is one of its own tasks**, so `game.elapsedTime` is the fight clock. Everything
+  time-based reads it: the five-second rule, cast bookkeeping, the combat log's `time`. It resets when
+  an encounter is loaded.
+- **`connect()`/`disconnect()` are deferred to a microtask.** A node is not mounted on the line after
+  you construct it, and a dead unit is still in `encounter.party` until the microtask runs. Some of it
+  chains — a death takes two hops — so `await settle()` from `test-setup.ts` rather than counting your
+  own `Promise.resolve()`s.
+- **A `Loop` is thenable**, and vroum resolves that on DESTROY — so `await game` would park on a loop
+  that never dies. `GameLoop` overrides `then()` to resolve immediately, which turns a silent 5s
+  timeout into an instant `undefined`. A helper that builds a game still should not return it.
+
 ## Core Components
 
 - **Loop** – The main game loop (extends `Task`) that drives all tasks using `requestAnimationFrame`.

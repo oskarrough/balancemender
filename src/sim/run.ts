@@ -4,12 +4,18 @@ import {BotDriver, Bot, BotName} from '../nodes/bot'
 import {combatLogs, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
 import {setSeed} from '../rng'
 import {DEMO_ROSTER, Roster} from '../nodes/encounter'
+import type {Room} from '../nodes/dungeon'
 import type {Unit} from '../nodes/unit'
 import {unitsOf, type Outcome, type UnitInfo} from './report'
 
 export {unitsOf, type Outcome, type UnitInfo}
 
-export interface FightSpec extends Roster {
+/**
+ * A room, plus the four things a browser would have supplied: who drives, how the dice fall, how
+ * time steps, when to give up. Extending `Room` means an authored dungeon room can be simulated
+ * as written — `runFight({...WolfWoods.rooms[3], bot: 'triage'})`.
+ */
+export interface FightSpec extends Room {
 	/** How the healer plays. See `src/nodes/bot.ts`. */
 	bot?: BotName | Bot
 	/** Fix the dice so the fight replays exactly. `null` for real randomness. */

@@ -33,6 +33,7 @@ To render DOM nodes, https://github.com/WebReflection/uhtml is used.
 Animations are made using CSS and `gsap`.
 
 See the [`docs/`](./docs/) folder for more — [architecture](./docs/architecture.md) is the map,
+[combat](./docs/combat.md) is why the fight works the way it does, and
 [simulation](./docs/simulation.md) explains how fights are run and analysed without a browser.
 
 ## Notes

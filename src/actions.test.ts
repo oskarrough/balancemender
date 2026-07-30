@@ -124,7 +124,7 @@ describe('refusals', () => {
 		expect(game.lastRefusal?.error).toBe('Not enough mana')
 	})
 
-	// Stamped on the fight clock, which `loadEncounter()` sends back to zero. A leftover would
+	// Stamped on the fight clock, which `enter()` sends back to zero. A leftover would
 	// then sit in the new fight's future and never age out of the UI.
 	it('forgets the last fight, whose clock no longer applies', () => {
 		game = new TankGameLoop({party: ['Tank'], enemies: []})

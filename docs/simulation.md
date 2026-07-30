@@ -71,15 +71,21 @@ Nakroth     triage  100%  14  2%     0%        60.0s   14.9  0.0   12%        11
 Nakroth     shield  100%  14  0%     0%        60.0s   3.4   12.7  32%        9.1     28%    9.4
 ```
 
-[AGENTS.md](../AGENTS.md) has the reading order — `idle`, then `±`, then `hurt%`. Two things it
-does not say:
+Read it in this order:
 
+- **`idle` first.** It is the control group — it never casts. A retune that lifts a win rate by making
+  the healer irrelevant shows up as `idle` climbing too.
+- **`±` second.** It is the 95% interval on that win rate, around ±23 points at the default 10 seeds —
+  wider than most retunes. **Comparing two candidates takes ~200 seeds.** ±23 points is not a figure
+  of speech: a 78→83 reading has been taken as a result here; at 200 seeds it was 79→80.
+- **`hurt%` third** — the share of the fight the party's worst-off member spent below the injured line.
+  A win at 0% hurt was never in doubt, so a group where `idle` also sits near 0% is not a fight worth
+  tuning. Between two retunes that win equally often, the one that leaves `hurt%` alone made the healer
+  better and the one that lowered it made the fight easier.
 - **`hps` and `aps` only mean something together.** A point healed was taken and paid back; a point
   absorbed was never taken. Read `hps` alone and the `shield` rows look like a healer doing a third
   of the work, when `3.4 + 12.7` beats `triage`'s `14.9` and arrives before the damage rather than
   after — which is also why `shield` halves `hurt%` while winning no more often.
-- **±23 points at 10 seeds is not a figure of speech.** A 78→83 reading has been taken as a result
-  here; at 200 seeds it was 79→80.
 
 The curve is quadratic on purpose — the tank kills enemies one at a time, so each one added both
 raises incoming damage and lengthens the fight. It used to be inverted, three wolves unwinnable
@@ -145,6 +151,22 @@ bun run sweep --tune 'rule:Damage.variance=0.1'
 
 The first two affect the next ability use or aura application. The damage rule is read when a hit
 lands, and changes only direct rolled damage—not healing, barriers, or periodic totals.
+
+## Nothing may need a DOM at import time
+
+This is a browser game and game code may touch the DOM — `effects.ts` queries for the frame it is
+about to shake, `floating-combat-text.ts` builds real elements. The line is _when_, not _whether_:
+
+- **At call time, use it** — behind `typeof document === 'undefined'` if a simulation reaches it. That
+  is one line, and the fight goes on without the flourish.
+- **At import time, nothing may need a DOM.** `import 'uhtml'` and `class X extends HTMLElement` both
+  run on load, so either one anywhere `src/nodes/` can reach means no fight runs headless at all.
+  Hence the loop's `draw` slot that `main.ts` fills instead of importing `components/ui`, `utils.ts`
+  no longer re-exporting uhtml, and `floating-combat-text.ts` declaring its element inside
+  `register()`.
+
+Nothing has to be remembered here: the tests run in plain node, so a bad import fails the suite with
+`DocumentFragment is not defined` or `HTMLElement is not defined`.
 
 ## The pieces
 

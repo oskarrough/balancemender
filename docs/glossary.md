@@ -3,7 +3,8 @@
 What the words mean here. Reach for this before naming a new class or field, and fold new terms in
 rather than inventing synonyms: a second word for something that already has one is how two halves of
 the codebase stop being able to read each other. A few of these name things the code has not grown
-yet. Definitions only — the reasoning lives in [architecture.md](./architecture.md).
+yet. Definitions only — the reasoning lives in [combat.md](./combat.md) and
+[architecture.md](./architecture.md).
 
 ## The fight
 
@@ -162,7 +163,9 @@ registry, a unit's ability collection, balance, `--tune`, the log's `abilityId`,
 keys. The **name** is what a player reads and is used for nothing else. Conventionally the id is the
 class name (`FlashHeal`) and the name the same words as prose (`Flash Heal`). Name the class after
 the ability, not after who owns it or how big it is: `QuickStab`, never `SmallAttack`. Renaming an
-ability should touch one line.
+ability should touch one line. Mechanic bases keep neutral identities (`Periodic`, `Barrier`), while
+an ability-owned subclass such as `RenewAura` takes its spell's id, so a cast and the aura it leaves
+behind report as one ability.
 
 **Ability collection** — what one unit may use, keyed by stable ability id. Every driver looks up
 through this collection; the global ability registry is only the catalog.
@@ -219,7 +222,10 @@ persistence is the behavior the Task represents.
 ## Tuning and measuring
 
 **Balance number** — a number the game plays by, reachable from the Balance Lab, the dev console and
-`--tune`. Six **kinds**: `ability`, `effect`, `cadence`, `aura`, `unit`, `rule`.
+`--tune`. Six **kinds**: `ability`, `effect`, `cadence`, `aura`, `unit`, `rule`. The kind is the
+namespace: `ability:Renew.cost` is the cast and `aura:Renew.maxStacks` the heal-over-time it plants;
+an effect row names the ability and the outcome, `effect:SavageBite.rend.coefficient`, so a composite
+ability's parts tune separately; `unit` rows are keyed by the unit id you spawn with.
 
 **Rule** — a balance number the whole game reads rather than one belonging to an ability or a unit,
 such as where the injured line sits. Read live where it is used, so a retune lands on the fight

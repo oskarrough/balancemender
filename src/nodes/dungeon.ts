@@ -1,10 +1,14 @@
 import type {Roster} from './encounter'
 
-/** One fight in a dungeon: who you face, and how the scene is dressed. */
-export interface Room {
-	roster: Roster
+/**
+ * One fight in a dungeon: who you face, plus how the scene is dressed.
+ *
+ * Extends the roster rather than holding one, so a room reads as `room.enemies` and passes
+ * anywhere a `Roster` is wanted. `FightSpec` adds to a room the same way — see `src/sim/run.ts`.
+ */
+export interface Room extends Roster {
 	name?: string
-	/** No renderer yet — see #66. */
+	/** Nothing renders this yet. */
 	wallpaper?: string
 }
 
@@ -20,11 +24,11 @@ export const WolfWoods: Dungeon = {
 	id: 'WolfWoods',
 	name: 'Wolf Woods',
 	rooms: [
-		{name: 'The stray pup', roster: {party: [], enemies: ['WolfPup']}},
-		{name: 'Backup arrives', roster: {party: ['Tank'], enemies: ['TinyWolf']}},
-		{name: 'Two wolves', roster: {party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']}},
-		{name: 'The shaman', roster: {party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']}},
-		{name: 'Nakroth the Destroyer', roster: {party: ['Tank'], enemies: ['Nakroth']}},
+		{name: 'The stray pup', party: [], enemies: ['WolfPup']},
+		{name: 'Backup arrives', party: ['Tank'], enemies: ['TinyWolf']},
+		{name: 'Two wolves', party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']},
+		{name: 'The shaman', party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']},
+		{name: 'Nakroth the Destroyer', party: ['Tank'], enemies: ['Nakroth']},
 	],
 }
 

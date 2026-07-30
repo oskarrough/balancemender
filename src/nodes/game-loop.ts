@@ -4,7 +4,7 @@ import type {Player} from './player'
 import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
 import {Encounter, DEMO_ROSTER, Roster} from './encounter'
-import type {Dungeon} from './dungeon'
+import type {Dungeon, Room} from './dungeon'
 import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
 import {logCombat, setCombatClock, clearLogs, combatLogs} from '../combatlog'
@@ -29,6 +29,19 @@ export function currentGame(): GameLoop | undefined {
 	return window.balancemender instanceof GameLoop ? window.balancemender : undefined
 }
 
+/**
+ * A dungeon being played: which one, which room you are in, and the fight-clock ms of each room
+ * already cleared. The room you are in is not in `times` yet — it reads `elapsedTime`.
+ *
+ * Data, not a `Node`. A run has nothing to tick, so it is state the game holds rather than a
+ * branch of the tree. The `Encounter` is the live thing; this only says which one to build next.
+ */
+export interface DungeonRun {
+	dungeon: Dungeon
+	room: number
+	times: number[]
+}
+
 /** The clock and the root of everything. See [architecture](../../docs/architecture.md). */
 export class GameLoop extends Loop {
 	gameOver = false
@@ -43,7 +56,7 @@ export class GameLoop extends Loop {
 	 * How the game draws itself — `main.ts` installs it, a simulation leaves it unset and the
 	 * fight happens with nobody watching. A slot rather than an import of `components/ui`, because
 	 * that import reaches uhtml, and uhtml needs a DOM the moment it loads. See
-	 * [architecture](../../docs/architecture.md).
+	 * [simulation](../../docs/simulation.md).
 	 */
 	draw?: (game: GameLoop) => void
 
@@ -69,10 +82,9 @@ export class GameLoop extends Loop {
 	encounter: Encounter
 
 	/**
-	 * Progress through a dungeon, or undefined for a one-off fight. `times` holds the fight-clock ms
-	 * of each cleared room; the room being played reads `elapsedTime`.
+	 * Progress through a dungeon, or undefined for a one-off fight. See `DungeonRun`.
 	 */
-	dungeonRun?: {dungeon: Dungeon; room: number; times: number[]}
+	dungeonRun?: DungeonRun
 
 	/** Pass a roster to start on something other than the demo encounter. */
 	constructor(roster: Roster = DEMO_ROSTER) {
@@ -105,14 +117,14 @@ export class GameLoop extends Loop {
 		return result
 	}
 
-	/** Swap the active encounter, tearing down the previous one. */
-	loadEncounter(roster: Roster) {
+	/** Walk into a room: build its encounter and tear down the one you were in. */
+	enter(room: Room) {
 		this.pause()
 		this.encounter.disconnect()
 		// The fight clock restarts, so the log has to as well — otherwise the last fight's
 		// damage gets divided by this fight's duration and every rate reads high.
 		clearLogs()
-		this.encounter = new Encounter(this, roster)
+		this.encounter = new Encounter(this, room)
 		this.gameOver = false
 		this.outcome = undefined
 		this.elapsedTime = 0
@@ -205,6 +217,6 @@ export class GameLoop extends Loop {
 
 	/** Reset state for a fresh encounter. Does not animate — pair with `restartGame()` for the visual transition. */
 	restart() {
-		this.loadEncounter(this.encounter.roster)
+		this.enter(this.encounter.roster)
 	}
 }

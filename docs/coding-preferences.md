@@ -1,7 +1,7 @@
 # Coding preferences
 
-Use [the glossary](./glossary.md) for domain names and [the architecture guide](./architecture.md)
-for lifecycle and data flow. The glossary is the vocabulary we want; where the code still says
+Use [the glossary](./glossary.md) for domain names, [the architecture guide](./architecture.md) for
+data flow and [vroum.md](./vroum.md) for lifecycle. The glossary is the vocabulary we want; where the code still says
 something else, do not spread it further.
 
 - Prefer direct, domain-named code over wrappers and generic abstractions.
