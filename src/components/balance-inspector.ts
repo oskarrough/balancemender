@@ -17,6 +17,7 @@ export class BalanceInspector extends HTMLElement {
 		if (f.kind === 'boolean') {
 			return html`
 				<label class="BalanceInspector-row">
+					<span>${f.label}</span>
 					<input
 						type="checkbox"
 						.checked=${f.get()}
@@ -25,7 +26,6 @@ export class BalanceInspector extends HTMLElement {
 							this.render()
 						}}
 					/>
-					<span>${f.label}</span>
 				</label>
 			`
 		}

@@ -59,7 +59,7 @@ class FloatingView extends HTMLElement {
 	draggable() {
 		Draggable.create(this, {
 			type: 'x,y',
-			trigger: this.querySelector('header'),
+			trigger: this.querySelector(':scope > header'),
 			bounds: this.calculateBounds(),
 			inertia: true,
 			onDragEnd: () => this.saveLayout(),
@@ -112,7 +112,7 @@ class FloatingView extends HTMLElement {
 
 	minimizable() {
 		this.addEventListener('dblclick', (e) => {
-			if (e.target.closest('header')) {
+			if (e.target.closest('header') === this.querySelector(':scope > header')) {
 				e.currentTarget.toggleAttribute('minimized')
 				e.currentTarget.style.height = 'auto'
 			}

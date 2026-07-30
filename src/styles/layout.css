@@ -222,8 +222,12 @@ balance-lab {
 }
 
 .BalanceLab-pick small {
+	display: block;
 	opacity: 0.55;
 	font-size: 0.85em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .BalanceLab-inspector {
@@ -245,6 +249,7 @@ balance-lab {
 }
 
 .BalanceInspector-header small {
+	display: block;
 	opacity: 0.6;
 }
 
@@ -266,10 +271,17 @@ balance-lab {
 	min-width: 0;
 }
 
+.BalanceInspector-row input[type='checkbox'] {
+	justify-self: start;
+	margin: 0;
+}
+
 .BalanceInspector-actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.3rem;
+	border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+	padding-top: 0.5rem;
 }
 
 .BalanceInspector-action {
@@ -278,6 +290,7 @@ balance-lab {
 
 .BalanceInspector-action.is-danger {
 	color: var(--c-crimson-lake, #b00);
+	margin-left: auto;
 }
 
 .BalanceInspector-action.is-primary {

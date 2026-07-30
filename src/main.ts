@@ -28,15 +28,18 @@ function main() {
 
 	void loadFightHistory().catch((err) => console.error('Failed to load fight history', err))
 
+	const skipSplash = new URLSearchParams(window.location.search).has('nosplash')
+
 	// Wait for web fonts before animating the splash — otherwise "Rubik 80s Fade" swaps in mid-tween
 	// and re-rasterizes the giant title, which reads as jank no matter what GSAP does.
 	let splashIntro: ReturnType<typeof buildSplashIntro> | null = null
-	void document.fonts.ready.then(() => {
+	if (!skipSplash)
+		void document.fonts.ready.then(() => {
 		// Small breather so any final layout/paint settles before the title slams in.
-		setTimeout(() => {
-			splashIntro = buildSplashIntro()
-		}, 500)
-	})
+			setTimeout(() => {
+				splashIntro = buildSplashIntro()
+			}, 500)
+		})
 	const debugSplash = new URLSearchParams(window.location.search).has('debug-splash')
 
 	if (debugSplash) {
