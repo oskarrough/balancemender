@@ -21,7 +21,8 @@ export class TinyWolf extends Unit {
 	name = 'Tiny wolf'
 	image = '/assets/generated/characters/tiny-wolf.png'
 	abilities = {SavageBite, QuickStab}
-	targeting = new Targeting(this, prefer.atRandom)
+	// Reconsiders once in a while instead of settling forever or every attack (#42).
+	targeting = new Targeting(this, prefer.atRandom(0.2))
 	savageBiteCadence = new SavageBiteCadence(this)
 	quickStabCadence = new QuickStabCadence(this)
 }

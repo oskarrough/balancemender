@@ -20,21 +20,31 @@ export interface Preference {
 /** Whether this unit carries anything tagged `healing` — what makes it worth killing first. */
 const heals = (unit: Unit) => Object.values(unit.abilities).some((ability) => ability.tags.includes('healing'))
 
-export const prefer = {
+export const prefer: {
+	first: Preference
+	atRandom: (reconsiderChance?: number) => Preference
+	lowestHealth: Preference
+	healerFirst: Preference
+	tankFirst: Preference
+} = {
 	/** Whoever comes first. Stays with them until they die. */
 	first: {
 		prefers: (candidates: Unit[]) => candidates[0],
 		reconsiders: () => false,
 	},
 
-	/** Uses the seeded `random()`, never `Math.random` — a fight replayed from a seed must pick the same. */
-	atRandom: {
+	/**
+	 * Uses the seeded `random()`, never `Math.random` — a fight replayed from a seed must pick the
+	 * same. `reconsiderChance` is the odds of re-rolling on any given attack, not per frame; 0 (the
+	 * default) never lets go of its first pick, like the old fixed `atRandom`.
+	 */
+	atRandom: (reconsiderChance = 0) => ({
 		prefers: (candidates: Unit[]) => {
 			if (candidates.length === 0) return undefined
 			return candidates[Math.floor(random() * candidates.length)]
 		},
-		reconsiders: () => false,
-	},
+		reconsiders: () => random() < reconsiderChance,
+	}),
 
 	/** The most hurt of them, re-evaluated every tick — the only one that never settles. */
 	lowestHealth: {
@@ -64,7 +74,7 @@ export const prefer = {
 		reconsiders: (current: Unit, candidates: Unit[]) =>
 			!(current instanceof Tank) && candidates.some((c) => c instanceof Tank),
 	},
-} satisfies Record<string, Preference>
+}
 
 /**
  * A unit's standing preference, asked once per use of an ability.
