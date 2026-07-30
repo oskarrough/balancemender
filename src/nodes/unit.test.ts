@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 import {CONDITION_THRESHOLDS} from './types'
 import {applyHit} from './hit'
 import {combatLogs, clearLogs} from '../combatlog'

@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 import {applyHit} from './hit'
 import {PeriodicAura} from './periodic-aura'
 import {Renew} from './spells'

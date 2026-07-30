@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 import {Ability} from './ability'
 import {abilityRegistry} from './registry'
 import {STAT} from './stats'

@@ -35,6 +35,22 @@ export class TinyWolf extends Unit {
 	quickStabCadence = new QuickStabCadence(this)
 }
 
+/** A gentle first enemy: no bleed, so a solo healer can smite it down. */
+export class WolfPup extends Unit {
+	static stamina = 80
+	static intellect = 0
+	static strength = 6
+	static agility = 20
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Wolf pup'
+	image = '/assets/generated/characters/tiny-wolf.png'
+	abilities = {QuickStab}
+	// A fifth of its picks bite someone at random — a wolf, not a soldier (#42).
+	targeting = new Targeting(this, prefer.threat(this, 0.2))
+	quickStabCadence = new QuickStabCadence(this)
+}
+
 /**
  * A wolf that mends the pack instead of biting it, and the one enemy the party is meant to kill
  * first — `Tank` prefers whatever heals. Nothing stops it from carrying attacks too, since each use

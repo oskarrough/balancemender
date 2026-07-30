@@ -1,8 +1,7 @@
 import {afterEach, beforeEach, describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
 import {combatLogs, clearLogs} from '../combatlog'
-import {SimLoop} from '../sim/run'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop, TankSimLoop as SimLoop} from '../test-fixtures'
 import {Cadence} from './cadence'
 import {Nakroth, TinyWolf, WolfShaman} from './enemies'
 import {Mend} from './spells'
@@ -25,7 +24,7 @@ describe('a cadence', () => {
 	})
 
 	it('requires one stable ability id', () => {
-		game = new GameLoop({party: [], enemies: []})
+		game = new GameLoop({party: ['Tank'], enemies: []})
 		expect(() => new Cadence(game.player)).toThrow(/needs an ability id/)
 	})
 

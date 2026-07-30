@@ -29,7 +29,8 @@ export class Encounter extends Node {
 	party: Unit[] = []
 	enemies: Unit[] = []
 	player!: Player
-	tank!: Tank
+	/** Undefined in a roster without one — the first room of a dungeon is the player alone. */
+	tank?: Tank
 
 	constructor(
 		public parent: GameLoop,
@@ -40,7 +41,7 @@ export class Encounter extends Node {
 		this.player = this.spawn('Player') as Player
 		this.player.selectedTarget = this.player
 		for (const id of roster.enemies ?? []) this.spawn(id)
-		this.tank = this.party.find((unit) => unit instanceof Tank) as Tank
+		this.tank = this.party.find((unit): unit is Tank => unit instanceof Tank)
 	}
 
 	/** Everyone in the fight, both sides. The dead included — see `onDeath`. */

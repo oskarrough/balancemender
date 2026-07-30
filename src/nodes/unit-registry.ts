@@ -1,6 +1,6 @@
 import type {Unit} from './unit'
 import type {Faction} from './types'
-import {TinyWolf, WolfShaman, Nakroth} from './enemies'
+import {WolfPup, TinyWolf, WolfShaman, Nakroth} from './enemies'
 import {Tank} from './party-units'
 import {Player} from './player'
 
@@ -18,6 +18,7 @@ import {Player} from './player'
 export const unitRegistry = {
 	Player,
 	Tank,
+	WolfPup,
 	TinyWolf,
 	WolfShaman,
 	Nakroth,

@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 import {AbilityUse} from './ability-use'
 import {GlobalCooldown} from './global-cooldown'
 import {abilityRegistry} from './registry'

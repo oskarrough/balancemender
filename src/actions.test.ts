@@ -1,7 +1,7 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from './test-setup'
 import {GameLoop} from './nodes/game-loop'
-import {SimLoop} from './sim/run'
+import {requireTank, TankGameLoop, TankSimLoop} from './test-fixtures'
 import {playerAbilities} from './nodes/registry'
 import {combatLogs, clearLogs} from './combatlog'
 
@@ -30,7 +30,8 @@ describe('perform', () => {
 	})
 
 	it('casts on the target it was given without moving what the player has selected', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new TankGameLoop({party: ['Tank'], enemies: []})
+		requireTank(game)
 		const tank = game.tank
 		const selected = game.player.selectedTarget
 		expect(selected).not.toBe(tank)
@@ -60,7 +61,8 @@ describe('perform', () => {
 	})
 
 	it('retunes the units already fighting, matched by id and not by class name', () => {
-		game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new TankGameLoop({party: ['Tank'], enemies: []})
+		requireTank(game)
 		expect(game.perform({type: 'tune', of: 'unit', name: 'Tank', key: 'stamina', value: 50}).ok).toBe(true)
 		// A minified build mangles `constructor.name`; `unitId` is what makes this reach anyone.
 		expect(game.tank.health.max).toBe(50)
@@ -99,7 +101,8 @@ describe('perform', () => {
  */
 describe('refusals', () => {
 	it('remembers why and when, and says nothing about an action that went through', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new TankGameLoop({party: ['Tank'], enemies: []})
+		requireTank(game)
 		expect(game.perform({type: 'use', ability: 'Heal', target: game.tank.id}).ok).toBe(true)
 		expect(game.lastRefusal).toBeUndefined()
 
@@ -112,7 +115,8 @@ describe('refusals', () => {
 
 	// The reason has to be one a player can act on: "Not enough mana", never a generic failure.
 	it('names the reason', () => {
-		game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new TankGameLoop({party: ['Tank'], enemies: []})
+		requireTank(game)
 		game.player.mana?.set(0)
 
 		game.perform({type: 'use', ability: 'Heal', target: game.tank.id})
@@ -123,7 +127,7 @@ describe('refusals', () => {
 	// Stamped on the fight clock, which `loadEncounter()` sends back to zero. A leftover would
 	// then sit in the new fight's future and never age out of the UI.
 	it('forgets the last fight, whose clock no longer applies', () => {
-		game = new GameLoop({party: ['Tank'], enemies: []})
+		game = new TankGameLoop({party: ['Tank'], enemies: []})
 		game.elapsedTime = 5000
 		game.perform({type: 'use', ability: 'Fireball'})
 		expect(game.lastRefusal).toBeDefined()
@@ -141,7 +145,7 @@ describe('every player ability', () => {
 	// `cast()`. Nothing but this stops the next ability doing the same.
 	// An enemy has to be present, or the fight is already won and the loop stops before the cast lands.
 	it.each(Object.keys(playerAbilities))('logs a completed cast: %s', async (ability) => {
-		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const sim = new TankSimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = sim
 		await settle()
 		const AbilityClass = playerAbilities[ability as keyof typeof playerAbilities]

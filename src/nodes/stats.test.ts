@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 import {STAT, Stats} from './stats'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 
 describe('Stats', () => {
 	it('resolves each base plus only that stat’s modifiers', () => {

@@ -4,6 +4,7 @@ import type {Player} from './player'
 import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
 import {Encounter, DEMO_ROSTER, Roster} from './encounter'
+import type {Dungeon} from './dungeon'
 import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
 import {logCombat, setCombatClock, clearLogs, combatLogs} from '../combatlog'
@@ -66,6 +67,12 @@ export class GameLoop extends Loop {
 
 	audio = new AudioPlayer(this)
 	encounter: Encounter
+
+	/**
+	 * Progress through a dungeon, or undefined for a one-off fight. `times` holds the fight-clock ms
+	 * of each cleared room; the room being played reads `elapsedTime`.
+	 */
+	dungeonRun?: {dungeon: Dungeon; room: number; times: number[]}
 
 	/** Pass a roster to start on something other than the demo encounter. */
 	constructor(roster: Roster = DEMO_ROSTER) {
@@ -138,7 +145,8 @@ export class GameLoop extends Loop {
 		return this.encounter.player
 	}
 
-	get tank(): Tank {
+	/** The active encounter's tank, if its roster has one. */
+	get tank(): Tank | undefined {
 		return this.encounter.tank
 	}
 

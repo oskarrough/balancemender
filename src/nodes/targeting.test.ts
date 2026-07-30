@@ -1,6 +1,6 @@
 import {describe, expect, it, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 import {prefer} from './targeting'
 
 let game!: GameLoop

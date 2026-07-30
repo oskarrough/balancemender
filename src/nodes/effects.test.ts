@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 import {Ability} from './ability'
 import {ApplyAura, Damage, Heal} from './effects'
 import {PeriodicAura} from './periodic-aura'

@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it} from 'vitest'
 import {clearLogs, combatLogs} from '../combatlog'
-import {SimLoop} from '../sim/run'
+import {TankSimLoop as SimLoop} from '../test-fixtures'
 import {settle} from '../test-setup'
 import {STAT} from './stats'
 import {StatModifierAura} from './stat-modifier-aura'

@@ -1,7 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {GameLoop} from './game-loop'
-import {SimLoop} from '../sim/run'
+import {TankGameLoop as GameLoop, TankSimLoop as SimLoop} from '../test-fixtures'
 import type {Aura} from './aura'
 import {PeriodicAura} from './periodic-aura'
 import {SavageBite} from './attack'

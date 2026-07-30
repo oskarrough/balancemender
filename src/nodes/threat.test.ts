@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it} from 'vitest'
-import {GameLoop} from './game-loop'
+import {TankGameLoop as GameLoop} from '../test-fixtures'
 import {applyHit} from './hit'
 import {ShieldBash} from './attack'
 import {Ability} from './ability'
