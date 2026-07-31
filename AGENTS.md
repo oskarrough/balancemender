@@ -62,4 +62,7 @@ To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored,
 loading real assets by URL) with several variants in one file on a keypress switcher, and one of them
 a recreation of the current UI as the control. Screenshot them and compare.
 
+[docs/performance.md](./docs/performance.md) is how we time a frame — `src/perf.ts` is on in the real
+build, and `perf.report()` in the page prints the table. Measure before believing anything is slow.
+
 CSS values stick to a coarse scale — 0.2, 0.4, 0.5 — not 0.35.

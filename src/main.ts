@@ -6,6 +6,7 @@ import {buildSplashIntro, buildIntro} from './animations'
 import {DevConsole} from './components/dev-console'
 import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
+import * as perf from './perf'
 import {loadFightHistory} from './fight-history'
 import {dungeonRegistry} from './nodes/dungeon'
 import './components/dev-console'
@@ -56,12 +57,17 @@ function main() {
 		const menuElement = document.querySelector('#menu')
 		// The menu redraws with the game so its Play/Pause toggle tracks state changed elsewhere.
 		game.draw = () => {
-			if (element) render(element, UI(game))
-			if (menuElement) render(menuElement, () => Menu(game))
+			perf.interval('frame')
+			perf.measure('draw', () => {
+				if (element) perf.measure('draw:ui', () => render(element, UI(game)))
+				if (menuElement) perf.measure('draw:menu', () => render(menuElement, () => Menu(game)))
+			})
 		}
 		setupDevTools(game)
 		// @ts-ignore
 		window.balancemender = game
+		// @ts-ignore
+		window.perf = perf
 		const urlParams = new URLSearchParams(window.location.search)
 		if (urlParams.has('muted')) game.muted = true
 

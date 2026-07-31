@@ -2,8 +2,9 @@
 
 The map of the codebase: what is where, and the few rules that hold across all of it.
 [glossary.md](./glossary.md) says what the words mean, [combat.md](./combat.md) why the fight is
-shaped the way it is, [vroum.md](./vroum.md) the engine underneath, and
-[simulation.md](./simulation.md) how a fight runs without a browser.
+shaped the way it is, [vroum.md](./vroum.md) the engine underneath,
+[simulation.md](./simulation.md) how a fight runs without a browser, and
+[performance.md](./performance.md) how to measure the running game.
 
 ## The shape of it
 
