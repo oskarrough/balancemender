@@ -24,5 +24,26 @@ export const WolfWoods: Dungeon = {
 	],
 }
 
+/**
+ * The second dungeon, built one room at a time. It opens by remixing familiar pressures, then adds
+ * another hunter and a pack buff without teaching a new rule. The full kit from The Green is
+ * granted up front because this is a sequel, not another tutorial (#70).
+ */
+export const TheRust: Dungeon = {
+	id: 'TheRust',
+	name: 'The Rust',
+	rooms: [
+		{
+			name: 'The dry bed',
+			party: ['Tank'],
+			enemies: ['Snapjaw', 'Skulker'],
+			grants: ['Heal', 'Lance', 'Renew', 'Patch', 'Nettle', 'Shield', 'Mend'],
+			wallpaper: '/assets/generated/explorations/rust-waystation.png',
+		},
+		// Two healer-hunters backed by a strength buff — wider pressure, not a new mechanic.
+		{name: 'The long grass', party: ['Tank'], enemies: ['Skulker', 'Skulker', 'Howler']},
+	],
+}
+
 /** Every dungeon, by id. */
-export const dungeonRegistry: Record<string, Dungeon> = {WolfWoods}
+export const dungeonRegistry: Record<string, Dungeon> = {TheGreen, TheRust}

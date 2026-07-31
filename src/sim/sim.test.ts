@@ -5,7 +5,7 @@ import {settle} from '../test-setup'
 import {runFight} from './run'
 import {analyze} from './report'
 import {parseUnits} from './roster'
-import {WolfWoods} from '../nodes/dungeon'
+import {TheRust, TheGreen} from '../nodes/dungeon'
 
 /**
  * These run the actual game — real loop, real spells, real combat log — on a stepped clock.
@@ -206,6 +206,41 @@ describe('the first room', () => {
 	it('is won by one who does', async () => {
 		const fight = await runFight({room, bot: 'smite', seed: 1})
 		expect(fight.outcome).toBe('victory')
+	})
+})
+
+/** The sequel opens by rewarding efficient spell choice rather than raw Patch throughput. */
+describe('The Rust room one', () => {
+	const room = TheRust.rooms[0]
+
+	it('is won cleanly with efficient healing', async () => {
+		const fight = await runFight({room, bot: 'renew', seed: 1})
+		expect(fight.outcome).toBe('victory')
+		expect(fight.survivors.party).toBe(2)
+	})
+
+	it('punishes expensive heal spam', async () => {
+		const fight = await runFight({room, bot: 'panic', seed: 1})
+		expect(fight.outcome).toBe('defeat')
+	})
+})
+
+/** Room two adds another hunter and a buff, but remains a step rather than a wall. */
+describe('The Rust room two', () => {
+	const first = TheRust.rooms[0]
+	const second = TheRust.rooms[1]
+
+	it('is winnable with efficient healing', async () => {
+		const fight = await runFight({room: second, bot: 'renew', seed: 1})
+		expect(fight.outcome).toBe('victory')
+		expect(fight.survivors.party).toBe(2)
+	})
+
+	it('is harder than the opening room', async () => {
+		const firstFight = await runFight({room: first, bot: 'renew', seed: 9})
+		const secondFight = await runFight({room: second, bot: 'renew', seed: 9})
+		expect(firstFight.outcome).toBe('victory')
+		expect(secondFight.outcome).toBe('defeat')
 	})
 })
 
