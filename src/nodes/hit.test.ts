@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {TankGameLoop as GameLoop} from '../test-fixtures'
+import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
 import {PeriodicAura} from './periodic-aura'
 import {Renew} from './spells'
@@ -21,11 +21,11 @@ afterEach(() => game.disconnect())
 describe('applyHit', () => {
 	it('reports the part of a heal that did nothing', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		game.tank.health.set(game.tank.health.max - 10)
+		game.party[0].health.set(game.party[0].health.max - 10)
 
 		const landed = applyHit({
 			source: game.player,
-			target: game.tank,
+			target: game.party[0],
 			amount: 40,
 			abilityId: 'Heal',
 			abilityName: 'Heal',
@@ -37,7 +37,7 @@ describe('applyHit', () => {
 		expect(combatLogs.at(-1)).toMatchObject({
 			eventType: 'SPELL_HEAL',
 			sourceId: game.player.id,
-			targetId: game.tank.id,
+			targetId: game.party[0].id,
 			value: 40,
 			overheal: 30,
 		})
@@ -46,8 +46,8 @@ describe('applyHit', () => {
 	it('leaves overheal off a hit, so damage does not claim it overhealed nothing', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		applyHit({
-			source: game.tank,
-			target: game.tank,
+			source: game.party[0],
+			target: game.party[0],
 			amount: -5,
 			abilityId: 'Test',
 			abilityName: 'Test',
@@ -64,7 +64,7 @@ describe('applyHit', () => {
 		const wolf = game.enemies[0]
 		const hit = (amount: number) =>
 			applyHit({
-				source: game.tank,
+				source: game.party[0],
 				target: wolf,
 				amount,
 				abilityId: 'ShieldBash',
@@ -75,7 +75,7 @@ describe('applyHit', () => {
 
 		hit(-wolf.health.max)
 		expect(deaths()).toHaveLength(1)
-		expect(deaths()[0]).toMatchObject({targetId: wolf.id, sourceId: game.tank.id})
+		expect(deaths()[0]).toMatchObject({targetId: wolf.id, sourceId: game.party[0].id})
 
 		hit(-10)
 		expect(deaths()).toHaveLength(1)
@@ -96,14 +96,14 @@ describe('PeriodicAura', () => {
 			static interval = 1
 			static repeat = 5
 		}
-		const poison = new Poison(wolf, game.tank)
+		const poison = new Poison(wolf, game.party[0])
 		await settle()
 		poison.tick()
 
 		expect(combatLogs.at(-1)).toMatchObject({
 			eventType: 'SPELL_PERIODIC_DAMAGE',
 			abilityName: 'Poison',
-			sourceId: game.tank.id,
+			sourceId: game.party[0].id,
 			targetId: wolf.id,
 			value: 10,
 		})
@@ -117,12 +117,12 @@ describe('PeriodicAura', () => {
 	 */
 	it('lands the total a heal-over-time advertises, not a fraction of it', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		game.tank.health.set(1)
+		game.party[0].health.set(1)
 
-		new Renew(game.player, game.tank).land()
+		new Renew(game.player, game.party[0]).land()
 		await settle()
 
-		const renew = [...game.tank.auras].find(
+		const renew = [...game.party[0].auras].find(
 			(aura): aura is PeriodicAura => aura instanceof PeriodicAura && aura.name === 'Renew',
 		)
 		expect(renew).toBeDefined()

@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 import {STAT, Stats} from './stats'
-import {TankGameLoop as GameLoop} from '../test-fixtures'
+import {GameLoop} from './game-loop'
 
 describe('Stats', () => {
 	it('resolves each base plus only that stat’s modifiers', () => {
@@ -44,8 +44,8 @@ describe('Stats', () => {
 		expect(game.player.mana.regen.regenRate).toBe(9)
 		expect(game.player.stats.spellPower).toBe(100)
 		expect(game.player.stats.attackPower).toBe(10)
-		expect(game.tank.health.max).toBe(300)
-		expect([game.tank.stats.strength, game.tank.stats.agility]).toEqual([20, 5])
+		expect(game.party[0].health.max).toBe(300)
+		expect([game.party[0].stats.strength, game.party[0].stats.agility]).toEqual([20, 5])
 		expect(game.enemies.map((unit) => unit.health.max)).toEqual([500, 240, 180])
 		expect(
 			game.enemies.map((unit) => [unit.stats.intellect, unit.stats.strength, unit.stats.agility, unit.stats.spirit]),

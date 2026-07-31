@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it} from 'vitest'
-import {TankGameLoop as GameLoop} from '../test-fixtures'
+import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
 import {ShieldBash} from './attack'
 import {Ability} from './ability'
@@ -19,7 +19,7 @@ describe('generating threat', () => {
 		target.health.set(5)
 
 		applyHit({
-			source: game.tank,
+			source: game.party[0],
 			target,
 			amount: -10,
 			abilityId: 'Test',
@@ -29,19 +29,19 @@ describe('generating threat', () => {
 			threatMultiplier: 3,
 		})
 
-		expect(target.threat?.get(game.tank)).toBe(15)
-		expect(observer.threat?.get(game.tank)).toBe(0)
+		expect(target.threat?.get(game.party[0])).toBe(15)
+		expect(observer.threat?.get(game.party[0])).toBe(0)
 	})
 
 	it('splits effective healing between living enemies and ignores overhealing', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf', 'TinyWolf']})
 		const dead = game.enemies[2]
 		dead.health.set(0)
-		game.tank.health.set(game.tank.health.max - 20)
+		game.party[0].health.set(game.party[0].health.max - 20)
 		const heal = () =>
 			applyHit({
 				source: game.player,
-				target: game.tank,
+				target: game.party[0],
 				amount: 50,
 				abilityId: 'Heal',
 				abilityName: 'Heal',
@@ -63,9 +63,9 @@ describe('generating threat', () => {
 		const wolf = game.enemies[0]
 		const before = wolf.health.current
 
-		new ShieldBash(game.tank, wolf).land()
+		new ShieldBash(game.party[0], wolf).land()
 
-		expect(wolf.threat?.get(game.tank)).toBe((before - wolf.health.current) * ShieldBash.threatMultiplier)
+		expect(wolf.threat?.get(game.party[0])).toBe((before - wolf.health.current) * ShieldBash.threatMultiplier)
 	})
 
 	it("carries an ability's multiplier into its periodic aura", async () => {
@@ -85,10 +85,10 @@ describe('generating threat', () => {
 		}
 
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']})
-		game.tank.health.set(game.tank.health.max - 20)
-		new TestAbility(game.player, game.tank).land()
+		game.party[0].health.set(game.party[0].health.max - 20)
+		new TestAbility(game.player, game.party[0]).land()
 		await settle()
-		const aura = [...game.tank.auras].find((candidate): candidate is TestAura => candidate instanceof TestAura)
+		const aura = [...game.party[0].auras].find((candidate): candidate is TestAura => candidate instanceof TestAura)
 		if (!aura) throw new Error('Test ability did not apply its aura')
 
 		aura.tick()
@@ -107,11 +107,11 @@ describe('threat targeting', () => {
 		if (!table) throw new Error('Tiny wolf needs a threat table')
 
 		expect([...table.keys()]).toEqual(game.party)
-		expect(wolf.targeting?.pick('enemy')).toBe(game.tank)
+		expect(wolf.targeting?.pick('enemy')).toBe(game.party[0])
 
-		table.set(game.tank, 100)
+		table.set(game.party[0], 100)
 		table.set(game.player, 110)
-		expect(wolf.targeting?.pick('enemy')).toBe(game.tank)
+		expect(wolf.targeting?.pick('enemy')).toBe(game.party[0])
 
 		table.set(game.player, 111)
 		expect(wolf.targeting?.pick('enemy')).toBe(game.player)

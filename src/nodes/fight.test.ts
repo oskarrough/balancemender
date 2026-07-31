@@ -1,11 +1,11 @@
 import {describe, it, expect, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
-import {TankGameLoop} from '../test-fixtures'
 import {unitsOf} from '../sim/run'
 import {PeriodicAura} from './periodic-aura'
 import type {TinyWolf} from './enemies'
 import {eligible} from './targeting'
+import {Tank} from './party-units'
 
 /**
  * One spawn door. Whatever adds a unit — boot, a room, the dev console, a simulation —
@@ -20,15 +20,15 @@ const names = () => game.fight.units.map((unit) => unit.name)
 describe('Fight.spawn', () => {
 	// `unitId` too, because a minified build mangles `constructor.name` and nothing else would say so.
 	it('builds the fight from a room, player included', () => {
-		game = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		expect(names()).toEqual(['Tank', 'Player', 'Tiny wolf'])
 		expect(game.fight.units.map((u) => u.unitId)).toEqual(['Tank', 'Player', 'TinyWolf'])
-		expect(game.tank).toBeDefined()
+		expect(game.party[0]).toBeInstanceOf(Tank)
 	})
 
-	it('exposes an absent tank without throwing in a player-only fight', () => {
-		game = new GameLoop({party: [], enemies: []})
-		expect(game.tank).toBeUndefined()
+	it('keeps every tank in a room instead of resolving one special tank', () => {
+		game = new GameLoop({party: ['Tank', 'Tank'], enemies: []})
+		expect(game.party.filter((unit) => unit instanceof Tank)).toHaveLength(2)
 	})
 
 	it('routes a unit to its own faction rather than the caller picking a side', () => {
@@ -99,14 +99,14 @@ describe('death', () => {
 	})
 
 	it('takes the dead out of targeting', async () => {
-		const tankGame = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = tankGame
 		await settle()
 		const wolf = tankGame.enemies[0] as TinyWolf
 		// Let it settle on someone first — a wolf that never picked could not pick a corpse anyway.
 		wolf.targeting.pick('enemy')
 
-		tankGame.tank.health.set(0)
+		tankGame.party[0].health.set(0)
 		await settle()
 
 		expect(eligible(wolf, 'enemy')).toEqual([tankGame.player])
@@ -114,10 +114,10 @@ describe('death', () => {
 	})
 
 	it('stops what the dying unit was doing — its cast, the auras on it', async () => {
-		const tankGame = new TankGameLoop({party: ['Tank'], enemies: []})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: []})
 		game = tankGame
 		await settle()
-		const tank = tankGame.tank
+		const tank = tankGame.party[0]
 
 		new PeriodicAura(tank, tankGame.player)
 		await settle()
@@ -136,20 +136,20 @@ describe('death', () => {
 	})
 
 	it('lets the fallen come back, rather than refilling an inert corpse', async () => {
-		const tankGame = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = tankGame
 		await settle()
 		const wolf = tankGame.enemies[0] as TinyWolf
 
-		tankGame.tank.health.set(0)
+		tankGame.party[0].health.set(0)
 		await settle()
-		expect(eligible(wolf, 'enemy')).not.toContain(tankGame.tank)
+		expect(eligible(wolf, 'enemy')).not.toContain(tankGame.party[0])
 
 		tankGame.perform({type: 'healParty'})
 		await settle()
-		expect(tankGame.tank.alive).toBe(true)
-		expect(tankGame.tank.parent).toBe(tankGame.fight)
-		expect(eligible(wolf, 'enemy')).toContain(tankGame.tank)
+		expect(tankGame.party[0].alive).toBe(true)
+		expect(tankGame.party[0].parent).toBe(tankGame.fight)
+		expect(eligible(wolf, 'enemy')).toContain(tankGame.party[0])
 	})
 })
 

@@ -1,7 +1,8 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {TankGameLoop as GameLoop, TankSimLoop as SimLoop} from '../test-fixtures'
+import {SimLoop} from '../sim/run'
 import {BarrierAura} from './barrier-aura'
+import {GameLoop} from './game-loop'
 import {Shield} from './spells'
 import {applyHit} from './hit'
 import type {Unit} from './unit'
@@ -47,29 +48,29 @@ const bite = (target: Unit, damage: number) =>
 describe('absorbing', () => {
 	it('takes its share off a hit before the health bar moves', async () => {
 		await start()
-		new BarrierAura(game.tank, game.player, planted(20))
+		new BarrierAura(game.party[0], game.player, planted(20))
 		await settle()
 
-		const full = game.tank.health.current
-		bite(game.tank, 50)
+		const full = game.party[0].health.current
+		bite(game.party[0], 50)
 
-		expect(game.tank.health.current).toBe(full - 30)
+		expect(game.party[0].health.current).toBe(full - 30)
 	})
 
 	it('leaves the bar alone when it covers the whole hit, and says so in the log', async () => {
 		await start()
-		new Shield(game.player, game.tank).land()
+		new Shield(game.player, game.party[0]).land()
 		await settle()
 
-		const full = game.tank.health.current
-		bite(game.tank, 30)
+		const full = game.party[0].health.current
+		bite(game.party[0], 30)
 
-		expect(game.tank.health.current).toBe(full)
+		expect(game.party[0].health.current).toBe(full)
 		expect(events('SPELL_ABSORBED')).toHaveLength(1)
 		expect(events('SPELL_ABSORBED')[0]).toMatchObject({
 			// The barrier's caster, never whoever swung: prevention is credited the way healing is.
 			sourceId: game.player.id,
-			targetId: game.tank.id,
+			targetId: game.party[0].id,
 			abilityId: 'Shield',
 			value: 30,
 		})
@@ -77,26 +78,26 @@ describe('absorbing', () => {
 
 	it('spends the pool, lets the remainder land, and is gone', async () => {
 		await start()
-		new BarrierAura(game.tank, game.player, planted(20))
+		new BarrierAura(game.party[0], game.player, planted(20))
 		await settle()
 
-		bite(game.tank, 50)
+		bite(game.party[0], 50)
 
 		expect(events('SPELL_ABSORBED')[0].value).toBe(20)
 		// The damage event reports what got through, not what was swung — same number the health
 		// bar moved by.
 		expect(events('SWING_DAMAGE')[0].value).toBe(30)
-		expect([...game.tank.auras]).toHaveLength(0)
+		expect([...game.party[0].auras]).toHaveLength(0)
 	})
 
 	it('walks barriers oldest first', async () => {
 		await start()
 		// Two casters, or the second would supersede the first rather than join it — see `stackKey`.
-		const first = new BarrierAura(game.tank, game.player, planted(10))
-		const second = new BarrierAura(game.tank, game.tank, planted(10))
+		const first = new BarrierAura(game.party[0], game.player, planted(10))
+		const second = new BarrierAura(game.party[0], game.party[0], planted(10))
 		await settle()
 
-		bite(game.tank, 15)
+		bite(game.party[0], 15)
 
 		expect(first.pool).toBe(0)
 		expect(second.pool).toBe(5)
@@ -104,10 +105,10 @@ describe('absorbing', () => {
 
 	it('reports the pool nobody spent when it falls off', async () => {
 		await start()
-		const barrier = new BarrierAura(game.tank, game.player, planted(100))
+		const barrier = new BarrierAura(game.party[0], game.player, planted(100))
 		await settle()
 
-		bite(game.tank, 30)
+		bite(game.party[0], 30)
 		barrier.disconnect()
 		await settle()
 
@@ -121,11 +122,11 @@ describe('absorbing', () => {
 	 */
 	it('reports the pool nobody spent when a recast replaces it', async () => {
 		await start()
-		new BarrierAura(game.tank, game.player, planted(100))
+		new BarrierAura(game.party[0], game.player, planted(100))
 		await settle()
 
-		bite(game.tank, 30)
-		new BarrierAura(game.tank, game.player, planted(100))
+		bite(game.party[0], 30)
+		new BarrierAura(game.party[0], game.player, planted(100))
 		await settle()
 
 		expect(events('SPELL_AURA_REMOVED')).toHaveLength(0)
@@ -134,14 +135,14 @@ describe('absorbing', () => {
 
 	it('does not supersede a Shield from the same caster', async () => {
 		await start()
-		new Shield(game.player, game.tank).land()
+		new Shield(game.player, game.party[0]).land()
 		await settle()
-		const [shield] = [...game.tank.auras]
+		const [shield] = [...game.party[0].auras]
 
-		new BarrierAura(game.tank, game.player, planted(10))
+		new BarrierAura(game.party[0], game.player, planted(10))
 		await settle()
 
-		expect([...game.tank.auras].map((aura) => aura.id)).toEqual(['Shield', 'Barrier'])
+		expect([...game.party[0].auras].map((aura) => aura.id)).toEqual(['Shield', 'Barrier'])
 		expect(shield.superseded).toBe(false)
 	})
 })
@@ -153,26 +154,26 @@ describe('absorbing', () => {
 describe('a killing blow through a barrier', () => {
 	it('does not kill what the barrier covered', async () => {
 		await start()
-		game.tank.health.set(40)
-		new BarrierAura(game.tank, game.player, planted(100))
+		game.party[0].health.set(40)
+		new BarrierAura(game.party[0], game.player, planted(100))
 		await settle()
 
-		bite(game.tank, 80)
+		bite(game.party[0], 80)
 
-		expect(game.tank.health.current).toBe(40)
-		expect(game.tank.alive).toBe(true)
+		expect(game.party[0].health.current).toBe(40)
+		expect(game.party[0].alive).toBe(true)
 		expect(events('UNIT_DIED')).toHaveLength(0)
 	})
 
 	it('still kills with what the barrier could not cover', async () => {
 		await start()
-		game.tank.health.set(40)
-		new BarrierAura(game.tank, game.player, planted(10))
+		game.party[0].health.set(40)
+		new BarrierAura(game.party[0], game.player, planted(10))
 		await settle()
 
-		bite(game.tank, 80)
+		bite(game.party[0], 80)
 
-		expect(game.tank.alive).toBe(false)
+		expect(game.party[0].alive).toBe(false)
 		expect(events('UNIT_DIED')).toHaveLength(1)
 	})
 })
@@ -185,7 +186,7 @@ it('waits out its lifetime and then falls off', async () => {
 	const sim = new SimLoop(ROOM)
 	await start(sim)
 	// Far more than a wolf can chew through, so what ends this barrier is the clock.
-	const barrier = new BarrierAura(sim.tank, sim.player, planted(100_000))
+	const barrier = new BarrierAura(sim.party[0], sim.player, planted(100_000))
 	await settle()
 
 	const removals = () => events('SPELL_AURA_REMOVED').filter((event) => event.abilityId === 'Barrier')
@@ -194,14 +195,14 @@ it('waits out its lifetime and then falls off', async () => {
 		await settle()
 	}
 	expect(removals()).toHaveLength(0)
-	expect(sim.tank.auras.has(barrier)).toBe(true)
+	expect(sim.party[0].auras.has(barrier)).toBe(true)
 
 	sim.runFrame(BarrierAura.lifetime + 100)
 	await settle()
 
 	expect(removals()).toHaveLength(1)
 	expect(removals()[0].wasted).toBeGreaterThan(0)
-	expect(sim.tank.auras.has(barrier)).toBe(false)
+	expect(sim.party[0].auras.has(barrier)).toBe(false)
 })
 
 /**
@@ -210,13 +211,13 @@ it('waits out its lifetime and then falls off', async () => {
  */
 it('Shield leaves a pool rather than healing', async () => {
 	await start()
-	game.tank.health.set(50)
+	game.party[0].health.set(50)
 
-	new Shield(game.player, game.tank).land()
+	new Shield(game.player, game.party[0]).land()
 	await settle()
 
-	expect(game.tank.health.current).toBe(50)
-	const [barrier] = [...game.tank.auras]
+	expect(game.party[0].health.current).toBe(50)
+	const [barrier] = [...game.party[0].auras]
 	expect(barrier).toBeInstanceOf(BarrierAura)
 	expect((barrier as BarrierAura).pool).toBe(Shield.magnitudesFor(game.player)[0])
 	// Shares the spell's id, so the cast and every absorb report as one ability.

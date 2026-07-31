@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
-import {TankGameLoop as GameLoop} from '../test-fixtures'
+import {GameLoop} from './game-loop'
 import {CONDITION_THRESHOLDS} from './types'
 import {applyHit} from './hit'
 import {combatLogs, clearLogs} from '../combatlog'
@@ -16,7 +16,7 @@ afterEach(() => game.disconnect())
 describe('Unit.condition', () => {
 	const tank = () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		return game.tank
+		return game.party[0]
 	}
 	const at = (max: number, percent: number) => (max * percent) / 100
 
@@ -73,15 +73,15 @@ describe('the condition thresholds are balance numbers', () => {
 	 */
 	it('moves the bands on the fight already in progress', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		game.tank.health.set(game.tank.health.max * 0.5)
+		game.party[0].health.set(game.party[0].health.max * 0.5)
 
-		expect(game.tank.condition).toBe('steady')
+		expect(game.party[0].condition).toBe('steady')
 
 		setBalanceValue('rule', 'Condition', 'injured', 60)
-		expect(game.tank.condition).toBe('injured')
+		expect(game.party[0].condition).toBe('injured')
 
 		resetBalance()
-		expect(game.tank.condition).toBe('steady')
+		expect(game.party[0].condition).toBe('steady')
 	})
 })
 
@@ -101,7 +101,7 @@ describe('UNIT_CONDITION', () => {
 		const hit = (amount: number) =>
 			applyHit({
 				source: wolf,
-				target: game.tank,
+				target: game.party[0],
 				amount,
 				abilityId: 'SavageBite',
 				abilityName: 'Bite',
@@ -109,17 +109,17 @@ describe('UNIT_CONDITION', () => {
 				school: 'physical',
 			})
 
-		hit(-game.tank.health.max * 0.5)
+		hit(-game.party[0].health.max * 0.5)
 		expect(conditions()).toHaveLength(1)
-		expect(conditions()[0]).toMatchObject({condition: 'steady', targetId: game.tank.id, sourceId: wolf.id})
+		expect(conditions()[0]).toMatchObject({condition: 'steady', targetId: game.party[0].id, sourceId: wolf.id})
 		// After its own cause, so the log reads as damage-then-consequence rather than the reverse.
 		expect(combatLogs.at(-2)?.eventType).toBe('SWING_DAMAGE')
 
 		// Still steady: no second event for staying put.
-		hit(-game.tank.health.max * 0.1)
+		hit(-game.party[0].health.max * 0.1)
 		expect(conditions()).toHaveLength(1)
 
-		hit(-game.tank.health.max * 0.2)
+		hit(-game.party[0].health.max * 0.2)
 		expect(conditions()).toHaveLength(2)
 		expect(conditions()[1]).toMatchObject({condition: 'injured'})
 	})
@@ -128,8 +128,8 @@ describe('UNIT_CONDITION', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		applyHit({
 			source: game.enemies[0],
-			target: game.tank,
-			amount: -game.tank.health.max,
+			target: game.party[0],
+			amount: -game.party[0].health.max,
 			abilityId: 'SavageBite',
 			abilityName: 'Bite',
 			eventType: 'SWING_DAMAGE',
@@ -144,9 +144,9 @@ describe('UNIT_CONDITION', () => {
 describe('Resource.ratio', () => {
 	it('is zero rather than NaN when there is no pool at all', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		game.tank.health.max = 0
+		game.party[0].health.max = 0
 
-		expect(game.tank.health.ratio).toBe(0)
-		expect(game.tank.condition).toBe('injured')
+		expect(game.party[0].health.ratio).toBe(0)
+		expect(game.party[0].condition).toBe('injured')
 	})
 })

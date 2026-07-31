@@ -9,7 +9,6 @@ import {
 	type BalanceKind,
 } from './balance'
 import {GameLoop} from './nodes/game-loop'
-import {TankGameLoop} from './test-fixtures'
 import {Renew} from './nodes/spells'
 import {settle} from './test-setup'
 
@@ -70,14 +69,14 @@ describe('applying a tune', () => {
 
 	it('snapshots aura tuning onto the next aura applied', async () => {
 		applyTunes(['aura:Renew.maxStacks=2'])
-		const game = new TankGameLoop({party: ['Tank'], enemies: []})
+		const game = new GameLoop({party: ['Tank'], enemies: []})
 
-		new Renew(game.player, game.tank).land()
+		new Renew(game.player, game.party[0]).land()
 		await settle()
-		new Renew(game.player, game.tank).land()
+		new Renew(game.player, game.party[0]).land()
 		await settle()
 
-		expect([...game.tank.auras].filter((aura) => aura.id === 'Renew')).toHaveLength(2)
+		expect([...game.party[0].auras].filter((aura) => aura.id === 'Renew')).toHaveLength(2)
 		game.disconnect()
 	})
 

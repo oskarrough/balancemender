@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {TankGameLoop as GameLoop} from '../test-fixtures'
+import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {ApplyAura, Damage, Heal} from './effects'
 import {PeriodicAura} from './periodic-aura'
@@ -44,7 +44,7 @@ describe('an ordered list of effects', () => {
 		const wolf = game.enemies[0]
 		const before = wolf.health.current
 
-		new Rebuke(game.tank, wolf).land()
+		new Rebuke(game.party[0], wolf).land()
 		await settle()
 
 		expect(wolf.health.current).toBeLessThan(before)
@@ -63,7 +63,7 @@ describe('an ordered list of effects', () => {
 		const wolf = game.enemies[0]
 		wolf.health.set(4)
 
-		new Rebuke(game.tank, wolf).land()
+		new Rebuke(game.party[0], wolf).land()
 		await settle()
 
 		expect(wolf.alive).toBe(false)
@@ -75,7 +75,7 @@ describe('an ordered list of effects', () => {
 describe('the effects themselves', () => {
 	it('heals by the ability amount, within a few percent', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
-		game.tank.health.set(10)
+		game.party[0].health.set(10)
 
 		class Mend extends Ability {
 			static id = 'TestMend'
@@ -84,9 +84,9 @@ describe('the effects themselves', () => {
 			static school = 'holy' as const
 			static effects = [new Heal(1)]
 		}
-		new Mend(game.player, game.tank).land()
+		new Mend(game.player, game.party[0]).land()
 
-		const healed = game.tank.health.current - 10
+		const healed = game.party[0].health.current - 10
 		expect(healed).toBeGreaterThanOrEqual(95)
 		expect(healed).toBeLessThanOrEqual(105)
 		expect(abilityEvents('TestMend')[0]).toMatchObject({eventType: 'SPELL_HEAL'})
@@ -101,10 +101,10 @@ describe('the effects themselves', () => {
 		const wolf = game.enemies[0]
 		const [bite, wound] = SavageBite.effects
 
-		new SavageBite(wolf, game.tank).land()
+		new SavageBite(wolf, game.party[0]).land()
 		await settle()
 
-		const [bleed] = [...game.tank.auras]
+		const [bleed] = [...game.party[0].auras]
 		expect(bleed).toBeInstanceOf(Rend)
 		expect((bleed as Rend).total).toBe(wound.coefficient! * wolf.stats.attackPower)
 		expect(wound.coefficient).not.toBe(bite.coefficient)

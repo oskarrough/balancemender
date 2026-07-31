@@ -1,8 +1,9 @@
 import {afterEach, beforeEach, describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
 import {combatLogs, clearLogs} from '../combatlog'
-import {TankGameLoop as GameLoop, TankSimLoop as SimLoop} from '../test-fixtures'
+import {SimLoop} from '../sim/run'
 import {Cadence} from './cadence'
+import {GameLoop} from './game-loop'
 import {Nakroth, TinyWolf, WolfShaman} from './enemies'
 import {Mend} from './spells'
 import {QuickStab} from './attack'
@@ -84,14 +85,14 @@ describe('an enemy cast cadence', () => {
 		const [wolf, shaman] = game.enemies
 		shaman.abilities = {...shaman.abilities, QuickStab}
 		wolf.health.set(wolf.health.max / 2)
-		const tankBefore = game.tank.health.current
+		const tankBefore = game.party[0].health.current
 
 		new Cadence(shaman, 'QuickStab').tick()
 		new Cadence(shaman, 'Mend').tick()
 		await settle()
 		shaman.currentAbility?.tick()
 
-		expect(game.tank.health.current).toBeLessThan(tankBefore)
+		expect(game.party[0].health.current).toBeLessThan(tankBefore)
 		expect(wolf.health.current).toBeGreaterThan(wolf.health.max / 2)
 		await settle()
 	})

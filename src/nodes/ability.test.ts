@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
-import {TankGameLoop as GameLoop} from '../test-fixtures'
+import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {abilityRegistry} from './registry'
 import {STAT} from './stats'
@@ -21,13 +21,13 @@ describe('abilities', () => {
 		await settle()
 		const wolf = game.enemies[0]
 		wolf.abilities = {...wolf.abilities, WindUp}
-		const before = game.tank.health.current
+		const before = game.party[0].health.current
 
-		expect(wolf.useAbility('WindUp', game.tank).ok).toBe(true)
+		expect(wolf.useAbility('WindUp', game.party[0]).ok).toBe(true)
 		expect(wolf.currentAbility?.id).toBe('WindUp')
-		const attack = wolf.useAbility('QuickStab', game.tank)
+		const attack = wolf.useAbility('QuickStab', game.party[0])
 		expect(attack.ok).toBe(true)
-		expect(game.tank.health.current).toBeLessThan(before)
+		expect(game.party[0].health.current).toBeLessThan(before)
 		expect(wolf.mana).toBeUndefined()
 		expect(wolf.currentAbility?.id).toBe('WindUp')
 		await settle()
@@ -49,7 +49,7 @@ describe('abilities', () => {
 	it('snapshots power into a use, so a mid-cast buff reaches only the next one', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		await settle()
-		const use = new abilityRegistry.Heal(game.player, game.tank)
+		const use = new abilityRegistry.Heal(game.player, game.party[0])
 		await settle()
 		expect(use.magnitudes).toEqual([80])
 

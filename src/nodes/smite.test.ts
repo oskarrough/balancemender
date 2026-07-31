@@ -2,7 +2,6 @@ import {afterEach, beforeEach, describe, expect, it} from 'vitest'
 import {combatLogs, clearLogs} from '../combatlog'
 import {settle} from '../test-setup'
 import {SimLoop} from '../sim/run'
-import {TankGameLoop, TankSimLoop} from '../test-fixtures'
 import {smite as smiteBot} from './bot'
 import {GameLoop} from './game-loop'
 import {Smite} from './spells'
@@ -46,10 +45,10 @@ describe('Smite', () => {
 	})
 
 	it('refuses ally targets', () => {
-		const tankGame = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = tankGame
 
-		expect(tankGame.perform({type: 'use', ability: 'Smite', target: tankGame.tank.id})).toEqual({
+		expect(tankGame.perform({type: 'use', ability: 'Smite', target: tankGame.party[0].id})).toEqual({
 			ok: false,
 			error: `Can't use that ability on this target`,
 		})
@@ -57,26 +56,26 @@ describe('Smite', () => {
 	})
 
 	it('uses the same damage ability when an enemy owns it', async () => {
-		const sim = new TankSimLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = sim
 		await settle()
 		clearLogs()
 		const wolf = sim.enemies[0]
 		wolf.setBaseStat(STAT.INTELLECT, 40)
 		wolf.abilities = {Smite}
-		const healthBefore = sim.tank.health.current
+		const healthBefore = sim.party[0].health.current
 
-		expect(wolf.useAbility('Smite', sim.tank).ok).toBe(true)
+		expect(wolf.useAbility('Smite', sim.party[0]).ok).toBe(true)
 		await settle()
 		sim.runFrame(0)
 		sim.runFrame(1500)
 		await settle()
 
-		expect(sim.tank.health.current).toBeLessThan(healthBefore)
+		expect(sim.party[0].health.current).toBeLessThan(healthBefore)
 		expect(combatLogs.find((event) => event.abilityId === 'Smite' && event.eventType === 'SPELL_DAMAGE')).toMatchObject(
 			{
 				sourceId: wolf.id,
-				targetId: sim.tank.id,
+				targetId: sim.party[0].id,
 			},
 		)
 	})
@@ -84,24 +83,24 @@ describe('Smite', () => {
 
 describe('smite bot', () => {
 	it('heals a hurt ally before damaging an enemy', () => {
-		const tankGame = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = tankGame
-		tankGame.tank.health.set(tankGame.tank.health.max / 2)
+		tankGame.party[0].health.set(tankGame.party[0].health.max / 2)
 
-		expect(smiteBot(tankGame.player)).toMatchObject({ability: 'GreaterHeal', target: tankGame.tank})
+		expect(smiteBot(tankGame.player)).toMatchObject({ability: 'GreaterHeal', target: tankGame.party[0]})
 	})
 
 	it('does not attack when an ally needs healing but no heal is castable', () => {
-		const tankGame = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = tankGame
-		tankGame.tank.health.set(tankGame.tank.health.max * 0.9)
+		tankGame.party[0].health.set(tankGame.party[0].health.max * 0.9)
 		tankGame.player.mana.set(40)
 
 		expect(smiteBot(tankGame.player)).toBeUndefined()
 	})
 
 	it('focuses the living enemy with lowest health ratio, then absolute health', () => {
-		game = new TankGameLoop({party: ['Tank'], enemies: ['TinyWolf', 'Nakroth']})
+		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'Nakroth']})
 		const [wolf, nakroth] = game.enemies
 		wolf.health.set(wolf.health.max / 2)
 		nakroth.health.set(nakroth.health.max / 2)

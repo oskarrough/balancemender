@@ -1,7 +1,8 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {settle} from '../test-setup'
-import {TankGameLoop as GameLoop, TankSimLoop as SimLoop} from '../test-fixtures'
+import {SimLoop} from '../sim/run'
 import type {Aura} from './aura'
+import {GameLoop} from './game-loop'
 import {PeriodicAura} from './periodic-aura'
 import {SavageBite} from './attack'
 import {Renew} from './spells'
@@ -28,14 +29,14 @@ describe('stack rule', () => {
 	it('replaces rather than stacks by default, so a recast refreshes', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 
-		new Renew(game.player, game.tank).land()
+		new Renew(game.player, game.party[0]).land()
 		await settle()
-		const first = aurasNamed(game.tank, 'Renew')[0]
+		const first = aurasNamed(game.party[0], 'Renew')[0]
 		first.tick()
 
-		new Renew(game.player, game.tank).land()
+		new Renew(game.player, game.party[0]).land()
 		await settle()
-		const after = aurasNamed(game.tank, 'Renew')
+		const after = aurasNamed(game.party[0], 'Renew')
 
 		expect(after).toHaveLength(1)
 		expect(after[0]).not.toBe(first)
@@ -53,11 +54,11 @@ describe('stack rule', () => {
 
 		const applied = []
 		for (let i = 0; i < 4; i++) {
-			applied.push(new Lifebloom(game.tank, game.player))
+			applied.push(new Lifebloom(game.party[0], game.player))
 			await settle()
 		}
 
-		const stacks = aurasNamed(game.tank, 'Lifebloom')
+		const stacks = aurasNamed(game.party[0], 'Lifebloom')
 		expect(stacks).toHaveLength(3)
 		expect(stacks).toEqual(applied.slice(1))
 		expect(applied[0].superseded).toBe(true)
@@ -66,23 +67,23 @@ describe('stack rule', () => {
 	it('counts casters separately, so two healers can each keep one up', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 
-		new PeriodicAura(game.tank, game.player, planted(50))
-		new PeriodicAura(game.tank, game.tank, planted(50))
+		new PeriodicAura(game.party[0], game.player, planted(50))
+		new PeriodicAura(game.party[0], game.party[0], planted(50))
 		await settle()
 
-		expect(aurasNamed(game.tank, 'Periodic')).toHaveLength(2)
+		expect(aurasNamed(game.party[0], 'Periodic')).toHaveLength(2)
 	})
 
 	it('logs a refresh instead of a removal, so the log never says an aura it still has fell off', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 
-		new Renew(game.player, game.tank).land()
+		new Renew(game.player, game.party[0]).land()
 		await settle()
-		new Renew(game.player, game.tank).land()
+		new Renew(game.player, game.party[0]).land()
 		await settle()
 
 		expect(auraEvents('Renew').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
-		expect(auraEvents('Renew')[0]).toMatchObject({sourceId: game.player.id, targetId: game.tank.id})
+		expect(auraEvents('Renew')[0]).toMatchObject({sourceId: game.player.id, targetId: game.party[0].id})
 	})
 
 	it('says how many are up once there is more than one', async () => {
@@ -94,9 +95,9 @@ describe('stack rule', () => {
 			static total = 10
 			static maxStacks = 5
 		}
-		new Sunder(game.tank, game.player)
+		new Sunder(game.party[0], game.player)
 		await settle()
-		new Sunder(game.tank, game.player)
+		new Sunder(game.party[0], game.player)
 		await settle()
 
 		expect(auraEvents('Sunder').map((event) => event.extraInfo)).toEqual([undefined, '2 stacks'])
@@ -116,7 +117,7 @@ describe('tick timing', () => {
 		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = sim
 		await settle()
-		new PatientAura(game.tank, game.player)
+		new PatientAura(game.party[0], game.player)
 		await settle()
 		const ticks = () => combatLogs.filter((event) => event.abilityId === 'PatientAura' && 'value' in event)
 
@@ -133,10 +134,10 @@ describe('tick timing', () => {
 describe('cast attribution', () => {
 	it('stamps every tick with the castId of the use that planted it', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		const renew = new Renew(game.player, game.tank)
+		const renew = new Renew(game.player, game.party[0])
 		renew.land()
 		await settle()
-		aurasNamed(game.tank, 'Renew')[0].tick()
+		aurasNamed(game.party[0], 'Renew')[0].tick()
 
 		const tick = combatLogs.find((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
 		expect(renew.castId).toBeTruthy()
@@ -148,12 +149,12 @@ describe('the wolf bleed', () => {
 	it('opens a wound that later bites refresh rather than stack', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
-		new SavageBite(wolf, game.tank).executeNow()
+		new SavageBite(wolf, game.party[0]).executeNow()
 		await settle()
-		new SavageBite(wolf, game.tank).executeNow()
+		new SavageBite(wolf, game.party[0]).executeNow()
 		await settle()
 
-		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(1)
+		expect(aurasNamed(game.party[0], 'Rend')).toHaveLength(1)
 		expect(auraEvents('Rend').map((event) => event.eventType)).toEqual(['SPELL_AURA_APPLIED', 'SPELL_AURA_REFRESH'])
 	})
 
@@ -164,11 +165,11 @@ describe('the wolf bleed', () => {
 	it('does not wound a target the same bite just killed', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		const wolf = game.enemies[0]
-		game.tank.health.set(1)
-		new SavageBite(wolf, game.tank).executeNow()
+		game.party[0].health.set(1)
+		new SavageBite(wolf, game.party[0]).executeNow()
 		await settle()
 
-		expect(game.tank.alive).toBe(false)
-		expect(aurasNamed(game.tank, 'Rend')).toHaveLength(0)
+		expect(game.party[0].alive).toBe(false)
+		expect(aurasNamed(game.party[0], 'Rend')).toHaveLength(0)
 	})
 })
