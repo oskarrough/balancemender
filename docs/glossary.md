@@ -86,10 +86,11 @@ checks only when one of its cadences asks for another target, never every frame.
 **Selected** and **intended target** — the player targets by hand. Selected is the unit they
 clicked, `Player.selectedTarget` — UI state no other driver reads or writes, so clicking a frame
 never moves anyone else's aim. Intended is who a keypress would land on: the selected target, or the
-tank while nothing is selected — `Player.intendedTarget`; the unit frames tick it, the action bar
-greys itself out against it, `{type: 'use'}` falls back to it. Deliberately not a `Preference`: a
-human choosing is input, not policy. Every other driver asks `Targeting.pick()`, and in the sim a
-bot's preference stands in for the hand.
+first living ally with tanks preferred while nothing is selected — `Player.intendedTarget`; the
+unit frames tick it, the action bar greys itself out against it, `{type: 'use'}` falls back to it.
+The hand-picked target is deliberately not a `Preference`: a human choosing is input, not policy.
+Only its automatic fallback reuses `prefer.tankFirst`. Every other driver asks `Targeting.pick()`,
+and in the sim a bot's preference stands in for the hand.
 
 ## Doing things
 

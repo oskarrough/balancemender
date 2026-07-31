@@ -1,6 +1,5 @@
 import {Node} from '../vroum'
 import {Player} from './player'
-import {Tank} from './party-units'
 import {unitRegistry, UnitId} from './unit-registry'
 import {FACTION} from './types'
 import type {GameLoop} from './game-loop'
@@ -32,15 +31,13 @@ export const DEMO_ROOM: Room = {party: ['Tank'], enemies: ['TinyWolf']}
  * Everything that adds a unit — boot, the dev console, the Balance Lab, a simulation,
  * a test — goes through `spawn()`. There is deliberately no second way to do it.
  *
- * `player` and `tank` are resolved once and read directly thereafter — the UI hits
- * them every render, so a per-access `find()` was wasteful.
+ * `player` is the one fixed role in a fight. Other party roles are expressed through unit classes
+ * and targeting preferences, so a room may contain any number of them.
  */
 export class Fight extends Node {
 	party: Unit[] = []
 	enemies: Unit[] = []
 	player!: Player
-	/** Undefined in a room without one — the first room of a dungeon is the player alone. */
-	tank?: Tank
 
 	constructor(
 		public parent: GameLoop,
@@ -51,7 +48,6 @@ export class Fight extends Node {
 		this.player = this.spawn('Player') as Player
 		this.player.selectedTarget = this.player
 		for (const id of room.enemies ?? []) this.spawn(id)
-		this.tank = this.party.find((unit): unit is Tank => unit instanceof Tank)
 	}
 
 	/** Everyone in the fight, both sides. The dead included — see `onDeath`. */

@@ -2,6 +2,8 @@ import {Unit} from './unit'
 import {FACTION} from './types'
 import {Mana} from './mana'
 import {playerAbilities} from './registry'
+import {eligible} from './targets'
+import {prefer} from './targeting'
 import type {AbilityClass} from './ability'
 import type {Fight} from './fight'
 
@@ -30,12 +32,12 @@ export class Player extends Unit {
 	selectedTarget?: Unit
 
 	/**
-	 * Who a keypress would land on right now — what is selected, or the tank while nothing is. The
-	 * healer always has a fallback so that a deselected player is not left unable to act.
+	 * Who a keypress would land on right now — what is selected, or the first living ally with tanks
+	 * preferred. The healer always has a fallback so that a deselected player is not left unable to
+	 * act, without making one tank a special property of the fight.
 	 */
 	get intendedTarget(): Unit | undefined {
 		if (this.selectedTarget?.alive) return this.selectedTarget
-		const tank = this.parent.tank
-		return tank?.alive ? tank : undefined
+		return prefer.tankFirst.prefers(eligible(this, 'ally'))
 	}
 }

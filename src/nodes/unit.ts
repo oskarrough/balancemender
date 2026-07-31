@@ -158,7 +158,7 @@ export class Unit extends Node {
 	 * Dying is the fight's business, not the unit's. This used to call `this.disconnect()`,
 	 * which left the corpse half in and half out: vroum's teardown nulls `parent`, but the unit
 	 * stayed in `fight.party`, so anything that walked that array and reached back up the
-	 * tree — `Player.intendedTarget` reads `this.parent.tank` — threw from the first death onwards.
+	 * tree — including `Player.intendedTarget` — threw from the first death onwards.
 	 */
 	private onHealthEmpty = () => {
 		log(`${this.name} is dead`)

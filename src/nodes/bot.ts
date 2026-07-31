@@ -109,12 +109,13 @@ export const panic: Bot = (player) => {
 	return undefined
 }
 
-/** Shield the tank when they have none, else heal as `triage`. Exercises absorption in a sweep (#47). */
+/** Shield a tank that has none, else heal as `triage`. Exercises absorption in a sweep (#47). */
 export const shield: Bot = (player) => {
-	const tank = player.parent.party.find((member) => member.alive && member instanceof Tank)
-	if (tank && !hasAura(tank, 'Shield') && castable(player, 'Shield', tank)) {
-		return {ability: 'Shield', target: tank}
-	}
+	const tank = player.parent.party.find(
+		(member) =>
+			member.alive && member instanceof Tank && !hasAura(member, 'Shield') && castable(player, 'Shield', member),
+	)
+	if (tank) return {ability: 'Shield', target: tank}
 	return triage(player)
 }
 

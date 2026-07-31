@@ -1,7 +1,6 @@
 import {Loop} from '../vroum'
 import {log, logger} from '../utils'
 import type {Player} from './player'
-import type {Tank} from './party-units'
 import {AudioPlayer} from './audio'
 import {Fight, DEMO_ROOM, Room} from './fight'
 import {playerAbilities} from './registry'
@@ -162,11 +161,6 @@ export class GameLoop extends Loop {
 
 	get player(): Player {
 		return this.fight.player
-	}
-
-	/** The active fight's tank, if its room has one. */
-	get tank(): Tank | undefined {
-		return this.fight.tank
 	}
 
 	mount() {
