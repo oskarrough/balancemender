@@ -35,6 +35,16 @@
 	background-color: var(--clv-item-bg);
 }
 
+.CombatLogViewer-viewing {
+	align-self: center;
+	font-style: italic;
+	opacity: 0.6;
+}
+
+.CombatLogViewer-item[data-seeked] {
+	background-color: color-mix(in oklch, var(--c-chrome-yellow), transparent 70%);
+}
+
 .CombatLogViewer time {
 	color: var(--clv-timestamp);
 	min-width: 10ch;

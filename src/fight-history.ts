@@ -77,6 +77,23 @@ export function listFights(): StoredFightMeta[] {
 		.sort((a, b) => b.timestamp - a.timestamp)
 }
 
+/**
+ * Which fight the panels are looking at — a stored fight, or `undefined` for the live one.
+ * Lives here rather than in any one panel so the Fight report and the Combat log viewer always
+ * agree on what a scrub or a seek refers to. Cached on selection: `getFight` parses the whole
+ * event log back out of the store, too much to repeat on every render.
+ */
+let viewed: StoredFight | undefined
+
+export function viewFight(id: string | null): void {
+	viewed = id ? getFight(id) : undefined
+	notify()
+}
+
+export function viewedFight(): StoredFight | undefined {
+	return viewed
+}
+
 export function getFight(id: string): StoredFight | undefined {
 	if (!store.hasRow(TABLE, id)) return undefined
 	return {

@@ -36,6 +36,8 @@ export function Meter({value, max, type, potentialValue = 0, absorbValue = 0, ab
 		potentialValue = potentialValue - (potentialValue / ability.repeat) * ability._cycles
 	}
 
+	const label = type === 'cast' ? `${(value / 1000).toFixed(1)}s` : `${Math.round(value)}/${max}`
+
 	return html` <div class="Bar" data-type=${type}>
 		<div class="Bar-value" style=${`width: ${percent}%`}></div>
 		${absorbPercent > 0
@@ -51,6 +53,6 @@ export function Meter({value, max, type, potentialValue = 0, absorbValue = 0, ab
 		${sweetSpotWindow
 			? html`<div class="Bar-sweetSpot" style=${`width: ${toPercent(sweetSpotWindow, max)}%`}></div>`
 			: null}
-		<span>${Math.round(value)}/${max}</span>
+		<span>${label}</span>
 	</div>`
 }

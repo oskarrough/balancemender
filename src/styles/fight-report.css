@@ -90,6 +90,56 @@
 	}
 }
 
+.FightReport-scrub {
+	display: grid;
+	grid-template-columns: 8rem 1fr 4rem;
+	align-items: center;
+	gap: 0.4rem;
+
+	& input {
+		width: 100%;
+		margin: 0;
+		accent-color: var(--c-marine-blue);
+	}
+}
+
+.FightReport-cursor {
+	stroke: var(--c-black);
+	stroke-width: 1;
+	opacity: 0.5;
+	vector-effect: non-scaling-stroke;
+}
+
+.FightReport-death {
+	stroke: var(--c-black);
+	stroke-width: 3;
+	opacity: 0.5;
+	vector-effect: non-scaling-stroke;
+}
+
+.FightReport-graphWrap {
+	display: block;
+
+	&[data-scrubbable='true'] {
+		cursor: crosshair;
+		touch-action: none;
+	}
+
+	& svg {
+		display: block;
+	}
+}
+
+.FightReport-castLink {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	text-decoration: underline dotted;
+}
+
 .FightReport-table {
 	width: 100%;
 	border-collapse: collapse;

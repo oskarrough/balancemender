@@ -1,6 +1,7 @@
 import {html, render} from 'uhtml'
 import {formatTimestamp} from '../utils'
-import {CombatLogEvent, combatEvents, combatLogs, getCombatLogs, CombatEventType} from '../combatlog'
+import {CombatLogEvent, combatEvents, combatLogs, CombatEventType} from '../combatlog'
+import {viewedFight, fightHistoryEvents} from '../fight-history'
 import '../components/floating-view.js'
 
 /** The types we allow filtering for in the UI */
@@ -61,26 +62,41 @@ function formatLogEntry(event: CombatLogEvent): string {
 				: ''
 	const amount = event.value !== undefined ? (amountWord ? ` ${amountWord} ${event.value}` : ` ${event.value}`) : ''
 	const extra = event.extraInfo ? ` (${event.extraInfo})` : ''
-	const aoe = event.isAOE ? ' [AOE]' : ''
-	return `${source}${spell}${target}${amount}${extra}${aoe}`
+	return `${source}${spell}${target}${amount}${extra}`
 }
 
 export class CombatLogViewer extends HTMLElement {
 	private currentFilter: CombatEventType | null = null
 	private searchTerm = ''
-	private handleLogUpdate = () => this.render()
+	/** Live events don't touch a stored fight's view — skip the redraw while one is up. */
+	private handleLogUpdate = () => !viewedFight() && this.render()
+	private handleHistoryChange = () => this.render()
+	/** Fight time the report's scrub cursor points at — the nearest event gets highlighted. */
+	private seekTime: number | null = null
+	private handleSeek = (event: Event) => {
+		this.seekTime = (event as CustomEvent<number>).detail
+		this.render()
+		this.querySelector('[data-seeked]')?.scrollIntoView({block: 'center'})
+	}
 
 	connectedCallback() {
 		combatEvents.addEventListener('combatlog-update', this.handleLogUpdate)
+		combatEvents.addEventListener('combatlog-seek', this.handleSeek)
+		fightHistoryEvents.addEventListener('change', this.handleHistoryChange)
 		this.render()
 	}
 
 	disconnectedCallback() {
 		combatEvents.removeEventListener('combatlog-update', this.handleLogUpdate)
+		combatEvents.removeEventListener('combatlog-seek', this.handleSeek)
+		fightHistoryEvents.removeEventListener('change', this.handleHistoryChange)
 	}
 
 	private getFilteredLogs(): CombatLogEvent[] {
-		let filtered = this.currentFilter ? getCombatLogs(this.currentFilter) : [...combatLogs]
+		// A stored fight selected in the Fight report replaces the live log wholesale. Copied
+		// before sorting — the stored events are a cached array someone else reads too.
+		let filtered = [...(viewedFight()?.events ?? combatLogs)]
+		if (this.currentFilter) filtered = filtered.filter((log) => log.eventType === this.currentFilter)
 		if (this.searchTerm) {
 			const term = this.searchTerm.toLowerCase()
 			filtered = filtered.filter(
@@ -88,6 +104,7 @@ export class CombatLogViewer extends HTMLElement {
 					log.sourceName?.toLowerCase().includes(term) ||
 					log.targetName?.toLowerCase().includes(term) ||
 					log.abilityName?.toLowerCase().includes(term) ||
+					log.castId?.toLowerCase().includes(term) ||
 					log.extraInfo?.toLowerCase().includes(term),
 			)
 		}
@@ -106,6 +123,7 @@ export class CombatLogViewer extends HTMLElement {
 
 	render() {
 		const filteredLogs = this.getFilteredLogs()
+		const seeked = this.seekTime === null ? null : nearest(filteredLogs, this.seekTime)
 		const tpl = html`
 			<div class="CombatLogViewer">
 				<div class="CombatLogViewer-controls">
@@ -132,6 +150,7 @@ export class CombatLogViewer extends HTMLElement {
 							oninput=${this.handleSearch}
 						/>
 					</menu>
+					${viewedFight() ? html`<span class="CombatLogViewer-viewing">past fight</span>` : ''}
 				</div>
 				<div class="CombatLogViewer-content">
 					${filteredLogs.length > 0
@@ -139,7 +158,7 @@ export class CombatLogViewer extends HTMLElement {
 								<ul class="CombatLogViewer-list">
 									${filteredLogs.map(
 										(log) => html`
-											<li class="CombatLogViewer-item" data-event-type=${log.eventType}>
+											<li class="CombatLogViewer-item" data-event-type=${log.eventType} ?data-seeked=${log === seeked}>
 												<time>${formatTimestamp(log.timestamp)}</time>
 												<span class="CombatLogViewer-eventType">${log.eventType}</span>
 												<span class="CombatLogViewer-message"> ${formatLogEntry(log)} </span>
@@ -154,6 +173,16 @@ export class CombatLogViewer extends HTMLElement {
 		`
 		render(this, () => tpl)
 	}
+}
+
+/** The event closest in fight time to the seeked moment — where the report's cursor points. */
+function nearest(logs: CombatLogEvent[], time: number) {
+	let best: CombatLogEvent | null = null
+	for (const log of logs) {
+		if (log.time === undefined) continue
+		if (!best || Math.abs(log.time - time) < Math.abs((best.time ?? 0) - time)) best = log
+	}
+	return best
 }
 
 customElements.define('combat-log-viewer', CombatLogViewer)
