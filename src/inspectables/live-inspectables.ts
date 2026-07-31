@@ -1,6 +1,5 @@
 import type {GameAction} from '../actions'
 import type {GameLoop} from '../nodes/game-loop'
-import {MANA_PER_INTELLECT, STAT} from '../nodes/stats'
 import {FACTION} from '../nodes/types'
 import type {Unit} from '../nodes/unit'
 import type {Action, BooleanField, Inspectable, InspectableSection, NumberField} from './contracts'
@@ -15,34 +14,19 @@ type Pool = {current: number; max: number; set(value: number): number}
 /** A unit already in the fight: its bars written straight to, and the buttons that end it. */
 function liveInspectable(game: GameLoop, unit: Unit): Inspectable {
 	const {health, mana} = unit
-	const poolFields = (key: string, label: string, pool: Pool, setMax: (value: number) => void): NumberField[] => [
-		{
-			kind: 'number',
-			key,
-			label,
-			get: () => pool.current,
-			set: (value) => {
-				pool.set(value)
-			},
-			min: 0,
+	// Only what the bar currently holds. A maximum is not a dial: `maxHealth` *is* stamina and
+	// `maxMana` is intellect times a constant, so typing one only works out what stat would have
+	// produced it. Tune the stat.
+	const poolField = (key: string, label: string, pool: Pool): NumberField => ({
+		kind: 'number',
+		key,
+		label,
+		get: () => pool.current,
+		set: (value) => {
+			pool.set(value)
 		},
-		{
-			kind: 'number',
-			key: `${key}Max`,
-			label: `Max ${label.toLowerCase()}`,
-			get: () => pool.max,
-			set: setMax,
-			min: 1,
-		},
-	]
-	const setHealthMax = (value: number) => {
-		const base = unit.stats.base(STAT.STAMINA)
-		unit.setBaseStat(STAT.STAMINA, base + value - unit.stats.stamina)
-	}
-	const setManaMax = (value: number) => {
-		const base = unit.stats.base(STAT.INTELLECT)
-		unit.setBaseStat(STAT.INTELLECT, base + value / MANA_PER_INTELLECT - unit.stats.intellect)
-	}
+		min: 0,
+	})
 
 	const actions: Action[] = [
 		{
@@ -75,10 +59,7 @@ function liveInspectable(game: GameLoop, unit: Unit): Inspectable {
 		kind: 'live',
 		title: unit.name || unit.unitId || '?',
 		subtitle: `${unit.faction} · ${unit.unitId}`,
-		fields: [
-			...poolFields('hp', 'Health', health, setHealthMax),
-			...(mana ? poolFields('mana', 'Mana', mana, setManaMax) : []),
-		],
+		fields: [poolField('hp', 'Health', health), ...(mana ? [poolField('mana', 'Mana', mana)] : [])],
 		actions,
 	}
 }
