@@ -2,6 +2,7 @@ import {log} from './utils'
 import {setBalanceValue, resetBalance, AbilityKey, EffectKey, CadenceKey, AuraKey, UnitKey, RuleKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
+import {FACTION, type Faction} from './nodes/types'
 import type {Room} from './nodes/fight'
 // Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
 import {dungeonRegistry} from './nodes/dungeon'
@@ -22,8 +23,8 @@ export type GameAction =
 	| {type: 'spawn'; unit: UnitId}
 	/** Take a unit out of the fight, by unit id. */
 	| {type: 'remove'; unit: string}
-	/** Select a unit id. Player UI state — it moves nobody else's aim. */
-	| {type: 'target'; unit: string}
+	/** Select a unit id, or nothing to clear it. Player UI state — it moves nobody else's aim. */
+	| {type: 'target'; unit?: string}
 	/** Use one of the player's abilities on a named unit, or on whatever the player has selected.
 	 * Casting is one way an ability runs, not a second action. */
 	| {type: 'use'; ability: string; target?: string}
@@ -39,6 +40,10 @@ export type GameAction =
 	| {type: 'tune'; of: 'rule'; name: string; key: RuleKey; value: number}
 	| {type: 'resetBalance'}
 	| {type: 'healParty'}
+	/** Put a unit in the ground, by unit id. */
+	| {type: 'kill'; unit: string}
+	/** Kill everyone on one side, ending the fight the way it would have ended anyway. */
+	| {type: 'wipe'; faction: Faction}
 	/** Walk into a room outside any dungeon — a one-off fight. */
 	| {type: 'enter'; room: Room}
 	/** Start a dungeon from its first room, by dungeon id. */
@@ -47,6 +52,9 @@ export type GameAction =
 	| {type: 'nextRoom'}
 	/** Replay the fight you are in. */
 	| {type: 'restart'}
+	/** Run the fight clock or stop it. The pause a player took is part of how the fight went, so
+	 * it lands in the combat log. */
+	| {type: 'running'; value: boolean}
 	| {type: 'set'; key: 'godMode' | 'infiniteMana' | 'muted'; value: boolean}
 	| {type: 'set'; key: 'gcd'; value: number}
 
@@ -69,6 +77,10 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			return game.fight.remove(action.unit) ? ok(action.unit) : fail(`No unit with id ${action.unit}`)
 
 		case 'target': {
+			if (!action.unit) {
+				game.player.selectedTarget = undefined
+				return ok(undefined)
+			}
 			const unit = findUnit(game, action.unit)
 			if (!unit) return fail(`No unit with id ${action.unit}`)
 			game.player.selectedTarget = unit
@@ -101,6 +113,22 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			for (const member of game.party) member.health.set(member.health.max)
 			return ok(undefined)
 
+		case 'kill': {
+			const unit = findUnit(game, action.unit)
+			if (!unit) return fail(`No unit with id ${action.unit}`)
+			if (protectedByGodMode(game, unit)) return fail('God mode is on — nothing in the party can die')
+			kill(game, unit)
+			return ok(unit)
+		}
+
+		case 'wipe': {
+			const doomed = game.fight.units.filter((unit) => unit.faction === action.faction)
+			if (doomed.some((unit) => protectedByGodMode(game, unit)))
+				return fail('God mode is on — nothing in the party can die')
+			for (const unit of doomed) kill(game, unit)
+			return ok(undefined)
+		}
+
 		case 'enter':
 			// Walking into an arbitrary room steps off the dungeon.
 			game.dungeonRun = undefined
@@ -132,6 +160,14 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			game.enter(game.fight.room)
 			return ok(undefined)
 
+		case 'running': {
+			if (game.running === action.value) return fail(`Already ${action.value ? 'running' : 'paused'}`)
+			if (action.value) game.play()
+			else game.pause()
+			game.combatLog.add({timestamp: Date.now(), eventType: action.value ? 'GAME_RESUME' : 'GAME_PAUSE'})
+			return ok(action.value)
+		}
+
 		case 'set':
 			game[action.key] = action.value as never
 			if (action.key === 'infiniteMana' && action.value && game.player.mana) {
@@ -142,6 +178,27 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 }
 
 const findUnit = (game: GameLoop, id: string): Unit | undefined => game.fight.units.find((unit) => unit.id === id)
+
+/** God mode is the party's, so it is what a party unit cannot be killed past. */
+const protectedByGodMode = (game: GameLoop, unit: Unit) => game.godMode && unit.faction === FACTION.PARTY
+
+/**
+ * The one death that does not come from a hit. Deliberately not through `applyHit()`: damage big
+ * enough to kill would be counted as damage, and a wipe would flatter whoever it was credited to
+ * in every number the report prints. So the bar goes to zero and only the death is logged.
+ */
+function kill(game: GameLoop, unit: Unit) {
+	if (!unit.alive) return
+	unit.health.set(0)
+	game.combatLog.add({
+		timestamp: Date.now(),
+		eventType: 'UNIT_DIED',
+		sourceId: unit.id,
+		sourceName: unit.name,
+		targetId: unit.id,
+		targetName: unit.name,
+	})
+}
 
 /**
  * A retuned unit type applies to the ones already fighting, matched by `unitId` — never by

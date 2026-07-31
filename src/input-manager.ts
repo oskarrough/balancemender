@@ -20,19 +20,13 @@ export class InputManager {
 		}
 
 		if (event.key === 'Escape') {
-			this.game.player.selectedTarget = undefined
+			this.game.perform({type: 'target'})
 			this.closeConsole()
 		}
 	}
 
 	togglePlayPause() {
-		if (this.game.running) {
-			this.game.pause()
-			this.game.combatLog.add({timestamp: Date.now(), eventType: 'GAME_PAUSE'})
-		} else {
-			this.game.play()
-			this.game.combatLog.add({timestamp: Date.now(), eventType: 'GAME_RESUME'})
-		}
+		this.game.perform({type: 'running', value: !this.game.running})
 	}
 
 	toggleConsole() {

@@ -58,6 +58,9 @@ only land where DOM focus is. Batch `eval` mangles quoted strings, so run `agent
 its own invocation. The dev panels start minimized — `dblclick floating-view>header` opens the first
 one (Balance Lab).
 
+To reach the game over panel, end the fight on demand — `{type: 'wipe', faction: 'enemy'}` for the
+victory side, `'party'` for defeat. Also two buttons in the Balance Lab.
+
 To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored, self-contained,
 loading real assets by URL) with several variants in one file on a keypress switcher, and one of them
 a recreation of the current UI as the control. Screenshot them and compare.

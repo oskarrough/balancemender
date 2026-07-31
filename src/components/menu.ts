@@ -7,7 +7,7 @@ export function Menu(game: GameLoop) {
 	// The checkbox reads "Sound", so it is checked when the game is *not* muted.
 	const toggleMuted = (event: Event) => {
 		const checkbox = event.target as HTMLInputElement
-		game.muted = !checkbox.checked
+		game.perform({type: 'set', key: 'muted', value: !checkbox.checked})
 		log(`menu: sound is now ${game.muted ? 'off' : 'on'}`)
 	}
 
@@ -19,8 +19,7 @@ export function Menu(game: GameLoop) {
 
 	// Pausing stops the frames that would repaint this menu, so repaint it by hand.
 	const toggleRunning = () => {
-		if (game.running) game.pause()
-		else game.play()
+		game.perform({type: 'running', value: !game.running})
 		game.render()
 	}
 
