@@ -116,15 +116,15 @@ export class FightReportView extends HTMLElement {
 						${completed && report.duration > 0 ? this.scrubber(report) : ''}
 					</ul>
 
-					<table class="FightReport-table">
+					<table class="FightReport-table" style="--columns: 8">
 						<thead>
 							<tr>
 								<th>unit</th>
+								<th>casts</th>
 								<th>dmg</th>
 								<th>heal</th>
 								<th>overheal</th>
 								<th>taken</th>
-								<th>casts</th>
 								<th>mana</th>
 								<th>busy</th>
 								<th>hurt</th>
@@ -135,11 +135,11 @@ export class FightReportView extends HTMLElement {
 								(unit) => html`
 									<tr>
 										<td>${unit.name}</td>
+										<td>${unit.casts}</td>
 										<td>${unit.damageDone}</td>
 										<td>${unit.healingDone}</td>
 										<td>${percent(unit.overhealing, unit.healingDone + unit.overhealing)}</td>
 										<td>${unit.damageTaken}</td>
-										<td>${unit.casts}</td>
 										<td>${unit.manaSpent}</td>
 										<!-- Share of the fight spent committed to a cast or its global cooldown. -->
 										<td>${percent(unit.busyTime, report.duration)}</td>
@@ -153,7 +153,7 @@ export class FightReportView extends HTMLElement {
 
 					${report.abilities.length
 						? html`
-								<table class="FightReport-table">
+								<table class="FightReport-table" style="--columns: 5">
 									<thead>
 										<tr>
 											<th>ability</th>

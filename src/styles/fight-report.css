@@ -4,6 +4,8 @@
 	gap: 0.4rem;
 	padding: 0.3rem;
 	font-size: 0.8rem;
+	/* The tables keep their width, so a narrow panel scrolls instead of squeezing them. */
+	overflow-x: auto;
 }
 
 .FightReport-summary {
@@ -140,10 +142,29 @@
 	text-decoration: underline dotted;
 }
 
+/* One column grid for every table here, so `casts` lands under `casts`. The width comes from
+   `--columns` rather than the container: a table left to fit moves its columns when the panel
+   is narrow, and stops lining up with the shorter table beside it. */
 .FightReport-table {
-	width: 100%;
+	--name-column: 12ch;
+	--number-column: 8ch;
+	width: calc(var(--name-column) + var(--columns) * var(--number-column));
+	table-layout: fixed;
 	border-collapse: collapse;
 	font-variant-numeric: tabular-nums;
+
+	& th,
+	& td {
+		width: var(--number-column);
+	}
+
+	& th:first-child,
+	& td:first-child {
+		width: var(--name-column);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 
 	& th {
 		text-align: right;
@@ -158,6 +179,10 @@
 	& th:first-child,
 	& td:first-child {
 		text-align: left;
+	}
+
+	& tbody tr:nth-child(even) {
+		background: color-mix(in oklch, currentColor, transparent 95%);
 	}
 }
 

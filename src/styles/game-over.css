@@ -5,7 +5,8 @@
 	top: 30%;
 	left: 0;
 	right: 0;
-	width: 42rem;
+	/* Wide enough for the fight report's widest table — it would rather scroll than reflow. */
+	width: 46rem;
 	max-width: 92vw;
 	max-height: 86vh;
 	margin: 0 auto;
