@@ -1,6 +1,7 @@
 import {html, render} from 'uhtml'
 import {formatTimestamp} from '../utils'
-import {CombatLogEvent, combatEvents, combatLogs, CombatEventType} from '../combatlog'
+import {CombatLogEvent, combatEvents, CombatEventType} from '../combatlog'
+import {currentGame} from '../nodes/game-loop'
 import {viewedFight, fightHistoryEvents} from '../fight-history'
 import '../components/floating-view.js'
 
@@ -95,7 +96,7 @@ export class CombatLogViewer extends HTMLElement {
 	private getFilteredLogs(): CombatLogEvent[] {
 		// A stored fight selected in the Fight report replaces the live log wholesale. Copied
 		// before sorting — the stored events are a cached array someone else reads too.
-		let filtered = [...(viewedFight()?.events ?? combatLogs)]
+		let filtered = [...(viewedFight()?.events ?? currentGame()?.combatLog.events ?? [])]
 		if (this.currentFilter) filtered = filtered.filter((log) => log.eventType === this.currentFilter)
 		if (this.searchTerm) {
 			const term = this.searchTerm.toLowerCase()

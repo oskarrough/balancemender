@@ -1,5 +1,4 @@
 import {log} from './utils'
-import {AudioPlayer} from './nodes/audio'
 import {setBalanceValue, resetBalance, AbilityKey, EffectKey, CadenceKey, AuraKey, UnitKey, RuleKey} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
@@ -160,8 +159,8 @@ function interrupt(game: GameLoop): ActionResult<void> {
 	const player = game.player
 	if (!player.currentAbility) return fail('Nothing to interrupt')
 
-	AudioPlayer.stopOwned(player.currentAbility)
-	AudioPlayer.play('spell_fizzle')
+	game.audio.stopOwned(player.currentAbility)
+	game.audio.play('spell_fizzle')
 	player.currentAbility.disconnect()
 	player.gcd?.disconnect()
 	player.currentAbility = undefined

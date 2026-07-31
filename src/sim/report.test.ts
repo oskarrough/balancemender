@@ -36,7 +36,7 @@ const fight: CombatLogEvent[] = [
 		abilityId: 'Heal',
 		abilityName: 'Heal',
 		value: 1500,
-		// The cast time or the global cooldown, whichever is longer — see `logCombat`.
+		// The cast time or the global cooldown, whichever is longer — see `busyFor` in combatlog.ts.
 		busyFor: 1500,
 	}),
 	event({

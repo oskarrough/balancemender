@@ -1,6 +1,7 @@
-import {logCombat, CombatEventType} from '../combatlog'
+import type {CombatEventType} from '../combatlog'
 import {fct} from '../components/floating-combat-text'
 import {BarrierAura} from './barrier-aura'
+import type {GameLoop} from './game-loop'
 import type {Unit} from './unit'
 import {generateThreat} from './threat'
 import type {AbilitySchool} from './ability'
@@ -67,7 +68,8 @@ export function applyHit({
 		castId,
 	}
 
-	logCombat({
+	const {combatLog} = source.root as GameLoop
+	combatLog.add({
 		timestamp: Date.now(),
 		eventType,
 		...eventFields,
@@ -81,9 +83,9 @@ export function applyHit({
 	// is what stops hitting a corpse announcing the death again, and the `else` is because a
 	// killing blow already implies the condition: a corpse reads `injured`.
 	if (before > 0 && target.health.current <= 0) {
-		logCombat({timestamp: Date.now(), eventType: 'UNIT_DIED', ...eventFields})
+		combatLog.add({timestamp: Date.now(), eventType: 'UNIT_DIED', ...eventFields})
 	} else if (target.condition !== conditionBefore) {
-		logCombat({timestamp: Date.now(), eventType: 'UNIT_CONDITION', ...eventFields, condition: target.condition})
+		combatLog.add({timestamp: Date.now(), eventType: 'UNIT_CONDITION', ...eventFields, condition: target.condition})
 	}
 
 	return landed

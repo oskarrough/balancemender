@@ -1,5 +1,7 @@
 import {describe, it, expect} from 'vitest'
 import {combatEvents} from '../combatlog'
+import {GameLoop} from '../nodes/game-loop'
+import {settle} from '../test-setup'
 import {runFight} from './run'
 import {analyze} from './report'
 import {parseUnits} from './roster'
@@ -50,44 +52,75 @@ describe('running a fight', () => {
 		await expect(runFight({room: {enemies: ['Murloc' as never]}})).rejects.toThrow(/Unknown unit.*TinyWolf/s)
 	})
 
-	it('leaves the combat log it borrowed the way it found it', async () => {
-		const {combatLogs, logCombat} = await import('../combatlog')
-		combatLogs.length = 0
-		logCombat({timestamp: 1, eventType: 'GAME_PAUSE'})
-		await runFight({maxDuration: 5000})
-		expect(combatLogs).toHaveLength(1)
-		expect(combatLogs[0].eventType).toBe('GAME_PAUSE')
+	it('leaves the log of the game you are playing alone', async () => {
+		const live = new GameLoop({party: [], enemies: ['TinyWolf']})
+		try {
+			await settle() // let the live fight log its own FIGHT_START first
+			live.combatLog.add({timestamp: 1, eventType: 'GAME_PAUSE'})
+			const before = live.combatLog.events.length
+
+			await runFight({maxDuration: 5000})
+
+			expect(live.combatLog.events).toHaveLength(before)
+			expect(live.combatLog.events.at(-1)?.eventType).toBe('GAME_PAUSE')
+		} finally {
+			live.disconnect()
+		}
 	})
 
 	it('does not make the live panels redraw for a fight nobody is watching', async () => {
-		const {logCombat} = await import('../combatlog')
+		const live = new GameLoop({party: [], enemies: ['TinyWolf']})
+		await settle() // its own FIGHT_START, before anyone is counting
 		let heard = 0
 		const listener = () => heard++
 		combatEvents.addEventListener('combatlog-update', listener)
 		try {
 			await runFight({maxDuration: 5000})
 			expect(heard).toBe(0)
-			// …and the notification comes back on afterwards.
-			logCombat({timestamp: 1, eventType: 'GAME_PAUSE'})
+			// …while a fight someone *is* watching still reaches them.
+			live.combatLog.add({timestamp: 1, eventType: 'GAME_PAUSE'})
 			expect(heard).toBe(1)
 		} finally {
+			live.disconnect()
 			combatEvents.removeEventListener('combatlog-update', listener)
 		}
 	})
 
-	it('gives the borrowed globals back even when building the fight throws', async () => {
-		const {combatLogs, logCombat} = await import('../combatlog')
+	it('gives the log level back even when building the fight throws', async () => {
+		// The one thing a fight still borrows from the process. Everything else it owns.
 		const {logger} = await import('../combatlog')
-		combatLogs.length = 0
-		logCombat({timestamp: 1, eventType: 'GAME_PAUSE'})
 		const level = logger.level
-
 		await expect(runFight({room: {enemies: ['Murloc' as never]}})).rejects.toThrow()
-
-		// The live game keeps its log, its logger and a real clock — not a half-torn-down simulation.
-		expect(combatLogs).toHaveLength(1)
-		expect(combatLogs[0].eventType).toBe('GAME_PAUSE')
 		expect(logger.level).toBe(level)
+	})
+})
+
+/**
+ * Two fights at once used to be two fights writing into one combat log and one dice stream: every
+ * result came back holding everyone's events, and the first fight to finish dropped the rest to
+ * `Math.random`. A fight owns both now, so this is a property of the design rather than of a
+ * queue — see [#67](https://github.com/oskarrough/balancemender/issues/67).
+ */
+describe('fights running at the same time', () => {
+	const SEEDS = [1, 2, 3, 4]
+	const trial = (seed: number) => ({room: {enemies: ['TinyWolf', 'TinyWolf'] as never}, seed, maxDuration: 20_000})
+
+	it('gives each fight its own log and the outcome it would have had alone', async () => {
+		const concurrent = await Promise.all(SEEDS.map((seed) => runFight(trial(seed))))
+
+		const sequential = []
+		for (const seed of SEEDS) sequential.push(await runFight(trial(seed)))
+
+		for (const [i, fight] of concurrent.entries()) {
+			// Every event names a unit that was in *this* fight. The old failure was ~75% foreign.
+			const ours = new Set(fight.units.map((unit) => unit.id))
+			const foreign = fight.events.filter((event) => event.sourceId && !ours.has(event.sourceId))
+			expect(foreign).toEqual([])
+
+			expect(fight.outcome).toBe(sequential[i].outcome)
+			expect(fight.duration).toBe(sequential[i].duration)
+			expect(fight.events.length).toBe(sequential[i].events.length)
+		}
 	})
 })
 

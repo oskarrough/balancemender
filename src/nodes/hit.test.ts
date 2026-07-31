@@ -1,10 +1,9 @@
-import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {describe, it, expect, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
 import {PeriodicAura} from './periodic-aura'
 import {Renew} from './spells'
-import {combatLogs, clearLogs} from '../combatlog'
 
 /**
  * Every heal and every hit in the game goes through `applyHit`, so what it logs is what the
@@ -12,10 +11,11 @@ import {combatLogs, clearLogs} from '../combatlog'
  * health bar some other way is invisible to all three — DoTs used to be exactly that.
  */
 
-const deaths = () => combatLogs.filter((event) => event.eventType === 'UNIT_DIED')
-
 let game!: GameLoop
-beforeEach(() => clearLogs())
+/** Each test builds its own game, so its log starts empty without anyone clearing one. */
+const events = () => game.combatLog.events
+const deaths = () => events().filter((event) => event.eventType === 'UNIT_DIED')
+
 afterEach(() => game.disconnect())
 
 describe('applyHit', () => {
@@ -34,7 +34,7 @@ describe('applyHit', () => {
 		})
 
 		expect(landed).toBe(10)
-		expect(combatLogs.at(-1)).toMatchObject({
+		expect(events().at(-1)).toMatchObject({
 			eventType: 'SPELL_HEAL',
 			sourceId: game.player.id,
 			targetId: game.party[0].id,
@@ -55,8 +55,8 @@ describe('applyHit', () => {
 			school: 'physical',
 		})
 
-		expect(combatLogs.at(-1)).toMatchObject({eventType: 'SWING_DAMAGE', value: 5})
-		expect(combatLogs.at(-1)).not.toHaveProperty('overheal')
+		expect(events().at(-1)).toMatchObject({eventType: 'SWING_DAMAGE', value: 5})
+		expect(events().at(-1)).not.toHaveProperty('overheal')
 	})
 
 	it('announces a death once, however many more hits land on the body', () => {
@@ -100,7 +100,7 @@ describe('PeriodicAura', () => {
 		await settle()
 		poison.tick()
 
-		expect(combatLogs.at(-1)).toMatchObject({
+		expect(events().at(-1)).toMatchObject({
 			eventType: 'SPELL_PERIODIC_DAMAGE',
 			abilityName: 'Poison',
 			sourceId: game.party[0].id,
@@ -128,7 +128,7 @@ describe('PeriodicAura', () => {
 		expect(renew).toBeDefined()
 		for (let i = 0; i < renew!.repeat; i++) renew!.tick()
 
-		const healed = combatLogs
+		const healed = events()
 			.filter((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
 			.reduce((total, event) => total + (event.value ?? 0), 0)
 		expect(healed).toBe(Renew.magnitudesFor(game.player)[0])

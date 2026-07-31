@@ -7,7 +7,8 @@ import {playerAbilities} from './registry'
 import type {Dungeon} from './dungeon'
 import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
-import {logCombat, setCombatClock, clearLogs, combatLogs} from '../combatlog'
+import {CombatLog} from '../combatlog'
+import {Rng} from '../rng'
 import {perform, type GameAction} from '../actions'
 import {unitsOf, type Outcome} from '../sim/report'
 import {saveFight} from '../fight-history'
@@ -79,6 +80,16 @@ export class GameLoop extends Loop {
 	private fightSaved = false
 
 	audio = new AudioPlayer(this)
+
+	/**
+	 * This game's event stream, stamped from its own clock. Everything a fight does reaches it
+	 * through `(node.root as GameLoop).combatLog` — the pointer vroum already set on connect.
+	 */
+	combatLog = new CombatLog(() => this.elapsedTime)
+
+	/** This game's dice. Seeded from the constructor, so two fights never share a stream. */
+	rng: Rng
+
 	fight: Fight
 
 	/**
@@ -86,9 +97,13 @@ export class GameLoop extends Loop {
 	 */
 	dungeonRun?: DungeonRun
 
-	/** Pass a room to start on something other than the demo fight. */
-	constructor(room: Room = DEMO_ROOM) {
+	/**
+	 * Pass a room to start on something other than the demo fight, and a seed to fix its dice —
+	 * the browser passes neither and plays a random fight, a simulation passes both.
+	 */
+	constructor(room: Room = DEMO_ROOM, seed: number | null = null) {
 		super()
+		this.rng = new Rng(seed)
 		this.fight = new Fight(this, room)
 	}
 
@@ -123,7 +138,7 @@ export class GameLoop extends Loop {
 		this.fight.disconnect()
 		// The fight clock restarts, so the log has to as well — otherwise the last fight's
 		// damage gets divided by this fight's duration and every rate reads high.
-		clearLogs()
+		this.combatLog.clear()
 		this.fight = new Fight(this, room)
 		if (this.dungeonRun) {
 			// Dungeon runs start with 2 spells and learn one per room, accumulated so far.
@@ -148,7 +163,7 @@ export class GameLoop extends Loop {
 	/** Kept in step with the speaker, which the menu and the `muted` URL param both reach through here. */
 	set muted(value: boolean) {
 		this._muted = value
-		if (AudioPlayer.global) AudioPlayer.global.muted = value
+		this.audio.muted = value
 	}
 
 	get party() {
@@ -165,9 +180,7 @@ export class GameLoop extends Loop {
 
 	mount() {
 		log('game:mount')
-		// Stamp combat events with fight time instead of wall time.
-		setCombatClock(() => this.elapsedTime)
-		logCombat({timestamp: Date.now(), eventType: 'FIGHT_START'})
+		this.combatLog.add({timestamp: Date.now(), eventType: 'FIGHT_START'})
 	}
 
 	tick() {
@@ -189,7 +202,7 @@ export class GameLoop extends Loop {
 	}
 
 	onGameOver() {
-		logCombat({timestamp: Date.now(), eventType: 'FIGHT_END'})
+		this.combatLog.add({timestamp: Date.now(), eventType: 'FIGHT_END'})
 		this.audio.stop()
 		this.pause()
 		// gameOver/render are already set/done by tick() before this fires;
@@ -209,7 +222,7 @@ export class GameLoop extends Loop {
 				saveFight({
 					outcome,
 					duration: Math.round(this.elapsedTime),
-					events: combatLogs.slice(),
+					events: this.combatLog.events.slice(),
 					units: unitsOf(this),
 				}).catch((err) => logger.error({err}, 'Failed to save fight history'))
 			}

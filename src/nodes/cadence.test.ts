@@ -1,6 +1,5 @@
-import {afterEach, beforeEach, describe, expect, it} from 'vitest'
+import {afterEach, describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
-import {combatLogs, clearLogs} from '../combatlog'
 import {SimLoop} from '../sim/run'
 import {Cadence} from './cadence'
 import {GameLoop} from './game-loop'
@@ -9,7 +8,7 @@ import {Mend} from './spells'
 import {QuickStab} from './attack'
 
 let game!: GameLoop
-beforeEach(() => clearLogs())
+const events = () => game.combatLog.events
 afterEach(() => game.disconnect())
 
 describe('a cadence', () => {
@@ -18,7 +17,7 @@ describe('a cadence', () => {
 		await settle()
 		const [wolf, shaman] = game.enemies
 		new Cadence(wolf, 'QuickStab').tick()
-		expect(combatLogs.some((event) => event.abilityId === 'QuickStab')).toBe(true)
+		expect(events().some((event) => event.abilityId === 'QuickStab')).toBe(true)
 		new Cadence(shaman, 'Mend').tick()
 		expect(shaman.currentAbility?.id).toBe('Mend')
 		await settle()
@@ -48,7 +47,9 @@ describe('a cadence', () => {
 			await settle()
 		}
 		const times = (id: string) =>
-			combatLogs.filter((event) => event.abilityId === id && 'value' in event).map((event) => event.time)
+			events()
+				.filter((event) => event.abilityId === id && 'value' in event)
+				.map((event) => event.time)
 		expect(times('QuickStab')).toEqual([0, 1600, 3200, 4800, 6400, 8000])
 		expect(times('SavageBite')).toEqual([4000, 7800])
 		expect(times('HeavyBlow')).toEqual([4000, 7800])
@@ -70,9 +71,7 @@ describe('an enemy cast cadence', () => {
 		await settle()
 		use.value.tick()
 		expect(wolf.health.current).toBeGreaterThan(before)
-		expect(combatLogs.filter((event) => event.eventType === 'SPELL_HEAL' && event.sourceId === shaman.id)).toHaveLength(
-			1,
-		)
+		expect(events().filter((event) => event.eventType === 'SPELL_HEAL' && event.sourceId === shaman.id)).toHaveLength(1)
 	})
 
 	/**

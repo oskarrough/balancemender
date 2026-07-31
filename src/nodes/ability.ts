@@ -1,10 +1,10 @@
 import {Task} from '../vroum'
-import {nextCastId, type CombatEventType} from '../combatlog'
+import type {CombatEventType} from '../combatlog'
 import {applyStatics} from '../utils'
-import {AudioPlayer} from './audio'
 import {AbilityUse} from './ability-use'
 import {eligible, type Targets} from './targets'
 import {Landing, type Effect} from './effects'
+import type {GameLoop} from './game-loop'
 import type {Unit} from './unit'
 
 export const ABILITY_TAGS = ['spell', 'attack', 'healing', 'melee', 'ranged'] as const
@@ -134,7 +134,8 @@ export class Ability extends Task {
 			'sweetSpotWindow',
 			'sweetSpotBonus',
 		)
-		this.castId = nextCastId(this.id)
+		// vroum set `root` in `super()`, so the game is already reachable from here.
+		this.castId = (this.root as GameLoop).combatLog.nextCastId(this.id)
 		// The caster's power is read here and nowhere else, so it is the power they had when the cast
 		// began. Everything this use lands resolves against this landing.
 		this.landing = new Landing(this, target, parent.stats.powerFor(this.school))
@@ -187,9 +188,10 @@ export class Ability extends Task {
 	 * also the moment to stop the looping precast it has been playing.
 	 */
 	private playLandingSound() {
-		AudioPlayer.stopOwned(this)
+		const audio = (this.root as GameLoop).audio
+		audio.stopOwned(this)
 		const sound = this.sound || (AbilityUse.usesCastRules(this.constructor as AbilityClass) ? 'spell_cast' : '')
-		if (sound) AudioPlayer.play(sound, {owner: this})
+		if (sound) audio.play(sound, {owner: this})
 	}
 
 	destroy() {

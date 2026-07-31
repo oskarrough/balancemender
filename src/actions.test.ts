@@ -1,9 +1,8 @@
-import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {describe, it, expect, afterEach} from 'vitest'
 import {settle} from './test-setup'
 import {GameLoop} from './nodes/game-loop'
 import {SimLoop} from './sim/run'
 import {playerAbilities} from './nodes/registry'
-import {combatLogs, clearLogs} from './combatlog'
 
 /**
  * `game.perform()` is the only way anything changes a fight, so these assertions cover the
@@ -135,8 +134,6 @@ describe('refusals', () => {
 })
 
 describe('every player ability', () => {
-	beforeEach(() => clearLogs())
-
 	// Renew once healed without ever logging a cast, because it overrode `tick()` instead of
 	// `cast()`. Nothing but this stops the next ability doing the same.
 	// An enemy has to be present, or the fight is already won and the loop stops before the cast lands.
@@ -154,7 +151,7 @@ describe('every player ability', () => {
 			await settle()
 		}
 
-		const casts = combatLogs.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.abilityId === ability)
+		const casts = sim.combatLog.events.filter((e) => e.eventType === 'SPELL_CAST_SUCCESS' && e.abilityId === ability)
 		expect(casts).toHaveLength(1)
 		await settle()
 	})

@@ -1,5 +1,3 @@
-import {randomIntFromInterval} from '../utils'
-
 /**
  * `src/nodes/hit.ts` imports `fct` from here, so this file has to load in a simulation, where
  * there is no DOM at all — hence no uhtml (it wants one the moment it loads) and the element
@@ -16,8 +14,10 @@ export function register() {
 			const isDamage = this.textContent[0] === '-'
 			if (isDamage) this.classList.add('damage')
 
-			// Put heals to the left, damage to the right, jittered so equal numbers don't stack
-			this.style.left = `${isDamage ? randomIntFromInterval(8, 14) : randomIntFromInterval(1, 7)}rem`
+			// Put heals to the left, damage to the right, jittered so equal numbers don't stack.
+			// `Math.random`, never the fight's dice — see `wobble` in effects.ts.
+			const jitter = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
+			this.style.left = `${isDamage ? jitter(8, 14) : jitter(1, 7)}rem`
 
 			// Remove node once the CSS animation is done
 			this.addEventListener('animationend', () => this.remove())

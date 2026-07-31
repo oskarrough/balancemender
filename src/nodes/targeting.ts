@@ -1,6 +1,6 @@
 import type {Unit} from './unit'
 import {Tank} from './party-units'
-import {random} from '../rng'
+import type {GameLoop} from './game-loop'
 import {eligible, type Targets} from './targets'
 import {highestThreat, pullsAggro} from './threat'
 
@@ -36,16 +36,19 @@ export const prefer: {
 	},
 
 	/**
-	 * Uses the seeded `random()`, never `Math.random` — a fight replayed from a seed must pick the
+	 * Rolls the fight's own dice, never `Math.random` — a fight replayed from a seed must pick the
 	 * same. `reconsiderChance` is the odds of re-rolling on any given attack, not per frame; 0 (the
 	 * default) never lets go of its first pick, like the old fixed `atRandom`.
+	 *
+	 * The game is read off a unit already in hand rather than passed in: every candidate is a unit
+	 * in this fight, so `root` leads to the same place an owner would.
 	 */
 	atRandom: (reconsiderChance = 0) => ({
 		prefers: (candidates: Unit[]) => {
 			if (candidates.length === 0) return undefined
-			return candidates[Math.floor(random() * candidates.length)]
+			return candidates[Math.floor(diceOf(candidates[0]).float() * candidates.length)]
 		},
-		reconsiders: () => random() < reconsiderChance,
+		reconsiders: (current: Unit) => diceOf(current).float() < reconsiderChance,
 	}),
 
 	/** The most hurt of them, re-evaluated every tick — the only one that never settles. */
@@ -82,7 +85,7 @@ export const prefer: {
 	 * attack. The table belongs to the enemy captured by this preference.
 	 *
 	 * `mischief` is the odds per pick of ignoring the table and biting someone at random — one
-	 * wander, then threat pulls it home. Seeded `random()`, like everything a fight replays.
+	 * wander, then threat pulls it home. The fight's own dice, like everything it replays.
 	 */
 	threat: (owner: Unit, mischief = 0) => {
 		let wandering = false
@@ -90,18 +93,21 @@ export const prefer: {
 			prefers: (candidates: Unit[]) => {
 				if (wandering) {
 					wandering = false
-					return candidates[Math.floor(random() * candidates.length)]
+					return candidates[Math.floor(diceOf(owner).float() * candidates.length)]
 				}
 				return highestThreat(threatTable(owner), candidates)
 			},
 			reconsiders: (current: Unit, candidates: Unit[]) => {
 				// Guarded so a mischief-less unit draws no random and replays untouched.
-				wandering = mischief > 0 && random() < mischief
+				wandering = mischief > 0 && diceOf(owner).float() < mischief
 				return wandering || pullsAggro(threatTable(owner), current, candidates)
 			},
 		}
 	},
 }
+
+/** The dice of the fight this unit is in. */
+const diceOf = (unit: Unit) => (unit.root as GameLoop).rng
 
 function threatTable(owner: Unit) {
 	if (!owner.threat) throw new Error(`${owner.name || owner.id} cannot prefer threat without a threat table`)

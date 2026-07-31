@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {describe, it, expect, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {SimLoop} from '../sim/run'
 import {BarrierAura} from './barrier-aura'
@@ -7,7 +7,6 @@ import {Shield} from './spells'
 import {applyHit} from './hit'
 import type {Unit} from './unit'
 import type {Room} from './fight'
-import {combatLogs, clearLogs} from '../combatlog'
 import {planted} from './effects'
 
 /**
@@ -16,12 +15,11 @@ import {planted} from './effects'
  * anyone could tell it happened at all.
  */
 
-const events = (eventType: string) => combatLogs.filter((event) => event.eventType === eventType)
-
 const ROOM: Room = {party: ['Tank'], enemies: ['TinyWolf']}
 
 let game!: GameLoop
-beforeEach(() => clearLogs())
+const events = (eventType: string) => game.combatLog.events.filter((event) => event.eventType === eventType)
+
 afterEach(() => game.disconnect())
 
 /**

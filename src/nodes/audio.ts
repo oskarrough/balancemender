@@ -42,13 +42,11 @@ const CATALOG: Record<string, SoundDef> = {
 export type SoundName = keyof typeof CATALOG | (string & {})
 
 /**
- * Global sound manager
- * - Single instance should be created on GameLoop
- * - Call AudioPlayer.play('spell_cast') from anywhere
- * - Pass {owner: this} to scope a sound to a node, then stopOwned(this) on cleanup
+ * One game's speaker. `GameLoop` owns one as `game.audio`, and everything in a fight reaches it
+ * the same way it reaches the combat log: `(node.root as GameLoop).audio.play('spell_cast')`. Pass
+ * `{owner: this}` to scope a sound to a node, then `stopOwned(this)` on cleanup.
  */
 export class AudioPlayer extends Node {
-	static global: AudioPlayer | null = null
 	folder = '/assets/sounds/'
 	/** No `Audio` constructor means no browser, so a simulation runs silent rather than throwing. */
 	disabled = typeof Audio === 'undefined'
@@ -70,7 +68,6 @@ export class AudioPlayer extends Node {
 		// only inherits, so this listens for exactly the same events.
 		if (parent instanceof Loop) {
 			const loop = parent as GameLoop
-			AudioPlayer.global = this
 			this.muted = loop.muted
 
 			loop.on(Task.PAUSE, () => {
@@ -98,21 +95,6 @@ export class AudioPlayer extends Node {
 	set volume(value: number) {
 		this._volume = value
 		for (const audio of this.elements) audio.volume = value
-	}
-
-	static play(name: SoundName, opts?: PlayOptions) {
-		return AudioPlayer.global?.play(name, opts) ?? null
-	}
-
-	/** Stop and forget all sounds scoped to the given owner. */
-	static stopOwned(owner: object) {
-		AudioPlayer.global?.stopOwned(owner)
-	}
-
-	static toggleMute(): boolean {
-		if (!AudioPlayer.global) return false
-		AudioPlayer.global.muted = !AudioPlayer.global.muted
-		return AudioPlayer.global.muted
 	}
 
 	play(name: SoundName, opts: PlayOptions = {}) {
@@ -146,6 +128,7 @@ export class AudioPlayer extends Node {
 		return audio
 	}
 
+	/** Stop and forget all sounds scoped to the given owner. */
 	stopOwned(owner: object) {
 		const survivors: HTMLAudioElement[] = []
 		for (const audio of this.elements) {

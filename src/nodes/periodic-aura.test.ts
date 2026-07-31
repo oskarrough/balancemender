@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {describe, it, expect, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {SimLoop} from '../sim/run'
 import type {Aura} from './aura'
@@ -6,7 +6,6 @@ import {GameLoop} from './game-loop'
 import {PeriodicAura} from './periodic-aura'
 import {SavageBite} from './attack'
 import {Renew} from './spells'
-import {combatLogs, clearLogs} from '../combatlog'
 import {planted} from './effects'
 
 /**
@@ -18,11 +17,12 @@ import {planted} from './effects'
 const aurasNamed = (unit: {auras: Set<Aura>}, name: string) =>
 	[...unit.auras].filter((aura): aura is PeriodicAura => aura.name === name && aura instanceof PeriodicAura)
 
-const auraEvents = (spell: string) =>
-	combatLogs.filter((event) => event.eventType.startsWith('SPELL_AURA') && event.abilityName === spell)
-
 let game!: GameLoop
-beforeEach(() => clearLogs())
+const events = () => game.combatLog.events
+
+const auraEvents = (spell: string) =>
+	events().filter((event) => event.eventType.startsWith('SPELL_AURA') && event.abilityName === spell)
+
 afterEach(() => game.disconnect())
 
 describe('stack rule', () => {
@@ -119,7 +119,7 @@ describe('tick timing', () => {
 		await settle()
 		new PatientAura(game.party[0], game.player)
 		await settle()
-		const ticks = () => combatLogs.filter((event) => event.abilityId === 'PatientAura' && 'value' in event)
+		const ticks = () => events().filter((event) => event.abilityId === 'PatientAura' && 'value' in event)
 
 		sim.runFrame(0)
 		sim.runFrame(PatientAura.interval - 1)
@@ -139,7 +139,7 @@ describe('cast attribution', () => {
 		await settle()
 		aurasNamed(game.party[0], 'Renew')[0].tick()
 
-		const tick = combatLogs.find((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
+		const tick = events().find((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
 		expect(renew.castId).toBeTruthy()
 		expect(tick?.castId).toBe(renew.castId)
 	})

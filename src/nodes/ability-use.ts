@@ -1,6 +1,4 @@
-import {logCombat} from '../combatlog'
 import type {ActionResult} from '../actions'
-import {AudioPlayer} from './audio'
 import {DEFAULT_SWEET_SPOT_WINDOW, type Ability, type AbilityClass} from './ability'
 import type {GameLoop} from './game-loop'
 import {GlobalCooldown} from './global-cooldown'
@@ -70,7 +68,8 @@ export class AbilityUse {
 		const hit = remaining >= 0 && remaining <= sweetSpotWindow
 		if (hit) ability.sweetSpotHit = true
 
-		logCombat({
+		const game = ability.root as GameLoop
+		game.combatLog.add({
 			timestamp: Date.now(),
 			eventType: hit ? 'SWEET_SPOT_HIT' : 'SWEET_SPOT_MISS',
 			sourceId: unit.id,
@@ -121,7 +120,8 @@ export class AbilityUse {
 		const unit = ability.parent
 		if (ability.gcd) unit.gcd = new GlobalCooldown(unit)
 
-		logCombat({
+		const game = ability.root as GameLoop
+		game.combatLog.add({
 			timestamp: Date.now(),
 			eventType: 'SPELL_CAST_START',
 			sourceId: unit.id,
@@ -133,13 +133,14 @@ export class AbilityUse {
 			busyFor: Math.max(ability.delay, unit.gcd?.delay ?? 0),
 		})
 
-		if (ability.delay) AudioPlayer.play('spell_precast', {loop: true, owner: ability})
+		if (ability.delay) game.audio.play('spell_precast', {loop: true, owner: ability})
 	}
 
 	static succeed(ability: Ability) {
 		if (!this.usesCastRules(ability.constructor as AbilityClass)) return
 		const unit = ability.parent
-		logCombat({
+		const game = ability.root as GameLoop
+		game.combatLog.add({
 			timestamp: Date.now(),
 			eventType: 'SPELL_CAST_SUCCESS',
 			sourceId: unit.id,
@@ -159,15 +160,16 @@ export class AbilityUse {
 	static finish(ability: Ability) {
 		if (!this.usesCastRules(ability.constructor as AbilityClass)) return
 		const unit = ability.parent
+		const game = ability.root as GameLoop
 		const completed = ability._cycles > 0
-		AudioPlayer.stopOwned(ability)
+		game.audio.stopOwned(ability)
 		if (unit.currentAbility === ability) unit.currentAbility = undefined
 
 		if (completed) {
-			unit.lastCastCompletedTime = (ability.root as GameLoop).elapsedTime
+			unit.lastCastCompletedTime = game.elapsedTime
 			this.commit(ability)
 		} else {
-			logCombat({
+			game.combatLog.add({
 				timestamp: Date.now(),
 				eventType: 'SPELL_CAST_INTERRUPTED',
 				sourceId: unit.id,
@@ -183,11 +185,11 @@ export class AbilityUse {
 
 	private static commit(ability: Ability) {
 		const unit = ability.parent
-		const now = (ability.root as GameLoop).elapsedTime
-		if (ability.cooldown) unit.cooldowns.set(ability.id, now + ability.cooldown)
+		const game = ability.root as GameLoop
+		if (ability.cooldown) unit.cooldowns.set(ability.id, game.elapsedTime + ability.cooldown)
 		if (ability.cost === undefined || !unit.mana) return
 		unit.mana.spend(ability.cost)
-		logCombat({
+		game.combatLog.add({
 			timestamp: Date.now(),
 			eventType: 'RESOURCE_SPENT',
 			sourceId: unit.id,

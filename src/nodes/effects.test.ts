@@ -1,21 +1,20 @@
-import {describe, it, expect, beforeEach, afterEach} from 'vitest'
+import {describe, it, expect, afterEach} from 'vitest'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {ApplyAura, Damage, Heal} from './effects'
 import {PeriodicAura} from './periodic-aura'
 import {SavageBite, Rend} from './attack'
-import {combatLogs, clearLogs} from '../combatlog'
 
 /**
  * An effect is the smallest thing an ability does. What is worth asserting here is that a list of
  * them behaves like a list — in order, and with each one seeing what the one before it did.
  */
 
-const abilityEvents = (abilityId: string) => combatLogs.filter((event) => event.abilityId === abilityId)
+const abilityEvents = (abilityId: string) => game.combatLog.events.filter((event) => event.abilityId === abilityId)
 
 /** The fight logs its own start on a later microtask, and it is not something an ability did. */
-const acted = () => combatLogs.filter((event) => event.eventType !== 'FIGHT_START')
+const acted = () => game.combatLog.events.filter((event) => event.eventType !== 'FIGHT_START')
 
 class Mark extends PeriodicAura {
 	static id = 'Mark'
@@ -35,7 +34,6 @@ class Rebuke extends Ability {
 }
 
 let game!: GameLoop
-beforeEach(() => clearLogs())
 afterEach(() => game.disconnect())
 
 describe('an ordered list of effects', () => {

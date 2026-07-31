@@ -1,9 +1,9 @@
 import {applyHit} from './hit'
-import {naturalizeNumber, randomIntFromInterval} from '../utils'
 import type {CombatEventType} from '../combatlog'
 // Type-only: ability.ts imports the `Effect` type back from here.
 import type {Ability, AbilitySchool} from './ability'
 import type {Aura} from './aura'
+import type {GameLoop} from './game-loop'
 import type {Unit} from './unit'
 
 /** One spread for rolled damage. Tunable live as `rule:Damage.variance=0.2`. */
@@ -120,7 +120,7 @@ export class Damage implements Effect {
 		const spread = magnitude * Math.max(0, DAMAGE_RULES.variance)
 		const min = Math.max(0, Math.round(magnitude - spread))
 		const max = Math.max(min, Math.round(magnitude + spread))
-		const amount = randomIntFromInterval(min, max)
+		const amount = (landing.ability.root as GameLoop).rng.int(min, max)
 		hit(landing, -amount, landing.ability.eventType)
 		shake(landing.target)
 	}
@@ -133,7 +133,8 @@ export class Heal implements Effect {
 	constructor(public coefficient: number) {}
 
 	apply(landing: Landing) {
-		hit(landing, naturalizeNumber(landing.resolve(this.coefficient)), 'SPELL_HEAL')
+		const {rng} = landing.ability.root as GameLoop
+		hit(landing, rng.naturalize(landing.resolve(this.coefficient)), 'SPELL_HEAL')
 	}
 }
 
@@ -164,6 +165,10 @@ export class ApplyAura implements Effect {
 	}
 }
 
+/** A pixel or two either way, for the flinch below. `Math.random`, never the fight's dice: a
+ * wobble nobody replays has no business in the stream that makes seeded fights comparable. */
+const wobble = () => Math.round(Math.random() * 4) - 2
+
 /** The flinch a hit draws on its target. Only a direct hit shakes — a bleed ticking does not. */
 function shake(target: Unit) {
 	// A simulated fight has no document to flinch in.
@@ -175,7 +180,7 @@ function shake(target: Unit) {
 		[
 			{transform: 'translate(0, 0)', filter: 'none'},
 			{
-				transform: `translate(${randomIntFromInterval(-2, 2)}px, ${randomIntFromInterval(-2, 2)}px)`,
+				transform: `translate(${wobble()}px, ${wobble()}px)`,
 				filter: 'brightness(0.5)',
 			},
 			{transform: 'translate(0, 0)', filter: 'none'},

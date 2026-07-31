@@ -1,5 +1,4 @@
 import {GameLoop} from './nodes/game-loop'
-import {logCombat} from './combatlog'
 
 /** The keys that are about the game rather than about one spell — the action bar handles those. */
 export class InputManager {
@@ -29,10 +28,10 @@ export class InputManager {
 	togglePlayPause() {
 		if (this.game.running) {
 			this.game.pause()
-			logCombat({timestamp: Date.now(), eventType: 'GAME_PAUSE'})
+			this.game.combatLog.add({timestamp: Date.now(), eventType: 'GAME_PAUSE'})
 		} else {
 			this.game.play()
-			logCombat({timestamp: Date.now(), eventType: 'GAME_RESUME'})
+			this.game.combatLog.add({timestamp: Date.now(), eventType: 'GAME_RESUME'})
 		}
 	}
 

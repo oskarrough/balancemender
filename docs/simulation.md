@@ -100,9 +100,9 @@ while the boss was free, which is what a sweep is for finding (#40).
 ## From the browser, and from a test
 
 The **Fight report** panel covers the fight you are playing; its `Simulate 5×` button replays your
-composition headlessly, so you can see whether the run you just had was typical. It borrows the
-combat log, the clock and the dice and gives them back, and never yields to the event loop while
-running — a live frame landing mid-simulation would write into its log.
+composition headlessly, so you can see whether the run you just had was typical. Each simulated
+fight owns its combat log, its clock and its dice, so it cannot reach the fight you are playing —
+or another simulation running beside it (#67).
 
 Fights are deterministic per seed, so they make ordinary assertions:
 
@@ -187,8 +187,10 @@ Nothing has to be remembered here: the tests run in plain node, so a bad import 
 | `scripts/sweep.ts`  | every enemy group × every bot, over many seeds             |
 | `scripts/cli.ts`    | numbers and one-line exits, over `node:util`'s `parseArgs` |
 
-`src/rng.ts` is why any of it repeats: seed it and every damage roll and target choice replays
-identically. Unseeded — how the browser plays — it is `Math.random`.
+`src/rng.ts` is why any of it repeats: `new GameLoop(room, seed)` gives that fight an `Rng` of its
+own, and every damage roll and target choice replays identically. Unseeded — how the browser
+plays — it is `Math.random`. A wobble nobody replays (the UI's jitter) must stay out of that stream
+or the same seed stops meaning the same fight.
 
 Worth knowing: only units in [`unit-registry.ts`](../src/nodes/unit-registry.ts) can be spawned and
 the player is always added; a fight ends when one side is wiped or at `--duration`, and victory

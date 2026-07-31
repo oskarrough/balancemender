@@ -55,12 +55,17 @@ key spellings are in [glossary.md](./glossary.md#tuning-and-measuring).
 
 ## The combat log is the interface for analysis
 
-Everything that happens in a fight goes through `logCombat()` in `src/combatlog.ts`: casts, hits,
-heals (with the overhealed portion), auras coming and going, condition changes, deaths, fight
-start and end. Events are stamped with `time`, milliseconds into the fight, so a fight simulated in
-200ms of wall clock reads the same as one played for real. That single stream feeds the Combat log
-panel, the Fight report panel and the headless simulator in `src/sim/` — log a new mechanic and it
-shows up in all three.
+Everything that happens in a fight goes through `game.combatLog.add()`: casts, hits, heals (with the
+overhealed portion), auras coming and going, condition changes, deaths, fight start and end. Events
+are stamped with `time`, milliseconds into the fight, so a fight simulated in 200ms of wall clock
+reads the same as one played for real. That single stream feeds the Combat log panel, the Fight
+report panel and the headless simulator in `src/sim/` — log a new mechanic and it shows up in all
+three.
+
+The log belongs to one `GameLoop`, as its dice (`game.rng`) and its speaker (`game.audio`) do.
+Reach them from anywhere in the fight through the pointer vroum already set: `(this.root as
+GameLoop).combatLog`. Nothing here is module state, which is what lets two fights run at once
+without writing into each other (#67).
 
 - **Log both an id and a name** for whoever an event touches. The analyzer keys on the id; the name is
   only a label, and it changes mid-fight — spawning a second wolf renames the first one to "Tiny wolf

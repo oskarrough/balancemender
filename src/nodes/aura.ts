@@ -1,6 +1,7 @@
 import {Task} from '../vroum'
 import {applyStatics, log} from '../utils'
-import {logCombat, type CombatLogEvent} from '../combatlog'
+import type {CombatLogEvent} from '../combatlog'
+import type {GameLoop} from './game-loop'
 // Type-only both ways: unit.ts names this class for its `auras` set.
 import type {Unit} from './unit'
 
@@ -134,7 +135,9 @@ export class Aura extends Task {
 		stacks: number,
 		extra: Partial<CombatLogEvent> = {},
 	) {
-		logCombat({
+		// `destroy()` logs through here, and vroum only resets `root` after the destroy chain runs.
+		const {combatLog} = this.root as GameLoop
+		combatLog.add({
 			timestamp: Date.now(),
 			eventType,
 			sourceId: this.casterId,

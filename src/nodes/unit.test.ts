@@ -2,10 +2,10 @@ import {describe, it, expect, beforeEach, afterEach} from 'vitest'
 import {GameLoop} from './game-loop'
 import {CONDITION_THRESHOLDS} from './types'
 import {applyHit} from './hit'
-import {combatLogs, clearLogs} from '../combatlog'
 import {resetBalance, setBalanceValue} from '../balance'
 
 let game!: GameLoop
+const events = () => game.combatLog.events
 afterEach(() => game.disconnect())
 
 /**
@@ -91,9 +91,7 @@ describe('the condition thresholds are balance numbers', () => {
  * moves, and a report holding the old number would be confidently wrong.
  */
 describe('UNIT_CONDITION', () => {
-	beforeEach(() => clearLogs())
-
-	const conditions = () => combatLogs.filter((event) => event.eventType === 'UNIT_CONDITION')
+	const conditions = () => events().filter((event) => event.eventType === 'UNIT_CONDITION')
 
 	it('records a crossing once, after the hit that caused it, with who caused it', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
@@ -113,7 +111,7 @@ describe('UNIT_CONDITION', () => {
 		expect(conditions()).toHaveLength(1)
 		expect(conditions()[0]).toMatchObject({condition: 'steady', targetId: game.party[0].id, sourceId: wolf.id})
 		// After its own cause, so the log reads as damage-then-consequence rather than the reverse.
-		expect(combatLogs.at(-2)?.eventType).toBe('SWING_DAMAGE')
+		expect(events().at(-2)?.eventType).toBe('SWING_DAMAGE')
 
 		// Still steady: no second event for staying put.
 		hit(-game.party[0].health.max * 0.1)
@@ -137,7 +135,7 @@ describe('UNIT_CONDITION', () => {
 		})
 
 		expect(conditions()).toHaveLength(0)
-		expect(combatLogs.at(-1)?.eventType).toBe('UNIT_DIED')
+		expect(events().at(-1)?.eventType).toBe('UNIT_DIED')
 	})
 })
 

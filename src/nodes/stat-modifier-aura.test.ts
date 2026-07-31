@@ -1,5 +1,4 @@
 import {afterEach, describe, expect, it} from 'vitest'
-import {clearLogs, combatLogs} from '../combatlog'
 import {SimLoop} from '../sim/run'
 import {settle} from '../test-setup'
 import {STAT} from './stats'
@@ -15,10 +14,8 @@ class Fortitude extends StatModifierAura {
 }
 
 let game!: SimLoop
-afterEach(() => {
-	clearLogs()
-	game.disconnect()
-})
+const events = () => game.combatLog.events
+afterEach(() => game.disconnect())
 
 describe('StatModifierAura', () => {
 	it('modifies one stat for its lifetime, then restores its own contribution', async () => {
@@ -39,7 +36,7 @@ describe('StatModifierAura', () => {
 
 		expect(game.party[0].stats.stamina).toBe(300)
 		expect(game.party[0].health.max).toBe(300)
-		expect(combatLogs.map((event) => event.eventType)).toContain('SPELL_AURA_REMOVED')
+		expect(events().map((event) => event.eventType)).toContain('SPELL_AURA_REMOVED')
 	})
 
 	it('refreshes without briefly retaining the superseded contribution', async () => {
@@ -52,7 +49,7 @@ describe('StatModifierAura', () => {
 		expect(first.superseded).toBe(true)
 		expect(game.party[0].stats.stamina).toBe(350)
 		expect(game.party[0].auras).toEqual(new Set([second]))
-		expect(combatLogs.filter((event) => event.eventType === 'SPELL_AURA_REFRESH')).toHaveLength(1)
+		expect(events().filter((event) => event.eventType === 'SPELL_AURA_REFRESH')).toHaveLength(1)
 	})
 
 	it('stacks separate copies and removes each by identity', async () => {

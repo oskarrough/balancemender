@@ -1,5 +1,5 @@
 import {html, render} from 'uhtml'
-import {combatEvents, combatLogs} from '../combatlog'
+import {combatEvents} from '../combatlog'
 import {currentGame, type GameLoop} from '../nodes/game-loop'
 import {analyze, CastStats, FightReport as Report, Series} from '../sim/report'
 import {unitsOf, runFights} from '../sim/run'
@@ -52,9 +52,9 @@ export class FightReportView extends HTMLElement {
 		this.busy = true
 		this.simulation = 'Simulating…'
 		this.render()
-		// Let that paint first. Once started, the run below never yields to the event loop —
-		// it borrows the combat log, the clock and the RNG, so a live frame landing in the
-		// middle would write into the simulation's log and vice versa. Five fights take ~0.2s.
+		// Let that paint first — five fights take ~0.2s and the browser does nothing else meanwhile.
+		// Nothing worse than that any more: each simulated fight owns its log and its dice, so a
+		// live frame landing in the middle of one writes into a different fight's state (#67).
 		await new Promise(requestAnimationFrame)
 		try {
 			// `unitId`, not `constructor.name` — the production build minifies class names.
@@ -82,7 +82,7 @@ export class FightReportView extends HTMLElement {
 		const viewingHistory = !!stored
 		const report = stored
 			? analyze(stored.events, {units: stored.units, duration: stored.duration})
-			: analyze(combatLogs, {units: unitsOf(game), duration: game.elapsedTime})
+			: analyze(game.combatLog.events, {units: unitsOf(game), duration: game.elapsedTime})
 		const duration = stored ? stored.duration : game.elapsedTime
 		const fps = game.deltaTime > 0 ? Math.round(1000 / game.deltaTime) : 0
 		// The scrub only exists on a finished fight — a live one grows under the cursor.
@@ -278,7 +278,7 @@ export class FightReportView extends HTMLElement {
 		// The result panel is pinned to the live fight — while the other panels are on a stored
 		// one, its times would land somewhere meaningless in them.
 		if (!(this.getAttribute('mode') === 'result' && stored)) {
-			const start = (stored?.events ?? combatLogs)[0]?.time ?? 0
+			const start = (stored?.events ?? this.game?.combatLog.events ?? [])[0]?.time ?? 0
 			combatEvents.dispatchEvent(new CustomEvent('combatlog-seek', {detail: start + time}))
 		}
 		this.render()

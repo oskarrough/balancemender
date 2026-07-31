@@ -1,7 +1,7 @@
 import {html, render} from 'uhtml'
 import {roundOne} from '../utils'
 import {Task} from '../vroum'
-import {getCombatLogs} from '../combatlog'
+import {currentGame} from '../nodes/game-loop'
 
 /** more ideas
 
@@ -94,7 +94,8 @@ export class BalanceMonitor extends HTMLElement {
 
 	updateMetrics() {
 		const cutoffTime = Date.now() - this.metrics.period * 1000
-		const recentLogs = getCombatLogs().filter((log) => log.timestamp > cutoffTime)
+		const events = currentGame()?.combatLog.events ?? []
+		const recentLogs = events.filter((log) => log.timestamp > cutoffTime)
 
 		// Reset counters
 		this.metrics.totalDamage = 0

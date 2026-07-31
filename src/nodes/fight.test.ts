@@ -160,13 +160,12 @@ describe('restart', () => {
 		expect(game.enemies.map((u) => u.name)).toEqual(['Nakroth the Destroyer'])
 	})
 
-	it('clears the combat log so the next fight is not read on top of the last one', async () => {
-		const {combatLogs, logCombat} = await import('../combatlog')
+	it('clears the combat log so the next fight is not read on top of the last one', () => {
 		game = new GameLoop({party: [], enemies: ['TinyWolf']})
-		logCombat({timestamp: 1, eventType: 'SPELL_DAMAGE', value: 50})
-		expect(combatLogs.length).toBeGreaterThan(0)
+		game.combatLog.add({timestamp: 1, eventType: 'SPELL_DAMAGE', value: 50})
+		expect(game.combatLog.events.length).toBeGreaterThan(0)
 
 		game.restart()
-		expect(combatLogs).toHaveLength(0)
+		expect(game.combatLog.events).toHaveLength(0)
 	})
 })

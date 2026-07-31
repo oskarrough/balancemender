@@ -1,7 +1,8 @@
 import {applyStatics, log} from '../utils'
-import {logCombat, type CombatLogEvent} from '../combatlog'
+import type {CombatLogEvent} from '../combatlog'
 import {Aura} from './aura'
 import type {PlantedAura} from './effects'
+import type {GameLoop} from './game-loop'
 import type {Unit} from './unit'
 
 /**
@@ -62,7 +63,8 @@ export class BarrierAura extends Aura {
 		if (absorbed <= 0) return 0
 		this.pool -= absorbed
 
-		logCombat({
+		const {combatLog} = this.root as GameLoop
+		combatLog.add({
 			timestamp: Date.now(),
 			eventType: 'SPELL_ABSORBED',
 			// The barrier's caster, not whoever swung: this is the barrier doing something, and the

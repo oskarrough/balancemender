@@ -4,7 +4,7 @@ import type {Condition} from './nodes/types'
 // Combat event format inspired by WoW
 export interface CombatLogEvent {
 	timestamp: number
-	/** Milliseconds into the fight. Filled in from the clock — see `setCombatClock`. */
+	/** Milliseconds into the fight. Filled in from the log's clock — see `CombatLog`. */
 	time?: number
 	eventType: CombatEventType
 	sourceId?: string
@@ -74,61 +74,71 @@ export type CombatEventType =
 	// makes every fight already on disk unreadable.
 	| 'SPELL_ABSORBED'
 
-export const combatLogs: CombatLogEvent[] = []
-
-let castCount = 0
-
-/** Mint the id one ability use carries — see `castId` above. */
-export function nextCastId(abilityId: string) {
-	return `${abilityId}#${++castCount}`
-}
-
-/**
- * Restart the count and return what it was, so a simulation borrowing the log can put it back —
- * the same borrow-and-restore shape as `setCombatClock`. Ids restart with the log so a seeded
- * replay mints the same ones; uniqueness only has to hold within one log.
- */
-export function resetCastIds(count = 0) {
-	const previous = castCount
-	castCount = count
-	return previous
-}
-
 /** Bump when an event shape changes — stored fights carry this and get dropped on mismatch. */
 export const COMBATLOG_SCHEMA = 1
 
 /**
- * Where `time` comes from. The GameLoop points this at its own `elapsedTime` when it mounts,
- * so events are stamped with fight time rather than wall time — a simulated fight runs far
- * faster than real time, and `Date.now()` would squash the whole fight into a few hundred ms.
- */
-let clock: () => number = () => 0
-
-/** Returns the clock it replaced, so a temporary swap can put it back. */
-export function setCombatClock(fn: () => number) {
-	const previous = clock
-	clock = fn
-	return previous
-}
-
-/**
  * Where the panels hear about new events. Its own `EventTarget` rather than `document`, so the
  * stream exists in a simulation too — the game has to run without a DOM.
+ *
+ * The one thing here that is deliberately not per-game: the panels subscribe in
+ * `connectedCallback`, on the splash, before any `GameLoop` exists. "Something changed, redraw" is
+ * a UI concern rather than fight state, and a per-game channel would only mean every panel
+ * re-subscribing when a game appears. Which log is talking is `CombatLog.notify`, below.
  */
 export const combatEvents = new EventTarget()
 
 /**
- * Whether the panels get told about new events. A simulation borrows the log and turns this
- * off: those events belong to a fight nobody is watching, and letting them through would make
- * the live Combat log and Fight report redraw thousands of times off someone else's log.
+ * One fight's event stream. `GameLoop` owns one as `game.combatLog`, so two fights running at once
+ * cannot write into each other — see [architecture](../docs/architecture.md).
  */
-let notifying = true
+export class CombatLog {
+	readonly events: CombatLogEvent[] = []
 
-/** Returns the setting it replaced, so a temporary swap can put it back. */
-export function setCombatNotify(enabled: boolean) {
-	const previous = notifying
-	notifying = enabled
-	return previous
+	/**
+	 * Whether anyone is watching this fight: the panels get told about new events, and the events
+	 * go to the console at info level. A `SimLoop` turns it off — those events belong to a fight
+	 * nobody is watching, and letting them through would redraw the live panels thousands of times
+	 * off someone else's log.
+	 */
+	notify = true
+
+	private castCount = 0
+
+	/**
+	 * `clock` is where `time` comes from — the game hands its own `elapsedTime`, so events are
+	 * stamped with fight time rather than wall time. A simulated fight runs far faster than real
+	 * time, and `Date.now()` would squash the whole fight into a few hundred ms.
+	 */
+	constructor(private clock: () => number = () => 0) {}
+
+	/**
+	 * Record an event. Collecting happens here rather than in a pino serializer so the log
+	 * survives silencing the logger (simulations do exactly that).
+	 */
+	add(event: CombatLogEvent) {
+		if (!event.timestamp) event.timestamp = Date.now()
+		if (event.time === undefined) event.time = this.clock()
+		this.events.push(event)
+		if (this.notify) {
+			combatEvents.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
+			logger.info({combat: event})
+		}
+	}
+
+	/**
+	 * Mint the id one ability use carries — see `castId` above. Counted per log, so a seeded replay
+	 * mints the same ones; uniqueness only has to hold within one log.
+	 */
+	nextCastId(abilityId: string) {
+		return `${abilityId}#${++this.castCount}`
+	}
+
+	/** Start over, ids included — a new room is not read on top of the last one. */
+	clear() {
+		this.events.length = 0
+		this.castCount = 0
+	}
 }
 
 const formatter = new Intl.DateTimeFormat('de', {
@@ -184,8 +194,11 @@ const children: Pino.Logger[] = []
 
 /**
  * Set the level now, and for every logger made after this. Returns the level it replaced, so a
- * caller that only wants quiet for a while can hand it back — the same borrow-and-restore shape as
- * `setCombatClock` and `setCombatNotify` below.
+ * caller that only wants quiet for a while can hand it back.
+ *
+ * The last borrowed global in the fight path, and the honest one: a process-wide logger is not
+ * fight state. Two simulations at once still fight over it, so a concurrent run can be noisy —
+ * never wrong. See `runFight`.
  */
 export function setLogLevel(level: Pino.LevelWithSilent) {
 	const previous = defaultLevel
@@ -200,26 +213,4 @@ export function createLogger(logLevel: Pino.LevelWithSilent = defaultLevel) {
 	childLogger.level = logLevel
 	children.push(childLogger)
 	return childLogger
-}
-
-/**
- * Record a combat event. Collecting happens here rather than in a pino serializer so the
- * log survives silencing the logger (simulations do exactly that).
- */
-export function logCombat(event: CombatLogEvent) {
-	if (!event.timestamp) event.timestamp = Date.now()
-	if (event.time === undefined) event.time = clock()
-	combatLogs.push(event)
-	if (notifying) combatEvents.dispatchEvent(new CustomEvent('combatlog-update', {detail: event}))
-	logger.info({combat: event})
-}
-
-export function getCombatLogs(eventType?: CombatEventType): CombatLogEvent[] {
-	if (eventType) return combatLogs.filter((log) => log.eventType === eventType)
-	return [...combatLogs]
-}
-
-export function clearLogs() {
-	combatLogs.length = 0
-	resetCastIds()
 }

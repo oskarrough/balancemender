@@ -1,8 +1,6 @@
 import {GameLoop} from '../nodes/game-loop'
-import {AudioPlayer} from '../nodes/audio'
 import {BotDriver, Bot, BotName} from '../nodes/bot'
-import {combatLogs, resetCastIds, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
-import {setSeed} from '../rng'
+import {setLogLevel, CombatLogEvent} from '../combatlog'
 import {DEMO_ROOM, Room} from '../nodes/fight'
 import type {Unit} from '../nodes/unit'
 import {unitsOf, type Outcome, type UnitInfo} from './report'
@@ -43,25 +41,21 @@ export interface FightResult {
  * This is the real game — the real GameLoop, units, spells and combat log — with two
  * substitutions: the browser's frame clock is replaced by a fixed step, so a two-minute
  * fight resolves in milliseconds, and the healer is played by a `BotDriver`.
+ *
+ * The fight it builds owns its log, its dice and its speaker, so nothing here is borrowed from
+ * anyone and two of these can run at once — see [#67](https://github.com/oskarrough/balancemender/issues/67).
  */
 export async function runFight(trial: Trial = {}): Promise<FightResult> {
 	const {room = DEMO_ROOM, bot = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = trial
 	const lineup: Room = {party: room.party ?? DEMO_ROOM.party, enemies: room.enemies ?? DEMO_ROOM.enemies}
 
-	// Everything below borrows process-global state. It all has to happen inside the try,
-	// or a throw while building the fight leaves the live game holding a silenced logger,
-	// a frozen clock and someone else's combat log.
-	const restoreLog = borrowCombatLog()
-	// A simulated fight logs thousands of lines in a second — keep it to the combat log.
+	// The one thing still process-wide: a pino level is not fight state. Combat events are already
+	// quiet — `SimLoop` turns its log's `notify` off — so this only silences lifecycle chatter, and
+	// two simulations at once make each other noisy rather than wrong.
 	const level = setLogLevel('silent')
-	// A second GameLoop claims AudioPlayer.global, so give the live game its speaker back after.
-	const liveAudio = AudioPlayer.global
 	let game: SimLoop | undefined
 	try {
-		setSeed(seed)
-
-		game = new SimLoop(lineup)
-		game.audio.disabled = true
+		game = new SimLoop(lineup, seed)
 		await flush() // vroum mounts nodes in a microtask
 
 		new BotDriver(game.player, bot)
@@ -87,17 +81,14 @@ export async function runFight(trial: Trial = {}): Promise<FightResult> {
 			seed,
 			outcome,
 			duration: Math.round(game.elapsedTime),
-			events: combatLogs.slice(),
+			events: game.combatLog.events.slice(),
 			units,
 			survivors,
 		}
 	} finally {
 		game?.disconnect()
 		await flush()
-		AudioPlayer.global = liveAudio
 		setLogLevel(level)
-		setSeed(null)
-		restoreLog()
 	}
 }
 
@@ -122,30 +113,18 @@ export class SimLoop extends GameLoop {
 	 * 200ms at a time, and the browser's stall clamp would quietly run that fight at half speed.
 	 */
 	maxFrameTime = Infinity
+
+	constructor(room?: Room, seed: number | null = null) {
+		super(room, seed)
+		// Nobody is watching this fight: the live panels must not redraw off its log, and its
+		// thousands of events must not reach the console.
+		this.combatLog.notify = false
+		// No `Audio` in node, and in a browser this would play a fight nobody can see.
+		this.audio.disabled = true
+	}
 }
 
 const isAlive = (c: Unit) => c.health.current > 0
 
 /** Let vroum's queued mount/disconnect microtasks run. */
 const flush = () => Promise.resolve()
-
-/**
- * Take the combat log for the duration of a fight and give it back afterwards, so simulating
- * from inside a live game doesn't eat the log of the fight you are playing.
- */
-function borrowCombatLog() {
-	const previous = combatLogs.splice(0, combatLogs.length)
-	const previousClock = setCombatClock(() => 0)
-	// Restarted so a seeded fight mints the same castIds every run, and restored so the live
-	// fight this borrowed from never reuses one.
-	const previousCastCount = resetCastIds()
-	// The panels listen on `document` — a simulated fight is not theirs to redraw.
-	const previousNotify = setCombatNotify(false)
-	return () => {
-		combatLogs.length = 0
-		combatLogs.push(...previous)
-		setCombatClock(previousClock)
-		resetCastIds(previousCastCount)
-		setCombatNotify(previousNotify)
-	}
-}

@@ -1,5 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it} from 'vitest'
-import {combatLogs, clearLogs} from '../combatlog'
+import {afterEach, describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
 import {SimLoop} from '../sim/run'
 import {smite as smiteBot} from './bot'
@@ -9,7 +8,6 @@ import {STAT} from './stats'
 
 let game: GameLoop | undefined
 
-beforeEach(() => clearLogs())
 afterEach(async () => {
 	game?.disconnect()
 	await settle()
@@ -20,7 +18,8 @@ describe('Smite', () => {
 		const sim = new SimLoop({party: [], enemies: ['TinyWolf']})
 		game = sim
 		await settle()
-		clearLogs()
+		// Drop FIGHT_START and the fight's opening chatter — the cast below is what is asserted on.
+		sim.combatLog.clear()
 		const wolf = sim.enemies[0]
 		const healthBefore = wolf.health.current
 		const manaBefore = sim.player.mana.current
@@ -35,13 +34,13 @@ describe('Smite', () => {
 		expect(damage).toBeGreaterThanOrEqual(15)
 		expect(damage).toBeLessThanOrEqual(25)
 		expect(sim.player.mana.current).toBe(manaBefore - 40)
-		expect(combatLogs.find((event) => event.abilityId === 'Smite' && event.eventType === 'SPELL_DAMAGE')).toMatchObject(
-			{
-				sourceId: sim.player.id,
-				targetId: wolf.id,
-				value: damage,
-			},
-		)
+		expect(
+			sim.combatLog.events.find((event) => event.abilityId === 'Smite' && event.eventType === 'SPELL_DAMAGE'),
+		).toMatchObject({
+			sourceId: sim.player.id,
+			targetId: wolf.id,
+			value: damage,
+		})
 	})
 
 	it('refuses ally targets', () => {
@@ -59,7 +58,8 @@ describe('Smite', () => {
 		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
 		game = sim
 		await settle()
-		clearLogs()
+		// Drop FIGHT_START and the fight's opening chatter — the cast below is what is asserted on.
+		sim.combatLog.clear()
 		const wolf = sim.enemies[0]
 		wolf.setBaseStat(STAT.INTELLECT, 40)
 		wolf.abilities = {Smite}
@@ -72,12 +72,12 @@ describe('Smite', () => {
 		await settle()
 
 		expect(sim.party[0].health.current).toBeLessThan(healthBefore)
-		expect(combatLogs.find((event) => event.abilityId === 'Smite' && event.eventType === 'SPELL_DAMAGE')).toMatchObject(
-			{
-				sourceId: wolf.id,
-				targetId: sim.party[0].id,
-			},
-		)
+		expect(
+			sim.combatLog.events.find((event) => event.abilityId === 'Smite' && event.eventType === 'SPELL_DAMAGE'),
+		).toMatchObject({
+			sourceId: wolf.id,
+			targetId: sim.party[0].id,
+		})
 	})
 })
 
