@@ -1,5 +1,6 @@
-import type {CombatEventType, CombatLogEvent} from '../combatlog'
+import type {CombatLogEvent} from '../combatlog'
 import type {GameLoop} from '../nodes/game-loop'
+import {accumulateEvents, isDamage, isHeal} from './report-analysis'
 
 export type Outcome = 'victory' | 'defeat' | 'timeout'
 
@@ -26,11 +27,6 @@ export function unitsOf(game: GameLoop): UnitInfo[] {
  * simulated in a terminal and a fight played in the browser produce the same events, so
  * they get read by the same code.
  */
-
-const DAMAGE: CombatEventType[] = ['SPELL_DAMAGE', 'SPELL_PERIODIC_DAMAGE', 'SWING_DAMAGE', 'RANGE_DAMAGE']
-const HEAL: CombatEventType[] = ['SPELL_HEAL', 'SPELL_PERIODIC_HEAL']
-/** Both carry `wasted` when a barrier has pool left — see `BarrierAura.removalFields`. */
-const AURA_ENDED: CombatEventType[] = ['SPELL_AURA_REMOVED', 'SPELL_AURA_REFRESH']
 
 export interface UnitStats {
 	/** The unit's id. Names change mid-fight — `Fight.renumber()` sees to that. */
@@ -140,148 +136,18 @@ export interface AnalyzeOptions {
 const at = (event: CombatLogEvent) => event.time ?? event.timestamp
 
 export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}): FightReport {
-	const {units: unitInfo, outcome, columns = 40} = options
+	const {units, outcome, columns = 40} = options
 	const sorted = [...events].sort((a, b) => at(a) - at(b))
 	const start = sorted.length ? at(sorted[0]) : 0
 	const duration = options.duration ?? (sorted.length ? at(sorted[sorted.length - 1]) - start : 0)
-
-	const units = new Map<string, UnitStats>()
-	const abilities = new Map<string, AbilityStats>()
-	const casts = new Map<string, CastStats>()
-	const deaths: Death[] = []
-	const source = (event: CombatLogEvent) => unit(units, event.sourceId, event.sourceName)
-	const target = (event: CombatLogEvent) => unit(units, event.targetId, event.targetName)
-	/** When each unit currently below the injured line dropped there. Empty means nobody is. */
-	const injuredSince = new Map<UnitStats, number>()
-	const leaveInjured = (stats: UnitStats, time: number) => {
-		const since = injuredSince.get(stats)
-		if (since === undefined) return
-		stats.injuredTime += time - since
-		injuredSince.delete(stats)
-	}
-
-	for (const event of sorted) {
-		const value = event.value ?? 0
-		const overheal = event.overheal ?? 0
-
-		if (DAMAGE.includes(event.eventType)) {
-			const attacker = source(event)
-			attacker.damageDone += value
-			attacker.hits++
-			target(event).damageTaken += value
-			ability(abilities, event.abilityId, event.abilityName, value, 0)
-		} else if (HEAL.includes(event.eventType)) {
-			const healer = source(event)
-			healer.healingDone += value - overheal
-			healer.overhealing += overheal
-			target(event).healingTaken += value - overheal
-			ability(abilities, event.abilityId, event.abilityName, value, overheal)
-			cast(casts, event, at(event) - start, value, overheal)
-		} else if (event.eventType === 'SPELL_ABSORBED') {
-			// Credited to the barrier's caster, the way healing is — see `BarrierAura.absorb`.
-			source(event).absorbed += value
-			ability(abilities, event.abilityId, event.abilityName, value, 0)
-		} else if (AURA_ENDED.includes(event.eventType)) {
-			// `wasted` is only present on a barrier's own removal/refresh — everything else in
-			// `AURA_ENDED` leaves it undefined, so this is a no-op for periodic auras.
-			if (event.wasted) source(event).wasted += event.wasted
-		} else if (event.eventType === 'SPELL_CAST_START') {
-			// Counted at the start, not the success: an interrupted cast still cost the caster the
-			// time it spent casting.
-			source(event).busyTime += event.busyFor ?? 0
-		} else if (event.eventType === 'SPELL_CAST_SUCCESS') {
-			source(event).casts++
-			const stats = ability(abilities, event.abilityId, event.abilityName, 0, 0)
-			stats.casts++
-		} else if (event.eventType === 'RESOURCE_SPENT') {
-			source(event).manaSpent += Math.abs(value)
-		} else if (event.eventType === 'UNIT_CONDITION') {
-			const stats = target(event)
-			if (event.condition === 'injured') {
-				// Guarded rather than overwritten: two "injured" in a row would otherwise restart
-				// the clock and lose everything before the second one.
-				if (!injuredSince.has(stats)) injuredSince.set(stats, at(event))
-			} else {
-				leaveInjured(stats, at(event))
-			}
-		} else if (event.eventType === 'UNIT_DIED' && event.targetName) {
-			const time = at(event) - start
-			const stats = target(event)
-			deaths.push({id: event.targetId, name: event.targetName, time})
-			stats.deathTime = time
-			// A killing blow deliberately logs no condition change, so a unit that died injured
-			// still has an interval open. Dying ends it — a corpse is not in danger.
-			leaveInjured(stats, at(event))
-		}
-	}
-
-	// Units spawn at full health, so anyone still injured at the last event has been since their
-	// last crossing. The fight's end closes the interval.
-	for (const [stats, since] of injuredSince) stats.injuredTime += start + duration - since
-
-	// The units are the authority on who is who. The list also carries the *current* name,
-	// which matters because spawning a second wolf renames the first one halfway through the log.
-	if (unitInfo) {
-		for (const entry of unitInfo) {
-			const stats = unit(units, entry.id, entry.name)
-			stats.name = entry.name
-			stats.faction = entry.faction
-		}
-	}
-
-	// Logs and combat state keep their full precision. A report is the presentation boundary, so
-	// clean up accumulated IEEE-754 noise here once rather than teaching every renderer about it.
-	for (const stats of units.values()) {
-		stats.damageDone = round(stats.damageDone)
-		stats.damageTaken = round(stats.damageTaken)
-		stats.healingDone = round(stats.healingDone)
-		stats.overhealing = round(stats.overhealing)
-		stats.healingTaken = round(stats.healingTaken)
-		stats.absorbed = round(stats.absorbed)
-		stats.wasted = round(stats.wasted)
-		stats.manaSpent = round(stats.manaSpent)
-	}
-	for (const stats of abilities.values()) {
-		stats.total = round(stats.total)
-		stats.overheal = round(stats.overheal)
-		stats.min = round(stats.min)
-		stats.max = round(stats.max)
-		stats.avg = round(stats.avg)
-	}
-
-	// Ratio first, so a fully wasted Renew outranks a big heal that mostly landed; the amount only
-	// breaks ties. Capped because the point is the worst offenders, not a per-cast ledger.
-	const worstCasts = [...casts.values()]
-		.filter((c) => c.overheal > 0)
-		.sort((a, b) => b.overheal / b.total - a.overheal / a.total || b.overheal - a.overheal)
-		.slice(0, 5)
-	for (const c of worstCasts) {
-		c.time = Math.round(c.time)
-		c.total = round(c.total)
-		c.overheal = round(c.overheal)
-	}
-
-	const list = [...units.values()].filter((a) => a.name !== 'unknown')
-	const totals = {
-		damage: sum(list, (a) => a.damageDone),
-		healing: sum(list, (a) => a.healingDone),
-		overhealing: sum(list, (a) => a.overhealing),
-		dps: 0,
-		hps: 0,
-	}
-	const seconds = duration / 1000 || 1
-	totals.dps = round(totals.damage / seconds)
-	totals.hps = round(totals.healing / seconds)
+	const {totals, ...rows} = accumulateEvents(sorted, {units, start, duration})
 
 	return {
 		duration,
 		events: sorted.length,
 		outcome,
-		units: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
-		abilities: [...abilities.values()].filter((a) => a.id !== 'unknown').sort((a, b) => b.total - a.total),
-		worstCasts,
-		deaths,
-		health: unitInfo ? healthSeries(sorted, unitInfo, start, duration, columns) : [],
+		...rows,
+		health: units ? healthSeries(sorted, units, start, duration, columns) : [],
 		totals,
 	}
 }
@@ -305,9 +171,9 @@ export function healthSeries(
 	for (const event of events) {
 		const unit = event.targetId ? byId.get(event.targetId) : undefined
 		if (!unit) continue
-		const delta = DAMAGE.includes(event.eventType)
+		const delta = isDamage(event.eventType)
 			? -(event.value ?? 0)
-			: HEAL.includes(event.eventType)
+			: isHeal(event.eventType)
 				? (event.value ?? 0) - (event.overheal ?? 0)
 				: 0
 		if (!delta) continue
@@ -334,76 +200,6 @@ function fill(points: (number | null)[]) {
 		last = point
 		return point
 	})
-}
-
-/**
- * One row per unit, keyed by id. Every event the game logs carries one; the name is only a
- * label, and two units can share it for the moment between a spawn and the renumbering.
- */
-function unit(units: Map<string, UnitStats>, id?: string, name = 'unknown') {
-	const key = id ?? name
-	let stats = units.get(key)
-	if (!stats) {
-		stats = {
-			id,
-			name,
-			damageDone: 0,
-			damageTaken: 0,
-			healingDone: 0,
-			overhealing: 0,
-			healingTaken: 0,
-			absorbed: 0,
-			wasted: 0,
-			casts: 0,
-			hits: 0,
-			manaSpent: 0,
-			busyTime: 0,
-			injuredTime: 0,
-		}
-		units.set(key, stats)
-	}
-	return stats
-}
-
-/**
- * Keyed by `abilityId`, displayed by `abilityName` — the same id/name split the units use, and
- * for the same reason: the id is what stays put. `Renew`'s cast and the ticks its aura lands share
- * an id deliberately, so they total into one row.
- */
-function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id, value: number, overheal: number) {
-	let stats = abilities.get(id)
-	if (!stats) {
-		stats = {id, name, casts: 0, hits: 0, total: 0, overheal: 0, min: Infinity, max: 0, avg: 0}
-		abilities.set(id, stats)
-	}
-	if (value) {
-		stats.hits++
-		stats.total += value
-		stats.overheal += overheal
-		stats.min = Math.min(stats.min, value)
-		stats.max = Math.max(stats.max, value)
-		stats.avg = round(stats.total / stats.hits)
-	}
-	return stats
-}
-
-/** One row per healing cast, keyed by `castId`. Only events that carry one land here. */
-function cast(casts: Map<string, CastStats>, event: CombatLogEvent, time: number, value: number, overheal: number) {
-	if (!event.castId) return
-	let stats = casts.get(event.castId)
-	if (!stats) {
-		stats = {
-			castId: event.castId,
-			abilityId: event.abilityId ?? 'unknown',
-			abilityName: event.abilityName ?? 'unknown',
-			time,
-			total: 0,
-			overheal: 0,
-		}
-		casts.set(event.castId, stats)
-	}
-	stats.total += value
-	stats.overheal += overheal
 }
 
 /**
@@ -436,6 +232,4 @@ export function margin(part: number, whole: number) {
 	return Math.round(half * 100)
 }
 
-const sum = <T>(items: T[], get: (item: T) => number) => items.reduce((total, item) => total + get(item), 0)
-const round = (n: number) => Math.round(n * 10) / 10
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max))

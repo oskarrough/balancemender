@@ -138,6 +138,34 @@ describe('analyze', () => {
 		expect(heal).toMatchObject({casts: 1, hits: 1, total: 40, overheal: 10, avg: 40})
 	})
 
+	it('ranks and caps wasted casts after grouping their hits', () => {
+		const heal = (castId: string, time: number, value: number, overheal: number) =>
+			event({
+				castId,
+				time,
+				eventType: 'SPELL_HEAL',
+				sourceId: 'player',
+				sourceName: 'Player',
+				abilityId: castId,
+				abilityName: castId,
+				value,
+				overheal,
+			})
+		const report = analyze([
+			event({time: 0, eventType: 'FIGHT_START'}),
+			heal('all', 500, 10, 10),
+			heal('grouped', 1000, 16.66, 15),
+			heal('grouped', 1100, 16.66, 15),
+			heal('eighty', 2000, 10, 8),
+			heal('seventy', 3000, 10, 7),
+			heal('sixty', 4000, 10, 6),
+			heal('fifty', 5000, 10, 5),
+		])
+
+		expect(report.worstCasts.map((cast) => cast.castId)).toEqual(['all', 'grouped', 'eighty', 'seventy', 'sixty'])
+		expect(report.worstCasts[1]).toMatchObject({time: 1000, total: 33.3, overheal: 30})
+	})
+
 	it('removes floating-point noise from accumulated report values', () => {
 		const decimal = analyze([
 			event({sourceId: 'wolf', sourceName: 'Wolf', targetId: 'tank', targetName: 'Tank', value: 0.1}),
