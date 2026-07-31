@@ -5,8 +5,9 @@
 	top: 30%;
 	left: 0;
 	right: 0;
-	width: 26rem;
+	width: 42rem;
 	max-width: 92vw;
+	max-height: 86vh;
 	margin: 0 auto;
 	z-index: 100;
 	background: var(--c-snow-white);
@@ -16,7 +17,7 @@
 	border-bottom-width: 0.2rem;
 	border-radius: var(--radius);
 	box-shadow: 0 0.4rem 1rem hsla(0, 0%, 10%, 0.4);
-	overflow: hidden;
+	overflow: auto;
 }
 
 /* The coloured strip is the only thing that tells victory, defeat and timeout apart. */
@@ -40,7 +41,7 @@
 	background: var(--c-blue-gray);
 }
 
-.GameOver p {
+.GameOver > p {
 	margin: 1rem;
 	font-size: 1rem;
 }
@@ -50,6 +51,14 @@
 	display: flex;
 	justify-content: center;
 	gap: 0.4rem;
+}
+
+.GameOver > fight-report {
+	display: block;
+	margin: 0 1rem 1rem;
+	padding-top: 0.8rem;
+	border-top: 1px solid color-mix(in oklch, var(--c-black), transparent 80%);
+	text-align: left;
 }
 
 .GameOver .Button {

@@ -75,6 +75,7 @@ export class FightReportView extends HTMLElement {
 			render(this, () => html`<p>Waiting for game…</p>`)
 			return
 		}
+		const resultOnly = this.getAttribute('mode') === 'result'
 		const stored = this.selectedFightId ? getFight(this.selectedFightId) : undefined
 		const viewingHistory = this.selectedFightId !== null && !!stored
 		const report = stored
@@ -87,7 +88,7 @@ export class FightReportView extends HTMLElement {
 			this,
 			() => html`
 				<div class="FightReport">
-					${this.history()}
+					${resultOnly ? '' : this.history()}
 					<p class="FightReport-summary">
 						<strong class="FightReport-stat" data-stat="duration">${(duration / 1000).toFixed(1)}s</strong> ·
 						<span class="FightReport-stat" data-stat="events">${report.events} events</span> ·
@@ -96,7 +97,7 @@ export class FightReportView extends HTMLElement {
 						<span class="FightReport-stat" data-stat="overheal"
 							>${percent(report.totals.overhealing, report.totals.overhealing + report.totals.healing)} overheal</span
 						>
-						${stored
+						${stored || resultOnly
 							? ''
 							: html` · <span class="FightReport-stat" data-stat="fps">${fps} fps</span> ·
 									<span class="FightReport-stat" data-stat="gcd">gcd ${game.player?.gcd ? 'on' : 'off'}</span>`}
@@ -171,7 +172,7 @@ export class FightReportView extends HTMLElement {
 								</table>
 							`
 						: ''}
-					${viewingHistory
+					${viewingHistory || resultOnly
 						? ''
 						: html`
 								<div class="FightReport-controls">

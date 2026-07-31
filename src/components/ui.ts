@@ -98,6 +98,7 @@ function GameOver(game: GameLoop) {
 			<h2>${headline}</h2>
 			<p>${blurb}</p>
 			${rooms}
+			<fight-report mode="result"></fight-report>
 			<button class="Button" onclick=${onclick}>${label}</button>
 		</div>
 	`
