@@ -1,7 +1,7 @@
 import {GameLoop} from '../nodes/game-loop'
 import {AudioPlayer} from '../nodes/audio'
 import {BotDriver, Bot, BotName} from '../nodes/bot'
-import {combatLogs, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
+import {combatLogs, resetCastIds, setCombatClock, setCombatNotify, setLogLevel, CombatLogEvent} from '../combatlog'
 import {setSeed} from '../rng'
 import {DEMO_ROOM, Room} from '../nodes/fight'
 import type {Unit} from '../nodes/unit'
@@ -136,12 +136,16 @@ const flush = () => Promise.resolve()
 function borrowCombatLog() {
 	const previous = combatLogs.splice(0, combatLogs.length)
 	const previousClock = setCombatClock(() => 0)
+	// Restarted so a seeded fight mints the same castIds every run, and restored so the live
+	// fight this borrowed from never reuses one.
+	const previousCastCount = resetCastIds()
 	// The panels listen on `document` — a simulated fight is not theirs to redraw.
 	const previousNotify = setCombatNotify(false)
 	return () => {
 		combatLogs.length = 0
 		combatLogs.push(...previous)
 		setCombatClock(previousClock)
+		resetCastIds(previousCastCount)
 		setCombatNotify(previousNotify)
 	}
 }

@@ -84,6 +84,21 @@ export interface AbilityStats {
 	avg: number
 }
 
+/**
+ * One use of an ability, totalled from every heal event carrying its `castId`. What the per-ability
+ * row cannot say: Renew overhealing 40% overall is descriptive, *this* Renew landing on a full
+ * health bar is a cast that did nothing.
+ */
+export interface CastStats {
+	castId: string
+	abilityId: string
+	abilityName: string
+	/** Milliseconds into the fight when this use first landed something. */
+	time: number
+	total: number
+	overheal: number
+}
+
 export interface Series {
 	id: string
 	name: string
@@ -107,6 +122,8 @@ export interface FightReport {
 	outcome?: Outcome
 	units: UnitStats[]
 	abilities: AbilityStats[]
+	/** The healing casts that did the least, highest overheal ratio first. Empty when none overhealed. */
+	worstCasts: CastStats[]
 	deaths: Death[]
 	health: Series[]
 	totals: {damage: number; healing: number; overhealing: number; dps: number; hps: number}
@@ -130,6 +147,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 
 	const units = new Map<string, UnitStats>()
 	const abilities = new Map<string, AbilityStats>()
+	const casts = new Map<string, CastStats>()
 	const deaths: Death[] = []
 	const source = (event: CombatLogEvent) => unit(units, event.sourceId, event.sourceName)
 	const target = (event: CombatLogEvent) => unit(units, event.targetId, event.targetName)
@@ -158,6 +176,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 			healer.overhealing += overheal
 			target(event).healingTaken += value - overheal
 			ability(abilities, event.abilityId, event.abilityName, value, overheal)
+			cast(casts, event, at(event) - start, value, overheal)
 		} else if (event.eventType === 'SPELL_ABSORBED') {
 			// Credited to the barrier's caster, the way healing is — see `BarrierAura.absorb`.
 			source(event).absorbed += value
@@ -230,6 +249,18 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 		stats.avg = round(stats.avg)
 	}
 
+	// Ratio first, so a fully wasted Renew outranks a big heal that mostly landed; the amount only
+	// breaks ties. Capped because the point is the worst offenders, not a per-cast ledger.
+	const worstCasts = [...casts.values()]
+		.filter((c) => c.overheal > 0)
+		.sort((a, b) => b.overheal / b.total - a.overheal / a.total || b.overheal - a.overheal)
+		.slice(0, 5)
+	for (const c of worstCasts) {
+		c.time = Math.round(c.time)
+		c.total = round(c.total)
+		c.overheal = round(c.overheal)
+	}
+
 	const list = [...units.values()].filter((a) => a.name !== 'unknown')
 	const totals = {
 		damage: sum(list, (a) => a.damageDone),
@@ -248,6 +279,7 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
 		outcome,
 		units: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
 		abilities: [...abilities.values()].filter((a) => a.id !== 'unknown').sort((a, b) => b.total - a.total),
+		worstCasts,
 		deaths,
 		health: unitInfo ? healthSeries(sorted, unitInfo, start, duration, columns) : [],
 		totals,
@@ -353,6 +385,25 @@ function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id
 		stats.avg = round(stats.total / stats.hits)
 	}
 	return stats
+}
+
+/** One row per healing cast, keyed by `castId`. Only events that carry one land here. */
+function cast(casts: Map<string, CastStats>, event: CombatLogEvent, time: number, value: number, overheal: number) {
+	if (!event.castId) return
+	let stats = casts.get(event.castId)
+	if (!stats) {
+		stats = {
+			castId: event.castId,
+			abilityId: event.abilityId ?? 'unknown',
+			abilityName: event.abilityName ?? 'unknown',
+			time,
+			total: 0,
+			overheal: 0,
+		}
+		casts.set(event.castId, stats)
+	}
+	stats.total += value
+	stats.overheal += overheal
 }
 
 /**

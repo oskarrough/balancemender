@@ -1,5 +1,5 @@
 import {Task} from '../vroum'
-import type {CombatEventType} from '../combatlog'
+import {nextCastId, type CombatEventType} from '../combatlog'
 import {applyStatics} from '../utils'
 import {AudioPlayer} from './audio'
 import {AbilityUse} from './ability-use'
@@ -47,6 +47,8 @@ export class Ability extends Task {
 	effects: readonly Effect[] = []
 	/** This use's resolved caster side, snapshotted at construction. Effects land against it. */
 	readonly landing: Landing
+	/** Names this one use in the combat log, so every event it causes can be traced back to it. */
+	readonly castId: string
 	private used = false
 
 	/** Opts into the tap-to-confirm sweet spot (#33). Resolved from the static the same as everything else. */
@@ -132,6 +134,7 @@ export class Ability extends Task {
 			'sweetSpotWindow',
 			'sweetSpotBonus',
 		)
+		this.castId = nextCastId(this.id)
 		// The caster's power is read here and nowhere else, so it is the power they had when the cast
 		// began. Everything this use lands resolves against this landing.
 		this.landing = new Landing(this, target, parent.stats.powerFor(this.school))

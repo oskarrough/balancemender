@@ -77,6 +77,7 @@ export class AbilityUse {
 			sourceName: unit.name,
 			abilityId: ability.id,
 			abilityName: ability.name,
+			castId: ability.castId,
 		})
 		return {ok: true, value: ability}
 	}
@@ -127,6 +128,7 @@ export class AbilityUse {
 			sourceName: unit.name,
 			abilityId: ability.id,
 			abilityName: ability.name,
+			castId: ability.castId,
 			value: ability.delay,
 			busyFor: Math.max(ability.delay, unit.gcd?.delay ?? 0),
 		})
@@ -144,6 +146,7 @@ export class AbilityUse {
 			sourceName: unit.name,
 			abilityId: ability.id,
 			abilityName: ability.name,
+			castId: ability.castId,
 		})
 	}
 
@@ -171,6 +174,7 @@ export class AbilityUse {
 				sourceName: unit.name,
 				abilityId: ability.id,
 				abilityName: ability.name,
+				castId: ability.castId,
 			})
 		}
 
@@ -188,6 +192,7 @@ export class AbilityUse {
 			eventType: 'RESOURCE_SPENT',
 			sourceId: unit.id,
 			sourceName: unit.name,
+			castId: ability.castId,
 			value: -ability.cost,
 			extraInfo: 'MANA',
 		})

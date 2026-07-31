@@ -73,13 +73,21 @@ export interface PlantedAura {
 	magnitude: number
 	threatMultiplier: number
 	school: AbilitySchool
+	/** The one ability use that planted it, so the aura's events trace back to the cast. */
+	castId?: string
 }
 
 /** One of those, for the effect that plants an aura and for anything standing in for one. */
-export const planted = (magnitude: number, threatMultiplier = 1, school: AbilitySchool = 'physical'): PlantedAura => ({
+export const planted = (
+	magnitude: number,
+	threatMultiplier = 1,
+	school: AbilitySchool = 'physical',
+	castId?: string,
+): PlantedAura => ({
 	magnitude,
 	threatMultiplier,
 	school,
+	castId,
 })
 
 /** Every health change an effect makes is credited to the ability that declared it. */
@@ -93,6 +101,7 @@ function hit({ability, target, bonus}: Landing, amount: number, eventType: Comba
 		eventType,
 		threatMultiplier: ability.threatMultiplier,
 		school: ability.school,
+		castId: ability.castId,
 		// The landing already carries the bonus a sweet-spot hit earned (#33) — this only tells the
 		// floating number to look different, generic to any ability that opts in.
 		sweetSpot: bonus !== 1,
@@ -147,7 +156,11 @@ export class ApplyAura implements Effect {
 		// cancelled its auras. Do not plant one on a corpse afterwards.
 		if (!target.alive) return
 		const magnitude = landing.resolve(this.coefficient)
-		new this.auraClass(target, ability.parent, planted(magnitude, ability.threatMultiplier, ability.school))
+		new this.auraClass(
+			target,
+			ability.parent,
+			planted(magnitude, ability.threatMultiplier, ability.school, ability.castId),
+		)
 	}
 }
 

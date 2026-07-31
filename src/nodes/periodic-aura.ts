@@ -60,6 +60,7 @@ export class PeriodicAura extends Aura {
 			this.total = planted.magnitude
 			this.threatMultiplier = planted.threatMultiplier
 			this.school = planted.school
+			this.castId = planted.castId
 		}
 	}
 
@@ -74,6 +75,7 @@ export class PeriodicAura extends Aura {
 			eventType: this.harms ? 'SPELL_PERIODIC_DAMAGE' : 'SPELL_PERIODIC_HEAL',
 			threatMultiplier: this.threatMultiplier,
 			school: this.school,
+			castId: this.castId,
 		})
 	}
 

@@ -81,6 +81,15 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 		)
 	}
 
+	if (report.worstCasts.length) {
+		lines.push(
+			'',
+			`  wasted casts  ${report.worstCasts
+				.map((c) => `${c.abilityName} ${seconds(c.time)} (${percentOf(c.overheal, c.total)})`)
+				.join(', ')}`,
+		)
+	}
+
 	if (report.deaths.length) {
 		lines.push('', `  deaths  ${report.deaths.map((d) => `${d.name} ${seconds(d.time)}`).join(', ')}`)
 	}

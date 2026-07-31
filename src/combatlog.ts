@@ -38,8 +38,12 @@ export interface CombatLogEvent {
 	 */
 	condition?: Condition
 	extraInfo?: string
-	isAOE?: boolean
-	groupId?: string
+	/**
+	 * The one use of an ability this event traces back to, minted per `Ability` instance. What ties
+	 * a HoT's ticks to the cast that applied them — per-ability totals can say Renew overhealed 40%,
+	 * only this can say *that* Renew did nothing.
+	 */
+	castId?: string
 }
 
 export type CombatEventType =
@@ -71,6 +75,24 @@ export type CombatEventType =
 	| 'SPELL_ABSORBED'
 
 export const combatLogs: CombatLogEvent[] = []
+
+let castCount = 0
+
+/** Mint the id one ability use carries — see `castId` above. */
+export function nextCastId(abilityId: string) {
+	return `${abilityId}#${++castCount}`
+}
+
+/**
+ * Restart the count and return what it was, so a simulation borrowing the log can put it back —
+ * the same borrow-and-restore shape as `setCombatClock`. Ids restart with the log so a seeded
+ * replay mints the same ones; uniqueness only has to hold within one log.
+ */
+export function resetCastIds(count = 0) {
+	const previous = castCount
+	castCount = count
+	return previous
+}
 
 /** Bump when an event shape changes — stored fights carry this and get dropped on mismatch. */
 export const COMBATLOG_SCHEMA = 1
@@ -129,7 +151,6 @@ function formatCombatEvent(event: CombatLogEvent): string {
 	if (event.abilityName) parts.push(event.abilityName)
 	if (event.value !== undefined) parts.push(event.value.toString())
 	if (event.extraInfo) parts.push(event.extraInfo)
-	if (event.isAOE) parts.push('AOE')
 	return parts.join(' ')
 }
 
@@ -200,4 +221,5 @@ export function getCombatLogs(eventType?: CombatEventType): CombatLogEvent[] {
 
 export function clearLogs() {
 	combatLogs.length = 0
+	resetCastIds()
 }

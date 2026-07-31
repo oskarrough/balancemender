@@ -34,6 +34,8 @@ export class Aura extends Task {
 
 	casterName = ''
 	casterId = ''
+	/** The ability use that planted this aura, when one did — set from `PlantedAura` by subclasses. */
+	castId?: string
 
 	/** Replaced by a fresh copy rather than run out. See `supersede`. */
 	superseded = false
@@ -141,6 +143,7 @@ export class Aura extends Task {
 			targetName: this.parent.name || 'Unknown',
 			abilityId: this.id,
 			abilityName: this.name,
+			castId: this.castId,
 			...extra,
 			// Only when there is more than one, so the common case does not read as "(1 stack)".
 			...(stacks > 1 && {extraInfo: `${stacks} stacks`}),

@@ -46,7 +46,10 @@ export class BarrierAura extends Aura {
 	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
 		super(parent, caster)
 		applyStatics(this, 'pool')
-		if (planted) this.pool = planted.magnitude
+		if (planted) {
+			this.pool = planted.magnitude
+			this.castId = planted.castId
+		}
 		this.delay = (this.constructor as typeof BarrierAura).lifetime
 	}
 
@@ -70,6 +73,7 @@ export class BarrierAura extends Aura {
 			targetName: this.parent.name || 'Unknown',
 			abilityId: this.id,
 			abilityName: this.name,
+			castId: this.castId,
 			value: absorbed,
 		})
 

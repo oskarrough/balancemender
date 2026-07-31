@@ -130,6 +130,20 @@ describe('tick timing', () => {
 	})
 })
 
+describe('cast attribution', () => {
+	it('stamps every tick with the castId of the use that planted it', async () => {
+		game = new GameLoop({party: ['Tank'], enemies: []})
+		const renew = new Renew(game.player, game.tank)
+		renew.land()
+		await settle()
+		aurasNamed(game.tank, 'Renew')[0].tick()
+
+		const tick = combatLogs.find((event) => event.eventType === 'SPELL_PERIODIC_HEAL')
+		expect(renew.castId).toBeTruthy()
+		expect(tick?.castId).toBe(renew.castId)
+	})
+})
+
 describe('the wolf bleed', () => {
 	it('opens a wound that later bites refresh rather than stack', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})

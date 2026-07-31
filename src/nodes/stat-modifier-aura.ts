@@ -26,7 +26,10 @@ export class StatModifierAura extends Aura {
 	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
 		super(parent, caster)
 		applyStatics(this, 'stat', 'modifier')
-		if (planted) this.modifier = planted.magnitude
+		if (planted) {
+			this.modifier = planted.magnitude
+			this.castId = planted.castId
+		}
 		this.delay = (this.constructor as typeof StatModifierAura).lifetime
 	}
 

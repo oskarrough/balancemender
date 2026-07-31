@@ -21,6 +21,8 @@ export interface Hit {
 	threatMultiplier?: number
 	/** Landed via a sweet-spot tap-to-confirm (#33) — the floating number reads differently. */
 	sweetSpot?: boolean
+	/** The one ability use this hit traces back to — see `CombatLogEvent.castId`. */
+	castId?: string
 }
 
 /**
@@ -39,6 +41,7 @@ export function applyHit({
 	eventType,
 	threatMultiplier = 1,
 	sweetSpot,
+	castId,
 }: Hit): number {
 	// Barriers take their share before anything else here runs, so `landed`, the floating number and
 	// the death check all follow from what got through and none of them has to know barriers exist.
@@ -61,6 +64,7 @@ export function applyHit({
 		targetName: target.name || 'Unknown',
 		abilityId,
 		abilityName,
+		castId,
 	}
 
 	logCombat({
