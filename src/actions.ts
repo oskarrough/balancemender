@@ -1,5 +1,15 @@
 import {log} from './utils'
-import {setBalanceValue, resetBalance, AbilityKey, EffectKey, CadenceKey, AuraKey, UnitKey, RuleKey} from './balance'
+import {
+	setBalanceValue,
+	resetBalance,
+	validateBalanceValue,
+	AbilityKey,
+	EffectKey,
+	CadenceKey,
+	AuraKey,
+	UnitKey,
+	RuleKey,
+} from './balance'
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
 import {FACTION, type Faction} from './nodes/types'
@@ -104,6 +114,10 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			return interrupt(game)
 
 		case 'tune': {
+			// A console can type anything, and a value the rules reject deserves its own refusal —
+			// not the "unknown ability" one `setBalanceValue` would fall back on.
+			const invalid = validateBalanceValue(action.of, action.value)
+			if (invalid) return fail(invalid)
 			const applied = setBalanceValue(action.of, action.name, action.key, action.value)
 			// Classes are the template; the units already fighting need telling separately.
 			if (applied && action.of === 'unit') retuneLiveUnits(game, action.name, action.key, action.value)

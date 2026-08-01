@@ -165,10 +165,31 @@ export const balanceCategories: Record<BalanceKind, BalanceCategory> = {
 	},
 } as Record<BalanceKind, BalanceCategory>
 
+/**
+ * Kinds whose values below zero are nonsense: a unit stat, a tick count or a threshold. Ability
+ * costs, coefficients and cadence timings may legitimately sit at zero, so only the three kinds
+ * the Balance Lab already clamps are constrained here.
+ */
+const MIN_BY_KIND: Partial<Record<BalanceKind, number>> = {unit: 0, aura: 0, rule: 0}
+
+/**
+ * The one value check every tuning path passes — the Balance Lab, the console, `--tune`, tests.
+ * The UI used to clamp by itself and every other path could write anything; now a value the rule
+ * rejects is refused before it mutates anything.
+ */
+export function validateBalanceValue(kind: BalanceKind, value: number): string | undefined {
+	if (!Number.isFinite(value)) return `Balance values must be finite, got ${value}`
+	const min = MIN_BY_KIND[kind]
+	if (min !== undefined && value < min) return `${kind} values must be at least ${min}, got ${value}`
+	return undefined
+}
+
 export function setBalanceValue(kind: BalanceKind, name: string, key: string, value: number) {
 	const {classes, state} = balanceCategories[kind]
 	const cls = classes[name]
 	if (!cls || !(key in cls)) return false
+	// Same gate as the action boundary: a value the rule rejects mutates nothing.
+	if (validateBalanceValue(kind, value)) return false
 	cls[key] = value
 	state[name][key] = value
 	return true

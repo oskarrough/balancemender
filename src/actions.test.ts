@@ -28,6 +28,17 @@ describe('perform', () => {
 		})
 	})
 
+	it('refuses a tune the value rules reject, naming the rule', () => {
+		game = new GameLoop({party: [], enemies: []})
+		expect(game.perform({type: 'tune', of: 'unit', name: 'Tank', key: 'stamina', value: -5})).toMatchObject({
+			ok: false,
+			error: 'unit values must be at least 0, got -5',
+		})
+		expect(game.perform({type: 'tune', of: 'ability', name: 'Mend', key: 'cost', value: Infinity})).toMatchObject({
+			ok: false,
+		})
+	})
+
 	it('casts on the target it was given without moving what the player has selected', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		const tank = game.party[0]

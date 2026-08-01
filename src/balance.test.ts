@@ -6,6 +6,7 @@ import {
 	cadenceClasses,
 	parseTune,
 	resetBalance,
+	setBalanceValue,
 	type BalanceKind,
 } from './balance'
 import {GameLoop} from './nodes/game-loop'
@@ -130,5 +131,22 @@ describe('the categories', () => {
 			expect(Object.keys(classes).length, kind).toBeGreaterThan(0)
 			for (const name of Object.keys(classes)) expect(state[name], `${kind} ${name}`).toBeDefined()
 		}
+	})
+})
+
+describe('the value rules', () => {
+	afterEach(() => resetBalance())
+
+	it('refuses a value a kind forbids, mutating nothing', () => {
+		expect(setBalanceValue('unit', 'Tank', 'stamina', -5)).toBe(false)
+		expect(balance.units.Tank.stamina).toBe(300)
+
+		expect(setBalanceValue('aura', 'Renew', 'interval', Infinity)).toBe(false)
+		expect(balance.auras.Renew.interval).toBeGreaterThan(0)
+	})
+
+	it('lets zero through where a kind has no floor', () => {
+		expect(setBalanceValue('ability', 'Mend', 'cost', 0)).toBe(true)
+		expect(balance.abilities.Mend.cost).toBe(0)
 	})
 })
