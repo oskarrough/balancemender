@@ -36,7 +36,7 @@ export function applyStatics<T extends object, K extends keyof T>(instance: T, .
 	}
 }
 
-/** Wall-clock time as HH:MM:SS.sss, for the combat log panel. */
-export function formatTimestamp(timestamp: number): string {
-	return new Date(timestamp).toISOString().substring(11, 23)
+/** Seconds into the fight, written the way the fight report writes them — `12.4s`. */
+export function formatFightTime(ms: number): string {
+	return `${(ms / 1000).toFixed(1)}s`
 }

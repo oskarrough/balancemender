@@ -13,11 +13,32 @@ body {
 	position: fixed;
 	top: 0.4rem;
 	left: 0.4rem;
+	right: 0.4rem;
 	transition: opacity 500ms;
 
 	& menu {
 		display: flex;
+		align-items: flex-start;
 		gap: 0.2rem;
+		flex-wrap: wrap;
+	}
+
+	& .Menu-dungeon {
+		display: flex;
+		flex-flow: column;
+		align-items: center;
+		gap: 0.2rem;
+		max-width: 100%;
+	}
+
+	& .Menu-actions {
+		display: flex;
+		gap: 0.2rem;
+	}
+
+	& .Menu-running {
+		min-width: 4rem;
+		justify-content: center;
 	}
 
 	& .SoundToggle input[type='checkbox'],
@@ -73,33 +94,25 @@ body {
 	mask-image: none;
 }
 
-/* Dungeon chrome, pinned to the top-right corner rather than placed in the column — a fight with
-   no dungeon run behind it then lays out exactly as it always did. */
+/* Dungeon chrome lives in the top-left menu so the primary controls read as one bar. */
 .DungeonPager {
-	position: fixed;
-	top: 0.4rem;
-	right: 0.4rem;
-	z-index: 5;
-	/* Leave shares the main menu's control spacing. */
 	display: flex;
 	align-items: center;
 	gap: 0.2rem;
-	pointer-events: none;
+	min-width: 0;
+	max-width: 100%;
 }
 
 .DungeonPager-pages {
 	display: flex;
 	align-items: center;
 	gap: 0;
+	min-width: 0;
 }
 
 .DungeonPager-dots {
 	display: flex;
 	gap: 0.2rem;
-}
-
-.DungeonPager > .Button {
-	pointer-events: auto;
 }
 
 /* Same chrome family as .Button — solid snow-white, hairline black, the shared radius — so the
@@ -117,14 +130,13 @@ body {
 }
 
 /* One per room around the pill: filled when cleared, hollow when still ahead. Hoverable for its
-   room-name tooltip despite the container opting out of pointer events. */
+   room-name tooltip. */
 .DungeonPager-dot {
 	width: 0.5rem;
 	height: 0.5rem;
 	border-radius: 50%;
 	border: 1px solid var(--c-black);
 	background: var(--c-snow-white);
-	pointer-events: auto;
 }
 
 .DungeonPager-dot[data-cleared='true'] {
@@ -147,6 +159,21 @@ body {
 }
 
 .DungeonPager-room {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+@media (max-width: 40rem) {
+	.IngameMenu .Menu-dungeon,
+	.IngameMenu .DungeonPager {
+		width: 100%;
+	}
+
+	.DungeonPager-pill {
+		min-width: 0;
+		overflow: hidden;
+	}
 }
 
 .Player,
@@ -262,7 +289,7 @@ balance-lab {
 	gap: 0.5rem;
 	min-height: 18rem;
 	padding: 0.4rem;
-	font-size: 12px;
+	font-size: var(--text-sm);
 }
 
 .BalanceLab-nav {

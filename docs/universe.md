@@ -24,6 +24,11 @@ Touchstones, each with the thing we steal from it:
   back when the spell was still called Wither; the universe was leaking in before we named it.
 - **Hiro Isono** — dense luminous botany, vegetation as cathedral (the splash wallpaper already in
   `public/assets/` is his). The Glow lives entirely in this register.
+- **Warhammer** — totality and unforgettable persons. Sigmar's realms are named as concepts and
+  sized like weather, which is where The Green and The Rust already live. The Old World teaches the
+  other half: Grimgor Ironhide is unforgettable because his name is a plain fact about his body, not
+  a title granted to him. Steal the fact, never the epithet — that is why the Green's boss is Haruk
+  and not Nakroth the Destroyer. Our persons should be as total as his and a tenth as loud.
 - **Star Trek** — places named like phenomena encountered rather than places settled (the Badlands,
   the Expanse). This is where the color names come from: The Green, The Rust, The Glow, The White
   are what travelers would call them, half in awe.
@@ -103,9 +108,7 @@ A sound-palette so invented names feel like cousins, not random fantasy syllable
 
 The names so far: the boss of The Green is **Haruk** — full k spine, a name a farmer could growl
 (was Nakroth the Destroyer; the epithet was the cheese, and the first draft Orun sounded like
-Uvalu's brother). In The Rust, a bell-creature called **Roha**; the diggers that wait under the dry
-bed still need their name — the first draft, _vell_, broke our own rule ("well" hiding inside, in a
-game about a river). In The Glow, **muhl** (the sighing puffballs), **sivi** (the wisps), and
+Uvalu's brother). In The Rust, a bell-creature called **Roha**. In The Glow, **muhl** (the sighing puffballs), **sivi** (the wisps), and
 **Orovan**, the tall slow tender of mushrooms. In The White, the source-keeper **Uvalu** — and the
 pilgrims' own word for the place, _the First Water_, the one phrase of theirs anyone bothers to
 translate.
@@ -146,8 +149,7 @@ foreground stays homey.
 - **Biome** — dry golden grassland and scrub, a cracked riverbed as the road, lone twisted trees,
   rust-red rock starting to show through the soil.
 - **Creatures** — dusty survivors: snapjaws, skulkers, and howlers scraping by, leaner and meaner
-  than their forest cousins. The diggers — things that wait under the dry bed, name pending — and
-  Roha, whose bell you heard an hour ago.
+  than their forest cousins. And Roha, whose bell you heard an hour ago.
 - **People** — a waystation with a creaking sign and a keeper who talks too much; herders who moved
   on early because "the water went".
 - **Stimmung** — high noon loneliness. Spacious, a little melancholy, the first wrongness.
@@ -155,7 +157,9 @@ foreground stays homey.
 - **Tempo** — loping. Fewer, spikier fights with room to breathe between them.
 - **Rooms so far** — "The dry bed" splits attention between a bleeding tank and a Skulker on the
   healer. "The long grass" lets a second Skulker close in while a Howler riles the hunting pair — a
-  slightly harder reprise made entirely from pressures learned in The Green.
+  slightly harder reprise made entirely from pressures learned in The Green. Roha closes the dungeon
+  alone (#72): the bell you have heard since the waystation, tolling on a slow telegraph that cuts
+  whatever you are casting. Sound is the Rust's signature, so its closer is a fight you listen to.
 
 > **Image prompt** — A wide dry grassland under an enormous pale-blue afternoon sky, a cracked empty
 > riverbed winding through it as a road, one twisted leafless tree, a tumbleweed mid-roll, a tiny
@@ -221,8 +225,8 @@ it. The weirdest place in the game and the calmest: the wound and the ward in on
 
 ## First paintings
 
-Six scene explorations live in `public/assets/generated/explorations/`, generated from the prompts
-above. What they settled:
+The explorations live in `public/assets/generated/explorations/` (`ls` it — the folder is ahead of
+this list), generated from the prompts above. What they settled:
 
 - **green-stray-pup** — the Green's whole register in one frame: stream, path, the ranger's camp
   smoking at the treeline, and the pup watching from the ferns. It backs the first room in-game now
@@ -230,6 +234,10 @@ above. What they settled:
 - **green-guardian-glade** — Haruk at rest under a fallen log, enormous, with a garlanded smaller
   wolf beside him that reads as the Denmother. It painted the subdual before we asked for it: the
   animal breathing evenly, not a corpse. Backs the boss room in-game.
+- **rust-waystation** — the creaking sign, the bell hung beside it, the cracked bed as the road,
+  and nobody in the chair. Backs "The dry bed" in-game.
+- **rust-roha** — a bell on stilt legs wearing its own head, standing off the road from a dead
+  tree. The Rust's wrongness in one frame; it earned her a room.
 - **glow-fungal-tender** — the first portrait of an old-tongue person: Orovan is tall, thin-limbed,
   mushroom-capped, mid-tending. Keep this silhouette.
 - **glow-masked-pilgrims** — the pilgrims' masks are plain white ovals, the road a mossy root

@@ -10,7 +10,7 @@ floating-combat-text {
 	top: 0;
 	left: 0;
 	display: inline-block;
-	font-size: 2.5rem;
+	font-size: var(--text-xl);
 	color: rgb(0, 161, 0);
 	white-space: nowrap;
 	pointer-events: none;
@@ -27,7 +27,7 @@ floating-combat-text {
 	/* A sweet-spot heal (#33) — same number, reads as a crit. */
 	&.sweet-spot {
 		color: var(--c-lemon-yellow);
-		font-size: 3rem;
+		font-size: var(--text-2xl);
 	}
 }
 

@@ -109,7 +109,7 @@
 	align-items: center;
 	gap: 0.3rem;
 	padding: 0 0.4rem;
-	font-size: 0.82rem;
+	font-size: var(--text-compact);
 	pointer-events: none;
 	color: hsl(20, 40%, 94%);
 	text-shadow:
@@ -126,7 +126,7 @@
 /* Who an enemy is swinging at, quieter than its own name: it is the answer to a second question. */
 .Unit-name small {
 	flex: none;
-	font-size: 0.7rem;
+	font-size: var(--text-sm);
 	opacity: 0.8;
 }
 
@@ -170,17 +170,16 @@
 
 .Unit--player .Bar[data-type='mana'] span {
 	display: block;
-	top: 0;
-	font-size: 0.62rem;
-	line-height: 1rem;
+	top: 2px;
+	font-size: var(--text-tiny);
 }
 
 /* The rate, lit while mana is coming back and faded while a cast is holding it off — the
    five-second rule with no clock to read. */
 .Bar-regen {
-	margin-left: 0.4rem;
+	margin-left: 0.2rem;
 	font-style: normal;
-	opacity: 0.35;
+	opacity: 0.8;
 	transition: opacity 200ms;
 }
 
@@ -233,7 +232,7 @@
 	position: absolute;
 	top: 0;
 	z-index: 2;
-	font-size: 0.68rem;
+	font-size: var(--text-sm);
 	line-height: 0.9rem;
 	white-space: nowrap;
 	color: hsl(20, 40%, 94%);
@@ -310,7 +309,7 @@
 
 /* Top-left, away from the countdown: two numbers meaning different things, easy to confuse. */
 .AuraIcon-stacks {
-	font-size: 0.62rem;
+	font-size: var(--text-xs);
 	line-height: 1.1;
 	color: var(--c-lemon-yellow);
 }
@@ -318,7 +317,7 @@
 .AuraIcon-inner strong {
 	margin-top: auto;
 	margin-left: auto;
-	font-size: 0.62rem;
+	font-size: var(--text-xs);
 	line-height: 1.4;
 	font-variant-numeric: tabular-nums;
 }

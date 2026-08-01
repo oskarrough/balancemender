@@ -89,7 +89,7 @@ animation-debugger {
 
 .AnimationDebugger-status {
 	margin-left: auto;
-	font-size: 12px;
+	font-size: var(--text-sm);
 	opacity: 0.6;
 }
 
@@ -101,7 +101,7 @@ animation-debugger {
 	width: 16px;
 	height: 16px;
 	cursor: nwse-resize;
-	font-size: 16px;
+	font-size: var(--text-base);
 	display: flex;
 	align-items: center;
 	justify-content: center;

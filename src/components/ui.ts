@@ -25,42 +25,6 @@ const GAME_OVER_COPY: Record<
 }
 
 /**
- * Which dungeon, how far in, which room. Nothing at all outside a dungeon run.
- * Pager dots flank the pill — cleared rooms filled on the left, upcoming hollow on the
- * right, the pill itself standing in for the current room.
- */
-function DungeonPager(game: GameLoop) {
-	const run = game.dungeonRun
-	if (!run) return null
-	const rooms = run.dungeon.rooms
-	const dot = (room: (typeof rooms)[number], cleared: boolean) =>
-		html`<i
-			class="DungeonPager-dot"
-			data-cleared=${cleared}
-			title=${cleared ? `${room.name} — cleared` : room.name}
-		></i>`
-	return html`
-		<nav class="DungeonPager">
-			<button class="Button" type="button" onclick=${leaveDungeon}>Leave</button>
-			<span class="DungeonPager-pages">
-				<span class="DungeonPager-dots">${rooms.slice(0, run.room).map((room) => dot(room, true))}</span>
-				<p class="DungeonPager-pill">
-					<span class="DungeonPager-dungeon">${run.dungeon.name}</span>
-					<span class="DungeonPager-count">${run.room + 1}/${rooms.length}</span>
-					<span class="DungeonPager-room">${rooms[run.room]?.name}</span>
-				</p>
-				<span class="DungeonPager-dots">${rooms.slice(run.room + 1).map((room) => dot(room, false))}</span>
-			</span>
-		</nav>
-	`
-}
-
-/** Dungeon choice is the app's start state, so leaving is a clean return rather than a half-reset fight. */
-function leaveDungeon() {
-	window.location.assign(window.location.pathname)
-}
-
-/**
  * The post-fight panel. A win splits three ways: a room cleared leads on to the next one, the last
  * room ends the run on its total time, and anything else replays what you just fought.
  */
@@ -148,7 +112,7 @@ export function UI(game: GameLoop) {
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
 			${wallpaper ? html`<div class=${wallpaperClass} style=${`background-image: url(${wallpaper})`}></div>` : null}
-			${game.gameOver ? GameOver(game) : null} ${DungeonPager(game)}
+			${game.gameOver ? GameOver(game) : null}
 
 			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>
 

@@ -103,7 +103,7 @@
 
 .Bar span {
 	user-select: none;
-	font-size: 13px;
+	font-size: var(--text-compact);
 	position: absolute;
 	right: 0.4rem;
 	top: 0.28em;

@@ -7,7 +7,7 @@ dev-console {
 		display: flex;
 		flex-direction: column;
 		overflow-y: auto;
-		font-size: 13px;
+		font-size: var(--text-compact);
 		line-height: 1.4;
 		scrollbar-width: thin;
 

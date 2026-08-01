@@ -25,7 +25,7 @@ color-palette {
 			right: 0;
 			background: rgba(0, 0, 0, 0.5);
 			color: white;
-			font-size: 8px;
+			font-size: var(--text-tiny);
 			padding: 2px;
 			opacity: 0;
 			transition: opacity 0.2s var(--easing);
