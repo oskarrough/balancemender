@@ -10,6 +10,7 @@ import {
 	Worry,
 	Ambush,
 	Rile,
+	BellSwing,
 	Toll,
 	Trample,
 } from './attack'
@@ -34,6 +35,7 @@ export const abilityRegistry = {
 	Worry,
 	Ambush,
 	Rile,
+	BellSwing,
 	Toll,
 	Trample,
 } as const

@@ -273,11 +273,29 @@ describe('The Rust room two', () => {
 	})
 })
 
-/** Wren must not shorten the closer until the healer can sit idle through its whole rhythm. */
+/**
+ * Fair warning before Roha: a reactive healer survives the two Bell swings, and Steep is the answer
+ * that turns a cut cast into a payout rather than a hole (#84).
+ */
 describe('The Rust room three', () => {
 	const room = TheRust.rooms[2]
 
+	it('is the hung-bell rehearsal: triage survives, Steep keeps the cut from costing a body', async () => {
+		expect(room).toMatchObject({name: 'The hung bell', enemies: ['Wether', 'Chafer', 'Chafer']})
+		expect((await runFight({room, bot: 'idle', seed: 1})).outcome).toBe('defeat')
+		expect((await runFight({room, bot: 'triage', seed: 1})).outcome).toBe('victory')
+		// Seed 2 is a cut Mend that drops a party member under triage and does not under Steep.
+		expect((await runFight({room, bot: 'triage', seed: 2})).survivors.party).toBe(2)
+		expect((await runFight({room, bot: 'steep', seed: 2})).survivors.party).toBe(3)
+	})
+})
+
+/** Wren must not shorten the closer until the healer can sit idle through its whole rhythm. */
+describe('The Rust room four', () => {
+	const room = TheRust.rooms[3]
+
 	it('needs healing, and is won by answering Toll with Steep', async () => {
+		expect(room.name).toBe('Roha')
 		expect((await runFight({room, bot: 'idle', seed: 1})).outcome).toBe('defeat')
 		expect((await runFight({room, bot: 'steep', seed: 1})).outcome).toBe('victory')
 	})

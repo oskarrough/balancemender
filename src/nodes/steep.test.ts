@@ -123,7 +123,7 @@ describe('Steep', () => {
 	it('is granted in The dry bed before Roha, and its bot keeps Patch triage', async () => {
 		expect(TheRust.rooms[0]).toMatchObject({name: 'The dry bed'})
 		expect(TheRust.rooms[0].grants).toContain('Steep')
-		expect(TheRust.rooms[2].name).toBe('Roha')
+		expect(TheRust.rooms[3].name).toBe('Roha')
 
 		game = new SimLoop({party: ['Tank'], enemies: ['Runt']}, 1)
 		await settle()

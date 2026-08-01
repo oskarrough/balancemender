@@ -157,8 +157,9 @@ export class Ambush extends Ability {
 /**
  * The bellwether putting its whole weight through whoever is squared up in front of it. The wind-up
  * is the instruction — a barrier fits comfortably inside it, and the hit is big enough that the tank
- * feels the difference. Roha teaches the same "answer the wind-up" lesson two rooms later with
- * sound instead of weight, which is why this one arrives first and only asks for a shield.
+ * feels the difference. The hung bell rehearses the cut-cast, and Roha teaches the full "answer the
+ * wind-up" lesson with sound instead of weight — which is why this one arrives first and only asks
+ * for a shield.
  *
  * Sized so one Shield still swallows a whole trample (120 against a 150 barrier): the room was
  * tuned when the party was tank and healer, and Wren joining it (#76) halved how long the bell has
@@ -184,6 +185,24 @@ export class Ringing extends PeriodicAura {
 	static interval = 1000
 	static repeat = 5
 	static delay = 1000
+}
+
+/**
+ * A herd animal's hung bell, swung once or twice before Roha. Same wind-up and cut-cast as her Toll —
+ * Interrupt plus a lighter ringing — so the rhythm is fair warning rather than a surprise (#84).
+ * Toll stays Roha's word.
+ */
+export class BellSwing extends Ability {
+	static id = 'BellSwing'
+	static name = 'Bell swing'
+	static tags = ['spell'] as const
+	static school = 'holy' as const
+	static targets = 'enemy' as const
+	static castTime = 2500
+	static eventType: CombatEventType = 'SPELL_DAMAGE'
+	// Near Toll's ringing; gentleness is "twice, then done" rather than a softer hit. With the
+	// wether's bulk and two chafers, triage survives the surprise and Steep still reduces drops (#84).
+	static effects = [new Interrupt(), new ApplyAura(Ringing, 2)]
 }
 
 /**

@@ -227,10 +227,12 @@ foreground stays homey.
 - **Biome** — dry golden grassland and scrub, a cracked riverbed as the road, lone twisted trees,
   rust-red rock starting to show through the soil.
 - **Creatures** — the dry country keeps its own, and none of them are wolves. The **bellwether**,
-  lead beast of a herd nobody came back for in time, still wearing its bell. **Kites** circling, dropping on
-  whoever is worst off. **Chafers**, husk-shelled beetles in numbers. And Roha, whose bell you heard
-  an hour ago — the point of the bellwether is that you meet a real animal wearing a real bell
-  first, so that a bell with no animal inside it lands the way it should.
+  lead beast of a herd nobody came back for in time, still wearing its bell. A **wether** further
+  along the bed, still wearing its hung bell — not the lead, just a leftover with enough metal to
+  swing. **Kites** circling, dropping on whoever is worst off. **Chafers**, husk-shelled beetles in
+  numbers. And Roha, whose bell you heard an hour ago — the point of the bellwether and the wether
+  is that you meet a real animal wearing a real bell first, so that a bell with no animal inside it
+  lands the way it should.
 - **People** — a waystation with a creaking sign and a keeper who talks too much; herders who moved
   on early because "the water went" — and Wren, the one who came back. Too late for the herd; the
   bell in the dry bed was theirs to hang. They fall in at the waystation with a sling and a pocketful
@@ -242,19 +244,19 @@ foreground stays homey.
 - **Rooms so far** — "The dry bed" is a bellwether and three chafers: the beast winds up a trample
   you can see coming, and the beetles behind it drift onto whoever is doing the healing. "The long
   grass" trades weight for numbers — three chafers and a pair of kites dropping on whoever is worst
-  off, so nobody can be left sitting low. Then an easier fight before Roha: one of the enemies casts a bell ability once or twice —
-  same wind-up and cut-cast as her Toll, soft enough to survive the first surprise — so Steep's
-  reason for existing is felt before the closer asks you to live on it. Working name for that
-  ability: something plain like "Bell swing"; Toll stays Roha's. The dry bed keeps the
-  trample/shield lesson; timing gets its own beat (#84). Roha closes the dungeon alone (#72): the
-  bell you have heard since the waystation, tolling on a slow telegraph that cuts whatever you are
-  casting. Sound is the Rust's signature, so its closer is a fight you listen to.
+  off, so nobody can be left sitting low. "The hung bell" is the rehearsal before Roha: a wether and
+  two chafers, and the wether casts **Bell swing** twice — same wind-up and cut-cast as her Toll,
+  soft enough to survive the first surprise — so Steep's reason for existing is felt before the
+  closer asks you to live on it. Toll stays Roha's word. The dry bed keeps the trample/shield
+  lesson; timing gets its own beat (#84). Roha closes the dungeon alone (#72): the bell you have
+  heard since the waystation, tolling on a slow telegraph that cuts whatever you are casting. Sound
+  is the Rust's signature, so its closer is a fight you listen to.
 - **What it asks of you** — the rooms are harder than anything in The Green, and what they punish
   is waste. Spamming the fast heal loses the dungeon outright where it used to carry the Green; the
   bellwether's wind-up teaches you to shield before it lands rather than heal after; the rehearsed
   toll teaches you to stop casting before the sound and start again after — a rhythm, not a number.
 
-The missing Rust room painting:
+The missing Rust room paintings:
 
 > **The long grass** — Farther along the same cracked riverbed beyond the waystation, waist-high dry
 > grass has swallowed both banks and leans across the pale clay road in wind-shaped waves. Three low
@@ -264,6 +266,14 @@ The missing Rust room painting:
 > and bleached-blue color fields, precise contours, visible painted texture, vast negative space;
 > Moebius calm meeting a warm western, lonely rather than hostile. Wide 16:9 landscape, no text, UI,
 > frame, photorealism or combat in progress.
+>
+> **The hung bell** — Still on the cracked riverbed past the long grass, a shallow fold where the
+> herders once overnighted: a few leaning posts, a frayed rope, one ordinary herd animal standing
+> with a small iron bell at its throat. Two low chafer husks wait in the pale clay; the enormous
+> afternoon sky stays empty of Roha herself — only the sense that the sound you have been hearing
+> has a nearer source now. Flat rust-red, dun and bleached-blue color fields, precise contours,
+> visible painted texture, vast negative space; Moebius calm, lonely rather than hostile. Wide 16:9
+> landscape, no text, UI, frame, photorealism or combat in progress.
 
 > **Image prompt** — A wide dry grassland under an enormous pale-blue afternoon sky, a cracked empty
 > riverbed winding through it as a road, one twisted leafless tree, a tumbleweed mid-roll, a tiny

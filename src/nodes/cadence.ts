@@ -16,13 +16,14 @@ export class Cadence extends Task {
 	static abilityId = ''
 	static delay = 0
 	static interval = 0
+	static repeat = Infinity
 
 	constructor(
 		public parent: Unit,
 		abilityId?: string,
 	) {
 		super(parent)
-		applyStatics(this, 'delay', 'interval')
+		applyStatics(this, 'delay', 'interval', 'repeat')
 		this.abilityId = abilityId ?? (this.constructor as typeof Cadence).abilityId
 		if (!this.abilityId) throw new Error(`${this.constructor.name} needs an ability id to drive`)
 	}
@@ -154,6 +155,17 @@ export class TollCadence extends Cadence {
 	static abilityId = 'Toll'
 	static delay = 3000
 	static interval = 5000
+}
+
+/**
+ * The hung bell's rehearsal of Roha's cut: same wind-up shape, twice, then done. A six-second gap
+ * lets both swings land before the wether falls, and stops before the closer's endless beat (#84).
+ */
+export class BellSwingCadence extends Cadence {
+	static abilityId = 'BellSwing'
+	static delay = 3000
+	static interval = 6000
+	static repeat = 2
 }
 
 export class RileCadence extends Cadence {

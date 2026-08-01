@@ -71,7 +71,7 @@ export const TheRust: Dungeon = {
 		// between a healer that pre-shields and one that only reacts. Wren falls in here, at the
 		// waystation, with a sling and a pocketful of riverbed pebbles — the party's second body (#76).
 		// Steep is granted here too, ahead of the full kit, so the trample gives it a first outing
-		// before the bell two rooms later makes it necessary (#81).
+		// before the hung bell rehearses the cut and Roha makes it necessary (#81, #84).
 		{
 			name: 'The dry bed',
 			party: ['Tank', 'Wren'],
@@ -86,6 +86,15 @@ export const TheRust: Dungeon = {
 			party: ['Tank', 'Wren'],
 			enemies: ['Chafer', 'Chafer', 'Chafer', 'Kite', 'Kite'],
 			wallpaper: '/assets/generated/explorations/rust-long-grass.png',
+		},
+		// Fair warning before Roha: a wether still wearing its hung bell swings it twice — same
+		// cut-cast shape as her Toll, soft enough to survive the first surprise (#84). Timing gets
+		// its own beat; the dry bed kept the trample/shield lesson alone.
+		{
+			name: 'The hung bell',
+			party: ['Tank', 'Wren'],
+			enemies: ['Wether', 'Chafer', 'Chafer'],
+			wallpaper: '/assets/generated/explorations/rust-hung-bell.png',
 		},
 		// The bell that has been ringing since the waystation sign, answered at last. She fights
 		// alone: the Rust is a lonely dungeon and this is its one strange thing (#72).

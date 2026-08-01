@@ -11,6 +11,7 @@ import {
 	WorryCadence,
 	AmbushCadence,
 	RileCadence,
+	BellSwingCadence,
 	TollCadence,
 	TrampleCadence,
 } from './nodes/cadence'
@@ -78,6 +79,7 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	WorryCadence,
 	AmbushCadence,
 	RileCadence,
+	BellSwingCadence,
 	TollCadence,
 	TrampleCadence,
 }

@@ -1,7 +1,7 @@
 import {Unit} from './unit'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
-import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile, Toll, Trample} from './attack'
+import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile, BellSwing, Toll, Trample} from './attack'
 import {Lick} from './spells'
 import {
 	NastyArrowCadence,
@@ -13,6 +13,7 @@ import {
 	WorryCadence,
 	AmbushCadence,
 	RileCadence,
+	BellSwingCadence,
 	TollCadence,
 	TrampleCadence,
 } from './cadence'
@@ -196,6 +197,29 @@ export class Chafer extends Unit {
 	abilities = {Nip}
 	targeting = new Targeting(this, prefer.threat(this))
 	nipCadence = new NipCadence(this)
+}
+
+/**
+ * A herd animal still wearing its hung bell — the cousin of the bellwether, not the lead. Soft bulk,
+ * a plain nip, and two swings of that bell: the same cut-cast shape as Roha's Toll, gentler and then
+ * done (#84). The dry bed already taught the shield; this room is only the rhythm.
+ *
+ * Tuned over 200 seeds with Wren: triage clears every seed and keeps the whole party in ~187, while
+ * Steep keeps all three in all 200 — the same shape as Roha at about a third of her drop rate. Idle
+ * wipes. Gentler absolute pressure; Steep still changes the outcome.
+ */
+export class Wether extends Unit {
+	static stamina = 480
+	static intellect = 40
+	static strength = 16
+	static agility = 6
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Wether'
+	abilities = {Nip, BellSwing}
+	targeting = new Targeting(this, prefer.tankFirst)
+	nipCadence = new NipCadence(this)
+	bellSwingCadence = new BellSwingCadence(this)
 }
 
 /**

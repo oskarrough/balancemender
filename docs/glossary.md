@@ -154,8 +154,9 @@ a spell and **swings** an attack; it **uses** either.
 
 **Interrupt** — cutting a cast short before it lands. Costs the caster the time, never the mana: only
 a completed cast is charged for. The player interrupts themselves with `{type: 'interrupt'}`; the
-`Interrupt` effect is how an enemy does it, and Roha's `Toll` carries the only one today. It reaches
-every unit on the side it landed on, because what interrupts there is a sound.
+`Interrupt` effect is how an enemy does it: the hung bell's `Bell swing` rehearses it once or twice,
+and Roha's `Toll` is the full lesson. It reaches every unit on the side it landed on, because what
+interrupts there is a sound.
 
 **Id** and **name** — every ability and aura has both. The **id** is what everything files it under:
 registry, a unit's abilities, balance, `--tune`, the log's `abilityId`, cooldowns, stack keys. The

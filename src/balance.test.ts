@@ -109,6 +109,7 @@ describe('the categories', () => {
 			'WorryCadence',
 			'AmbushCadence',
 			'RileCadence',
+			'BellSwingCadence',
 			'TollCadence',
 			'TrampleCadence',
 		])
