@@ -186,19 +186,21 @@ export const TheWhite: Dungeon = {
 			enemies: ['Ringer', 'Ringer', 'Glider'],
 			scene: 'white-ringing-shelf',
 		},
-		// The terraced pools, the rider close now. Two Gliders keep the drain constant while a
-		// single Ringer supplies the telegraph — idle still wipes, triage still clears.
+		// The terraced pools, the rider close now — and here they stop and let the party catch up:
+		// Gale falls in, the party's fourth body. Two Gliders keep the drain constant while a single
+		// Ringer supplies the telegraph — idle wipes all but a couple of seeds in a hundred, triage
+		// still clears.
 		{
 			name: 'The first water',
-			party: ['Tank', 'Wren', 'Clover'],
+			party: ['Tank', 'Wren', 'Clover', 'Gale'],
 			enemies: ['Glider', 'Glider', 'Ringer'],
 			scene: 'white-first-water-room',
 		},
 		// Uvalu alone, one long fight out of a closing purse — the fight is the dungeon. Meant to be
-		// genuinely hard: idle wipes every seed, triage clears roughly four fights in five.
+		// genuinely hard: idle wipes every seed, triage clears roughly eight fights in ten.
 		{
 			name: 'The source',
-			party: ['Tank', 'Wren', 'Clover'],
+			party: ['Tank', 'Wren', 'Clover', 'Gale'],
 			enemies: ['Uvalu'],
 			scene: 'white-source',
 		},

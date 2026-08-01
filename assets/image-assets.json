@@ -17,7 +17,7 @@
 			"suffix": "-portrait",
 			"size": "810x1440",
 			"render": "tall 9:16 image at 810x1440, no text, no watermark, no border",
-			"prompt": "Tall 9:16 composition: the same place looked at again for a narrow screen, never a crop of the wide painting. Keep the room's landmarks, light, time of day and palette identical, so the two read as two views of one place — the same sky colour and cloud, the same ground colour, the same hour. A player turning their phone must not see the weather change. Any creature keeps the anatomy and silhouette the wide painting gave it. Stack the scene vertically for where the combat UI actually sits: the unit frames stack down from the top and reach two-thirds of the way down a crowded room, so the top two-thirds carries sky, canopy or open negative space that reads fine behind them, the encounter's defining clue sits low — in the band between two-thirds and four-fifths of the height, the one clear strip on a phone — and the bottom eighth stays quiet for the action bar."
+			"prompt": "Tall 9:16 composition: the same place looked at again for a narrow screen, never a crop of the wide painting. Keep the room's landmarks, light, time of day and palette identical, so the two read as two views of one place \u2014 the same sky colour and cloud, the same ground colour, the same hour. A player turning their phone must not see the weather change. Any creature keeps the anatomy and silhouette the wide painting gave it. Stack the scene vertically for where the combat UI actually sits: the unit frames stack down from the top and reach two-thirds of the way down a crowded room, so the top two-thirds carries sky, canopy or open negative space that reads fine behind them, the encounter's defining clue sits low \u2014 in the band between two-thirds and four-fifths of the height, the one clear strip on a phone \u2014 and the bottom eighth stays quiet for the action bar."
 		}
 	},
 	"assets": [
@@ -47,7 +47,7 @@
 			"type": "scene",
 			"name": "The howling",
 			"prompt": "The same stream skirting a broad trampled hollow beneath the roots of an old wind-thrown beech. Several ordinary wolf paths converge on a shallow earth den; shed grey fur, pawprints and a garland of bent meadow stems make this unmistakably the pack's home rather than a monster lair. A denmother stands watch near the dark entrance while smaller wolf silhouettes gather between the trees, alert and unsettled but not evil. Late-morning gold reaches the clearing while the surrounding forest stays deep moss green. Warm pastoral adventure on the edge of danger. No gore or combat in progress.",
-			"portrait": "Portrait view: the old beech is split and wind-thrown, its trunk leaning hard with one snapped splintered limb, and its root-plate rises as a tall earth wall across the upper frame. The shallow den mouth sits beneath it, hung with the garland of bent meadow stems and small white flowers — the detail that makes this a home rather than a lair, and it must be there. The denmother stands watch at eye level with smaller wolf silhouettes between the trunks to either side, late-morning gold comes down the frame, and trampled earth, shed fur and pawprints lie quiet in the near ground with the stream at one edge."
+			"portrait": "Portrait view: the old beech is split and wind-thrown, its trunk leaning hard with one snapped splintered limb, and its root-plate rises as a tall earth wall across the upper frame. The shallow den mouth sits beneath it, hung with the garland of bent meadow stems and small white flowers \u2014 the detail that makes this a home rather than a lair, and it must be there. The denmother stands watch at eye level with smaller wolf silhouettes between the trunks to either side, late-morning gold comes down the frame, and trampled earth, shed fur and pawprints lie quiet in the near ground with the stream at one edge."
 		},
 		{
 			"id": "green-guardian-glade",
@@ -74,15 +74,15 @@
 			"id": "rust-hung-bell",
 			"type": "scene",
 			"name": "The hung bell",
-			"prompt": "Still on the cracked riverbed past the long grass, a shallow fold where the herders once overnighted: a few leaning posts, a frayed rope, one ordinary herd animal standing with a small iron bell at its throat. Two low chafer husks wait in the pale clay; the enormous afternoon sky stays empty of Roha herself — only the sense that the sound you have been hearing has a nearer source now. Flat rust-red, dun and bleached-blue color fields, precise contours, visible painted texture and vast negative space; Moebius calm, lonely rather than hostile. No combat in progress.",
-			"portrait": "Portrait view: the ordinary pale herd animal stands low in the frame with the small iron bell at its throat about three-quarters of the way down — the bell is the room's name and must sit in clear air, not up where the sky is. The herders' leaning posts and frayed rope with its hanging tags rise behind and above it, the enormous afternoon sky stays empty of Roha across the whole upper frame, and two low chafer husks wait quiet in the pale cracked clay of the near ground."
+			"prompt": "Still on the cracked riverbed past the long grass, a shallow fold where the herders once overnighted: a few leaning posts, a frayed rope, one ordinary herd animal standing with a small iron bell at its throat. Two low chafer husks wait in the pale clay; the enormous afternoon sky stays empty of Roha herself \u2014 only the sense that the sound you have been hearing has a nearer source now. Flat rust-red, dun and bleached-blue color fields, precise contours, visible painted texture and vast negative space; Moebius calm, lonely rather than hostile. No combat in progress.",
+			"portrait": "Portrait view: the ordinary pale herd animal stands low in the frame with the small iron bell at its throat about three-quarters of the way down \u2014 the bell is the room's name and must sit in clear air, not up where the sky is. The herders' leaning posts and frayed rope with its hanging tags rise behind and above it, the enormous afternoon sky stays empty of Roha across the whole upper frame, and two low chafer husks wait quiet in the pale cracked clay of the near ground."
 		},
 		{
 			"id": "rust-roha",
 			"type": "scene",
 			"name": "Roha",
 			"prompt": "Farther upstream along the same cracked riverbed, a tarnished bronze herder's bell worn as a head stands off the pale clay road beside a dead tree on four long thin stilt legs, built like a herd animal rather than anything upright, with dry husk-fibre hanging like a mane and two stiff leaf-shaped ears. The clapper is visible inside the open bell. Enormous pale afternoon sky, flat rust-red and dun color fields, precise contours and vast negative space; still, patient and uncanny rather than hostile. No combat in progress.",
-			"portrait": "Portrait view: her full height is the picture, but she stands low in the frame — the tarnished bell head with its visible clapper sits about three-quarters of the way down, well below the tall empty sky, with the husk-fibre mane and stiff leaf ears around it and all four long thin legs beneath. The dead tree beside her is lower and smaller, the pale cracked riverbed winds away past her as the road, and the enormous pale-blue afternoon sky with the same soft cumulus banks as the wide view fills everything above her."
+			"portrait": "Portrait view: her full height is the picture, but she stands low in the frame \u2014 the tarnished bell head with its visible clapper sits about three-quarters of the way down, well below the tall empty sky, with the husk-fibre mane and stiff leaf ears around it and all four long thin legs beneath. The dead tree beside her is lower and smaller, the pale cracked riverbed winds away past her as the road, and the enormous pale-blue afternoon sky with the same soft cumulus banks as the wide view fills everything above her."
 		},
 		{
 			"id": "patch",
@@ -112,13 +112,13 @@
 			"id": "lance",
 			"type": "spell",
 			"name": "Lance",
-			"prompt": "A slender white-gold lancet of light piercing downward into a dark swollen orb, precise and surgical, releasing three small radiant droplets where it drains — a healer's tool turned on what festers. Keep the entire compact symbol inside generous dark padding, with a deep charcoal-blue background and a clean silhouette readable at 64x64 pixels."
+			"prompt": "A slender white-gold lancet of light piercing downward into a dark swollen orb, precise and surgical, releasing three small radiant droplets where it drains \u2014 a healer's tool turned on what festers. Keep the entire compact symbol inside generous dark padding, with a deep charcoal-blue background and a clean silhouette readable at 64x64 pixels."
 		},
 		{
 			"id": "nettle",
 			"type": "spell",
 			"name": "Nettle",
-			"prompt": "A single tall stinging nettle, elegant and bristling, its serrated leaves haloed by fine drifting stinging hairs that catch a pale light — a patient herbal sting that works over time. Make the whole plant one stark asymmetric emblem. For this icon, use a late-1970s French science-fiction comic mood: elegant precise ink contours, sparse cross-hatching and stipple, flat muted color fields, surreal stillness, and vintage print texture on a deep midnight blue-black background. Quiet, botanical and needling, with a clear silhouette readable at 64x64 pixels."
+			"prompt": "A single tall stinging nettle, elegant and bristling, its serrated leaves haloed by fine drifting stinging hairs that catch a pale light \u2014 a patient herbal sting that works over time. Make the whole plant one stark asymmetric emblem. For this icon, use a late-1970s French science-fiction comic mood: elegant precise ink contours, sparse cross-hatching and stipple, flat muted color fields, surreal stillness, and vintage print texture on a deep midnight blue-black background. Quiet, botanical and needling, with a clear silhouette readable at 64x64 pixels."
 		},
 		{
 			"id": "gash",
@@ -142,25 +142,25 @@
 			"id": "ringing",
 			"type": "spell",
 			"name": "Ringing",
-			"prompt": "An iconic flat emblem of three widening rust-red rings spreading from one small tarnished bronze bell-mouth at the lower left, the outermost ring thinning and breaking apart. It should read as a sound still going on after the bell has stopped — pressure that lingers, not an impact. Use The Rust's dry palette: bleached bone-white field, tarnished bronze, rust red, dun and sun-gold. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. Still, patient and uncanny rather than loud or aggressive. One compact asymmetrical silhouette with generous padding, unmistakable at 64x64 pixels. No ears, faces, heads, lightning bolts, music notes, speech marks, frame, badge or decorative marks."
+			"prompt": "An iconic flat emblem of three widening rust-red rings spreading from one small tarnished bronze bell-mouth at the lower left, the outermost ring thinning and breaking apart. It should read as a sound still going on after the bell has stopped \u2014 pressure that lingers, not an impact. Use The Rust's dry palette: bleached bone-white field, tarnished bronze, rust red, dun and sun-gold. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. Still, patient and uncanny rather than loud or aggressive. One compact asymmetrical silhouette with generous padding, unmistakable at 64x64 pixels. No ears, faces, heads, lightning bolts, music notes, speech marks, frame, badge or decorative marks."
 		},
 		{
 			"id": "runt",
 			"type": "character",
 			"name": "Runt",
-			"prompt": "A small scrappy mud-flecked wolf with alert eyes, rough grey fur, and a mildly dangerous expression — an animal having a bad day."
+			"prompt": "A small scrappy mud-flecked wolf with alert eyes, rough grey fur, and a mildly dangerous expression \u2014 an animal having a bad day."
 		},
 		{
 			"id": "bellwether",
 			"type": "character",
 			"name": "Bellwether",
-			"prompt": "A gaunt long-horned herd beast of the dry country, dust-matted hide over visible ribs, a heavy tarnished bronze bell hung at its throat on a cracked leather strap. Patient and immense rather than fierce — an animal still doing its job for a herd that is gone. Rust-red and dun palette, pale bleached sky behind."
+			"prompt": "A gaunt long-horned herd beast of the dry country, dust-matted hide over visible ribs, a heavy tarnished bronze bell hung at its throat on a cracked leather strap. Patient and immense rather than fierce \u2014 an animal still doing its job for a herd that is gone. Rust-red and dun palette, pale bleached sky behind."
 		},
 		{
 			"id": "kite",
 			"type": "character",
 			"name": "Kite",
-			"prompt": "A lean carrion bird of the dry grassland, forked tail and long ragged wings, head tilted to watch something below it. Sun-bleached brown and ash grey, one bright unsentimental eye. Patient, not monstrous — a bird that has simply been waiting longer than you have. Vast pale afternoon sky behind."
+			"prompt": "A lean carrion bird of the dry grassland, forked tail and long ragged wings, head tilted to watch something below it. Sun-bleached brown and ash grey, one bright unsentimental eye. Patient, not monstrous \u2014 a bird that has simply been waiting longer than you have. Vast pale afternoon sky behind."
 		},
 		{
 			"id": "chafer",
@@ -196,57 +196,57 @@
 			"id": "glow-drowned-trees",
 			"type": "scene",
 			"name": "The drowned trees",
-			"prompt": "The path enters a luminous fungal forest at permanent dusk, drowned trees standing in slow glowing water, the river returned but wrong — thick, faintly luminous, teal against deep green. Two pale sighing puffball creatures squat among the roots, spore motes drifting off them in shafts of light like snow that forgot to fall. Dense botanical detail in the manner of Hiro Isono, deep greens and cyans with warm gold accents, cathedral hush. No combat in progress.",
+			"prompt": "The path enters a luminous fungal forest at permanent dusk, drowned trees standing in slow glowing water, the river returned but wrong \u2014 thick, faintly luminous, teal against deep green. Two pale sighing puffball creatures squat among the roots, spore motes drifting off them in shafts of light like snow that forgot to fall. Dense botanical detail in the manner of Hiro Isono, deep greens and cyans with warm gold accents, cathedral hush. No combat in progress.",
 			"portrait": "Portrait view: canopy of giant glowing mushroom caps filling the top two-thirds as layered luminous ceiling, the glowing river running toward the viewer as a bright vertical ribbon, and the two puffballs low beside the root path, their spore drift rising as the room's clue."
 		},
 		{
 			"id": "glow-bright-water",
 			"type": "scene",
 			"name": "The bright water",
-			"prompt": "A wide pool of glowing water in the fungal forest where the river slows, drowned trunks standing in it, and small bright wisps drifting low over the surface toward the brightest patch of light on the far bank — drawn to brightness like moths, gentle and wrong at once. A sighing puffball waits in the shallows. Dense luminous Isono botany, deep teal water, gold glow gathered where the wisps converge. No combat in progress.",
-			"portrait": "Portrait view: tall drowned trunks and mushroom canopy above, the pool coming toward the viewer down the frame, and the wisps' drifting trail of lights converging low in the frame — the brightest point of the painting sitting in the clear band above the action bar."
+			"prompt": "A wide pool of glowing water in the fungal forest where the river slows, drowned trunks standing in it, and small bright wisps drifting low over the surface toward the brightest patch of light on the far bank \u2014 drawn to brightness like moths, gentle and wrong at once. A sighing puffball waits in the shallows. Dense luminous Isono botany, deep teal water, gold glow gathered where the wisps converge. No combat in progress.",
+			"portrait": "Portrait view: tall drowned trunks and mushroom canopy above, the pool coming toward the viewer down the frame, and the wisps' drifting trail of lights converging low in the frame \u2014 the brightest point of the painting sitting in the clear band above the action bar."
 		},
 		{
 			"id": "glow-sap-shells",
 			"type": "scene",
 			"name": "The sap shells",
 			"prompt": "A grove of drowned trees crusted with translucent amber sap shells, each holding a large grub asleep and glowing faintly from within like lanterns not yet lit, the glowing river threading between the roots. One shell near the path has begun to crack. A single bright wisp drifts between the shells. Dense Isono botany, deep greens and cyans, the amber shells the only warm gold in the frame. No combat in progress.",
-			"portrait": "Portrait view: the sap-crusted trunks rising the full height of the frame, canopy dim above, and the cracked shell with its sleeping grub placed low and near — the crack, and what it promises, is the clue in the clear band."
+			"portrait": "Portrait view: the sap-crusted trunks rising the full height of the frame, canopy dim above, and the cracked shell with its sleeping grub placed low and near \u2014 the crack, and what it promises, is the clue in the clear band."
 		},
 		{
 			"id": "glow-tender",
 			"type": "scene",
 			"name": "The tender",
-			"prompt": "A cathedral clearing deep in the fungal forest where the glowing river pools at the roots of the largest mushrooms, tended in deliberate rows and rings — this garden is kept. Orovan the tender stands among them, tall and thin-limbed and mushroom-capped, mid-gesture over a young growth, back half-turned to the path. Reverent stillness, dense luminous Isono botany, deep greens and cyans with gold light pooling around the tender's work. No combat in progress.",
-			"portrait": "Portrait view: the great tended mushrooms rising past the top of the frame like columns, spore-light falling through them, and Orovan low in the frame at their feet, small against the garden, mid-tending beside the pooled river — the keeper and the kept as the clue."
+			"prompt": "A cathedral clearing deep in the fungal forest where the glowing river pools at the roots of the largest mushrooms, tended in deliberate rows and rings \u2014 this garden is kept. Orovan the tender stands among them, tall and thin-limbed and mushroom-capped, mid-gesture over a young growth, back half-turned to the path. Reverent stillness, dense luminous Isono botany, deep greens and cyans with gold light pooling around the tender's work. No combat in progress.",
+			"portrait": "Portrait view: the great tended mushrooms rising past the top of the frame like columns, spore-light falling through them, and Orovan low in the frame at their feet, small against the garden, mid-tending beside the pooled river \u2014 the keeper and the kept as the clue."
 		},
 		{
 			"id": "white-gliders",
 			"type": "scene",
 			"name": "The gliders",
 			"prompt": "The fungal forest ends like a held breath: pale white-stone steppe opening under an enormous sky, the river now a thin bright thread beginning far ahead. Silent flat creatures glide low over the stone, casting no shadow though everything else casts long ones. Thin air, vast negative space, flat muted color fields, late-1970s French science-fiction comic mood a la Moebius' Arzach, pale stone whites and glacial blues, one tiny rider-shaped silhouette far off. No combat in progress.",
-			"portrait": "Portrait view: the enormous sky filling the top two-thirds with one small perfect cloud, the steppe running toward the viewer, and the gliders low in the frame skimming the stone — their missing shadows, beside the long shadows of everything else, the clue in the clear band."
+			"portrait": "Portrait view: the enormous sky filling the top two-thirds with one small perfect cloud, the steppe running toward the viewer, and the gliders low in the frame skimming the stone \u2014 their missing shadows, beside the long shadows of everything else, the clue in the clear band."
 		},
 		{
 			"id": "white-ringing-shelf",
 			"type": "scene",
 			"name": "The ringing shelf",
 			"prompt": "A broad natural shelf of white stone terraced by wind, crowded with tall crystal formations that hum, and among them slow crystal-shelled creatures almost indistinguishable from the formations until one moves. The river-thread runs in a carved groove across the shelf. Flat muted color fields, precise elegant contours, Arzach stillness, pale whites and glacial blues with the faintest chime of refracted color in the crystal. No combat in progress.",
-			"portrait": "Portrait view: crystal formations rising past the top of the frame like organ pipes, sky between them, and low in the frame one crystal-shelled creature mid-step out of the formation it was pretending to be, beside the carved water-groove — the almost-mineral animal is the clue."
+			"portrait": "Portrait view: crystal formations rising past the top of the frame like organ pipes, sky between them, and low in the frame one crystal-shelled creature mid-step out of the formation it was pretending to be, beside the carved water-groove \u2014 the almost-mineral animal is the clue."
 		},
 		{
 			"id": "white-first-water-room",
 			"type": "scene",
 			"name": "The first water",
-			"prompt": "Terraced natural spring pools stepping down pale stone toward the viewer, each pool a mirror of the enormous sky, the highest terrace glowing faint gold where the water begins. On the far rim, closer than ever before, the rider and its mount stand watching — still too far to hail, no longer far enough to doubt. Flat muted color fields, monumental stillness, Arzach sublime, pale stone whites and glacial blues with one warm gold glow high at the source. No combat in progress.",
-			"portrait": "Portrait view: the terraces stacking down the full height of the frame like a stair of mirrors, sky reflected in every pool, the gold glow of the source at the very top, and the rider's silhouette low on a near rim — closer now — as the clue in the clear band."
+			"prompt": "Terraced natural spring pools stepping down pale stone toward the viewer, each pool a mirror of the enormous sky, the highest terrace glowing faint gold where the water begins. On the far rim, closer than ever before, the rider and its mount stand watching \u2014 still too far to hail, no longer far enough to doubt. Flat muted color fields, monumental stillness, Arzach sublime, pale stone whites and glacial blues with one warm gold glow high at the source. No combat in progress.",
+			"portrait": "Portrait view: the terraces stacking down the full height of the frame like a stair of mirrors, sky reflected in every pool, the gold glow of the source at the very top, and the rider's silhouette low on a near rim \u2014 closer now \u2014 as the clue in the clear band."
 		},
 		{
 			"id": "white-source",
 			"type": "scene",
 			"name": "The source",
-			"prompt": "The spring itself: a perfect circular pool of glowing gold-white water sunk in pale stone, the first water of the whole river welling silently over its rim, and sitting in it an enormous pale ribbed shell with ribbon-like sails, inflamed past recognition yet utterly still — the wound and the ward in one. Thin air, crystal formations bowed toward the pool, monumental Arzach stillness, pale whites and glacial blues around one great warm gold glow. No combat in progress.",
-			"portrait": "Portrait view: Uvalu's sails rising the full height of the frame into the sky, the ribbed shell filling the middle distance, and the glowing pool with its silent overflowing rim low in the frame — the river being born as the clue in the clear band."
+			"prompt": "The spring itself: a perfect circular pool of glowing gold-white water sunk in pale stone, the first water of the whole river welling silently over its rim, and sitting in it an enormous pale ribbed shell with ribbon-like sails, inflamed past recognition yet utterly still \u2014 the wound and the ward in one. Thin air, crystal formations bowed toward the pool, monumental Arzach stillness, pale whites and glacial blues around one great warm gold glow. No combat in progress.",
+			"portrait": "Portrait view: Uvalu's sails rising the full height of the frame into the sky, the ribbed shell filling the middle distance, and the glowing pool with its silent overflowing rim low in the frame \u2014 the river being born as the clue in the clear band."
 		},
 		{
 			"id": "muhl",
@@ -295,6 +295,12 @@
 			"type": "character",
 			"name": "Clover",
 			"prompt": "A village beekeeper with a plain veil pushed back, homespun wool, tin smoker at the chest, gentle unafraid smile, one faint glowing wisp drifting near like a curious bee, luminous fungal dusk behind. Ghibli warmth."
+		},
+		{
+			"id": "gale",
+			"type": "character",
+			"name": "Gale",
+			"prompt": "A messenger standing in terraced white-stone spring pools, long travel coat and a worn satchel, hair and coat blown in a strong wind, looking back as a small party catches up along the path behind them, the source glowing faintly far ahead. Arzach stillness with Ghibli warmth."
 		}
 	]
 }

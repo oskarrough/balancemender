@@ -257,3 +257,20 @@ export class HollowCadence extends Cadence {
 		if (!result.ok) log(`cadence:${this.parent.name}:${this.abilityId}:${result.error}`)
 	}
 }
+
+/** Gale's steady road-chip — slower than Wren's, quicker than Clover's; a messenger is always moving. */
+export class GaleSlingCadence extends SlingCadence {
+	static delay = 500
+	static interval = 2400
+}
+
+/**
+ * The wind's own beat. Faster than the aura it refreshes runs out, so the wind stays up while
+ * Gale stands, and a Gale who falls stops the cadence with her — the last planted Wind outlives
+ * her by about two beats, then the party walks without it.
+ */
+export class GaleWindCadence extends Cadence {
+	static abilityId = 'Wind'
+	static delay = 3000
+	static interval = 6000
+}

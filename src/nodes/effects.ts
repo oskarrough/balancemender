@@ -226,6 +226,43 @@ export class Interrupt implements Effect {
 	}
 }
 
+/**
+ * The same aura as `ApplyAura`, planted on every living unit `targets` allows — the party's
+ * shared wind, where who it lands on matters less than that it reaches everyone. Mirrors
+ * `AoeDamage`, and `targetIndependent` for the same reason: the one held target dying stops
+ * nothing. A party buff is why it exists, and a party buff lands on allies; the `targets` on the
+ * ability still decides which side that is, so the effect stays generic like its damage sibling.
+ *
+ * Never the caster: an aura that fed its own maker would be sized from their freshly-buffed
+ * strength on the next refresh and compound with every cast. The wind raises itself up, it does
+ * not carry itself.
+ */
+export class AoeAura implements Effect {
+	readonly label: string
+	readonly targetIndependent = true
+
+	constructor(
+		/** Public because `balance.ts` walks the registry through here to find the auras a fight can carry. */
+		readonly auraClass: AuraClass,
+		public coefficient: number,
+	) {
+		this.label = (auraClass.mechanic ?? auraClass.id).toLowerCase()
+	}
+
+	apply(landing: Landing) {
+		const {ability} = landing
+		for (const target of eligible(landing.caster, ability.targets)) {
+			if (target === landing.caster) continue
+			const magnitude = landing.resolve(this.coefficient)
+			new this.auraClass(
+				target,
+				ability.parent,
+				planted(magnitude, ability.threatMultiplier, ability.school, ability.castId),
+			)
+		}
+	}
+}
+
 /** Leave an aura behind, sized by this effect's own coefficient. */
 export class ApplyAura implements Effect {
 	readonly label: string

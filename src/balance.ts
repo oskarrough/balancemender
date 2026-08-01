@@ -22,6 +22,8 @@ import {
 	GroundfallCadence,
 	SiviAmbushCadence,
 	HollowCadence,
+	GaleSlingCadence,
+	GaleWindCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
@@ -103,6 +105,8 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	GroundfallCadence,
 	SiviAmbushCadence,
 	HollowCadence,
+	GaleSlingCadence,
+	GaleWindCadence,
 }
 
 /**

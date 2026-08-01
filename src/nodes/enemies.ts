@@ -388,11 +388,13 @@ export class Orovan extends Unit {
  * only ability: no hit, no wound, just the healer's own pool draining on `HollowCadence`'s slow
  * beat. Sturdy enough to survive a few ticks rather than dying to the party's first swings — the
  * room's lesson is the drain, and a glider that dies before it lands two casts teaches nothing.
- * 200-seed sim, "The gliders" (`Glider*2`, full party): both idle and triage win every seed, ending
- * with ~417/600 mana — visible, survivable, the taste rather than the bite.
+ * Stamina raised from 260 once Gale's extra body (#90) pushed both White rooms to idle-wins; at
+ * 420 a glider still dies to the party's first focus-fire but drags the fight out long enough for
+ * the drain to land. 200-seed sim, "The gliders" (`Glider*2`, full party): both idle and triage
+ * win every seed — visible, survivable, the taste rather than the bite.
  */
 export class Glider extends Unit {
-	static stamina = 260
+	static stamina = 420
 	static intellect = 16
 	static strength = 0
 	static agility = 10
@@ -409,9 +411,12 @@ export class Glider extends Unit {
  * Crystal-shelled, sturdy and slow — the bellwether family's own kit reused whole: `HeavyBlow`
  * between wind-ups, `Trample` for the telegraph. Nothing new here on purpose; the White's rooms
  * spend their invention on Glider and Uvalu, and a Ringer is the Rust's weight wearing white stone.
+ * Stamina raised from 420 when Gale (#90) joined the walk: the fourth body's free damage and the
+ * party-wide wind would otherwise let an idle healer's party out-kill "The ringing shelf" — at
+ * 560 the ringers outlast the tank, so the room still needs mending.
  */
 export class Ringer extends Unit {
-	static stamina = 420
+	static stamina = 560
 	static intellect = 0
 	static strength = 15
 	static agility = 4
@@ -430,13 +435,14 @@ export class Ringer extends Unit {
  * telegraphed-boss shape as Orovan; `Hollow` runs alongside on its own `HollowCadence`, always
  * aimed at the healer regardless of Uvalu's own tank-first preference (the same split Sivi's Spore
  * and Nip already keep). Boss-scale health, and the two pressures — a closing purse and a wind-up
- * to answer — arrive together rather than one after the other: 200-seed sim with Tank, Wren and
- * Clover — idle wipes every seed, triage clears 83% of them. Stamina raised from 900 once Clover's
- * extra body (#88) pushed triage's clear rate to 100%. The finale is meant to be genuinely hard
- * rather than a guaranteed clear.
+ * to answer — arrive together rather than one after the other. Stamina raised from 900 once
+ * Clover's extra body (#88) pushed triage's clear rate to 100%, and again to 1680 when Gale's wind
+ * (#90) pushed it straight back: 200-seed sim with Tank, Wren, Clover and Gale — idle wipes every
+ * seed, triage clears ~8 in 10. The finale is meant to be genuinely hard rather than a guaranteed
+ * clear.
  */
 export class Uvalu extends Unit {
-	static stamina = 1100
+	static stamina = 1680
 	static intellect = 20
 	static strength = 22
 	static agility = 4

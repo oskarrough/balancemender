@@ -26,17 +26,17 @@ describe('Hollow', () => {
 describe('Uvalu', () => {
 	it('threatens for real: idle loses to it, triage survives while spending real mana', async () => {
 		const idle = await runFight({
-			room: {party: ['Tank', 'Wren', 'Clover'], enemies: ['Uvalu']},
+			room: {party: ['Tank', 'Wren', 'Clover', 'Gale'], enemies: ['Uvalu']},
 			bot: 'idle',
 			seed: 1,
 		})
 		expect(idle.outcome).toBe('defeat')
 
-		// Seed 3, not 1: Uvalu is meant to be genuinely hard (~83% triage win rate over 200 seeds
-		// with the full party, Clover included, #88), so a fixed seed here only has to be one of the
-		// wins, not every seed.
+		// Seed 3, not 1: Uvalu is meant to be genuinely hard (~8-in-10 triage win rate over 200
+		// seeds with the full four-body party, Gale included, #90), so a fixed seed here only has
+		// to be one of the wins, not every seed.
 		const triage = await runFight({
-			room: {party: ['Tank', 'Wren', 'Clover'], enemies: ['Uvalu']},
+			room: {party: ['Tank', 'Wren', 'Clover', 'Gale'], enemies: ['Uvalu']},
 			bot: 'triage',
 			seed: 3,
 		})

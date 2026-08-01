@@ -1,6 +1,6 @@
 import type {CombatEventType} from '../combatlog'
 import {Ability} from './ability'
-import {ApplyAura, AoeDamage, Damage, Interrupt, ManaBurn} from './effects'
+import {ApplyAura, AoeAura, AoeDamage, Damage, Interrupt, ManaBurn} from './effects'
 import {HealMarkGate, ThreatMark} from './heal-mark'
 import {PeriodicAura} from './periodic-aura'
 import {StatModifierAura} from './stat-modifier-aura'
@@ -314,4 +314,32 @@ export class Hollow extends Ability {
 	static school = 'holy' as const
 	static targets = 'enemy' as const
 	static effects = [new ManaBurn(1.0)]
+}
+
+/**
+ * The party's shared wind, declared before the ability that plants it. Adds strength while it
+ * stands; the planting effect's coefficient is the size, so a retune is `effect:Wind.wind`.
+ */
+export class WindAura extends StatModifierAura {
+	static id = 'Wind'
+	static name = 'Wind'
+	static stat = STAT.STRENGTH
+	static lifetime = 8000
+}
+
+/**
+ * Gale's whole job — a note that carries to every living party member at once, the wind at their
+ * back. A party-wide strength buff on the plain `StatModifierAura` machinery: no party unit
+ * carries a buff today, so this is the party's first support. Sized by Gale's own strength like
+ * any other physical ability, instant and free, and the cadence that feeds it goes quiet when
+ * Gale falls — the wind dies with them. Answers the White's scarcity by ending the fight sooner,
+ * never by touching the purse.
+ */
+export class Wind extends Ability {
+	static id = 'Wind'
+	static name = 'Wind'
+	static tags = ['spell'] as const
+	static school = 'physical' as const
+	static targets = 'ally' as const
+	static effects = [new AoeAura(WindAura, 0.2)]
 }

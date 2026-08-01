@@ -61,7 +61,7 @@ be. The White is the source itself. The whole game is one walk upstream, and hea
 gesture writ small — restoring flow to something blocked.
 
 Two smaller threads run beside the river. A rider is always ahead of you: the silhouette one-too-many
-on The Rust's horizon and the shape that keeps its distance in The White are the same figure. And
+on The Rust's horizon and the shape that keeps its distance in The White are the same figure — Gale, a messenger from the downstream world who went ahead to see the source, and the party's last neighbor. And
 the masked pilgrims you pass in The Glow are walking the other way — down from the First Water, so
 somebody has already been where you are going.
 
@@ -141,7 +141,7 @@ obey one rule: **a neighbor is named for a plain thing of home** — a word you 
 bird, a tree, ground, weather. The old tongue's first law is never an English word hiding inside;
 folk names break that law on purpose by being nothing but the word, so the roster can never confuse
 a neighbor with a guardian. And where the Green's animals wear what they _do_ (Snapjaw, Howler), a
-neighbor wears what they are _like_. Two so far: **Oak**, the shield-carrier from the Green (#82) —
+neighbor wears what they are _like_. Four so far: **Oak**, the shield-carrier from the Green (#82) —
 the tree you shelter under, which is the job; the class in code stays `Tank`, that being the coders'
 register — **Wren**, the herder who joins in The Rust (#76): small, quick, never built for
 fighting, all of it audible in the name — and **Clover**, the beekeeper who joins in The Glow (#88):
@@ -149,7 +149,10 @@ the meadow flower bees work all day, the trade audible in the name. A beekeeper'
 veiled and calm while a cloud of stinging things drifts around you, and in the Glow that is the job:
 the sivi drift to whoever glows brightest, and Clover is built to be lit — the mender paints the
 heal-mark on them on purpose, and they hold the drift. Each neighbor takes a different shelf of home
-— a tree, a bird, a flower — leaving ground and weather for whoever joins in the White. They speak
+— a tree, a bird, a flower, and weather for the last of them. **Gale** joins in The White (#90): a
+messenger from the downstream world who went ahead to see the source, the rider who kept their
+distance since the Rust's horizon — at the First Water they stop and let the party catch up. A gale
+is a plain thing you hear coming before you see it; the name says what they are like, always ahead. They speak
 your language the whole way up. That is the point of them — the further upstream you get, the
 more out of place their mud-boots and shield-straps look against the white stone, and the party
 becomes the piece of home you carry into the sublime.
@@ -302,15 +305,18 @@ it. The weirdest place in the game and the calmest: the wound and the ward in on
   small perfect clouds very far away.
 - **Creatures** — silent gliders that cast no shadow, crystal-shelled things that ring when struck,
   and Uvalu, the source-keeper: a guardian inflamed past recognition. Mending it is the finale.
-- **People** — none. Only the rider from The Rust's horizon, still keeping its distance — until the
-  last room.
+- **People** — none, until the end. The rider from The Rust's horizon keeps their distance all the
+  way to the First Water, then stops and turns: **Gale**, a messenger from the downstream world who
+  went ahead to see the source — the party's fourth body (#90). They fall in for the last room: five
+  pairs of mud-boots under white stone, walking into the source together.
 - **Stimmung** — the sublime. Awe. Monumental stillness. The end of the map.
 - **Sounds** — wind over stone, crystal resonance, water beginning. Almost nothing, and it's loud.
 - **Tempo** — monumental. Few encounters, each one an event; the boss fight is the dungeon.
 - **The walk (draft)** — four rooms, each an event. "The gliders": silent gliders that cast no
   shadow, and the first taste of mana that doesn't come back (`white-silent-gliders` waits for this
   room). "The ringing shelf": crystal-shelled things that ring when struck, a fight scored by its
-  own chimes. "The first water": the terraced pools with the rider on the horizon, close now
+  own chimes. "The first water": the terraced pools with the rider on the horizon, close now — and here they
+  stop and let the party catch up; Gale falls in, the party's fourth body
   (`white-first-water`). "The source": Uvalu alone, one long fight out of a closing purse
   (`white-source-keeper`).
 
@@ -320,6 +326,13 @@ it. The weirdest place in the game and the calmest: the wound and the ward in on
 > stillness, late-1970s French science-fiction comic mood à la Moebius' Arzach, sublime and serene,
 > pale stone whites and glacial blues with one warm gold glow at the spring. No text, no UI, no
 > photorealism.
+
+> **Image prompt (Gale)** — A messenger standing in terraced white-stone spring pools, long travel
+> coat and a worn satchel, hair and coat blown in a strong wind, looking back as a small party of
+> four catches up along the path behind them, the source glowing faintly far ahead. Hand-painted,
+> flat muted color fields, precise elegant contours, Moebius-Arzach stillness with Ghibli warmth in
+> the face, pale stone whites and glacial blues with one warm gold glow, sublime and serene. No
+> text, no UI, no photorealism.
 
 ## README sentence (draft, not yet earned)
 

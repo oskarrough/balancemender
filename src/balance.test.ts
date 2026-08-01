@@ -131,6 +131,8 @@ describe('the categories', () => {
 			'GroundfallCadence',
 			'SiviAmbushCadence',
 			'HollowCadence',
+			'GaleSlingCadence',
+			'GaleWindCadence',
 		])
 	})
 
