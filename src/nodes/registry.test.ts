@@ -1,7 +1,18 @@
 import {describe, expect, it} from 'vitest'
+import {dungeonRegistry} from './dungeon'
 import {Heal} from './effects'
 import {abilityRegistry, playerAbilities} from './registry'
 import * as spells from './spells'
+
+describe('the dungeon registry', () => {
+	it('gives every authored room its own scene painting', () => {
+		for (const dungeon of Object.values(dungeonRegistry)) {
+			for (const room of dungeon.rooms) {
+				expect(room.wallpaper, `${dungeon.name} / ${room.name} has no wallpaper`).toBeTruthy()
+			}
+		}
+	})
+})
 
 describe('the ability registry', () => {
 	it('keys every ability by its stable id', () => {

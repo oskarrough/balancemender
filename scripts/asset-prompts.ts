@@ -1,4 +1,21 @@
-type AssetType = 'spell' | 'character'
+type AssetType = 'spell' | 'character' | 'scene'
+
+const assetTypes: AssetType[] = ['spell', 'character', 'scene']
+
+const typeConfig: Record<AssetType, {folder: string; renderRequirements: string}> = {
+	spell: {
+		folder: 'spells',
+		renderRequirements: 'square image, no text, no watermark, no border',
+	},
+	character: {
+		folder: 'characters',
+		renderRequirements: 'square image, no text, no watermark, no border',
+	},
+	scene: {
+		folder: 'explorations',
+		renderRequirements: 'wide 16:9 image at 1440x810, no text, no watermark, no border',
+	},
+}
 
 type Asset = {
 	id: string
@@ -28,19 +45,19 @@ for (let index = 0; index < args.length; index++) {
 	}
 	if (arg === '--type') {
 		type = args[index + 1]
-		if (type === undefined) throw new Error('--type must be spell or character')
+		if (type === undefined) throw new Error('--type must be ' + assetTypes.join(', '))
 		index++
 		continue
 	}
 	ids.push(arg)
 }
 
-if (type !== undefined && type !== 'spell' && type !== 'character') {
-	throw new Error('--type must be spell or character')
+if (type !== undefined && !assetTypes.includes(type as AssetType)) {
+	throw new Error('--type must be ' + assetTypes.join(', '))
 }
 
 function outputPath(asset: Asset) {
-	return '/assets/generated/' + asset.type + 's/' + asset.id + '.png'
+	return '/assets/generated/' + typeConfig[asset.type].folder + '/' + asset.id + '.png'
 }
 
 function compose(asset: Asset) {
@@ -55,13 +72,15 @@ function compose(asset: Asset) {
 		'Type prompt: ' + manifest.types[asset.type],
 		'Individual prompt: ' + asset.prompt,
 		'',
-		'Render requirements: square image, no text, no watermark, no border. Use gpt-image-2/Codex image generation. After generating, save the selected image to the output target path in the repo.',
+		'Render requirements: ' +
+			typeConfig[asset.type].renderRequirements +
+			'. Use gpt-image-2/Codex image generation. After generating, save the selected image to the output target path in the repo.',
 	].join('\n')
 }
 
 let assets = manifest.assets
 
-if (type) assets = assets.filter((asset) => asset.type === type)
+if (type) assets = assets.filter((asset) => asset.type === (type as AssetType))
 if (ids.length > 0) {
 	const wanted = new Set(ids)
 	assets = assets.filter((asset) => wanted.has(asset.id))
@@ -77,7 +96,7 @@ if (list) {
 }
 
 if (assets.length === 0) {
-	console.log('Usage: bun run asset:prompt -- [--list] [--type spell|character] [asset-id...]')
+	console.log('Usage: bun run asset:prompt -- [--list] [--type spell|character|scene] [asset-id...]')
 	process.exit(0)
 }
 

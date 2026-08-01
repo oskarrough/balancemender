@@ -22,11 +22,29 @@ export const TheGreen: Dungeon = {
 			wallpaper: '/assets/generated/explorations/green-stray-pup.png',
 		},
 		// The bleed room — a heal-over-time answers a damage-over-time.
-		{name: 'First blood', party: ['Tank'], enemies: ['Snapjaw'], grants: ['Renew']},
+		{
+			name: 'First blood',
+			party: ['Tank'],
+			enemies: ['Snapjaw'],
+			grants: ['Renew'],
+			wallpaper: '/assets/generated/explorations/green-first-blood.png',
+		},
 		// The ambush room — a fast heal answers a burst.
-		{name: 'The skulker', party: ['Tank'], enemies: ['Runt', 'Skulker'], grants: ['Patch']},
+		{
+			name: 'The skulker',
+			party: ['Tank'],
+			enemies: ['Runt', 'Skulker'],
+			grants: ['Patch'],
+			wallpaper: '/assets/generated/explorations/green-skulker.png',
+		},
 		// Three enemies — the multi-dot room.
-		{name: 'The howling', party: ['Tank'], enemies: ['Denmother', 'Howler', 'Runt'], grants: ['Nettle']},
+		{
+			name: 'The howling',
+			party: ['Tank'],
+			enemies: ['Denmother', 'Howler', 'Runt'],
+			grants: ['Nettle'],
+			wallpaper: '/assets/generated/explorations/green-howling.png',
+		},
 		// The boss kit: pre-shield the telegraphed arrow.
 		{
 			name: 'Haruk',
@@ -63,7 +81,12 @@ export const TheRust: Dungeon = {
 		},
 		// Five bodies, and the two kites drop on whoever is worst off — a new axis after the Green's
 		// healer-hunting: nobody may be left sitting low, the healer least of all.
-		{name: 'The long grass', party: ['Tank', 'Wren'], enemies: ['Chafer', 'Chafer', 'Chafer', 'Kite', 'Kite']},
+		{
+			name: 'The long grass',
+			party: ['Tank', 'Wren'],
+			enemies: ['Chafer', 'Chafer', 'Chafer', 'Kite', 'Kite'],
+			wallpaper: '/assets/generated/explorations/rust-long-grass.png',
+		},
 		// The bell that has been ringing since the waystation sign, answered at last. She fights
 		// alone: the Rust is a lonely dungeon and this is its one strange thing (#72).
 		{

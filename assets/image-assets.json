@@ -3,9 +3,64 @@
 	"style": "Readable hand-painted fantasy game art with flat-fill composition, visible gouache-like brushwork, and textured painted edges. Strong silhouettes and simplified forms that remain legible at small UI sizes. Mystical, quiet, slightly ominous tone rather than heroic spectacle. Use restrained dominant palettes with warm accent glows for magic, windows, embers, or healing light. Favor ancient floating ruins, impossible architecture, maze-etched surfaces, silent guardian presences, miniature settlements, cypress-like vertical shapes, blue-hour or golden-hour atmosphere, and long soft shadows when relevant. No text, logos, UI chrome, watermarks, frames, photorealism, or busy backgrounds.",
 	"types": {
 		"spell": "Square spell icon. Center one clear magical effect with strong shape language. Keep the mood mystical and quiet rather than explosive or heroic. Use high contrast, a clean silhouette readable at 64x64 pixels, and restrained color with warm accent glows. No character faces unless explicitly requested.",
-		"character": "Square unit-frame avatar portrait. Bust or head-and-shoulders crop, clear face or creature identity, simple atmospheric backdrop. The asset should still read in a compact target frame."
+		"character": "Square unit-frame avatar portrait. Bust or head-and-shoulders crop, clear face or creature identity, simple atmospheric backdrop. The asset should still read in a compact target frame.",
+		"scene": "Wide 16:9 dungeon room painting at 1440x810. Establish the place and why its encounter behaves as it does without illustrating combat literally. Preserve shared landmarks from adjacent rooms so progression reads as travel through one country. Compose important clues to survive a centered background-size: cover crop and the combat UI."
 	},
 	"assets": [
+		{
+			"id": "green-stray-pup",
+			"type": "scene",
+			"name": "The stray pup",
+			"prompt": "A sun-dappled temperate forest clearing in the early morning, a small lively stream crossing a dirt path, mossy stones and ferns, a scrappy grey wolf pup watching from the undergrowth, and the ranger's camp smoking at the treeline. Warm golden-hour light through leaves, Ghibli-like warmth, a quiet friendly morning at the start of an adventure. No combat in progress."
+		},
+		{
+			"id": "green-first-blood",
+			"type": "scene",
+			"name": "First blood",
+			"prompt": "The same lively forest stream a short walk upstream from the ranger's camp, squeezed into a shallow stony ford where the dirt path crosses. Oak, a sturdy traveler with a weathered round shield and mud-boots, waits ankle-deep at the crossing and looks toward fresh wolf tracks on the opposite bank. Moss-dark boulders, alder roots, ferns and warm morning shafts; the camp is no longer visible, but its homely world still feels close. Ghibli warmth without safety. No combat in progress."
+		},
+		{
+			"id": "green-skulker",
+			"type": "scene",
+			"name": "The skulker",
+			"prompt": "Farther upstream on the same path, the forest bank closes into a tunnel of shoulder-high ferns and wet roots. The bright stream remains visible as a narrow blue-white ribbon along one edge, while the footpath bends behind dense bracken and vanishes too soon. One patch of crushed fern and a few muddy pawprints are the only warning; no glowing eyes, monster pose or attack. Deeper green shade than the ford, with small coins of warm morning light and a scrappy ambush waiting inside it. No combat in progress."
+		},
+		{
+			"id": "green-howling",
+			"type": "scene",
+			"name": "The howling",
+			"prompt": "The same stream skirting a broad trampled hollow beneath the roots of an old wind-thrown beech. Several ordinary wolf paths converge on a shallow earth den; shed grey fur, pawprints and a garland of bent meadow stems make this unmistakably the pack's home rather than a monster lair. A denmother stands watch near the dark entrance while smaller wolf silhouettes gather between the trees, alert and unsettled but not evil. Late-morning gold reaches the clearing while the surrounding forest stays deep moss green. Warm pastoral adventure on the edge of danger. No gore or combat in progress."
+		},
+		{
+			"id": "green-guardian-glade",
+			"type": "scene",
+			"name": "Haruk",
+			"prompt": "Farther upstream, the lively stream broadens through a deep moss-green glade beneath a massive fallen log. Haruk, an enormous ordinary wolf, rests beneath it beside a garlanded smaller denmother, breathing evenly rather than posed as a monster. The blue-white water and forest path remain visible, with late-morning gold reaching through the deepened canopy. A quiet guardian's country, unsettled but not evil. No combat in progress."
+		},
+		{
+			"id": "rust-waystation",
+			"type": "scene",
+			"name": "The dry bed",
+			"prompt": "A wide dry grassland under an enormous pale-blue afternoon sky, a cracked empty riverbed winding through it as a road, one twisted leafless tree, and a tiny abandoned waystation with a creaking sign, a real herder's bell hung beside it, and nobody in the chair. Flat rust-red, dun and bleached-blue color fields, precise contours, vast negative space; Moebius calm meeting a warm western, spacious high-noon loneliness. No combat in progress."
+		},
+		{
+			"id": "rust-long-grass",
+			"type": "scene",
+			"name": "The long grass",
+			"prompt": "Farther along the same cracked riverbed beyond the waystation, waist-high dry grass has swallowed both banks and leans across the pale clay road in wind-shaped waves. Three low rust-brown chafer trails part the stalks at ground level while two lean kites circle very high in the enormous afternoon sky, patient enough to be mistaken for ink marks. On the far horizon, one rider-shaped silhouette is present a moment before anyone thinks to count it. Flat rust-red, dun and bleached-blue color fields, precise contours, visible painted texture, vast negative space; Moebius calm meeting a warm western, lonely rather than hostile. No combat in progress."
+		},
+		{
+			"id": "rust-hung-bell",
+			"type": "scene",
+			"name": "The hung bell",
+			"prompt": "Still on the cracked riverbed past the long grass, a shallow fold where the herders once overnighted: a few leaning posts, a frayed rope, one ordinary herd animal standing with a small iron bell at its throat. Two low chafer husks wait in the pale clay; the enormous afternoon sky stays empty of Roha herself — only the sense that the sound you have been hearing has a nearer source now. Flat rust-red, dun and bleached-blue color fields, precise contours, visible painted texture and vast negative space; Moebius calm, lonely rather than hostile. No combat in progress."
+		},
+		{
+			"id": "rust-roha",
+			"type": "scene",
+			"name": "Roha",
+			"prompt": "Farther upstream along the same cracked riverbed, a tarnished bronze herder's bell worn as a head stands off the pale clay road beside a dead tree on long thin stilt legs, with dry husk-fibre hanging like a mane and two stiff leaf-shaped ears. The clapper is visible inside the open bell. Enormous pale afternoon sky, flat rust-red and dun color fields, precise contours and vast negative space; still, patient and uncanny rather than hostile. No combat in progress."
+		},
 		{
 			"id": "patch",
 			"type": "spell",

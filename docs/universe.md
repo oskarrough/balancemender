@@ -65,6 +65,13 @@ on The Rust's horizon and the shape that keeps its distance in The White are the
 the masked pilgrims you pass in The Glow are walking the other way — down from the First Water, so
 somebody has already been where you are going.
 
+A room is a place, not a fight floating over a color field. **Every authored dungeon room gets one
+scene painting of its own.** Adjacent paintings carry landmarks forward — above all the river and the
+path beside it — so pressing Next feels like walking farther into the same country. The painting
+establishes the encounter rather than illustrating combat literally: a narrow ford explains an animal
+holding the crossing; high cover explains an ambush; circling birds explain why the weakest traveler
+is in danger. Unit frames carry the fight. The land carries the story.
+
 Weirdness curve: familiar → familiar-but-off → lush-weird → sublime.
 
 ## The journey
@@ -74,7 +81,9 @@ already hold mean something different under each one:
 
 1. **The Green — you learn your hands.** The kit arrives a room at a time. Shipped.
 2. **The Rust — you learn to time.** Roha's toll cuts the cast you are in the middle of, so the
-   fight has a rhythm you play around instead of a number you outheal.
+   fight has a rhythm you play around instead of a number you outheal. The cut itself is rehearsed
+   once or twice before she arrives — fair warning, same shape as the Green's rooms that teach a
+   button before they ask you to live on it.
 3. **The Glow — you learn you are visible.** The sivi drift toward whoever glows brightest, and
    that is the healer. Healing draws attention; the threat table stops being the tank's private
    business.
@@ -166,12 +175,46 @@ Denmother — and only the boss, Haruk, carries the old tongue: the first crack 
 - **Stimmung** — first day of an adventure. Sunny, scuffed knees, nothing truly wrong yet.
 - **Sounds** — birdsong, running water, snapping twigs, panting, yips.
 - **Tempo** — brisk and scrappy. Short fights, quick recoveries, the tutorial heartbeat.
+- **The walk** — five successive views of one stream. The ranger's camp is still near enough to smell
+  in "The stray pup"; Oak waits where the path first has to cross the water in "First blood"; the
+  bank closes into shoulder-high fern cover for "The skulker"; the stream skirts a trampled pack
+  hollow in "The howling"; and it broadens into Haruk's fallen-log glade. Morning begins gold and
+  open, then the canopy deepens toward the guardian without ever losing the blue-white thread of
+  moving water.
 
 > **Image prompt** — A sun-dappled temperate forest clearing in the early morning, a small lively
 > stream crossing a dirt path, mossy stones and ferns, a scrappy grey wolf pup watching from the
 > undergrowth. Hand-painted gouache-like brushwork, flat color fields, strong silhouettes, warm
 > golden-hour light through leaves, Ghibli-like warmth, a quiet friendly morning at the start of an
 > adventure. No text, no UI, no photorealism.
+
+The three missing Green room paintings:
+
+> **First blood** — The same lively forest stream a short walk upstream from the ranger's camp,
+> squeezed into a shallow stony ford where the dirt path crosses. Oak, a sturdy traveler with a
+> weathered round shield and mud-boots, waits ankle-deep at the crossing and looks toward fresh wolf
+> tracks on the opposite bank. Moss-dark boulders, alder roots, ferns and warm morning shafts; the
+> camp is no longer visible, but its homely world still feels close. Readable hand-painted fantasy
+> scene, flat-fill composition, visible gouache-like brushwork, strong silhouettes, Ghibli warmth
+> without safety. Wide 16:9 landscape, no text, UI, frame, photorealism or combat in progress.
+>
+> **The skulker** — Farther upstream on the same path, the forest bank closes into a tunnel of
+> shoulder-high ferns and wet roots. The bright stream remains visible as a narrow blue-white ribbon
+> along one edge, while the footpath bends behind dense bracken and vanishes too soon. One patch of
+> crushed fern and a few muddy pawprints are the only warning; no glowing eyes, monster pose or
+> attack. Deeper green shade than the ford, with small coins of warm morning light. Readable
+> hand-painted fantasy scene, flat-fill composition, visible gouache-like brushwork, strong
+> silhouettes, Ghibli warmth with a scrappy ambush waiting inside it. Wide 16:9 landscape, no text,
+> UI, frame, photorealism or combat in progress.
+>
+> **The howling** — The same stream skirting a broad trampled hollow beneath the roots of an old
+> wind-thrown beech. Several ordinary wolf paths converge on a shallow earth den; shed grey fur,
+> pawprints and a garland of bent meadow stems make this unmistakably the pack's home rather than a
+> monster lair. A denmother stands watch near the dark entrance while smaller wolf silhouettes gather
+> between the trees, alert and unsettled but not evil. Late-morning gold reaches the clearing while
+> the surrounding forest stays deep moss green. Readable hand-painted fantasy scene, flat-fill
+> composition, visible gouache-like brushwork, strong silhouettes, warm pastoral adventure on the
+> edge of danger. Wide 16:9 landscape, no text, UI, frame, photorealism, gore or combat in progress.
 
 ## 2. The Rust — the land dries out
 
@@ -199,13 +242,28 @@ foreground stays homey.
 - **Rooms so far** — "The dry bed" is a bellwether and three chafers: the beast winds up a trample
   you can see coming, and the beetles behind it drift onto whoever is doing the healing. "The long
   grass" trades weight for numbers — three chafers and a pair of kites dropping on whoever is worst
-  off, so nobody can be left sitting low. Roha closes the dungeon alone (#72): the bell you have
-  heard since the waystation, tolling on a slow telegraph that cuts whatever you are casting. Sound
-  is the Rust's signature, so its closer is a fight you listen to.
-- **What it asks of you** — both rooms are harder than anything in The Green, and what they punish
+  off, so nobody can be left sitting low. Then an easier fight before Roha: one of the enemies casts a bell ability once or twice —
+  same wind-up and cut-cast as her Toll, soft enough to survive the first surprise — so Steep's
+  reason for existing is felt before the closer asks you to live on it. Working name for that
+  ability: something plain like "Bell swing"; Toll stays Roha's. The dry bed keeps the
+  trample/shield lesson; timing gets its own beat (#84). Roha closes the dungeon alone (#72): the
+  bell you have heard since the waystation, tolling on a slow telegraph that cuts whatever you are
+  casting. Sound is the Rust's signature, so its closer is a fight you listen to.
+- **What it asks of you** — the rooms are harder than anything in The Green, and what they punish
   is waste. Spamming the fast heal loses the dungeon outright where it used to carry the Green; the
-  bellwether's wind-up is the first thing in the game that teaches you to shield before it lands
-  rather than heal after.
+  bellwether's wind-up teaches you to shield before it lands rather than heal after; the rehearsed
+  toll teaches you to stop casting before the sound and start again after — a rhythm, not a number.
+
+The missing Rust room painting:
+
+> **The long grass** — Farther along the same cracked riverbed beyond the waystation, waist-high dry
+> grass has swallowed both banks and leans across the pale clay road in wind-shaped waves. Three low
+> rust-brown chafer trails part the stalks at ground level while two lean kites circle very high in
+> the enormous afternoon sky, patient enough to be mistaken for ink marks. On the far horizon, one
+> rider-shaped silhouette is present a moment before anyone thinks to count it. Flat rust-red, dun
+> and bleached-blue color fields, precise contours, visible painted texture, vast negative space;
+> Moebius calm meeting a warm western, lonely rather than hostile. Wide 16:9 landscape, no text, UI,
+> frame, photorealism or combat in progress.
 
 > **Image prompt** — A wide dry grassland under an enormous pale-blue afternoon sky, a cracked empty
 > riverbed winding through it as a road, one twisted leafless tree, a tumbleweed mid-roll, a tiny
