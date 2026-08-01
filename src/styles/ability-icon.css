@@ -16,7 +16,7 @@
 }
 
 .AbilityIcon:hover .AbilityIcon-gcd {
-	border-color: var(--yellow);
+	border-color: var(--c-yellow-ochre);
 }
 
 .AbilityIcon:active .AbilityIcon-gcd {
@@ -121,7 +121,7 @@
 
 .AbilityIcon-cooldown strong {
 	font-size: 1.6rem;
-	color: var(--white);
+	color: var(--c-white);
 	text-shadow:
 		0 0 3px black,
 		0 0 6px black;

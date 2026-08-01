@@ -1,7 +1,14 @@
-.Bar {
+/* One name per thing a bar can show, so the whole game reaches for the same four. */
+:root {
 	--health: var(--c-sap-green);
 	--mana: var(--c-blue-celeste);
-	--cast: var(--c-linden-green);
+	--cast: var(--c-chrome-yellow-deep);
+	/* Pale, not another hue: a barrier must be told apart from health on both factions and from mana,
+	   and every saturated candidate collides with one of them. */
+	--barrier: var(--c-french-grey);
+}
+
+.Bar {
 	/* The groove the fill sits in. The fills are mid-tone; what makes them pop is this near-black behind them, so lightening it washes them out. */
 	--track: hsl(30, 15%, 8%);
 	--radius: 4px;
@@ -14,7 +21,7 @@
 	box-shadow: inset 0 2px 4px hsla(0, 0%, 0%, 0.8);
 }
 
-.Bar div {
+.Bar > div {
 	min-height: 1.5em;
 	border-radius: var(--radius);
 	background: var(--bg);
@@ -45,33 +52,42 @@
 }
 
 /*
-	Absorption, past the end of the fill. Deliberately not a palette hue: health, mana and cast own
-	the colours here, and a barrier is not a fourth resource — it is the bar reading further than it
-	otherwise would, so it is drawn as light over the groove.
+	The overlays past the end of the fill — a barrier, and a heal in the air — are as tall as the fill
+	they continue, so they stretch rather than take the fixed 1.5em from `.Bar > div`.
+
+	Written `.Bar > .Whatever`, and it has to be: `.Bar > div` sets `background: var(--bg)` at higher
+	specificity, so a bare `.Bar-absorb` silently rendered in the health colour.
 */
-div.Bar-absorb {
+.Bar > .Bar-absorb,
+.Bar > .Bar-potentialValue {
 	position: absolute;
 	top: 0;
-	/* Translucent, so the groove reads through it: a big barrier on a nearly-dead unit must not
-	   out-shout the sliver of actual health, which is still the thing being healed. */
-	background: linear-gradient(hsla(0, 0%, 100%, 0.5), hsla(0, 0%, 100%, 0.25));
+	bottom: 0;
+}
+
+/* Still translucent: a big barrier on a nearly-dead unit must not out-shout the sliver of actual
+   health, which is what is being healed. */
+.Bar > .Bar-absorb {
+	background: linear-gradient(
+		color-mix(in oklab, var(--barrier), white 35%),
+		color-mix(in oklab, var(--barrier), black 10%)
+	);
+	opacity: 0.9;
 	box-shadow: inset 0 1px 0 hsla(0, 0%, 100%, 0.35);
 }
 
 /* More pool than bar. The cap says the number kept going even though the pixels could not. */
-div.Bar-absorb--capped {
+.Bar > .Bar-absorb--capped {
 	border-right: 2px solid var(--c-lemon-yellow);
 }
 
-div.Bar-potentialValue {
-	position: absolute;
-	top: 0;
+.Bar > .Bar-potentialValue {
 	background: var(--c-chrome-green-1);
 	opacity: 0.6;
 }
 
 /* The sweet spot zone (#33) — the last stretch of a cast bar a tap-to-confirm must land in. */
-div.Bar-sweetSpot {
+.Bar > .Bar-sweetSpot {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -90,10 +106,10 @@ div.Bar-sweetSpot {
 	/* avoid jumps because no monospace */
 	min-width: 8em;
 	/* The value sits over the empty track as often as the lit fill, so it needs light text plus a shadow rather than a colour picked to suit one of them. */
-	color: var(--white);
+	color: var(--c-white);
 	text-shadow:
-		0 1px 2px var(--black),
-		0 0 4px var(--black);
+		0 1px 2px var(--c-black),
+		0 0 4px var(--c-black);
 }
 
 .Bar span[hidden] {
@@ -115,10 +131,6 @@ div.Bar-sweetSpot {
 	margin-bottom: 0.7rem;
 }
 
-.Bar[data-type='cast'] div {
+.Bar[data-type='cast'] > div {
 	min-height: 0.5rem;
-}
-
-[hidden] {
-	display: none;
 }

@@ -2,11 +2,11 @@
 .Plate {
 	--radius: 0.2em;
 	position: relative;
-	border-radius: var(--radius);
 	border-width: 2px;
 	border-style: outset;
+	border-radius: var(--radius);
 	box-shadow: 0 1px 4px hsla(0, 0%, 10%, 0.5);
-	color: var(--white);
+	color: var(--c-white);
 	text-shadow:
 		0 0 2px black,
 		0 0 2px black,
@@ -14,22 +14,22 @@
 		0 0 3px black,
 		0 0 1px black,
 		0 0 1px black;
-}
 
-/* Deliberately no size and no border colours here: those are what tell the two apart. */
-.Plate-image {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	border-radius: var(--radius);
-	filter: saturate(0.85) contrast(0.9);
-	transition: filter 150ms var(--easing);
-	pointer-events: none;
-}
+	/* Deliberately no size and no border colours here: those are what tell the two apart. */
+	& .Plate-image {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: var(--radius);
+		filter: saturate(0.85) contrast(0.9);
+		transition: filter 150ms var(--easing);
+		pointer-events: none;
+	}
 
-.Plate-inner {
-	position: relative;
-	z-index: 2;
+	& .Plate-inner {
+		position: relative;
+		z-index: 2;
+	}
 }

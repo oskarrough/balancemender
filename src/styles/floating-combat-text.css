@@ -6,37 +6,29 @@
 floating-combat-text {
 	--duration: 2000ms;
 
-	display: inline-block;
-	pointer-events: none;
-	user-select: none;
-	/* border: 1px dotted #ccc; */
-
 	position: absolute;
 	top: 0;
 	left: 0;
-
+	display: inline-block;
 	font-size: 2.5rem;
 	color: rgb(0, 161, 0);
-	text-shadow: 0.1rem 0.1rem 0px rgb(0, 100, 0);
-
-	animation-name: fct-up;
-	animation-timing-function: linear;
-	animation-duration: var(--duration);
-	animation-fill-mode: both;
-	transform-origin: center;
 	white-space: nowrap;
-}
+	pointer-events: none;
+	user-select: none;
+	transform-origin: center;
+	animation: fct-up var(--duration) linear both;
+	text-shadow: 0.1rem 0.1rem 0 rgb(0, 100, 0);
 
-floating-combat-text.damage {
-	color: var(--darkred);
-	text-shadow: none;
-	text-shadow: 0.1rem 0.1rem 0px var(--red);
-}
+	&.damage {
+		color: var(--c-crimson-lake);
+		text-shadow: 0.1rem 0.1rem 0 var(--c-scarlet-lake);
+	}
 
-/* A sweet-spot heal (#33) — same number, reads as a crit. */
-floating-combat-text.sweet-spot {
-	color: var(--c-lemon-yellow);
-	font-size: 3rem;
+	/* A sweet-spot heal (#33) — same number, reads as a crit. */
+	&.sweet-spot {
+		color: var(--c-lemon-yellow);
+		font-size: 3rem;
+	}
 }
 
 @keyframes fct-up {

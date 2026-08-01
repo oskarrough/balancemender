@@ -2,10 +2,10 @@ import {html} from 'uhtml'
 import type {GameLoop} from '../nodes/game-loop'
 import type {AbilityClass} from '../nodes/ability'
 import {AbilityUse} from '../nodes/ability-use'
+import {spellIconPath} from './icon-path'
 
 function iconPath(AbilityClass: AbilityClass) {
-	const slug = AbilityClass.icon || AbilityClass.name.toLowerCase().replaceAll(' ', '-')
-	return `/assets/generated/spells/${slug}.png`
+	return spellIconPath(AbilityClass.icon || AbilityClass.name)
 }
 
 /** One button in the action bar: what the ability costs, what it does, and whether it can be used now. */

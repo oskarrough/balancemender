@@ -1,6 +1,7 @@
 import {html} from 'uhtml'
 import type {Aura} from '../nodes/aura'
 import {PeriodicAura} from '../nodes/periodic-aura'
+import {spellIconPath} from './icon-path'
 
 /**
  * Where an aura is in its life. `elapsedTime` is the aura's own clock, and cycle `n` fires at
@@ -24,17 +25,21 @@ function timing(aura: Aura) {
 }
 
 /**
- * An aura on a unit frame. Same shape as an action bar icon, a quarter the size, so a Rend here
- * and a Rend in the spellbook read as one thing. What it says, in the order the eye gets there:
- * green or red for who it is good for, a draining bar for how long it has, pips for how many
- * instalments are left, and the seconds for when precision matters.
+ * An aura on a unit frame: a square of the spell's own art, the size of an action bar icon shrunk
+ * to a fifth, so the Renew you cast and the Renew sitting on the tank are recognisably one thing.
+ * Art first, because at five frames on screen a row of pictures is scannable and a row of words is
+ * not — the name stays in the tooltip.
  *
- * No radial sweep: the game says "how much is left" with bars everywhere else, and a wedge over
- * a 4rem icon is a shape, not a clock.
+ * What the chrome says, in the order the eye gets there: a red or green rim for who the aura is
+ * good for, the bottom strip for how much is left, and the seconds for when precision matters. The
+ * strip is pips when the aura ticks — one per instalment, the next one filling as its interval runs
+ * down — and a plain draining bar when it does not.
+ *
+ * @param stacks how many copies are on the target; drawn as a corner count past one.
  */
-export function AuraIcon(aura: Aura) {
+export function AuraIcon(aura: Aura, stacks = 1) {
 	const {remaining, left, toNextTick} = timing(aura)
-	const harmful = aura instanceof PeriodicAura && aura.total < 0
+	const harmful = aura instanceof PeriodicAura && aura.harms
 	const pips = Array.from({length: aura.repeat}, (_, i) => i)
 
 	return html`
@@ -43,9 +48,10 @@ export function AuraIcon(aura: Aura) {
 			style=${`--left: ${left * 100}%; --tick: ${toNextTick * 100}%`}
 			title=${`${aura.name} — ${aura._cycles}/${aura.repeat} ticks, ${remaining.toFixed(1)}s left`}
 		>
+			<img class="Plate-image AuraIcon-art" src=${spellIconPath(aura.id)} alt="" />
 			<div class="Plate-inner AuraIcon-inner">
-				<h3>${aura.name}</h3>
-				<strong>${remaining < 10 ? remaining.toFixed(1) : Math.ceil(remaining)}s</strong>
+				${stacks > 1 ? html`<b class="AuraIcon-stacks">${stacks}</b>` : null}
+				<strong>${remaining < 10 ? remaining.toFixed(1) : Math.ceil(remaining)}</strong>
 			</div>
 			${aura.repeat > 1
 				? html`<ol class="AuraIcon-pips">
@@ -57,8 +63,7 @@ export function AuraIcon(aura: Aura) {
 								></li>`,
 						)}
 					</ol>`
-				: null}
-			<div class="AuraIcon-life"></div>
+				: html`<div class="AuraIcon-life"></div>`}
 		</li>
 	`
 }

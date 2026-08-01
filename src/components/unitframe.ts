@@ -20,12 +20,17 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const auras: Aura[] = [...unit.auras]
 	// Barriers stack, and the bar cares about the total rather than which spell left it.
 	const absorb = auras.reduce((total, aura) => total + (aura instanceof BarrierAura ? aura.pool : 0), 0)
+	/* Stacks are separate copies on the unit, which as separate chips would say three Nettles where
+	   the fight has one at three. The last copy is drawn — it has the longest left to run. */
+	const auraStacks = new Map<string, Aura[]>()
+	for (const aura of auras) {
+		const group = auraStacks.get(aura.stackKey)
+		if (group) group.push(aura)
+		else auraStacks.set(aura.stackKey, [aura])
+	}
 
-	/**
-	 * What this unit is casting. Not `playerCast` above, which is the player's own cast, passed in
-	 * to preview how much of this bar it would fill. The player is skipped here because their cast
-	 * bar has its own panel.
-	 */
+	/* What this unit is casting — not `playerCast`, which is the player's own, passed in to preview
+	   how much of this bar it would fill. The player is skipped: their cast bar has its own panel. */
 	const casting = unit === player ? undefined : unit.currentAbility
 	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - unit.lastCastTime : 0
 
@@ -52,8 +57,9 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 							absorbValue: absorb,
 							ability: !isEnemy ? playerCast : undefined,
 						})}
+						<!-- No target tick: the frame's own gold edge already says which unit is selected. -->
 						<div class="Unit-name">
-							${displayName} ${isCurrentTarget ? '✓' : ''}${targetName ? ` → ${targetName}` : ''}
+							<b>${displayName}</b>${targetName ? html`<small>→ ${targetName}</small>` : null}
 						</div>
 					</div>
 					${'mana' in unit && unit.mana
@@ -67,16 +73,20 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 						: null}
 				</div>
 			</div>
-			<div class="Unit-cast">
+			<!-- Rendered only when there is something to show; Unit-hang keeps them out of the frame's flow. -->
+			<div class="Unit-hang">
 				${casting && casting.delay > 0
-					? html`<small>${casting.name}</small> ${Meter({type: 'cast', value: castElapsed, max: casting.delay})}`
+					? html`<div class="Unit-cast">
+							<small>${casting.name}</small>
+							${Meter({type: 'cast', value: castElapsed, max: casting.delay})}
+						</div>`
+					: null}
+				${auraStacks.size > 0
+					? html`<ul class="Auras">
+							${[...auraStacks.values()].map((group) => AuraIcon(group[group.length - 1], group.length))}
+						</ul>`
 					: null}
 			</div>
-			${auras.length > 0
-				? html`<ul class="Auras">
-						${auras.map(AuraIcon)}
-					</ul>`
-				: null}
 
 			<div class="FloatingCombatText"></div>
 		</div>
