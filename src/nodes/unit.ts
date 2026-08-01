@@ -8,6 +8,7 @@ import {Faction, FACTION, Condition, CONDITION_THRESHOLDS} from './types'
 import type {UnitId} from './unit-registry'
 import type {Ability, AbilityClass} from './ability'
 import type {GlobalCooldown} from './global-cooldown'
+import type {GameLoop} from './game-loop'
 import type {Targeting} from './targeting'
 import {AbilityUse} from './ability-use'
 import type {ThreatTable} from './threat'
@@ -110,6 +111,25 @@ export class Unit extends Node {
 	 */
 	useAbility(abilityId: string, target?: Unit) {
 		return AbilityUse.use(this, abilityId, target)
+	}
+
+	/**
+	 * Cut whatever this unit is casting, whether it changed its own mind or something rang a bell at
+	 * it. Disconnecting the ability is what logs `SPELL_CAST_INTERRUPTED`, and the mana was never
+	 * taken — only a cast that completes is charged, so a cut one costs time alone. Returns false
+	 * when there was nothing to cut.
+	 */
+	stopCasting() {
+		const {currentAbility, gcd} = this
+		if (!currentAbility) return false
+		// Both slots are read before either disconnect, because finishing the cast clears `gcd`
+		// out from under us and would leave the cooldown task running with nobody holding it.
+		currentAbility.disconnect()
+		gcd?.disconnect()
+		this.currentAbility = undefined
+		this.gcd = undefined
+		;(this.root as GameLoop).audio.play('spell_fizzle')
+		return true
 	}
 
 	constructor(public parent: Fight) {

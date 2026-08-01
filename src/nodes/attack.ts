@@ -1,6 +1,6 @@
 import type {CombatEventType} from '../combatlog'
 import {Ability} from './ability'
-import {ApplyAura, Damage} from './effects'
+import {ApplyAura, Damage, Interrupt} from './effects'
 import {PeriodicAura} from './periodic-aura'
 import {StatModifierAura} from './stat-modifier-aura'
 import {STAT} from './stats'
@@ -133,6 +133,33 @@ export class Ambush extends Ability {
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	static effects = [new Damage(2.5)]
+}
+
+/** The sound going on after the bell stops, declared before the toll that leaves it. */
+export class Ringing extends PeriodicAura {
+	static id = 'Ringing'
+	static name = 'Ringing'
+	static harms = true
+	static interval = 1000
+	static repeat = 5
+	static delay = 1000
+}
+
+/**
+ * Roha's bell, and the only thing she does. It leaves a ringing in whoever it was swung at, and its
+ * sound cuts every cast on that side of the room — the wound is the tank's, the interruption is the
+ * healer's. Telegraphed longer than Haruk's arrow because the wind-up is the whole instruction:
+ * stop casting before it, start again after. A rhythm you play around, not a number you outheal.
+ */
+export class Toll extends Ability {
+	static id = 'Toll'
+	static name = 'Toll'
+	static tags = ['spell'] as const
+	static school = 'holy' as const
+	static targets = 'enemy' as const
+	static castTime = 2500
+	static eventType: CombatEventType = 'SPELL_DAMAGE'
+	static effects = [new Interrupt(), new ApplyAura(Ringing, 1.25)]
 }
 
 /** A pack buff to strength, declared before the howl that plants it. No modifier of its own — the planting effect sizes it. */

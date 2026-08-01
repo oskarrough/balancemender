@@ -213,14 +213,6 @@ function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: nu
 
 function interrupt(game: GameLoop): ActionResult<void> {
 	log('interrupt')
-	const player = game.player
-	if (!player.currentAbility) return fail('Nothing to interrupt')
-
-	game.audio.stopOwned(player.currentAbility)
-	game.audio.play('spell_fizzle')
-	player.currentAbility.disconnect()
-	player.gcd?.disconnect()
-	player.currentAbility = undefined
-	player.gcd = undefined
+	if (!game.player.stopCasting()) return fail('Nothing to interrupt')
 	return ok(undefined)
 }

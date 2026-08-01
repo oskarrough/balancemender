@@ -132,6 +132,13 @@ export class AmbushCadence extends Cadence {
 	static interval = 8000
 }
 
+/** Roha's whole clock. Slow enough that the gap between two tolls is where the fight is played. */
+export class TollCadence extends Cadence {
+	static abilityId = 'Toll'
+	static delay = 3000
+	static interval = 7000
+}
+
 export class RileCadence extends Cadence {
 	static abilityId = 'Rile'
 	static delay = 5000

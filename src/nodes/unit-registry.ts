@@ -1,6 +1,6 @@
 import type {Unit} from './unit'
 import type {Faction} from './types'
-import {Pup, Runt, Denmother, Haruk, Snapjaw, Skulker, Howler} from './enemies'
+import {Pup, Runt, Denmother, Haruk, Snapjaw, Skulker, Howler, Roha} from './enemies'
 import {Tank} from './party-units'
 import {Player} from './player'
 
@@ -25,6 +25,7 @@ export const unitRegistry = {
 	Snapjaw,
 	Skulker,
 	Howler,
+	Roha,
 } as const
 
 export type UnitId = keyof typeof unitRegistry

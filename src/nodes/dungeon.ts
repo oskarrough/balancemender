@@ -54,6 +54,14 @@ export const TheRust: Dungeon = {
 		},
 		// Two healer-hunters backed by a strength buff — wider pressure, not a new mechanic.
 		{name: 'The long grass', party: ['Tank'], enemies: ['Skulker', 'Skulker', 'Howler']},
+		// The bell that has been ringing since the waystation sign, answered at last. She fights
+		// alone: the Rust is a lonely dungeon and this is its one strange thing (#72).
+		{
+			name: 'Roha',
+			party: ['Tank'],
+			enemies: ['Roha'],
+			wallpaper: '/assets/generated/explorations/rust-roha.png',
+		},
 	],
 }
 

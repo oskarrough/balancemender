@@ -1,4 +1,5 @@
 import {applyHit} from './hit'
+import {eligible} from './targets'
 import type {CombatEventType} from '../combatlog'
 // Type-only: ability.ts imports the `Effect` type back from here.
 import type {Ability, AbilitySchool} from './ability'
@@ -135,6 +136,25 @@ export class Heal implements Effect {
 	apply(landing: Landing) {
 		const {rng} = landing.ability.root as GameLoop
 		hit(landing, rng.naturalize(landing.resolve(this.coefficient)), 'SPELL_HEAL')
+	}
+}
+
+/**
+ * Cut every cast on the side this landed on, the target's included. The reach is the point and the
+ * reason this is not aimed like the rest: what interrupts here is a sound, and a sound arrives at
+ * whoever is standing in the room to hear it.
+ *
+ * Deliberately without a coefficient — an interrupt has no size, so the dial for an ability
+ * carrying one is how often it comes rather than how hard.
+ */
+export class Interrupt implements Effect {
+	readonly label = 'interrupt'
+	/** Stated rather than left off: this is the one effect that lands something with no size. */
+	readonly coefficient = undefined
+
+	apply({ability, caster}: Landing) {
+		// The side the ability was aimed at, which is the side the target is standing on.
+		for (const unit of eligible(caster, ability.targets)) unit.stopCasting()
 	}
 }
 

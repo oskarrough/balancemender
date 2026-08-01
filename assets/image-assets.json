@@ -67,10 +67,40 @@
 			"prompt": "An iconic flat emblem of three simple grey wolf-ear silhouettes leaning toward one warm amber howl-ring, the ring swelling around a small clay-red pulse. It should read as pack energy being stirred and passed from one animal to another, not rage or evil. Use The Green's warm natural palette: moss-black field, wolf grey, lichen green, sunlit ochre, clay red and one tiny stream-blue accent. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. Lively, rhythmic and folkloric, with one compact centered silhouette and generous padding, unmistakable at 64x64 pixels. No faces, eyes, teeth, open mouths, blood, claws, skulls, flames, heraldry, frame, badge or decorative marks."
 		},
 		{
+			"id": "ringing",
+			"type": "spell",
+			"name": "Ringing",
+			"prompt": "An iconic flat emblem of three widening rust-red rings spreading from one small tarnished bronze bell-mouth at the lower left, the outermost ring thinning and breaking apart. It should read as a sound still going on after the bell has stopped — pressure that lingers, not an impact. Use The Rust's dry palette: bleached bone-white field, tarnished bronze, rust red, dun and sun-gold. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. Still, patient and uncanny rather than loud or aggressive. One compact asymmetrical silhouette with generous padding, unmistakable at 64x64 pixels. No ears, faces, heads, lightning bolts, music notes, speech marks, frame, badge or decorative marks."
+		},
+		{
 			"id": "runt",
 			"type": "character",
 			"name": "Runt",
 			"prompt": "A small scrappy mud-flecked wolf with alert eyes, rough grey fur, and a mildly dangerous expression — an animal having a bad day."
+		},
+		{
+			"id": "bellwether",
+			"type": "character",
+			"name": "Bellwether",
+			"prompt": "A gaunt long-horned herd beast of the dry country, dust-matted hide over visible ribs, a heavy tarnished bronze bell hung at its throat on a cracked leather strap. Patient and immense rather than fierce — an animal still doing its job for a herd that is gone. Rust-red and dun palette, pale bleached sky behind."
+		},
+		{
+			"id": "kite",
+			"type": "character",
+			"name": "Kite",
+			"prompt": "A lean carrion bird of the dry grassland, forked tail and long ragged wings, head tilted to watch something below it. Sun-bleached brown and ash grey, one bright unsentimental eye. Patient, not monstrous — a bird that has simply been waiting longer than you have. Vast pale afternoon sky behind."
+		},
+		{
+			"id": "chafer",
+			"type": "character",
+			"name": "Chafer",
+			"prompt": "A husk-shelled beetle the size of a dog, dry rust-brown carapace scored like cracked clay, blunt digging forelimbs, small dull eyes. Reads as one of many rather than a singular threat. Dusty ochre palette, cracked riverbed ground beneath it."
+		},
+		{
+			"id": "roha",
+			"type": "character",
+			"name": "Roha",
+			"prompt": "A tall creature that is a tarnished bronze herder's bell worn as a head, hung on long thin stilt legs, dry husk-fibre hanging from it like a mane and two stiff leaf-shaped ears. The clapper hangs visible inside the open mouth of the bell. Still, patient, uncanny and not hostile. Rust-red scrubland and enormous pale sky, flat color fields, Moebius calm."
 		},
 		{
 			"id": "tank",

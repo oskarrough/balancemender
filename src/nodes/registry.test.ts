@@ -7,13 +7,15 @@ describe('the ability registry', () => {
 	})
 
 	/**
-	 * Every registered ability does something, and everything it does has a size. An effect
-	 * without a coefficient lands nothing, so this is where that stops being silent.
+	 * Every registered ability does something, and anything it does that has a size declares one.
+	 * The exception is an effect with nothing to size — `Interrupt` cuts a cast rather than landing
+	 * an amount — which declares `coefficient = undefined` to say so out loud.
 	 */
 	it('gives every declared effect a size to land', () => {
 		for (const [id, AbilityClass] of Object.entries(abilityRegistry)) {
 			expect(AbilityClass.effects, `${id} has no effects`).not.toHaveLength(0)
 			for (const effect of AbilityClass.effects) {
+				if (effect.coefficient === undefined) continue
 				expect(effect.coefficient, `${id} has a ${effect.label} with no coefficient`).toBeTypeOf('number')
 			}
 		}

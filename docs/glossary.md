@@ -129,9 +129,9 @@ Separate from tags: Fireball is a spell and an attack of the fire school; Savage
 the physical school. School selects power too: physical takes attack power, everything else spell
 power.
 
-**Effect** — one thing an ability does when it lands: heal, damage, or apply an aura. An ability may
-have several, so it is a list rather than a field. Not the thing left sitting on the unit afterwards
-— that is an aura.
+**Effect** — one thing an ability does when it lands: heal, damage, apply an aura, or interrupt. An
+ability may have several, so it is a list rather than a field. Not the thing left sitting on the unit
+afterwards — that is an aura.
 
 **Coefficient** — the fraction of its caster's power one effect claims. Authored on the effect,
 because the effect is the thing with a size: `new ApplyAura(RenewAura, 1.2)` is 120% of spell power,
@@ -151,6 +151,11 @@ number sizes Shield, which heals nobody.
 shared pause every cast starts, running alongside the cast rather than after it, which is why a cast
 costs the longer of the two and not the sum; **cooldown** is one ability's own wait. A unit **casts**
 a spell and **swings** an attack; it **uses** either.
+
+**Interrupt** — cutting a cast short before it lands. Costs the caster the time, never the mana: only
+a completed cast is charged for. The player interrupts themselves with `{type: 'interrupt'}`; the
+`Interrupt` effect is how an enemy does it, and Roha's `Toll` carries the only one today. It reaches
+every unit on the side it landed on, because what interrupts there is a sound.
 
 **Id** and **name** — every ability and aura has both. The **id** is what everything files it under:
 registry, a unit's abilities, balance, `--tune`, the log's `abilityId`, cooldowns, stack keys. The

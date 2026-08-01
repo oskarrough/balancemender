@@ -1,7 +1,7 @@
 import {Unit} from './unit'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
-import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile} from './attack'
+import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile, Toll} from './attack'
 import {Lick} from './spells'
 import {
 	NastyArrowCadence,
@@ -13,6 +13,7 @@ import {
 	WorryCadence,
 	AmbushCadence,
 	RileCadence,
+	TollCadence,
 } from './cadence'
 
 export class Haruk extends Unit {
@@ -116,6 +117,29 @@ export class Skulker extends Unit {
 	targeting = new Targeting(this, prefer.healerFirst)
 	nipCadence = new NipCadence(this)
 	ambushCadence = new AmbushCadence(this)
+}
+
+/**
+ * The bell that has been ringing since the waystation sign, on stilt legs, wearing its own head.
+ * The first enemy in the game that is not a wolf, and not a boss in Haruk's sense — no epithet, and
+ * nobody in the shire has a word for her.
+ *
+ * `Toll` is her whole kit — she has no teeth to give her a second ability with. She swings the bell
+ * at whoever is squared up in front of her, so the wound lands on the tank and the healer answers
+ * it the ordinary way; what reaches the healer is the sound, which cuts whatever they were casting.
+ * That split is the room: pressure to answer, and a beat you have to answer it between.
+ */
+export class Roha extends Unit {
+	static stamina = 480
+	static intellect = 40
+	static strength = 0
+	static agility = 5
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Roha'
+	abilities = {Toll}
+	targeting = new Targeting(this, prefer.tankFirst)
+	tollCadence = new TollCadence(this)
 }
 
 /** Goads a packmate into a frenzy; the buff is why it dies first or second. */
