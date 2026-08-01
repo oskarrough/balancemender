@@ -1,0 +1,734 @@
+<title>Balance Mender — Artwork</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+	:root {
+		--bg: #121212;
+		--fg: #ededea;
+		--dim: #8a8a86;
+		--line: #333331;
+		--accent: #d9a441;
+		--col-gap: 1px;
+	}
+	* {
+		box-sizing: border-box;
+	}
+	html,
+	body {
+		margin: 0;
+		background: var(--bg);
+		color: var(--fg);
+		font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		-webkit-font-smoothing: antialiased;
+	}
+	body {
+		overflow-x: hidden;
+	}
+
+	a {
+		color: inherit;
+	}
+	img {
+		display: block;
+		width: 100%;
+		height: auto;
+		background: #1a1a18;
+	}
+
+	.wrap {
+		max-width: 1600px;
+		margin: 0 auto;
+		padding: 0 24px 120px;
+	}
+
+	/* ---- masthead ---- */
+	.masthead {
+		padding: 56px 0 28px;
+		border-bottom: 1px solid var(--line);
+		margin-bottom: 40px;
+	}
+	.masthead .kicker {
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--accent);
+		margin: 0 0 12px;
+	}
+	.masthead h1 {
+		font-size: clamp(32px, 6vw, 64px);
+		font-weight: 700;
+		line-height: 1.02;
+		letter-spacing: -0.01em;
+		margin: 0 0 16px;
+	}
+	.masthead p {
+		max-width: 640px;
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--dim);
+		margin: 0;
+	}
+	.masthead .counts {
+		display: flex;
+		gap: 32px;
+		margin-top: 28px;
+		flex-wrap: wrap;
+	}
+	.masthead .counts div {
+		font-size: 11px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--dim);
+	}
+	.masthead .counts b {
+		display: block;
+		font-size: 22px;
+		letter-spacing: -0.01em;
+		color: var(--fg);
+		font-weight: 700;
+	}
+
+	/* ---- section ---- */
+	.section {
+		padding-top: 52px;
+	}
+	.section + .section {
+		border-top: 1px solid var(--line);
+	}
+	.section-head {
+		display: grid;
+		grid-template-columns: repeat(12, 1fr);
+		gap: 16px;
+		align-items: baseline;
+		margin-bottom: 20px;
+	}
+	.section-head .num {
+		grid-column: span 1;
+		font-size: 12px;
+		color: var(--accent);
+		letter-spacing: 0.05em;
+	}
+	.section-head h2 {
+		grid-column: span 7;
+		font-size: clamp(22px, 3.4vw, 36px);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		margin: 0;
+		text-transform: uppercase;
+	}
+	.section-head .blurb {
+		grid-column: span 4;
+		font-size: 12px;
+		line-height: 1.5;
+		color: var(--dim);
+	}
+
+	/* ---- grid ---- */
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(12, 1fr);
+		gap: var(--col-gap);
+		background: var(--line);
+		border: 1px solid var(--line);
+	}
+	.cell {
+		background: var(--bg);
+		padding: 12px;
+		display: flex;
+		flex-direction: column;
+	}
+	.cell figure {
+		margin: 0;
+	}
+	.cell a {
+		display: block;
+		line-height: 0;
+	}
+	.cell .cap {
+		margin-top: 10px;
+		font-size: 11px;
+		line-height: 1.4;
+	}
+	.cell .cap .id {
+		display: block;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-weight: 700;
+		color: var(--fg);
+	}
+	.cell .cap .detail {
+		display: block;
+		color: var(--dim);
+		margin-top: 2px;
+	}
+
+	.span-8 {
+		grid-column: span 8;
+	}
+	.span-4 {
+		grid-column: span 4;
+	}
+	.span-6 {
+		grid-column: span 6;
+	}
+	.span-3 {
+		grid-column: span 3;
+	}
+	.span-2 {
+		grid-column: span 2;
+	}
+
+	/* ---- room pair ---- */
+	.pair {
+		display: contents;
+	}
+
+	footer {
+		margin-top: 60px;
+		padding-top: 20px;
+		border-top: 1px solid var(--line);
+		font-size: 11px;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--dim);
+	}
+
+	@media (max-width: 720px) {
+		.wrap {
+			padding: 0 16px 80px;
+		}
+		.masthead {
+			padding: 32px 0 20px;
+		}
+		.section-head {
+			grid-template-columns: repeat(4, 1fr);
+		}
+		.section-head .num {
+			grid-column: span 4;
+			order: 1;
+		}
+		.section-head h2 {
+			grid-column: span 4;
+			order: 2;
+		}
+		.section-head .blurb {
+			grid-column: span 4;
+			order: 3;
+		}
+		.grid {
+			grid-template-columns: repeat(4, 1fr);
+		}
+		.span-8,
+		.span-6,
+		.span-4,
+		.span-3,
+		.span-2 {
+			grid-column: span 4;
+		}
+	}
+
+	@media (prefers-color-scheme: light) {
+		:root {
+			--bg: #121212;
+			--fg: #ededea;
+		}
+	}
+</style>
+
+<div class="wrap">
+	<div class="masthead">
+		<p class="kicker">Balance Mender — Internal Reference</p>
+		<h1>Artwork Gallery</h1>
+		<p>
+			Every painting the image pipeline has produced, in journey order: The Green, The Rust, The Glow, The White, then
+			the spell icons and unit portraits. Click any image to open it full size.
+		</p>
+		<div class="counts">
+			<div><b>27</b>Explorations</div>
+			<div><b>4</b>Characters</div>
+			<div><b>9</b>Spells</div>
+			<div><b>40</b>Total files</div>
+		</div>
+	</div>
+
+	<!-- 1. THE GREEN -->
+	<div class="section">
+		<div class="section-head">
+			<div class="num">01</div>
+			<h2>The Green</h2>
+			<div class="blurb">
+				The shire end of the universe. A stream walked upstream, five rooms, wolves having a bad day.
+			</div>
+		</div>
+		<div class="grid">
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/green-stray-pup.png" target="_blank">
+						<img src="/assets/generated/explorations/green-stray-pup.png" alt="green-stray-pup" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">green-stray-pup</span
+						><span class="detail">The stray pup — the ranger's camp, the ford, the pup watching from the ferns.</span>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/green-stray-pup-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/green-stray-pup-portrait.png"
+							alt="green-stray-pup-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">green-stray-pup-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/green-first-blood.png" target="_blank">
+						<img src="/assets/generated/explorations/green-first-blood.png" alt="green-first-blood" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">green-first-blood</span
+						><span class="detail">Oak waits at the stony ford, fresh wolf tracks on the far bank.</span>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/green-first-blood-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/green-first-blood-portrait.png"
+							alt="green-first-blood-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">green-first-blood-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/green-skulker.png" target="_blank">
+						<img src="/assets/generated/explorations/green-skulker.png" alt="green-skulker" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">green-skulker</span
+						><span class="detail"
+							>The skulker — a fern tunnel, crushed bracken, the ambush before it shows itself.</span
+						>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/green-skulker-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/green-skulker-portrait.png"
+							alt="green-skulker-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">green-skulker-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/green-howling.png" target="_blank">
+						<img src="/assets/generated/explorations/green-howling.png" alt="green-howling" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">green-howling</span
+						><span class="detail">The howling — the pack's trampled den hollow beneath a wind-thrown beech.</span>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/green-howling-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/green-howling-portrait.png"
+							alt="green-howling-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">green-howling-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/green-guardian-glade.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/green-guardian-glade.png"
+							alt="green-guardian-glade"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">green-guardian-glade</span
+						><span class="detail">Haruk — the boss glade, an enormous wolf resting under a fallen log.</span>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/green-guardian-glade-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/green-guardian-glade-portrait.png"
+							alt="green-guardian-glade-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">green-guardian-glade-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/green-guardian-glade-v2.png" target="_blank">
+					<img
+						src="/assets/generated/explorations/green-guardian-glade-v2.png"
+						alt="green-guardian-glade-v2"
+						loading="lazy"
+					/>
+				</a>
+				<div class="cap">
+					<span class="id">green-guardian-glade-v2</span><span class="detail">Haruk — alternate take, wide.</span>
+				</div>
+			</div>
+			<div class="cell span-8" aria-hidden="true"></div>
+		</div>
+	</div>
+
+	<!-- 2. THE RUST -->
+	<div class="section">
+		<div class="section-head">
+			<div class="num">02</div>
+			<h2>The Rust</h2>
+			<div class="blurb">
+				Out of the woods. A cracked riverbed as the road, everything oxidizing, a bell heard before it's seen.
+			</div>
+		</div>
+		<div class="grid">
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/rust-waystation.png" target="_blank">
+						<img src="/assets/generated/explorations/rust-waystation.png" alt="rust-waystation" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">rust-waystation</span
+						><span class="detail">The dry bed — the abandoned waystation, a bell hung by an empty chair.</span>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/rust-waystation-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/rust-waystation-portrait.png"
+							alt="rust-waystation-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">rust-waystation-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/rust-long-grass.png" target="_blank">
+						<img src="/assets/generated/explorations/rust-long-grass.png" alt="rust-long-grass" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">rust-long-grass</span
+						><span class="detail"
+							>The long grass — chafer trails in the stalks, kites circling, a rider on the horizon.</span
+						>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/rust-long-grass-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/rust-long-grass-portrait.png"
+							alt="rust-long-grass-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">rust-long-grass-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/rust-hung-bell.png" target="_blank">
+						<img src="/assets/generated/explorations/rust-hung-bell.png" alt="rust-hung-bell" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">rust-hung-bell</span
+						><span class="detail"
+							>The hung bell — the herders' overnight fold, an ordinary animal still wearing its bell.</span
+						>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/rust-hung-bell-portrait.png" target="_blank">
+						<img
+							src="/assets/generated/explorations/rust-hung-bell-portrait.png"
+							alt="rust-hung-bell-portrait"
+							loading="lazy"
+						/>
+					</a>
+					<div class="cap">
+						<span class="id">rust-hung-bell-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pair">
+				<div class="cell span-8">
+					<a href="/assets/generated/explorations/rust-roha.png" target="_blank">
+						<img src="/assets/generated/explorations/rust-roha.png" alt="rust-roha" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">rust-roha</span
+						><span class="detail">Roha — a bronze bell worn as a head, standing on four stilt legs.</span>
+					</div>
+				</div>
+				<div class="cell span-4">
+					<a href="/assets/generated/explorations/rust-roha-portrait.png" target="_blank">
+						<img src="/assets/generated/explorations/rust-roha-portrait.png" alt="rust-roha-portrait" loading="lazy" />
+					</a>
+					<div class="cap">
+						<span class="id">rust-roha-portrait</span><span class="detail">Same place, narrow screen.</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 3. THE GLOW -->
+	<div class="section">
+		<div class="section-head">
+			<div class="num">03</div>
+			<h2>The Glow</h2>
+			<div class="blurb">
+				The water comes back wrong. A fungal forest in luminous dusk — the Isono register, wall to wall. Landscape-only
+				so far; the portrait pass hasn't run yet.
+			</div>
+		</div>
+		<div class="grid">
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/glow-fungal-tender.png" target="_blank">
+					<img src="/assets/generated/explorations/glow-fungal-tender.png" alt="glow-fungal-tender" loading="lazy" />
+				</a>
+				<div class="cap">
+					<span class="id">glow-fungal-tender</span><span class="detail">Orovan, mushroom-capped, mid-tending.</span>
+				</div>
+			</div>
+
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/glow-masked-pilgrims.png" target="_blank">
+					<img
+						src="/assets/generated/explorations/glow-masked-pilgrims.png"
+						alt="glow-masked-pilgrims"
+						loading="lazy"
+					/>
+				</a>
+				<div class="cap">
+					<span class="id">glow-masked-pilgrims</span
+					><span class="detail">Plain white-masked pilgrims on a mossy root bridge, walking downstream.</span>
+				</div>
+			</div>
+
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/glow-sivi-river.png" target="_blank">
+					<img src="/assets/generated/explorations/glow-sivi-river.png" alt="glow-sivi-river" loading="lazy" />
+				</a>
+				<div class="cap">
+					<span class="id">glow-sivi-river</span
+					><span class="detail">The river reappears, glowing, feeding growth too large for its own good.</span>
+				</div>
+			</div>
+
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/glow-clover.png" target="_blank">
+					<img src="/assets/generated/explorations/glow-clover.png" alt="glow-clover" loading="lazy" />
+				</a>
+				<div class="cap">
+					<span class="id">glow-clover</span
+					><span class="detail">Clover, the beekeeper — followed her swarms upstream.</span>
+				</div>
+			</div>
+			<div class="cell span-8" aria-hidden="true"></div>
+		</div>
+	</div>
+
+	<!-- 4. THE WHITE -->
+	<div class="section">
+		<div class="section-head">
+			<div class="num">04</div>
+			<h2>The White</h2>
+			<div class="blurb">
+				Where the river begins. Pale stone flatland, Arzach country — the wound and the ward in one. Landscape-only so
+				far.
+			</div>
+		</div>
+		<div class="grid">
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/white-first-water.png" target="_blank">
+					<img src="/assets/generated/explorations/white-first-water.png" alt="white-first-water" loading="lazy" />
+				</a>
+				<div class="cap">
+					<span class="id">white-first-water</span
+					><span class="detail">Terraced spring pools; the rider from The Rust's horizon, close now.</span>
+				</div>
+			</div>
+
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/white-silent-gliders.png" target="_blank">
+					<img
+						src="/assets/generated/explorations/white-silent-gliders.png"
+						alt="white-silent-gliders"
+						loading="lazy"
+					/>
+				</a>
+				<div class="cap">
+					<span class="id">white-silent-gliders</span
+					><span class="detail">The gliders — cast no shadow, first taste of mana that doesn't come back.</span>
+				</div>
+			</div>
+
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/white-source-keeper.png" target="_blank">
+					<img src="/assets/generated/explorations/white-source-keeper.png" alt="white-source-keeper" loading="lazy" />
+				</a>
+				<div class="cap">
+					<span class="id">white-source-keeper</span
+					><span class="detail">Uvalu — pale ribbed shell, ribbon sails, one gold glow at the spring.</span>
+				</div>
+			</div>
+
+			<div class="cell span-4">
+				<a href="/assets/generated/explorations/white-source-keeper-v2.png" target="_blank">
+					<img
+						src="/assets/generated/explorations/white-source-keeper-v2.png"
+						alt="white-source-keeper-v2"
+						loading="lazy"
+					/>
+				</a>
+				<div class="cap">
+					<span class="id">white-source-keeper-v2</span><span class="detail">Uvalu — alternate take.</span>
+				</div>
+			</div>
+			<div class="cell span-8" aria-hidden="true"></div>
+		</div>
+	</div>
+
+	<!-- 5. SPELLS -->
+	<div class="section">
+		<div class="section-head">
+			<div class="num">05</div>
+			<h2>Spells</h2>
+			<div class="blurb">Square icons, one clear effect each, readable at 64×64.</div>
+		</div>
+		<div class="grid">
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/patch.png" target="_blank"
+					><img src="/assets/generated/spells/patch.png" alt="patch" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">patch</span><span class="detail">A quick bright stitch of light.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/mend.png" target="_blank"
+					><img src="/assets/generated/spells/mend.png" alt="mend" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">mend</span><span class="detail">A broad wave of golden light.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/renew.png" target="_blank"
+					><img src="/assets/generated/spells/renew.png" alt="renew" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">renew</span><span class="detail">A quiet green healing bloom.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/shield.png" target="_blank"
+					><img src="/assets/generated/spells/shield.png" alt="shield" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">shield</span><span class="detail">A translucent domed ward.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/lance.png" target="_blank"
+					><img src="/assets/generated/spells/lance.png" alt="lance" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">lance</span><span class="detail">A lancet piercing a dark orb.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/nettle.png" target="_blank"
+					><img src="/assets/generated/spells/nettle.png" alt="nettle" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">nettle</span><span class="detail">A single stinging nettle.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/gash.png" target="_blank"
+					><img src="/assets/generated/spells/gash.png" alt="gash" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">gash</span><span class="detail">Two wolf fangs around a cleft.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/rend.png" target="_blank"
+					><img src="/assets/generated/spells/rend.png" alt="rend" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">rend</span><span class="detail">A fang sweeping through a ribbon.</span></div>
+			</div>
+			<div class="cell span-4">
+				<a href="/assets/generated/spells/frenzy.png" target="_blank"
+					><img src="/assets/generated/spells/frenzy.png" alt="frenzy" loading="lazy"
+				/></a>
+				<div class="cap">
+					<span class="id">frenzy</span><span class="detail">Wolf ears leaning toward a howl-ring.</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 6. CHARACTERS -->
+	<div class="section">
+		<div class="section-head">
+			<div class="num">06</div>
+			<h2>Characters</h2>
+			<div class="blurb">Unit-frame portraits, bust or head-and-shoulders.</div>
+		</div>
+		<div class="grid">
+			<div class="cell span-3">
+				<a href="/assets/generated/characters/player.png" target="_blank"
+					><img src="/assets/generated/characters/player.png" alt="player" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">player</span><span class="detail">The healer.</span></div>
+			</div>
+			<div class="cell span-3">
+				<a href="/assets/generated/characters/tank.png" target="_blank"
+					><img src="/assets/generated/characters/tank.png" alt="tank" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">tank</span><span class="detail">Oak, the tank.</span></div>
+			</div>
+			<div class="cell span-3">
+				<a href="/assets/generated/characters/wren.png" target="_blank"
+					><img src="/assets/generated/characters/wren.png" alt="wren" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">wren</span><span class="detail">Wren, second body, The Rust.</span></div>
+			</div>
+			<div class="cell span-3">
+				<a href="/assets/generated/characters/runt.png" target="_blank"
+					><img src="/assets/generated/characters/runt.png" alt="runt" loading="lazy"
+				/></a>
+				<div class="cap"><span class="id">runt</span><span class="detail">A scrappy mud-flecked wolf.</span></div>
+			</div>
+		</div>
+	</div>
+
+	<footer>Balance Mender — generated art reference — public/gallery.html</footer>
+</div>
