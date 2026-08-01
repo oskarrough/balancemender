@@ -63,10 +63,20 @@ export async function runFight(trial: Trial = {}): Promise<FightResult> {
 
 		const frame = 1000 / fps
 		let time = 0
-		while (!game.gameOver && game.elapsedTime < maxDuration) {
-			time += frame
+		while (!game.gameOver && time < maxDuration) {
+			// Clamp the final step to the deadline, so a timeout reads 120000 and not 120016.67.
+			// Keying the loop on `time` keeps the clamped step from restarting the clock.
+			time = Math.min(time + frame, maxDuration)
 			game.runFrame(time)
 			await flush()
+		}
+
+		if (!game.gameOver) {
+			// The clock ran out with both sides standing. A real fight's `onGameOver` logs the end;
+			// a timeout is a finish too. The game's own clock runs one frame behind the step that
+			// fed it, so it reads the deadline rather than the frame that tripped it.
+			game.elapsedTime = maxDuration
+			game.combatLog.add({timestamp: Date.now(), eventType: 'FIGHT_END'})
 		}
 
 		const units = unitsOf(game)
@@ -94,9 +104,13 @@ export async function runFight(trial: Trial = {}): Promise<FightResult> {
 
 /** Run the same room `times` over, one seed apart, to see how often it goes each way. */
 export async function runFights(trial: Trial, times: number): Promise<FightResult[]> {
-	const base = trial.seed ?? 1
 	const results: FightResult[] = []
-	for (let i = 0; i < times; i++) results.push(await runFight({...trial, seed: base + i}))
+	for (let i = 0; i < times; i++) {
+		// `null` means real randomness, and a repeated run must stay random: folding it onto the
+		// deterministic base with `?? 1` turned every run of a random sweep into seed 1's replay.
+		const seed = trial.seed === null ? null : (trial.seed ?? 1) + i
+		results.push(await runFight({...trial, seed}))
+	}
 	return results
 }
 

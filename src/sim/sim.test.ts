@@ -2,7 +2,7 @@ import {describe, it, expect} from 'vitest'
 import {combatEvents} from '../combatlog'
 import {GameLoop} from '../nodes/game-loop'
 import {settle} from '../test-setup'
-import {runFight} from './run'
+import {runFight, runFights} from './run'
 import {analyze} from './report'
 import {parseUnits} from './roster'
 import {formatFight} from './format'
@@ -43,6 +43,25 @@ describe('running a fight', () => {
 	it('rolls different dice for a different seed', async () => {
 		const rolls = (fight: Awaited<ReturnType<typeof runFight>>) => fight.events.map((event) => event.value).join(',')
 		expect(rolls(await runFight({seed: 99}))).not.toBe(rolls(await runFight({seed: 1})))
+	})
+
+	it('clamps a timeout to the deadline and ends its log like any other fight', async () => {
+		const fight = await runFight({room: {party: [], enemies: ['Runt']}, bot: 'idle', seed: 1, maxDuration: 5000})
+		expect(fight.outcome).toBe('timeout')
+		expect(fight.duration).toBe(5000)
+		expect(fight.events.at(-1)).toMatchObject({eventType: 'FIGHT_END'})
+	})
+
+	it('keeps a null seed random across repeated runs', async () => {
+		const [a, b] = await runFights({room: {enemies: ['Runt']}, seed: null, maxDuration: 5000}, 2)
+		expect(a.seed).toBeNull()
+		expect(b.seed).toBeNull()
+	})
+
+	it('walks deterministic seeds one apart when a seed is given', async () => {
+		const [a, b] = await runFights({room: {enemies: ['Runt']}, seed: 3, maxDuration: 5000}, 2)
+		expect(a.seed).toBe(3)
+		expect(b.seed).toBe(4)
 	})
 
 	it('names duplicate units apart so the report can tell them apart', async () => {
