@@ -4,7 +4,7 @@ import {SimLoop} from '../sim/run'
 import {Sling} from './attack'
 import {TheRust} from './dungeon'
 import {GameLoop} from './game-loop'
-import {Wren} from './party-units'
+import {Tank, Wren} from './party-units'
 import {FACTION} from './types'
 import {unitIds, unitRegistry} from './unit-registry'
 
@@ -13,6 +13,16 @@ afterEach(async () => {
 	game?.disconnect()
 	game = undefined
 	await settle()
+})
+
+describe('Oak', () => {
+	it('is the player-facing name for the Tank unit id', () => {
+		game = new GameLoop({party: ['Tank'], enemies: []})
+		const oak = game.party.find((unit) => unit.unitId === 'Tank')
+
+		expect(oak).toBeInstanceOf(Tank)
+		expect(oak).toMatchObject({name: 'Oak', unitId: 'Tank'})
+	})
 })
 
 describe('Wren', () => {
