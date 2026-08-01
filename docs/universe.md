@@ -69,7 +69,7 @@ Weirdness curve: familiar → familiar-but-off → lush-weird → sublime.
 
 ## The journey
 
-Each dungeon owns one pressure, and that pressure is the progression. The seven abilities you
+Each dungeon owns one pressure, and that pressure is the progression. The six abilities you
 already hold mean something different under each one:
 
 1. **The Green — you learn your hands.** The kit arrives a room at a time. Shipped.
@@ -88,9 +88,10 @@ Two things grow as you walk, and neither is a bigger spellbook:
   party is a crowd of mud-boots under white stone, which is the whole point of them.
 - **One ability per dungeon**, and each answers that dungeon's pressure — something that survives
   an interruption, something that puts attention back where it belongs, something that stretches a
-  last mouthful of mana. Names pending a say-aloud session; register one holds, so they stay small
-  warm words a village healer would use. Which abilities the Green itself teaches is being retuned
-  alongside the Heal/Mend merge (#71).
+  last mouthful of mana. The Rust's is named: **Steep** (#81), the brew that pays out even when the
+  cast carrying it is cut. The Glow's and the White's wait for their dungeons, register one
+  holding — small warm words a village healer would use. The Green teaches Mend in its first quiet
+  room and Patch when a burst first demands one (#71).
 
 When the river is mended, the gating comes off: the mender chooses their own kit freely. You walked
 the whole length of it — you have earned the right to decide what you carry.
@@ -100,7 +101,7 @@ the whole length of it — you have earned the right to decide what you carry.
 Everything nameable speaks one of three languages, and which one tells you what it is:
 
 1. **Your hands** — the player's abilities stay in plain, warm, small words. The kit in code speaks
-   it now: Heal, Patch, Mend, Renew, Shield — and even the damage is the healer's craft, Lance (a
+   it now: Patch, Mend, Renew, Shield — and even the damage is the healer's craft, Lance (a
    boil, drained) and Nettle (a patient herbal sting). A village healer's trade, no mystique about
    itself.
 2. **The map** — the dungeons are named for the color you are inside, nothing else: **The Green,
@@ -116,9 +117,15 @@ Everything nameable speaks one of three languages, and which one tells you what 
 
 The two figures on screen every second of the game. You are a village healer from the shire end of
 the map — your abilities are register one because they are literally your hands, a craft learned at
-home. The people who walk with you (in code, so far, just `Tank`) are neighbors from the same
-downstream world: folk-register people with folk names, to be drafted in a say-aloud session. They
-speak your language the whole way up. That is the point of them — the further upstream you get, the
+home. The people who walk with you are neighbors from the same downstream world, and their names
+obey one rule: **a neighbor is named for a plain thing of home** — a word you could point at. A
+bird, a tree, ground, weather. The old tongue's first law is never an English word hiding inside;
+folk names break that law on purpose by being nothing but the word, so the roster can never confuse
+a neighbor with a guardian. And where the Green's animals wear what they _do_ (Snapjaw, Howler), a
+neighbor wears what they are _like_. Two so far: **Oak**, the shield-carrier from the Green (#82) —
+the tree you shelter under, which is the job; the class in code stays `Tank`, that being the coders'
+register — and **Wren**, the herder who joins in The Rust (#76): small, quick, never built for
+fighting, all of it audible in the name. They speak your language the whole way up. That is the point of them — the further upstream you get, the
 more out of place their mud-boots and shield-straps look against the white stone, and the party
 becomes the piece of home you carry into the sublime.
 
@@ -177,12 +184,15 @@ foreground stays homey.
 - **Biome** — dry golden grassland and scrub, a cracked riverbed as the road, lone twisted trees,
   rust-red rock starting to show through the soil.
 - **Creatures** — the dry country keeps its own, and none of them are wolves. The **bellwether**,
-  lead beast of a herd nobody came back for, still wearing its bell. **Kites** circling, dropping on
+  lead beast of a herd nobody came back for in time, still wearing its bell. **Kites** circling, dropping on
   whoever is worst off. **Chafers**, husk-shelled beetles in numbers. And Roha, whose bell you heard
   an hour ago — the point of the bellwether is that you meet a real animal wearing a real bell
   first, so that a bell with no animal inside it lands the way it should.
 - **People** — a waystation with a creaking sign and a keeper who talks too much; herders who moved
-  on early because "the water went".
+  on early because "the water went" — and Wren, the one who came back. Too late for the herd; the
+  bell in the dry bed was theirs to hang. They fall in at the waystation with a sling and a pocketful
+  of riverbed pebbles, the party's second body (#76), walking upstream to see for themselves where
+  the water went.
 - **Stimmung** — high noon loneliness. Spacious, a little melancholy, the first wrongness.
 - **Sounds** — dry wind, creaking wood, a distant bell, boots on cracked clay. Long silences.
 - **Tempo** — loping. Fewer, spikier fights with room to breathe between them.
@@ -202,6 +212,12 @@ foreground stays homey.
 > waystation with a creaking sign far in the distance. Flat color fields, precise contours, vast
 > negative space, French science-fiction comic calm à la Moebius meets a warm western, spacious
 > high-noon loneliness. No text, no UI, no photorealism.
+
+> **Image prompt (Wren)** — A young herder standing in a cracked dry riverbed under an enormous
+> pale-blue sky, dusty travel wool and mud-boots, a simple sling in hand, a small brass herd-bell at
+> the belt, looking upstream. Flat color fields, precise contours, vast negative space,
+> Moebius-meets-warm-western calm with Ghibli warmth in the face, quietly grieving and hopeful. No
+> text, no UI, no photorealism.
 
 ## 3. The Glow — the water comes back wrong
 
