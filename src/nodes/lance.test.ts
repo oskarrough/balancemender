@@ -5,6 +5,7 @@ import {lance as smiteBot} from './bot'
 import {GameLoop} from './game-loop'
 import {Lance} from './spells'
 import {STAT} from './stats'
+import {Mana} from './mana'
 
 let game: GameLoop | undefined
 
@@ -78,6 +79,7 @@ describe('Lance', () => {
 		sim.combatLog.clear()
 		const wolf = sim.enemies[0]
 		wolf.setBaseStat(STAT.INTELLECT, 40)
+		wolf.mana = new Mana(wolf, 100)
 		wolf.abilities = {Lance}
 		const healthBefore = sim.party[0].health.current
 

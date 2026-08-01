@@ -89,4 +89,12 @@ describe('ability use rules', () => {
 		expect(AbilityUse.whyNotUse(player, Patch, game.party[0])).toBe('missing-mana')
 		expect(AbilityUse.whyNotUse(player, abilityRegistry.ShieldBash, game.party[0])).toBe('invalid-target')
 	})
+
+	it('refuses a costed ability from a unit without a mana pool', () => {
+		game = new GameLoop({party: [], enemies: ['Runt']})
+		const runt = game.enemies[0]
+		runt.abilities = {Lance: abilityRegistry.Lance}
+
+		expect(AbilityUse.whyNotUse(runt, abilityRegistry.Lance, game.player)).toBe('missing-mana')
+	})
 })

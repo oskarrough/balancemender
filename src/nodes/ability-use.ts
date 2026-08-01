@@ -101,7 +101,7 @@ export class AbilityUse {
 		if (!target?.alive) return 'missing-target'
 		if (!eligible(unit, AbilityClass.targets).includes(target)) return 'invalid-target'
 		if (this.cooldownRemaining(unit, AbilityClass) > 0) return 'cooldown'
-		if (AbilityClass.cost && unit.mana && unit.mana.current < AbilityClass.cost) return 'missing-mana'
+		if (AbilityClass.cost && (!unit.mana || unit.mana.current < AbilityClass.cost)) return 'missing-mana'
 		return undefined
 	}
 
