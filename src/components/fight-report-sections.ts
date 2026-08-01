@@ -130,8 +130,13 @@ function healthRow(unit: Series, report: FightReport, cursor: number | null, onS
 }
 
 export function unitStatsTable(report: FightReport) {
+	// `absorb`/`wasted` reads like `heal`/`overheal`: the amount, then the share of the pool that
+	// did nothing. A barrier that expired untouched and one that soaked a killing blow are the
+	// same number without it. Only drawn when something shielded — the table is already wider
+	// than the panel, and most fights have no barrier in them at all.
+	const shielded = report.units.some((unit) => unit.absorbed > 0 || unit.wasted > 0)
 	return html`
-		<table class="FightReport-table" style="--columns: 8">
+		<table class="FightReport-table" style=${`--columns: ${shielded ? 10 : 8}`}>
 			<thead>
 				<tr>
 					<th>unit</th>
@@ -139,6 +144,7 @@ export function unitStatsTable(report: FightReport) {
 					<th>dmg</th>
 					<th>heal</th>
 					<th>overheal</th>
+					${shielded ? html`<th>absorb</th>` : ''} ${shielded ? html`<th>wasted</th>` : ''}
 					<th>taken</th>
 					<th>mana</th>
 					<th>busy</th>
@@ -154,6 +160,8 @@ export function unitStatsTable(report: FightReport) {
 							<td>${unit.damageDone}</td>
 							<td>${unit.healingDone}</td>
 							<td>${percent(unit.overhealing, unit.healingDone + unit.overhealing)}</td>
+							${shielded ? html`<td>${unit.absorbed}</td>` : ''}
+							${shielded ? html`<td>${percent(unit.wasted, unit.absorbed + unit.wasted)}</td>` : ''}
 							<td>${unit.damageTaken}</td>
 							<td>${unit.manaSpent}</td>
 							<!-- Share of the fight spent committed to a cast or its global cooldown. -->
