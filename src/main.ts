@@ -6,6 +6,7 @@ import {buildSplashIntro, buildIntro} from './animations'
 import {DevConsole} from './components/dev-console'
 import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
+import {installTooltips, drawTooltip} from './components/tooltip'
 import * as perf from './perf'
 import {loadFightHistory} from './fight-history'
 import {dungeonRegistry} from './nodes/dungeon'
@@ -27,6 +28,7 @@ function main() {
 	// Panels upgrade synchronously when floating-view.js defines the element, so they have
 	// their intrinsic size by now and the rails can stack them.
 	applyDefaultLayout()
+	installTooltips()
 
 	void loadFightHistory().catch((err) => console.error('Failed to load fight history', err))
 
@@ -61,6 +63,7 @@ function main() {
 			perf.measure('draw', () => {
 				if (element) perf.measure('draw:ui', () => render(element, UI(game)))
 				if (menuElement) perf.measure('draw:menu', () => render(menuElement, () => Menu(game)))
+				perf.measure('draw:tooltip', () => drawTooltip(game))
 			})
 		}
 		setupDevTools(game)

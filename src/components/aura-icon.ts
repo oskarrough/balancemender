@@ -1,6 +1,10 @@
 import {html} from 'uhtml'
 import type {Aura} from '../nodes/aura'
 import {PeriodicAura} from '../nodes/periodic-aura'
+import {BarrierAura} from '../nodes/barrier-aura'
+import {StatModifierAura} from '../nodes/stat-modifier-aura'
+import {roundOne} from '../utils'
+import {registerTip} from './tooltip'
 import {spellIconPath} from './icon-path'
 
 /**
@@ -46,7 +50,7 @@ export function AuraIcon(aura: Aura, stacks = 1) {
 		<li
 			class=${`Plate AuraIcon ${harmful ? 'AuraIcon--harmful' : 'AuraIcon--helpful'} ${remaining <= 3 ? 'AuraIcon--expiring' : ''}`}
 			style=${`--left: ${left * 100}%; --tick: ${toNextTick * 100}%`}
-			title=${`${aura.name} — ${aura._cycles}/${aura.repeat} ticks, ${remaining.toFixed(1)}s left`}
+			data-tip=${`aura:${aura.parent.id}:${aura.stackKey}`}
 		>
 			<img class="Plate-image AuraIcon-art" src=${spellIconPath(aura.id)} alt="" />
 			<div class="Plate-inner AuraIcon-inner">
@@ -67,3 +71,51 @@ export function AuraIcon(aura: Aura, stacks = 1) {
 		</li>
 	`
 }
+
+/** What kind of thing this is, under the name. */
+function kindOf(aura: Aura) {
+	if (aura instanceof PeriodicAura) return `${aura.school} · ${aura.harms ? 'damage over time' : 'heal over time'}`
+	if (aura instanceof BarrierAura) return 'barrier'
+	if (aura instanceof StatModifierAura) return 'stat modifier'
+	return 'aura'
+}
+
+/** What it is doing to the unit, in the numbers it is doing it with right now. */
+function effectOf(aura: Aura) {
+	if (aura instanceof PeriodicAura) {
+		const instalment = Math.round(aura.total / aura.repeat)
+		const verb = aura.harms ? 'Deals' : 'Heals'
+		return html`<p class="Tooltip-effect">
+			${verb} ${instalment} every ${roundOne(aura.interval / 1000)}s — ${Math.round(aura.total)} in all.
+		</p>`
+	}
+	if (aura instanceof BarrierAura)
+		return html`<p class="Tooltip-effect">Absorbs the next ${Math.round(aura.pool)} damage.</p>`
+	if (aura instanceof StatModifierAura)
+		return html`<p class="Tooltip-effect">${aura.modifier > 0 ? '+' : ''}${Math.round(aura.modifier)} ${aura.stat}.</p>`
+	return null
+}
+
+/** The same aura the chip draws, in full. Redrawn every frame, so the countdown is the live one. */
+registerTip('aura', (rest, game) => {
+	const split = rest.indexOf(':')
+	const unit = game?.fight?.units.find((candidate) => candidate.id === rest.slice(0, split))
+	const stacked = [...(unit?.auras ?? [])].filter((aura) => aura.stackKey === rest.slice(split + 1))
+	// The chip draws the last copy — it has the longest left to run — so the tooltip reads it too.
+	const aura = stacked.at(-1)
+	if (!aura) return null
+
+	const {remaining} = timing(aura)
+	const harmful = aura instanceof PeriodicAura && aura.harms
+	const ticks = aura.repeat > 1 ? html`<span>${aura._cycles} of ${aura.repeat} ticks</span>` : null
+
+	return html`
+		<article class=${`Tooltip-body ${harmful ? 'Tooltip-body--harmful' : 'Tooltip-body--helpful'}`}>
+			<h3>${aura.name}</h3>
+			<p class="Tooltip-kind">${kindOf(aura)}${stacked.length > 1 ? html` · ${stacked.length} stacks` : null}</p>
+			${effectOf(aura)}
+			<p class="Tooltip-timing">${ticks}<span>${remaining.toFixed(1)}s left</span></p>
+			<footer>Cast by ${aura.casterName}</footer>
+		</article>
+	`
+})

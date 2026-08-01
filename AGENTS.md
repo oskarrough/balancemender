@@ -55,11 +55,18 @@ agent-browser eval 'balancemender.perform({type: "spawn", unit: "Haruk"})'
 `window.balancemender` is the running game, so `eval` reaches all of it. A relative screenshot path
 lands in the repo root. To press ability keys mid-fight, `focus .Game` first in the same batch — they
 only land where DOM focus is. Batch `eval` mangles quoted strings, so run `agent-browser eval '…'` as
-its own invocation. The dev panels start minimized — `dblclick floating-view>header` opens the first
-one (Balance Lab).
+its own invocation. A batch step splits on spaces, so `hover .a .b` silently hovers `.a` — use a
+single-token selector. Hovering twice in a row without moving away first fires no second
+`pointerover`, so a hover test starts by hovering something else. The dev panels start minimized —
+`dblclick floating-view>header` opens the first one (Balance Lab).
 
 To reach the game over panel, end the fight on demand — `{type: 'wipe', faction: 'enemy'}` for the
 victory side, `'party'` for defeat. Also two buttons in the Balance Lab.
+
+Tooltips are one element for the whole game (`src/components/tooltip.ts`). An icon claims it with
+`data-tip="kind:id"` and its component registers what that kind draws — never rendered text, so the
+body redraws live with the rest of the UI. Its edge and flip behaviour is easiest to check on a
+throwaway mockup page (below) with anchors parked in all four corners.
 
 To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored, self-contained,
 loading real assets by URL) with several variants in one file on a keypress switcher, and one of them

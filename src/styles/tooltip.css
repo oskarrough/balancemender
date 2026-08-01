@@ -1,0 +1,75 @@
+/* Only the element the pointer is on carries the anchor name, so one tooltip can follow all of them. */
+[data-tip][data-tip-open] {
+	anchor-name: --tip;
+}
+
+.Tooltip {
+	position: fixed;
+	position-anchor: --tip;
+	position-area: block-end;
+	position-try-fallbacks: flip-block, flip-inline;
+	/* Scroll the anchor out of view and the tooltip goes with it, rather than hanging in the corner. */
+	position-visibility: anchors-visible;
+	inset: auto;
+	width: max-content;
+	max-width: 16rem;
+	margin: 0.4rem;
+	padding: 0.4rem 0.5rem;
+	border: 1px solid hsl(30, 10%, 40%);
+	border-radius: 0.2rem;
+	background: hsla(30, 10%, 8%, 0.95);
+	color: var(--c-white);
+	font-size: 0.8rem;
+	line-height: 1.4;
+	box-shadow: 0 2px 8px hsla(0, 0%, 0%, 0.5);
+	/* It sits over the thing it describes; clicking that unit frame has to still work. */
+	pointer-events: none;
+}
+
+/* `data-tip-at` on the anchor, mirrored here — the fallbacks flip whichever side it asks for. */
+.Tooltip[data-at='block-start'] {
+	position-area: block-start;
+}
+.Tooltip[data-at='inline-start'] {
+	position-area: inline-start;
+}
+.Tooltip[data-at='inline-end'] {
+	position-area: inline-end;
+}
+
+.Tooltip-body {
+	--accent: var(--c-light-green);
+}
+
+.Tooltip-body--harmful {
+	--accent: var(--c-rose-red);
+}
+
+.Tooltip h3 {
+	font-size: 0.9rem;
+	color: var(--accent);
+}
+
+.Tooltip-kind {
+	color: var(--c-french-grey);
+	font-size: 0.7rem;
+}
+
+.Tooltip-effect {
+	margin-top: 0.4rem;
+}
+
+.Tooltip-timing {
+	display: flex;
+	gap: 0.5rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--c-french-grey);
+}
+
+.Tooltip footer {
+	margin-top: 0.4rem;
+	padding-top: 0.2rem;
+	border-top: 1px solid hsl(30, 10%, 25%);
+	font-size: 0.7rem;
+	color: var(--c-french-grey);
+}
