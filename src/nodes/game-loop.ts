@@ -77,7 +77,7 @@ export class GameLoop extends Loop {
 	private _muted = true
 
 	/** Guards against `onGameOver` firing twice — the tick loop and the animation debugger both can. */
-	private fightSaved = false
+	private gameOverHandled = false
 
 	audio = new AudioPlayer(this)
 
@@ -152,7 +152,7 @@ export class GameLoop extends Loop {
 		// Stamped against a clock that just went back to zero, so it would otherwise read as
 		// having happened in this fight's future and never expire.
 		this.lastRefusal = undefined
-		this.fightSaved = false
+		this.gameOverHandled = false
 		this.render()
 	}
 
@@ -202,6 +202,8 @@ export class GameLoop extends Loop {
 	}
 
 	onGameOver() {
+		if (this.gameOverHandled) return
+		this.gameOverHandled = true
 		this.combatLog.add({timestamp: Date.now(), eventType: 'FIGHT_END'})
 		this.audio.stop()
 		this.pause()
@@ -217,15 +219,12 @@ export class GameLoop extends Loop {
 		// fights have no draw and must never be persisted.
 		if (this.draw) {
 			buildGameOver(this)
-			if (!this.fightSaved) {
-				this.fightSaved = true
-				saveFight({
-					outcome,
-					duration: Math.round(this.elapsedTime),
-					events: this.combatLog.events.slice(),
-					units: unitsOf(this),
-				}).catch((err) => logger.error({err}, 'Failed to save fight history'))
-			}
+			saveFight({
+				outcome,
+				duration: Math.round(this.elapsedTime),
+				events: this.combatLog.events.slice(),
+				units: unitsOf(this),
+			}).catch((err) => logger.error({err}, 'Failed to save fight history'))
 		}
 	}
 
