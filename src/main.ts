@@ -10,6 +10,7 @@ import {installTooltips, drawTooltip} from './components/tooltip'
 import * as perf from './perf'
 import {loadFightHistory} from './fight-history'
 import {dungeonRegistry} from './nodes/dungeon'
+import {scenePaths} from './nodes/fight'
 import './components/dev-console'
 import './components/animation-debugger'
 import {applyDefaultLayout} from './components/floating-view.js'
@@ -97,12 +98,15 @@ function main() {
 			html`<span class="Splash-dungeonsHeading">Choose your dungeon</span>
 				<div class="Splash-dungeons">
 					${Object.values(dungeonRegistry).map((dungeon) => {
-						const wallpaper = dungeon.rooms[0]?.wallpaper
+						const scene = dungeon.rooms[0]?.scene
+						const painting = scene ? scenePaths(scene) : null
 						return html`
 							<button
 								class="Button Splash-dungeon"
 								type="button"
-								style=${wallpaper ? `--dungeon-image: url(${wallpaper})` : ''}
+								style=${painting
+									? `--dungeon-image: url(${painting.landscape}); --dungeon-image-portrait: url(${painting.portrait})`
+									: ''}
 								onclick=${() => startGame(dungeon.id)}
 							>
 								${dungeon.name}

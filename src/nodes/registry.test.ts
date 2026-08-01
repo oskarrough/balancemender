@@ -1,14 +1,21 @@
+import {existsSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
 import {dungeonRegistry} from './dungeon'
+import {scenePaths} from './fight'
 import {Heal} from './effects'
 import {abilityRegistry, playerAbilities} from './registry'
 import * as spells from './spells'
 
 describe('the dungeon registry', () => {
-	it('gives every authored room its own scene painting', () => {
+	/** Both views, on disk: a narrow screen must never fall through to the void. */
+	it('gives every authored room a landscape and a portrait painting', () => {
 		for (const dungeon of Object.values(dungeonRegistry)) {
 			for (const room of dungeon.rooms) {
-				expect(room.wallpaper, `${dungeon.name} / ${room.name} has no wallpaper`).toBeTruthy()
+				expect(room.scene, `${dungeon.name} / ${room.name} has no scene`).toBeTruthy()
+				const paths = scenePaths(room.scene!)
+				for (const path of [paths.landscape, paths.portrait]) {
+					expect(existsSync('public' + path), `${dungeon.name} / ${room.name} is missing ${path}`).toBe(true)
+				}
 			}
 		}
 	})

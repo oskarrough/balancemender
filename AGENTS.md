@@ -28,6 +28,8 @@ or field, and fold a term into it rather than inventing a second word. The one t
 out: everything a unit can do is an **ability**, a spell and an attack being tags on one rather than
 two classes.
 
+When pinning a design, prefer a one-sentence summary — much easier to communicate that way.
+
 ## Answering "what happens if…" questions
 
 Don't guess at balance — run it:

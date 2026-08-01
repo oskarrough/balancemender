@@ -74,7 +74,11 @@ body {
 	padding-top: 7rem;
 }
 
-/* The current room's scene painting, faded and dissolving downward so the frames stay readable. */
+/*
+ * The current room's scene painting, faded and dissolving downward so the frames stay readable.
+ * A <picture> rather than a background so the browser picks the landscape or portrait painting
+ * itself and fetches only that one.
+ */
 .Game-bg {
 	position: fixed;
 	top: 0;
@@ -82,11 +86,16 @@ body {
 	right: 0;
 	bottom: 0;
 	z-index: -1;
-	background-repeat: no-repeat;
-	background-size: cover;
-	background-position: center top;
+	display: block;
 	opacity: 0.95;
 	mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+
+.Game-bg img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center top;
 }
 
 .Game-bg--rust {

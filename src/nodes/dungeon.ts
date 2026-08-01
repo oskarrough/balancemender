@@ -19,7 +19,7 @@ export const TheGreen: Dungeon = {
 			party: [],
 			enemies: ['Pup'],
 			grants: ['Mend', 'Lance'],
-			wallpaper: '/assets/generated/explorations/green-stray-pup.png',
+			scene: 'green-stray-pup',
 		},
 		// The bleed room — a heal-over-time answers a damage-over-time.
 		{
@@ -27,7 +27,7 @@ export const TheGreen: Dungeon = {
 			party: ['Tank'],
 			enemies: ['Snapjaw'],
 			grants: ['Renew'],
-			wallpaper: '/assets/generated/explorations/green-first-blood.png',
+			scene: 'green-first-blood',
 		},
 		// The ambush room — a fast heal answers a burst.
 		{
@@ -35,7 +35,7 @@ export const TheGreen: Dungeon = {
 			party: ['Tank'],
 			enemies: ['Runt', 'Skulker'],
 			grants: ['Patch'],
-			wallpaper: '/assets/generated/explorations/green-skulker.png',
+			scene: 'green-skulker',
 		},
 		// Three enemies — the multi-dot room.
 		{
@@ -43,7 +43,7 @@ export const TheGreen: Dungeon = {
 			party: ['Tank'],
 			enemies: ['Denmother', 'Howler', 'Runt'],
 			grants: ['Nettle'],
-			wallpaper: '/assets/generated/explorations/green-howling.png',
+			scene: 'green-howling',
 		},
 		// The boss kit: pre-shield the telegraphed arrow.
 		{
@@ -51,7 +51,7 @@ export const TheGreen: Dungeon = {
 			party: ['Tank'],
 			enemies: ['Haruk'],
 			grants: ['Shield'],
-			wallpaper: '/assets/generated/explorations/green-guardian-glade.png',
+			scene: 'green-guardian-glade',
 		},
 	],
 }
@@ -77,7 +77,7 @@ export const TheRust: Dungeon = {
 			party: ['Tank', 'Wren'],
 			enemies: ['Bellwether', 'Chafer', 'Chafer', 'Chafer'],
 			grants: ['Mend', 'Lance', 'Renew', 'Patch', 'Nettle', 'Shield', 'Steep'],
-			wallpaper: '/assets/generated/explorations/rust-waystation.png',
+			scene: 'rust-waystation',
 		},
 		// Five bodies, and the two kites drop on whoever is worst off — a new axis after the Green's
 		// healer-hunting: nobody may be left sitting low, the healer least of all.
@@ -85,7 +85,7 @@ export const TheRust: Dungeon = {
 			name: 'The long grass',
 			party: ['Tank', 'Wren'],
 			enemies: ['Chafer', 'Chafer', 'Chafer', 'Kite', 'Kite'],
-			wallpaper: '/assets/generated/explorations/rust-long-grass.png',
+			scene: 'rust-long-grass',
 		},
 		// Fair warning before Roha: a wether still wearing its hung bell swings it twice — same
 		// cut-cast shape as her Toll, soft enough to survive the first surprise (#84). Timing gets
@@ -94,7 +94,7 @@ export const TheRust: Dungeon = {
 			name: 'The hung bell',
 			party: ['Tank', 'Wren'],
 			enemies: ['Wether', 'Chafer', 'Chafer'],
-			wallpaper: '/assets/generated/explorations/rust-hung-bell.png',
+			scene: 'rust-hung-bell',
 		},
 		// The bell that has been ringing since the waystation sign, answered at last. She fights
 		// alone: the Rust is a lonely dungeon and this is its one strange thing (#72).
@@ -102,7 +102,7 @@ export const TheRust: Dungeon = {
 			name: 'Roha',
 			party: ['Tank', 'Wren'],
 			enemies: ['Roha'],
-			wallpaper: '/assets/generated/explorations/rust-roha.png',
+			scene: 'rust-roha',
 		},
 	],
 }

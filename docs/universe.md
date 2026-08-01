@@ -72,6 +72,16 @@ establishes the encounter rather than illustrating combat literally: a narrow fo
 holding the crossing; high cover explains an ambush; circling birds explain why the weakest traveler
 is in danger. Unit frames carry the fight. The land carries the story.
 
+A room is painted twice, because a screen has two shapes. The wide painting is the room seen along
+the walk; the tall one is the same place **looked at again** for a narrow screen, never a crop of the
+wide one — same landmarks, same hour, same palette, so the two are unmistakably one place. The tall
+view stacks around the combat UI rather than around the eye: unit frames come down from the top and
+reach two-thirds of the way down a crowded room, so the upper two-thirds is sky, canopy or open
+space that reads fine behind them, and the room's defining clue lives low — the strip between
+two-thirds and four-fifths is the only clear air a phone has. Put the bell where it can be seen.
+Both prompts live in
+`assets/image-assets.json` — the room prompt plus a recomposition note, not the room written twice.
+
 Weirdness curve: familiar → familiar-but-off → lush-weird → sublime.
 
 ## The journey
@@ -188,34 +198,6 @@ Denmother — and only the boss, Haruk, carries the old tongue: the first crack 
 > golden-hour light through leaves, Ghibli-like warmth, a quiet friendly morning at the start of an
 > adventure. No text, no UI, no photorealism.
 
-The three missing Green room paintings:
-
-> **First blood** — The same lively forest stream a short walk upstream from the ranger's camp,
-> squeezed into a shallow stony ford where the dirt path crosses. Oak, a sturdy traveler with a
-> weathered round shield and mud-boots, waits ankle-deep at the crossing and looks toward fresh wolf
-> tracks on the opposite bank. Moss-dark boulders, alder roots, ferns and warm morning shafts; the
-> camp is no longer visible, but its homely world still feels close. Readable hand-painted fantasy
-> scene, flat-fill composition, visible gouache-like brushwork, strong silhouettes, Ghibli warmth
-> without safety. Wide 16:9 landscape, no text, UI, frame, photorealism or combat in progress.
->
-> **The skulker** — Farther upstream on the same path, the forest bank closes into a tunnel of
-> shoulder-high ferns and wet roots. The bright stream remains visible as a narrow blue-white ribbon
-> along one edge, while the footpath bends behind dense bracken and vanishes too soon. One patch of
-> crushed fern and a few muddy pawprints are the only warning; no glowing eyes, monster pose or
-> attack. Deeper green shade than the ford, with small coins of warm morning light. Readable
-> hand-painted fantasy scene, flat-fill composition, visible gouache-like brushwork, strong
-> silhouettes, Ghibli warmth with a scrappy ambush waiting inside it. Wide 16:9 landscape, no text,
-> UI, frame, photorealism or combat in progress.
->
-> **The howling** — The same stream skirting a broad trampled hollow beneath the roots of an old
-> wind-thrown beech. Several ordinary wolf paths converge on a shallow earth den; shed grey fur,
-> pawprints and a garland of bent meadow stems make this unmistakably the pack's home rather than a
-> monster lair. A denmother stands watch near the dark entrance while smaller wolf silhouettes gather
-> between the trees, alert and unsettled but not evil. Late-morning gold reaches the clearing while
-> the surrounding forest stays deep moss green. Readable hand-painted fantasy scene, flat-fill
-> composition, visible gouache-like brushwork, strong silhouettes, warm pastoral adventure on the
-> edge of danger. Wide 16:9 landscape, no text, UI, frame, photorealism, gore or combat in progress.
-
 ## 2. The Rust — the land dries out
 
 The trail out of the woods (`TheRust` in code). Open, dusty country under a huge
@@ -255,25 +237,6 @@ foreground stays homey.
   is waste. Spamming the fast heal loses the dungeon outright where it used to carry the Green; the
   bellwether's wind-up teaches you to shield before it lands rather than heal after; the rehearsed
   toll teaches you to stop casting before the sound and start again after — a rhythm, not a number.
-
-The missing Rust room paintings:
-
-> **The long grass** — Farther along the same cracked riverbed beyond the waystation, waist-high dry
-> grass has swallowed both banks and leans across the pale clay road in wind-shaped waves. Three low
-> rust-brown chafer trails part the stalks at ground level while two lean kites circle very high in
-> the enormous afternoon sky, patient enough to be mistaken for ink marks. On the far horizon, one
-> rider-shaped silhouette is present a moment before anyone thinks to count it. Flat rust-red, dun
-> and bleached-blue color fields, precise contours, visible painted texture, vast negative space;
-> Moebius calm meeting a warm western, lonely rather than hostile. Wide 16:9 landscape, no text, UI,
-> frame, photorealism or combat in progress.
->
-> **The hung bell** — Still on the cracked riverbed past the long grass, a shallow fold where the
-> herders once overnighted: a few leaning posts, a frayed rope, one ordinary herd animal standing
-> with a small iron bell at its throat. Two low chafer husks wait in the pale clay; the enormous
-> afternoon sky stays empty of Roha herself — only the sense that the sound you have been hearing
-> has a nearer source now. Flat rust-red, dun and bleached-blue color fields, precise contours,
-> visible painted texture, vast negative space; Moebius calm, lonely rather than hostile. Wide 16:9
-> landscape, no text, UI, frame, photorealism or combat in progress.
 
 > **Image prompt** — A wide dry grassland under an enormous pale-blue afternoon sky, a cracked empty
 > riverbed winding through it as a road, one twisted leafless tree, a tumbleweed mid-roll, a tiny
@@ -350,7 +313,7 @@ this list), generated from the prompts above. What they settled:
 
 - **green-stray-pup** — the Green's whole register in one frame: stream, path, the ranger's camp
   smoking at the treeline, and the pup watching from the ferns. It backs the first room in-game now
-  (`wallpaper` on the room in `src/nodes/dungeon.ts`).
+  (`scene` on the room in `src/nodes/dungeon.ts`).
 - **green-guardian-glade** — Haruk at rest under a fallen log, enormous, with a garlanded smaller
   wolf beside him that reads as the Denmother. It painted the subdual before we asked for it: the
   animal breathing evenly, not a corpse. Backs the boss room in-game.
@@ -370,6 +333,6 @@ this list), generated from the prompts above. What they settled:
 ## Feeding the image pipeline
 
 The prompt blocks above are written to compose with the house style in `assets/image-assets.json`.
-When a dungeon's look settles, its prompt (and its creatures') moves into that file — probably under
-a new `scene` type — so `bun run asset:prompt` prints it like everything else. Until then this doc is
-the drafting table.
+When a dungeon's look settles, its prompt (and its creatures') moves into that file as a `scene` —
+both views of it — so `bun run asset:prompt` prints it like everything else. Every Green and Rust
+room has already made that move; what is left here is the drafting table for the Glow and the White.

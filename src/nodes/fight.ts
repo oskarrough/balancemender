@@ -16,10 +16,20 @@ export interface Room {
 	party?: UnitId[]
 	enemies?: UnitId[]
 	name?: string
-	/** URL of a scene painting shown behind the fight, faded so the UI stays readable. */
-	wallpaper?: string
+	/** Id of the scene painting shown behind the fight, faded so the UI stays readable. */
+	scene?: string
 	/** Spells the player learns on walking in; only dungeon runs read it. */
 	grants?: PlayerAbilityId[]
+}
+
+/**
+ * A scene is one place painted twice — wide and tall — so a narrow screen gets an authored view
+ * rather than a crop. A room names the pair and the files follow from the id, which is what lets a
+ * missing counterpart fail loudly in `registry.test.ts` instead of quietly showing nothing.
+ */
+export function scenePaths(scene: string) {
+	const base = `/assets/generated/explorations/${scene}`
+	return {landscape: `${base}.png`, portrait: `${base}-portrait.png`}
 }
 
 /** The room a fresh boot starts from. */

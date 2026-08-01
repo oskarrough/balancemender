@@ -5,6 +5,7 @@ import {Monitor} from './monitor'
 import {AbilityIcon} from './ability-icon'
 import {register} from './floating-combat-text'
 import {GameLoop} from '../nodes/game-loop'
+import {scenePaths} from '../nodes/fight'
 import {UnitFrame} from './unitframe'
 import {nextRoom, restartDungeon, restartGame} from '../animations'
 import {bringToFront} from './floating-view.js'
@@ -106,12 +107,18 @@ export function UI(game: GameLoop) {
 	const refusal = game.lastRefusal
 	const showRefusal = refusal && game.elapsedTime - refusal.at < REFUSAL_DURATION
 
-	const wallpaper = game.dungeonRun?.dungeon.rooms[game.dungeonRun.room]?.wallpaper
-	const wallpaperClass = game.dungeonRun?.dungeon.id === 'TheRust' ? 'Game-bg Game-bg--rust' : 'Game-bg'
+	const scene = game.dungeonRun?.dungeon.rooms[game.dungeonRun.room]?.scene
+	const painting = scene ? scenePaths(scene) : null
+	const sceneClass = game.dungeonRun?.dungeon.id === 'TheRust' ? 'Game-bg Game-bg--rust' : 'Game-bg'
 
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
-			${wallpaper ? html`<div class=${wallpaperClass} style=${`background-image: url(${wallpaper})`}></div>` : null}
+			${painting
+				? html`<picture class=${sceneClass}>
+						<source media="(orientation: portrait)" srcset=${painting.portrait} />
+						<img src=${painting.landscape} alt="" />
+					</picture>`
+				: null}
 			${game.gameOver ? GameOver(game) : null}
 
 			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>

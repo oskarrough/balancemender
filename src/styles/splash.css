@@ -90,6 +90,13 @@
 	text-shadow: 0 1px 0.2em rgba(0, 0, 0, 0.9);
 }
 
+/* Same pair as the in-game scene: a narrow screen gets the tall painting, and only fetches that one. */
+@media (orientation: portrait) {
+	.Button.Splash-dungeon {
+		background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), var(--dungeon-image-portrait);
+	}
+}
+
 .Splash-dungeon small {
 	font-weight: 400;
 	text-transform: none;
