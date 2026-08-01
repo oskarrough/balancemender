@@ -481,33 +481,6 @@ balance-lab {
 	font-weight: 600;
 }
 
-balance-monitor {
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	th {
-		text-align: left;
-		font-weight: 400;
-	}
-
-	td {
-		border-bottom: 1px solid;
-	}
-
-	dl {
-		display: grid;
-		grid-template-columns: 7rem 1fr;
-		gap: 0 0.2em;
-		margin-bottom: 0.2em;
-	}
-}
-
-floating-view balance-monitor {
-	margin: 0.2em;
-}
-
 .Monitor {
 	position: fixed;
 	top: 0;

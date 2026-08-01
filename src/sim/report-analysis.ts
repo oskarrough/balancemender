@@ -241,6 +241,15 @@ function cast(casts: Map<string, CastStats>, event: CombatLogEvent, time: number
 	stats.overheal += overheal
 }
 
-const at = (event: CombatLogEvent) => event.time ?? event.timestamp
+/**
+ * When an event happened, in fight time. The one place the clock is chosen — `report.ts` reads it
+ * from here so a report and its graph cannot end up on two different clocks.
+ *
+ * Never falls back to `timestamp`: that is wall clock, and mixing an epoch number into fight-time
+ * arithmetic does not degrade, it produces nonsense — one unstamped event among stamped ones puts
+ * the fight's end 56 years after its start. `CombatLog.add()` fills `time` for every event it
+ * takes, so 0 is only reachable by hand-building an event and skipping the log.
+ */
+export const at = (event: CombatLogEvent) => event.time ?? 0
 const sum = <T>(items: T[], get: (item: T) => number) => items.reduce((total, item) => total + get(item), 0)
 const round = (n: number) => Math.round(n * 10) / 10

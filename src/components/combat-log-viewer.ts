@@ -46,7 +46,10 @@ const EVENT_META = {
 	GAME_RESUME: {group: 'fight', label: 'resume'},
 } satisfies Record<CombatEventType, {group: LogGroup; label: string}>
 
-/** Chip order. Only the groups this log actually contains get one, so a quiet fight shows three. */
+/**
+ * Chip order. Only the groups this log actually contains get a chip, so a quiet fight shows three —
+ * plus any group switched on, which has to stay clickable when a new fight empties it out.
+ */
 const GROUP_ORDER: LogGroup[] = ['casts', 'damage', 'healing', 'auras', 'units', 'fight']
 
 /** Reads as a state the unit is now in, not as something the source did to them. */
@@ -146,7 +149,7 @@ export class CombatLogViewer extends HTMLElement {
 	 */
 	private searched(): CombatLogEvent[] {
 		// A stored fight selected in the Fight report replaces the live log wholesale. Copied
-		// before sorting — the stored events are a cached array someone else reads too.
+		// before reversing — the stored events are a cached array someone else reads too.
 		let events = [...(viewedFight()?.events ?? currentGame()?.combatLog.events ?? [])]
 		if (this.searchTerm) {
 			const term = this.searchTerm.toLowerCase()
@@ -159,7 +162,10 @@ export class CombatLogViewer extends HTMLElement {
 					log.extraInfo?.toLowerCase().includes(term),
 			)
 		}
-		return events.sort((a, b) => b.timestamp - a.timestamp)
+		// `add()` only ever pushes, so the log is already in fight order — newest first is a
+		// reverse. It used to sort on `timestamp`, which is wall clock: a slow frame or a paused
+		// tab stretches those gaps, and two events in one millisecond ordered arbitrarily.
+		return events.reverse()
 	}
 
 	private matchesFilter(log: CombatLogEvent) {
@@ -214,14 +220,14 @@ export class CombatLogViewer extends HTMLElement {
 						<button class="CombatLogViewer-chip" aria-pressed=${!filtering} onclick=${this.clearFilter}>
 							all <b>${searched.length}</b>
 						</button>
-						${GROUP_ORDER.filter((group) => counts.has(group)).map(
+						${GROUP_ORDER.filter((group) => counts.has(group) || this.groups.has(group)).map(
 							(group) => html`
 								<button
 									class="CombatLogViewer-chip"
 									aria-pressed=${this.groups.has(group)}
 									onclick=${() => this.toggleGroup(group)}
 								>
-									${group} <b>${counts.get(group)}</b>
+									${group} <b>${counts.get(group) ?? 0}</b>
 								</button>
 							`,
 						)}

@@ -25,14 +25,19 @@
 		gap: 0 0.4rem;
 	}
 
-	/* Bare text, like .FightReport-castLink — a row of buttons is what ate the panel before. */
-	& .CombatLogViewer-chip {
+	/* Every control here is bare text, like .FightReport-castLink — a row of buttons is what ate
+	   the panel before. Only the resting opacity separates a chip from a row's own label. */
+	& :is(.CombatLogViewer-chip, .CombatLogViewer-type) {
 		font: inherit;
 		color: inherit;
 		background: none;
 		border: none;
 		padding: 0;
+		text-align: left;
 		cursor: pointer;
+	}
+
+	& .CombatLogViewer-chip {
 		opacity: 0.5;
 
 		& b {
@@ -194,13 +199,6 @@
 	/* The row's own label doubles as its filter — see handleListClick. Underlined on hover only,
 	   so a scrolling log stays a log rather than a wall of links. */
 	& .CombatLogViewer-type {
-		font: inherit;
-		color: inherit;
-		background: none;
-		border: none;
-		padding: 0;
-		text-align: left;
-		cursor: pointer;
 		opacity: 0.75;
 
 		&:hover {

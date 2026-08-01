@@ -17,7 +17,6 @@ import './components/floating-view.js'
 import './components/combat-log-viewer.js'
 import './components/fight-report'
 import './components/color-palette.js'
-import './components/balance-monitor.js'
 import './components/balance-lab'
 
 /**

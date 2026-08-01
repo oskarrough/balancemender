@@ -3,6 +3,12 @@ import type {Condition} from './nodes/types'
 
 // Combat event format inspired by WoW
 export interface CombatLogEvent {
+	/**
+	 * Wall clock, for the console line and nothing else. Never measure a fight with it: a paused
+	 * tab, a long frame or a slow machine stretches the gaps between events, and a simulated fight
+	 * runs thousands of times faster than a played one. `time` is the fight's own clock — every
+	 * reader that asks *when* goes through `at()` in `sim/report-analysis.ts`.
+	 */
 	timestamp: number
 	/** Milliseconds into the fight. Filled in from the log's clock — see `CombatLog`. */
 	time?: number

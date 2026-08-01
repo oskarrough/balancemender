@@ -1,7 +1,7 @@
 import type {CombatLogEvent} from '../combatlog'
 import type {GameLoop} from '../nodes/game-loop'
 import type {UnitId} from '../nodes/unit-registry'
-import {accumulateEvents, isDamage, isHeal} from './report-analysis'
+import {accumulateEvents, at, isDamage, isHeal} from './report-analysis'
 
 export type Outcome = 'victory' | 'defeat' | 'timeout'
 
@@ -136,8 +136,6 @@ export interface AnalyzeOptions {
 	/** Resolution of the health graph. */
 	columns?: number
 }
-
-const at = (event: CombatLogEvent) => event.time ?? event.timestamp
 
 export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}): FightReport {
 	const {units, outcome, columns = 40} = options
