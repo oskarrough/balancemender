@@ -63,6 +63,19 @@ export class ManaRegen extends Task {
 	}
 
 	tick() {
+		const before = this.parent.current
 		this.parent.set(this.parent.current + this.regenRate)
+		const gained = this.parent.current - before
+		if (gained <= 0) return
+		const gameLoop = this.root as GameLoop
+		const unit = this.parent.parent as Unit
+		gameLoop.combatLog.add({
+			timestamp: Date.now(),
+			eventType: 'RESOURCE_GAIN',
+			sourceId: unit.id,
+			sourceName: unit.name,
+			value: gained,
+			extraInfo: 'MANA',
+		})
 	}
 }

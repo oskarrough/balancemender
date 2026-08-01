@@ -31,6 +31,21 @@ describe('mana regeneration', () => {
 		game.disconnect()
 	})
 
+	it('logs each payout as a mana gain, clamped to what the pool actually took', () => {
+		const game = new GameLoop({party: ['Tank'], enemies: []})
+		const mana = game.player.mana
+		mana.set(100)
+		mana.lastCastTime = 0
+		game.elapsedTime = 5000
+		mana.regen.tick()
+
+		const gains = game.combatLog.events.filter((event) => event.eventType === 'RESOURCE_GAIN')
+		expect(gains).toHaveLength(1)
+		expect(gains[0]).toMatchObject({sourceName: 'Player', value: Player.spirit, extraInfo: 'MANA'})
+
+		game.disconnect()
+	})
+
 	it('derives its rate from spirit, so the Balance Lab can tune it', () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		// Captured before the tune, because the tune rewrites the static this came from.

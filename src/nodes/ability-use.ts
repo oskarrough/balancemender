@@ -39,10 +39,16 @@ export class AbilityUse {
 		}
 
 		const AbilityClass = unit.abilities[abilityId]
-		if (!AbilityClass) return {ok: false, error: `Ability ${abilityId} not found in abilities`}
+		if (!AbilityClass) {
+			this.logFailure(unit, abilityId, undefined, 'missing-ability')
+			return {ok: false, error: `Ability ${abilityId} not found in abilities`}
+		}
 		const failure = this.validate(unit, AbilityClass, target)
 		// A missing target is already a refusal; the second half of this is what tells the compiler so.
-		if (failure || !target) return {ok: false, error: failureMessage[failure ?? 'missing-target']}
+		if (failure || !target) {
+			this.logFailure(unit, abilityId, AbilityClass, failure ?? 'missing-target')
+			return {ok: false, error: failureMessage[failure ?? 'missing-target']}
+		}
 
 		const ability = new AbilityClass(unit, target)
 		if (this.usesCastRules(AbilityClass)) {
@@ -55,7 +61,27 @@ export class AbilityUse {
 	}
 
 	/**
-	 * The tap-to-confirm half of the sweet spot (#33). `ability.elapsedTime` is time since the cast
+	 * A refused cast is part of how the fight went, so it lands in the log like a completed one —
+	 * that is what lets a sweep answer how often the bot reached for a spell it could not pay for.
+	 */
+	private static logFailure(
+		unit: Unit,
+		abilityId: string,
+		AbilityClass: AbilityClass | undefined,
+		reason: AbilityFailure,
+	) {
+		;(unit.root as GameLoop).combatLog.add({
+			timestamp: Date.now(),
+			eventType: 'SPELL_CAST_FAILED',
+			sourceId: unit.id,
+			sourceName: unit.name,
+			abilityId,
+			abilityName: AbilityClass?.name ?? abilityId,
+			extraInfo: reason,
+		})
+	}
+
+	/** The tap-to-confirm half of the sweet spot (#33). `ability.elapsedTime` is time since the cast
 	 * started; a tap inside the last `sweetSpotWindow` ms of `ability.delay` (the cast time) marks
 	 * the ability so its effects can reward it — a tap outside logs a miss and changes nothing.
 	 */

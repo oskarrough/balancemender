@@ -80,6 +80,19 @@ describe('perform', () => {
 		await settle()
 	})
 
+	it('logs the casts it refuses, with the reason', () => {
+		game = new GameLoop({party: ['Tank'], enemies: []})
+		game.perform({type: 'use', ability: 'Fireball'})
+		game.player.mana?.set(0)
+		game.perform({type: 'use', ability: 'Mend', target: game.party[0].id})
+
+		const failed = game.combatLog.events.filter((event) => event.eventType === 'SPELL_CAST_FAILED')
+		expect(failed).toEqual([
+			expect.objectContaining({abilityId: 'Fireball', extraInfo: 'missing-ability'}),
+			expect.objectContaining({abilityId: 'Mend', extraInfo: 'missing-mana'}),
+		])
+	})
+
 	it('retunes the units already fighting, matched by id and not by class name', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		expect(game.perform({type: 'tune', of: 'unit', name: 'Tank', key: 'stamina', value: 50}).ok).toBe(true)
