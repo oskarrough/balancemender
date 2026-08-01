@@ -37,23 +37,28 @@ export const TheGreen: Dungeon = {
 }
 
 /**
- * The second dungeon, built one room at a time. It opens by remixing familiar pressures, then adds
- * another hunter and a pack buff without teaching a new rule. The full kit from The Green is
- * granted up front because this is a sequel, not another tutorial (#70).
+ * The second dungeon, built one room at a time. The dry country keeps its own animals rather than
+ * the Green's wolves at bigger numbers, and its rooms hold more bodies than the Green's ever did —
+ * more to keep standing is the difficulty curve here. The full kit from The Green is granted up
+ * front because this is a sequel, not another tutorial (#70).
  */
 export const TheRust: Dungeon = {
 	id: 'TheRust',
 	name: 'The Rust',
 	rooms: [
+		// A bell you can see the animal inside, three cheap bodies around it. The bellwether's trample
+		// is a wind-up wide enough to shield through — the whole room, in sim, is the difference
+		// between a healer that pre-shields and one that only reacts.
 		{
 			name: 'The dry bed',
 			party: ['Tank'],
-			enemies: ['Snapjaw', 'Skulker'],
+			enemies: ['Bellwether', 'Chafer', 'Chafer', 'Chafer'],
 			grants: ['Heal', 'Lance', 'Renew', 'Patch', 'Nettle', 'Shield', 'Mend'],
 			wallpaper: '/assets/generated/explorations/rust-waystation.png',
 		},
-		// Two healer-hunters backed by a strength buff — wider pressure, not a new mechanic.
-		{name: 'The long grass', party: ['Tank'], enemies: ['Skulker', 'Skulker', 'Howler']},
+		// Five bodies, and the two kites drop on whoever is worst off — a new axis after the Green's
+		// healer-hunting: nobody may be left sitting low, the healer least of all.
+		{name: 'The long grass', party: ['Tank'], enemies: ['Chafer', 'Chafer', 'Chafer', 'Kite', 'Kite']},
 		// The bell that has been ringing since the waystation sign, answered at last. She fights
 		// alone: the Rust is a lonely dungeon and this is its one strange thing (#72).
 		{

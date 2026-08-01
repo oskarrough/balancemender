@@ -1,5 +1,5 @@
 import {Heal, Patch, Mend, Renew, Shield, Lance, Nettle, Lick} from './spells'
-import {Nip, HeavyBlow, SavageBite, NastyArrow, ShieldBash, Pounce, Worry, Ambush, Rile, Toll} from './attack'
+import {Nip, HeavyBlow, SavageBite, NastyArrow, ShieldBash, Pounce, Worry, Ambush, Rile, Toll, Trample} from './attack'
 
 /** Every one-shot ability, keyed by stable id. Display names are labels only. */
 export const abilityRegistry = {
@@ -21,6 +21,7 @@ export const abilityRegistry = {
 	Ambush,
 	Rile,
 	Toll,
+	Trample,
 } as const
 
 /** The player's action bar subset. Units own collections; the global registry is only a catalog. */

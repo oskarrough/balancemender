@@ -67,6 +67,34 @@ somebody has already been where you are going.
 
 Weirdness curve: familiar → familiar-but-off → lush-weird → sublime.
 
+## The journey
+
+Each dungeon owns one pressure, and that pressure is the progression. The seven abilities you
+already hold mean something different under each one:
+
+1. **The Green — you learn your hands.** The kit arrives a room at a time. Shipped.
+2. **The Rust — you learn to time.** Roha's toll cuts the cast you are in the middle of, so the
+   fight has a rhythm you play around instead of a number you outheal.
+3. **The Glow — you learn you are visible.** The sivi drift toward whoever glows brightest, and
+   that is the healer. Healing draws attention; the threat table stops being the tank's private
+   business.
+4. **The White — you learn scarcity.** Thin air at a blocked source. Mana does not come back the
+   way it did downstream, and the finale is one long fight out of a closing purse.
+
+Two things grow as you walk, and neither is a bigger spellbook:
+
+- **Company.** One neighbor beside you in the Green, another in each dungeon after. More bodies is
+  more to keep standing — the difficulty and the story are the same curve, and by the White the
+  party is a crowd of mud-boots under white stone, which is the whole point of them.
+- **One ability per dungeon**, and each answers that dungeon's pressure — something that survives
+  an interruption, something that puts attention back where it belongs, something that stretches a
+  last mouthful of mana. Names pending a say-aloud session; register one holds, so they stay small
+  warm words a village healer would use. Which abilities the Green itself teaches is being retuned
+  alongside the Heal/Mend merge (#71).
+
+When the river is mended, the gating comes off: the mender chooses their own kit freely. You walked
+the whole length of it — you have earned the right to decide what you carry.
+
 ## Three registers
 
 Everything nameable speaks one of three languages, and which one tells you what it is:
@@ -148,18 +176,26 @@ foreground stays homey.
 
 - **Biome** — dry golden grassland and scrub, a cracked riverbed as the road, lone twisted trees,
   rust-red rock starting to show through the soil.
-- **Creatures** — dusty survivors: snapjaws, skulkers, and howlers scraping by, leaner and meaner
-  than their forest cousins. And Roha, whose bell you heard an hour ago.
+- **Creatures** — the dry country keeps its own, and none of them are wolves. The **bellwether**,
+  lead beast of a herd nobody came back for, still wearing its bell. **Kites** circling, dropping on
+  whoever is worst off. **Chafers**, husk-shelled beetles in numbers. And Roha, whose bell you heard
+  an hour ago — the point of the bellwether is that you meet a real animal wearing a real bell
+  first, so that a bell with no animal inside it lands the way it should.
 - **People** — a waystation with a creaking sign and a keeper who talks too much; herders who moved
   on early because "the water went".
 - **Stimmung** — high noon loneliness. Spacious, a little melancholy, the first wrongness.
 - **Sounds** — dry wind, creaking wood, a distant bell, boots on cracked clay. Long silences.
 - **Tempo** — loping. Fewer, spikier fights with room to breathe between them.
-- **Rooms so far** — "The dry bed" splits attention between a bleeding tank and a Skulker on the
-  healer. "The long grass" lets a second Skulker close in while a Howler riles the hunting pair — a
-  slightly harder reprise made entirely from pressures learned in The Green. Roha closes the dungeon
-  alone (#72): the bell you have heard since the waystation, tolling on a slow telegraph that cuts
-  whatever you are casting. Sound is the Rust's signature, so its closer is a fight you listen to.
+- **Rooms so far** — "The dry bed" is a bellwether and three chafers: the beast winds up a trample
+  you can see coming, and the beetles behind it drift onto whoever is doing the healing. "The long
+  grass" trades weight for numbers — three chafers and a pair of kites dropping on whoever is worst
+  off, so nobody can be left sitting low. Roha closes the dungeon alone (#72): the bell you have
+  heard since the waystation, tolling on a slow telegraph that cuts whatever you are casting. Sound
+  is the Rust's signature, so its closer is a fight you listen to.
+- **What it asks of you** — both rooms are harder than anything in The Green, and what they punish
+  is waste. Spamming the fast heal loses the dungeon outright where it used to carry the Green; the
+  bellwether's wind-up is the first thing in the game that teaches you to shield before it lands
+  rather than heal after.
 
 > **Image prompt** — A wide dry grassland under an enormous pale-blue afternoon sky, a cracked empty
 > riverbed winding through it as a road, one twisted leafless tree, a tumbleweed mid-roll, a tiny

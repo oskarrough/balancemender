@@ -122,7 +122,11 @@ export class Worry extends Ability {
 	static effects = [new Damage(0.3), new ApplyAura(Gash, 2.8)]
 }
 
-/** A slow, telegraphed leap that ignores the tank and runs down whoever it caught looking away. */
+/**
+ * A slow, telegraphed leap over the front line at whoever its owner has already picked out. Skulker
+ * uses it on the healer and Kite on whoever is worst off — the leap is one shape, and who it lands
+ * on is the unit's own preference, not the ability's.
+ */
 export class Ambush extends Ability {
 	static id = 'Ambush'
 	static name = 'Ambush'
@@ -133,6 +137,24 @@ export class Ambush extends Ability {
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	static effects = [new Damage(2.5)]
+}
+
+/**
+ * The bellwether putting its whole weight through whoever is squared up in front of it. The wind-up
+ * is the instruction — a barrier fits comfortably inside it, and the hit is big enough that the tank
+ * feels the difference. Roha teaches the same "answer the wind-up" lesson two rooms later with
+ * sound instead of weight, which is why this one arrives first and only asks for a shield.
+ */
+export class Trample extends Ability {
+	static id = 'Trample'
+	static name = 'Trample'
+	static tags = ['attack', 'melee'] as const
+	static school = 'physical' as const
+	static targets = 'enemy' as const
+	static castTime = 2000
+	static sound = 'combat_strong_punch2'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
+	static effects = [new Damage(1.8)]
 }
 
 /** The sound going on after the bell stops, declared before the toll that leaves it. */

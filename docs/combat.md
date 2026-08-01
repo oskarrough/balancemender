@@ -2,7 +2,9 @@
 
 Why the combat systems are shaped the way they are — mostly the traps, each of which has cost someone
 an afternoon. [glossary.md](./glossary.md) says what the words mean;
-[architecture.md](./architecture.md) is the map of the codebase.
+[architecture.md](./architecture.md) is the map of the codebase. What each dungeon is supposed to
+teach — one pressure apiece, a growing party, one ability per dungeon — is "The journey" in
+[universe.md](./universe.md).
 
 ## Using an ability is shared, deciding is not
 

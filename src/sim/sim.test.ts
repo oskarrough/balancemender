@@ -6,6 +6,7 @@ import {runFight} from './run'
 import {analyze} from './report'
 import {parseUnits} from './roster'
 import {TheRust, TheGreen} from '../nodes/dungeon'
+import type {Room} from '../nodes/fight'
 
 /**
  * These run the actual game — real loop, real spells, real combat log — on a stepped clock.
@@ -225,7 +226,7 @@ describe('The Rust room one', () => {
 	})
 })
 
-/** Room two adds another hunter and a buff, but remains a step rather than a wall. */
+/** Room two puts five bodies up and two kites on whoever is worst off, and is still a step. */
 describe('The Rust room two', () => {
 	const first = TheRust.rooms[0]
 	const second = TheRust.rooms[1]
@@ -236,11 +237,18 @@ describe('The Rust room two', () => {
 		expect(fight.survivors.party).toBe(2)
 	})
 
+	/**
+	 * Counted over seeds rather than pinned to one, because one seed cannot tell a harder room from
+	 * a worse roll — this used to assert a defeat at seed 9, and every retune since has had to
+	 * relitigate whether that seed still meant anything.
+	 */
 	it('is harder than the opening room', async () => {
-		const firstFight = await runFight({room: first, bot: 'renew', seed: 9})
-		const secondFight = await runFight({room: second, bot: 'renew', seed: 9})
-		expect(firstFight.outcome).toBe('victory')
-		expect(secondFight.outcome).toBe('defeat')
+		const losses = async (room: Room) => {
+			const outcomes = []
+			for (let seed = 1; seed <= 12; seed++) outcomes.push((await runFight({room, bot: 'renew', seed})).outcome)
+			return outcomes.filter((outcome) => outcome !== 'victory').length
+		}
+		expect(await losses(second)).toBeGreaterThan(await losses(first))
 	})
 })
 

@@ -1,7 +1,7 @@
 import {Unit} from './unit'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
-import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile, Toll} from './attack'
+import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile, Toll, Trample} from './attack'
 import {Lick} from './spells'
 import {
 	NastyArrowCadence,
@@ -14,6 +14,7 @@ import {
 	AmbushCadence,
 	RileCadence,
 	TollCadence,
+	TrampleCadence,
 } from './cadence'
 
 export class Haruk extends Unit {
@@ -120,9 +121,79 @@ export class Skulker extends Unit {
 }
 
 /**
+ * Lead beast of a herd nobody came back for, still wearing its bell. Heavy, slow and bulky: it is
+ * the tank's problem and nobody else's, and the room around it is cheap bodies.
+ *
+ * `Trample` is why it is here. The Rust's signature is a wind-up you answer rather than a number you
+ * outheal, and the bellwether states that in the plainest terms available — a shield fits inside the
+ * cast, and the tank's bar says so if you did not put one up. `HeavyBlow` swings between the
+ * trample beats so the healer never gets a free gap; it has no cast time, so it lands mid-wind-up.
+ *
+ * A real animal wearing a real bell, met before a bell with no animal in it (see Roha).
+ */
+export class Bellwether extends Unit {
+	static stamina = 380
+	static intellect = 0
+	static strength = 20
+	static agility = 4
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Bellwether'
+	abilities = {HeavyBlow, Trample}
+	targeting = new Targeting(this, prefer.tankFirst)
+	heavyBlowCadence = new HeavyBlowCadence(this)
+	trampleCadence = new TrampleCadence(this)
+}
+
+/**
+ * A carrion bird that drops on whoever is worst off — `prefer.lowestHealth`, which no other enemy
+ * uses. Its axis is neither threat nor the healer: it is the ratio, so leaving anybody sitting low
+ * is what makes the next stoop land on them. Heal the tank up and the kite comes for the healer
+ * instead; there is no answer that is not "keep everyone level".
+ *
+ * `Ambush` rather than an invention of its own — Skulker's leap is the same shape, and the two
+ * differ in the only place that matters here, which is who they pick. Fast and fragile: the party
+ * can kill it quickly, and the fight asks whether they choose to.
+ */
+export class Kite extends Unit {
+	static stamina = 110
+	static intellect = 0
+	static strength = 10
+	static agility = 30
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Kite'
+	abilities = {Nip, Ambush}
+	targeting = new Targeting(this, prefer.lowestHealth)
+	nipCadence = new NipCadence(this)
+	ambushCadence = new AmbushCadence(this)
+}
+
+/**
+ * A husk-shelled beetle, and a cheap body before it is a creature. Low stamina, low damage, and
+ * plain threat with none of a wolf's mischief — it chews whoever has earned its attention and never
+ * thinks about it again. In a room this full that is regularly the healer rather than the tank,
+ * whose bash names one beetle at a time while the rest sit adding up the healing they can see.
+ *
+ * It exists so a Rust room can hold four or five units without becoming lethal: bodies are the
+ * dungeon's difficulty curve, and this is the body.
+ */
+export class Chafer extends Unit {
+	static stamina = 70
+	static intellect = 0
+	static strength = 8
+	static agility = 6
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Chafer'
+	abilities = {Nip}
+	targeting = new Targeting(this, prefer.threat(this))
+	nipCadence = new NipCadence(this)
+}
+
+/**
  * The bell that has been ringing since the waystation sign, on stilt legs, wearing its own head.
- * The first enemy in the game that is not a wolf, and not a boss in Haruk's sense — no epithet, and
- * nobody in the shire has a word for her.
+ * Not a boss in Haruk's sense — no epithet, and nobody in the shire has a word for her.
  *
  * `Toll` is her whole kit — she has no teeth to give her a second ability with. She swings the bell
  * at whoever is squared up in front of her, so the wound lands on the tank and the healer answers

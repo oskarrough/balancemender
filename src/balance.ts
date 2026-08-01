@@ -11,6 +11,7 @@ import {
 	AmbushCadence,
 	RileCadence,
 	TollCadence,
+	TrampleCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
@@ -76,6 +77,7 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	AmbushCadence,
 	RileCadence,
 	TollCadence,
+	TrampleCadence,
 }
 
 /**

@@ -132,6 +132,13 @@ export class AmbushCadence extends Cadence {
 	static interval = 8000
 }
 
+/** The bellwether's slow beat. Wide enough that a shield is always up in time if the player wants it to be. */
+export class TrampleCadence extends Cadence {
+	static abilityId = 'Trample'
+	static delay = 4000
+	static interval = 7000
+}
+
 /** Roha's whole clock. Slow enough that the gap between two tolls is where the fight is played. */
 export class TollCadence extends Cadence {
 	static abilityId = 'Toll'
