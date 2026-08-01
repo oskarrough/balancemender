@@ -1,4 +1,4 @@
-import {afterEach, describe, expect, it} from 'vitest'
+import {afterEach, describe, expect, it, vi} from 'vitest'
 import {settle} from '../test-setup'
 import {SimLoop} from '../sim/run'
 import {lance as smiteBot} from './bot'
@@ -41,6 +41,22 @@ describe('Lance', () => {
 			targetId: wolf.id,
 			value: damage,
 		})
+	})
+
+	it('lets its landing sound outlive cast cleanup', async () => {
+		const sim = new SimLoop({party: [], enemies: ['Runt']})
+		game = sim
+		await settle()
+		const play = vi.spyOn(sim.audio, 'play').mockReturnValue(null)
+		const wolf = sim.enemies[0]
+
+		expect(sim.perform({type: 'use', ability: 'Lance', target: wolf.id}).ok).toBe(true)
+		await settle()
+		sim.runFrame(0)
+		sim.runFrame(1500)
+		await settle()
+
+		expect(play).toHaveBeenCalledWith('spell_cast')
 	})
 
 	it('refuses ally targets', () => {

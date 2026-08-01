@@ -191,7 +191,9 @@ export class Ability extends Task {
 		const audio = (this.root as GameLoop).audio
 		audio.stopOwned(this)
 		const sound = this.sound || (AbilityUse.usesCastRules(this.constructor as AbilityClass) ? 'spell_cast' : '')
-		if (sound) audio.play(sound, {owner: this})
+		// The landing sound must outlive this one-shot task. Only the looping precast belongs to the
+		// ability; `finish()` stops owned audio immediately after this tick.
+		if (sound) audio.play(sound)
 	}
 
 	destroy() {
