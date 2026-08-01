@@ -90,6 +90,17 @@ describe('perform', () => {
 		game.perform({type: 'resetBalance'})
 	})
 
+	it('resets the balance and retunes the units already fighting', () => {
+		game = new GameLoop({party: ['Tank'], enemies: []})
+		game.perform({type: 'tune', of: 'unit', name: 'Tank', key: 'stamina', value: 50})
+		expect(game.party[0].health.max).toBe(50)
+
+		game.perform({type: 'resetBalance'})
+
+		// The class is back at its default, and so is the unit that copied it.
+		expect(game.party[0].health.max).toBe(300)
+	})
+
 	it('spawns and removes through the fight door', () => {
 		game = new GameLoop({party: [], enemies: []})
 		const spawned = game.perform({type: 'spawn', unit: 'Haruk'})

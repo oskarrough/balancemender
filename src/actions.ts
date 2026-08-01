@@ -3,6 +3,7 @@ import {
 	setBalanceValue,
 	resetBalance,
 	validateBalanceValue,
+	unitClasses,
 	AbilityKey,
 	EffectKey,
 	CadenceKey,
@@ -13,6 +14,7 @@ import {
 import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
 import {FACTION, type Faction} from './nodes/types'
+import {STAT_KEYS} from './nodes/stats'
 import type {Room} from './nodes/fight'
 // Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
 import {dungeonRegistry} from './nodes/dungeon'
@@ -126,6 +128,10 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 
 		case 'resetBalance':
 			resetBalance()
+			// A reset is a retune of everything: the classes are back at their defaults, so the
+			// units already fighting — who copied their base stats at construction — need those
+			// defaults told to them the same way a single tune is.
+			for (const unit of game.fight.units) retuneLiveUnitFromTemplate(unit)
 			return ok(undefined)
 
 		case 'healParty':
@@ -228,6 +234,13 @@ function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: nu
 		if (unit.unitId !== unitId) continue
 		unit.setBaseStat(key, value)
 	}
+}
+
+/** After a reset, push every stat of the class template back onto a live unit. */
+function retuneLiveUnitFromTemplate(unit: Unit) {
+	const template = unit.unitId ? unitClasses[unit.unitId] : undefined
+	if (!template) return
+	for (const stat of STAT_KEYS) unit.setBaseStat(stat, template[stat])
 }
 
 function interrupt(game: GameLoop): ActionResult<void> {
