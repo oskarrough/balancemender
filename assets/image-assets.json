@@ -247,6 +247,54 @@
 			"name": "The source",
 			"prompt": "The spring itself: a perfect circular pool of glowing gold-white water sunk in pale stone, the first water of the whole river welling silently over its rim, and sitting in it an enormous pale ribbed shell with ribbon-like sails, inflamed past recognition yet utterly still — the wound and the ward in one. Thin air, crystal formations bowed toward the pool, monumental Arzach stillness, pale whites and glacial blues around one great warm gold glow. No combat in progress.",
 			"portrait": "Portrait view: Uvalu's sails rising the full height of the frame into the sky, the ribbed shell filling the middle distance, and the glowing pool with its silent overflowing rim low in the frame — the river being born as the clue in the clear band."
+		},
+		{
+			"id": "muhl",
+			"type": "character",
+			"name": "Muhl",
+			"prompt": "A pale round puffball creature with a sleepy sighing face, eyes closed, a faint cloud of luminous spores drifting off it, mossy fungal dusk behind. Gentle, soft, faintly glowing."
+		},
+		{
+			"id": "grub",
+			"type": "character",
+			"name": "Grub",
+			"prompt": "A plump glowing grub half-emerged from a cracked translucent amber sap shell, blinking awake, warm gold light from inside the shell against deep teal fungal dusk. More surprised than fierce."
+		},
+		{
+			"id": "sivi",
+			"type": "character",
+			"name": "Sivi",
+			"prompt": "A small bright wisp creature of drifting light with a tiny trailing tail, hovering, curious and eager, leaning toward the viewer like a moth to a flame, deep teal fungal darkness behind."
+		},
+		{
+			"id": "orovan",
+			"type": "character",
+			"name": "Orovan",
+			"prompt": "A tall thin-limbed being with a broad pale mushroom cap for a head, hung with beads and tending-tools, calm and stern, mid-glance over its shoulder at an interruption, luminous fungal cathedral behind."
+		},
+		{
+			"id": "glider",
+			"type": "character",
+			"name": "Glider",
+			"prompt": "A silent flat pale creature like a living glider wing seen head-on, thin and wide, no visible eyes, casting no shadow, enormous pale-blue sky behind. Serene and unreadable, Arzach calm."
+		},
+		{
+			"id": "ringer",
+			"type": "character",
+			"name": "Ringer",
+			"prompt": "A slow tortoise-like creature whose shell is grown entirely of pale ringing crystal, head half-drawn in, faint refracted chime-light along the facets, white stone and glacial blue behind. Patient and mineral."
+		},
+		{
+			"id": "uvalu",
+			"type": "character",
+			"name": "Uvalu",
+			"prompt": "The source-keeper: an enormous pale ribbed shell being with ribbon-like sails, inflamed past recognition yet utterly still, one warm gold glow low at its base, pale white stone and sky behind. The wound and the ward in one."
+		},
+		{
+			"id": "clover",
+			"type": "character",
+			"name": "Clover",
+			"prompt": "A village beekeeper with a plain veil pushed back, homespun wool, tin smoker at the chest, gentle unafraid smile, one faint glowing wisp drifting near like a curious bee, luminous fungal dusk behind. Ghibli warmth."
 		}
 	]
 }
