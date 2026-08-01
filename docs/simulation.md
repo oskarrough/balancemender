@@ -28,6 +28,10 @@ bun run sim --party= --enemies Pup             # no tank — the dungeon's first
 `--help` lists the flags for both commands. **Redirect `--json`, never pipe it** — a fight's events
 run to hundreds of kilobytes and a pipe truncates mid-object, which reads as a bug in the report.
 
+**`--party` defaults to the Tank alone.** A room's verdict is only real with that room's full
+party from `dungeon.ts` — `--party 'Tank,Wren,Clover'` for the late dungeons. A 2-body run of a
+3-body room reports catastrophe that is not there.
+
 **An empty party needs `--party=`, glued together.** `--party ''` exits with "argument is
 ambiguous" — `parseArgs` cannot tell an empty value from a missing one. It is the only way to
 simulate room one, where the player is alone. `sweep` has no `--party` at all and always brings the

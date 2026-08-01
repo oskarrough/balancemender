@@ -12,6 +12,10 @@ A scene is one room painted twice — `<id>.png` wide and `<id>-portrait.png` ta
     bun run asset:optimize -- --dry-run             # preview PNG savings
     bun run asset:optimize -- --max 1024 renew      # shrink in place (default --max 1440)
 
+Optimizer ids are exact, not substrings — `glow` matches nothing, and a portrait variant is its
+own id (`glow-tender-portrait`). Optimize every new PNG before jj touches it: the repo refuses to
+snapshot new files over 1MiB.
+
 Generation is one-shot from the CLI — pipe the composed prompt (the exact format `asset:prompt`
 prints, including the output target path) into codex:
 
