@@ -107,5 +107,56 @@ export const TheRust: Dungeon = {
 	],
 }
 
+/**
+ * The third dungeon. Where the Rust is bulk and bodies, the Glow's pressure is a heal-mark: a
+ * gate on the healer makes each heal plant an exclusive threat mark on the patient, so
+ * `prefer.threat` enemies (the Sivi) drift to whoever was last healed — see
+ * [`heal-mark.ts`](./heal-mark.ts) and [combat.md](../../docs/combat.md#threat-is-local-to-each-enemy).
+ * Everything else here ticks slowly and accumulates rather than bursts — Muhl's `Waft` and Grub's
+ * delayed wake both read that way, in contrast to Orovan's one telegraphed hit closing the
+ * dungeon.
+ */
+export const TheGlow: Dungeon = {
+	id: 'TheGlow',
+	name: 'The Glow',
+	rooms: [
+		// Two puffballs, nothing else — Waft's tick lands on the whole party at once, small enough
+		// that even an idle healer walks out unhurt. The room is here to be felt, not survived.
+		{
+			name: 'The drowned trees',
+			party: ['Tank', 'Wren'],
+			enemies: ['Muhl', 'Muhl'],
+			scene: 'glow-drowned-trees',
+		},
+		// The heal-mark lesson: two Sivi chase whoever Brightest just landed on rather than whoever
+		// holds threat the ordinary way, so healing the wrong body at the wrong moment redirects
+		// them. Idle loses this one outright (0% in a 200-seed sim); triage clears it every time.
+		{
+			name: 'The bright water',
+			party: ['Tank', 'Wren'],
+			enemies: ['Sivi', 'Sivi', 'Muhl'],
+			scene: 'glow-bright-water',
+		},
+		// Three grubs, staggered — two crack open around 6s in, the third waits until 13s, so the
+		// room's weight keeps arriving rather than landing all at once. A Sivi keeps the mark lesson
+		// live alongside it.
+		{
+			name: 'The sap shells',
+			party: ['Tank', 'Wren'],
+			enemies: ['Grub', 'Grub', 'GrubDeep', 'Sivi'],
+			scene: 'glow-sap-shells',
+		},
+		// The dungeon's guardian, alone. Groundfall is the whole lesson: telegraphed long enough to
+		// answer, heavy enough that missing it costs the fight — idle wipes every time, triage clears
+		// clean (200-seed sim). Boss-scale health, like Haruk and Roha before her.
+		{
+			name: 'The tender',
+			party: ['Tank', 'Wren'],
+			enemies: ['Orovan'],
+			scene: 'glow-tender',
+		},
+	],
+}
+
 /** Every dungeon, by id. */
-export const dungeonRegistry: Record<string, Dungeon> = {TheGreen, TheRust}
+export const dungeonRegistry: Record<string, Dungeon> = {TheGreen, TheRust, TheGlow}

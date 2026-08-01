@@ -112,6 +112,12 @@ describe('the categories', () => {
 			'BellSwingCadence',
 			'TollCadence',
 			'TrampleCadence',
+			'SporeCadence',
+			'WaftCadence',
+			'GrubWakeCadence',
+			'GrubWakeCadenceLate',
+			'GroundfallCadence',
+			'SiviAmbushCadence',
 		])
 	})
 

@@ -109,6 +109,15 @@ function hit({ability, target, bonus}: Landing, amount: number, eventType: Comba
 	})
 }
 
+/** Rounded bounds keep a low-number midpoint symmetric: 6 ±20% remains 5–7. */
+function rollDamage(landing: Landing, coefficient: number) {
+	const magnitude = landing.resolve(coefficient)
+	const spread = magnitude * Math.max(0, DAMAGE_RULES.variance)
+	const min = Math.max(0, Math.round(magnitude - spread))
+	const max = Math.max(min, Math.round(magnitude + spread))
+	return (landing.ability.root as GameLoop).rng.int(min, max)
+}
+
 /** Damage rolled around what this landing resolves to, and the flinch that sells it. */
 export class Damage implements Effect {
 	readonly label = 'damage'
@@ -116,14 +125,27 @@ export class Damage implements Effect {
 	constructor(public coefficient: number) {}
 
 	apply(landing: Landing) {
-		// Rounded bounds keep a low-number midpoint symmetric: 6 ±20% remains 5–7.
-		const magnitude = landing.resolve(this.coefficient)
-		const spread = magnitude * Math.max(0, DAMAGE_RULES.variance)
-		const min = Math.max(0, Math.round(magnitude - spread))
-		const max = Math.max(min, Math.round(magnitude + spread))
-		const amount = (landing.ability.root as GameLoop).rng.int(min, max)
-		hit(landing, -amount, landing.ability.eventType)
+		hit(landing, -rollDamage(landing, this.coefficient), landing.ability.eventType)
 		shake(landing.target)
+	}
+}
+
+/**
+ * Same roll as `Damage`, landed on every living unit on the ability's side rather than just its
+ * one held target — the Glow's ambient pressure, felt by the whole party without anyone dodging
+ * it by not being the one the caster picked.
+ */
+export class AoeDamage implements Effect {
+	readonly label = 'damage'
+
+	constructor(public coefficient: number) {}
+
+	apply(landing: Landing) {
+		for (const target of eligible(landing.caster, landing.ability.targets)) {
+			const perTarget = new Landing(landing.ability, target, landing.power, landing.bonus)
+			hit(perTarget, -rollDamage(perTarget, this.coefficient), perTarget.ability.eventType)
+			shake(target)
+		}
 	}
 }
 

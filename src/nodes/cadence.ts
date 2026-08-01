@@ -1,6 +1,8 @@
 import {Task} from '../vroum'
 import {applyStatics, log} from '../utils'
 import {AbilityUse} from './ability-use'
+import {prefer} from './targeting'
+import {eligible} from './targets'
 import type {Unit} from './unit'
 
 /**
@@ -172,4 +174,61 @@ export class RileCadence extends Cadence {
 	static abilityId = 'Rile'
 	static delay = 5000
 	static interval = 12000
+}
+
+/**
+ * Spore always wants the healer, while its owner's standing preference is threat (Brightest chase).
+ * Pick the healer here rather than fighting that preference.
+ */
+export class SporeCadence extends Cadence {
+	static abilityId = 'Spore'
+	static delay = 500
+	static interval = 10000
+
+	tick() {
+		if (!this.shouldUse()) return
+		const healer = prefer.healerFirst.prefers(eligible(this.parent, 'enemy'))
+		if (!healer) return
+		const result = this.parent.useAbility(this.abilityId, healer)
+		if (!result.ok) log(`cadence:${this.parent.name}:${this.abilityId}:${result.error}`)
+	}
+}
+
+/** The puffball's sigh — slow enough that each tick is a chip, not a wound. */
+export class WaftCadence extends Cadence {
+	static abilityId = 'Waft'
+	static delay = 2000
+	static interval = 4000
+}
+
+/**
+ * Asleep in its sap shell until this fires — the delay is the whole "joins late" lesson, borrowed
+ * straight from `Cadence.delay` rather than a new dormant-unit mechanism.
+ */
+export class GrubWakeCadence extends HeavyBlowCadence {
+	static delay = 6000
+}
+
+/** A grub buried deeper in its shell — cracks open well after its siblings, for a staggered room. */
+export class GrubWakeCadenceLate extends HeavyBlowCadence {
+	static delay = 13000
+}
+
+/** The guardian's slow wind-up. Wide enough that a shield or a dodge always fits. */
+export class GroundfallCadence extends Cadence {
+	static abilityId = 'Groundfall'
+	static delay = 5000
+	static interval = 9000
+}
+
+/**
+ * Sivi's lunge — `Ambush` reused as-is, so the wisp that drifts to whoever holds threat (or
+ * `Brightest`) hits like Skulker instead of only nipping. Faster than Skulker's own
+ * `AmbushCadence`: at 6s it is the room's real threat, and its target is whoever the mark or the
+ * threat table points it at, which is the whole "watch who you heal" lesson (200-seed sim with
+ * the full party: idle loses "The bright water" ~60% of the time, triage still clears it).
+ */
+export class SiviAmbushCadence extends AmbushCadence {
+	static delay = 3000
+	static interval = 6000
 }

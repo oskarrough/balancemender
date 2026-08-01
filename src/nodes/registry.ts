@@ -13,6 +13,9 @@ import {
 	BellSwing,
 	Toll,
 	Trample,
+	Spore,
+	Waft,
+	Groundfall,
 } from './attack'
 
 /** Every one-shot ability, keyed by stable id. Display names are labels only. */
@@ -38,6 +41,9 @@ export const abilityRegistry = {
 	BellSwing,
 	Toll,
 	Trample,
+	Spore,
+	Waft,
+	Groundfall,
 } as const
 
 /** The player's action bar subset. Units own collections; the global registry is only a catalog. */

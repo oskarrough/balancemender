@@ -1,7 +1,22 @@
 import {Unit} from './unit'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
-import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile, BellSwing, Toll, Trample} from './attack'
+import {
+	NastyArrow,
+	HeavyBlow,
+	Nip,
+	SavageBite,
+	Pounce,
+	Worry,
+	Ambush,
+	Rile,
+	BellSwing,
+	Toll,
+	Trample,
+	Spore,
+	Waft,
+	Groundfall,
+} from './attack'
 import {Lick} from './spells'
 import {
 	NastyArrowCadence,
@@ -16,6 +31,12 @@ import {
 	BellSwingCadence,
 	TollCadence,
 	TrampleCadence,
+	SporeCadence,
+	WaftCadence,
+	GrubWakeCadence,
+	GrubWakeCadenceLate,
+	GroundfallCadence,
+	SiviAmbushCadence,
 } from './cadence'
 
 export class Haruk extends Unit {
@@ -264,4 +285,95 @@ export class Howler extends Unit {
 	targeting = new Targeting(this, prefer.atRandom())
 	nipCadence = new NipCadence(this)
 	rileCadence = new RileCadence(this)
+}
+
+/**
+ * The Glow wisp: paints the Glow gate on the healer (`SporeCadence`), then chases whoever it
+ * marked `Brightest` via plain threat. `Ambush` is reused whole — same leap Skulker uses, on its
+ * own faster `SiviAmbushCadence` — so the wisp that drifts to the marked ally hits hard, and the
+ * mark's redirect carries real risk: 200-seed sim with the full party, `Sivi*2, Muhl` — idle loses
+ * ~60% of the time, triage still clears every seed.
+ * "Ambush" reads oddly on a wisp's lunge rather than a leap — a naming pass for a director later.
+ */
+export class Sivi extends Unit {
+	static stamina = 140
+	static intellect = 0
+	static strength = 18
+	static agility = 22
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Sivi'
+	image = '/assets/generated/characters/runt.png'
+	abilities = {Nip, Spore, Ambush}
+	targeting = new Targeting(this, prefer.threat(this))
+	nipCadence = new NipCadence(this)
+	sporeCadence = new SporeCadence(this)
+	ambushCadence = new SiviAmbushCadence(this)
+}
+
+/**
+ * A sighing puffball, all pressure and no aim. `Waft` reaches every living ally at once in small
+ * ticks — the Glow's tempo lesson before the mark-and-threat one arrives: a long fight at
+ * heal-over-time speed rather than a burst any single Mend answers outright.
+ */
+export class Muhl extends Unit {
+	static stamina = 170
+	static intellect = 0
+	static strength = 14
+	static agility = 6
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Muhl'
+	image = '/assets/generated/characters/runt.png'
+	abilities = {Waft}
+	// Waft hits the whole party regardless of who this settles on; any living ally keeps the cast valid.
+	targeting = new Targeting(this, prefer.atRandom())
+	waftCadence = new WaftCadence(this)
+}
+
+/**
+ * Asleep in its sap shell for the first ten seconds of a fight — `GrubWakeCadence` is a plain
+ * `HeavyBlowCadence` with its `delay` pushed out, the same lever every telegraphed cast already
+ * uses for a wind-up, stretched to cover a whole unit's opening beat instead of one cast. Once
+ * awake it swings the same `HeavyBlow` as everything else, just carried by more strength than its
+ * size explains.
+ */
+export class Grub extends Unit {
+	static stamina = 130
+	static intellect = 0
+	static strength = 20
+	static agility = 4
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Grub'
+	image = '/assets/generated/characters/runt.png'
+	abilities = {HeavyBlow}
+	targeting = new Targeting(this, prefer.threat(this))
+	heavyBlowCadence = new GrubWakeCadence(this)
+}
+
+/** The same grub, buried deeper in its shell — cracks open only once its siblings already have, for a room where all three do not wake together. */
+export class GrubDeep extends Grub {
+	heavyBlowCadence = new GrubWakeCadenceLate(this)
+}
+
+/**
+ * The dungeon's guardian: tall, slow, and the room's only threat. `Groundfall` is the whole
+ * telegraph — long enough to answer, same shape as Trample and Toll — with `HeavyBlow` filling the
+ * gap between wind-ups so the healer never gets a completely free beat. Boss-scale health, like
+ * Haruk and Roha.
+ */
+export class Orovan extends Unit {
+	static stamina = 650
+	static intellect = 0
+	static strength = 22
+	static agility = 4
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	static boss = true
+	name = 'Orovan'
+	abilities = {HeavyBlow, Groundfall}
+	targeting = new Targeting(this, prefer.tankFirst)
+	heavyBlowCadence = new HeavyBlowCadence(this)
+	groundfallCadence = new GroundfallCadence(this)
 }

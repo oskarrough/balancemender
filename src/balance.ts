@@ -14,6 +14,12 @@ import {
 	BellSwingCadence,
 	TollCadence,
 	TrampleCadence,
+	SporeCadence,
+	WaftCadence,
+	GrubWakeCadence,
+	GrubWakeCadenceLate,
+	GroundfallCadence,
+	SiviAmbushCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
@@ -82,6 +88,12 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	BellSwingCadence,
 	TollCadence,
 	TrampleCadence,
+	SporeCadence,
+	WaftCadence,
+	GrubWakeCadence,
+	GrubWakeCadenceLate,
+	GroundfallCadence,
+	SiviAmbushCadence,
 }
 
 /**

@@ -175,6 +175,11 @@ behind report as one ability.
 prose — a buff or a debuff; nothing in the code branches on which.
 `SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the combat log.
 
+**Heal-mark** — a `HealMarkGate` on the healer makes successful heals plant an exclusive
+`ThreatMark` on the patient; the mark multiplies threat credited for that ally
+(`ThreatMark.threatWeight`). See
+[combat.md](./combat.md#threat-is-local-to-each-enemy).
+
 **Barrier** — an aura with a finite pool that absorbs later damage before it reaches the health bar.
 `Shield` is the ability that applies the only barrier today; absorb is what the barrier does.
 

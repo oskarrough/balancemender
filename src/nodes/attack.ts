@@ -1,6 +1,7 @@
 import type {CombatEventType} from '../combatlog'
 import {Ability} from './ability'
-import {ApplyAura, Damage, Interrupt} from './effects'
+import {ApplyAura, AoeDamage, Damage, Interrupt} from './effects'
+import {HealMarkGate, ThreatMark} from './heal-mark'
 import {PeriodicAura} from './periodic-aura'
 import {StatModifierAura} from './stat-modifier-aura'
 import {STAT} from './stats'
@@ -241,4 +242,63 @@ export class Rile extends Ability {
 	static targets = 'ally' as const
 	static castTime = 2500
 	static effects = [new ApplyAura(Frenzy, 0.12)]
+}
+
+/** Exclusive heal-mark on the patient while present. */
+export class Brightest extends ThreatMark {
+	static id = 'Brightest'
+	static name = 'Brightest'
+	static exclusive = true
+}
+
+/** Healer-side gate. Spore's cooldown is paired with this lifetime for ~90% uptime. */
+export class Glow extends HealMarkGate {
+	static id = 'Glow'
+	static name = 'Glow'
+	static lifetime = 9000
+	static mark = Brightest
+}
+
+/** Puts Glow on the healer so their heals plant Brightest. */
+export class Spore extends Ability {
+	static id = 'Spore'
+	static name = 'Spore'
+	static tags = ['spell'] as const
+	static school = 'holy' as const
+	static targets = 'enemy' as const
+	static castTime = 1500
+	static cooldown = 10000
+	static effects = [new ApplyAura(Glow, 0)]
+}
+
+/**
+ * The puffball's whole pressure: a slow, wide sigh that lands on every living ally at once, in
+ * ticks small enough that no single body carries the fight — the Glow's tempo direction is
+ * accumulating, not bursting.
+ */
+export class Waft extends Ability {
+	static id = 'Waft'
+	static name = 'Waft'
+	static tags = ['attack'] as const
+	static school = 'physical' as const
+	static targets = 'enemy' as const
+	static sound = 'combat_air_hit'
+	static eventType: CombatEventType = 'SPELL_DAMAGE'
+	static effects = [new AoeDamage(0.25)]
+}
+
+/**
+ * The guardian's whole weight coming down — same telegraphed shape as Trample and Toll, wide
+ * enough to answer, and the room's only threat: nothing else about Orovan is fast.
+ */
+export class Groundfall extends Ability {
+	static id = 'Groundfall'
+	static name = 'Groundfall'
+	static tags = ['attack', 'melee'] as const
+	static school = 'physical' as const
+	static targets = 'enemy' as const
+	static castTime = 2800
+	static sound = 'combat_strong_punch2'
+	static eventType: CombatEventType = 'SWING_DAMAGE'
+	static effects = [new Damage(4.5)]
 }
