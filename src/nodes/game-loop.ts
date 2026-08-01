@@ -145,6 +145,10 @@ export class GameLoop extends Loop {
 			const run = this.dungeonRun
 			const granted = run.dungeon.rooms.slice(0, run.room + 1).flatMap((r) => r.grants ?? [])
 			this.player.abilities = Object.fromEntries(granted.map((id) => [id, playerAbilities[id]]))
+		} else {
+			// Learned spells belong to the run. Walking off the dungeon — into a one-off room, an
+			// arena fight, a fresh boot — hands the whole bar back.
+			this.player.abilities = playerAbilities
 		}
 		this.gameOver = false
 		this.outcome = undefined
