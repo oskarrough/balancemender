@@ -86,6 +86,11 @@
 	opacity: 0.6;
 }
 
+/* Same overlay, mana's colour: on a blue bar the heal green reads as a different substance arriving. */
+.Bar[data-type='mana'] > .Bar-potentialValue {
+	background: color-mix(in oklab, var(--mana), white 45%);
+}
+
 /* The sweet spot zone (#33) — the last stretch of a cast bar a tap-to-confirm must land in. */
 .Bar > .Bar-sweetSpot {
 	position: absolute;

@@ -13,9 +13,20 @@ interface MeterProps {
 	ability?: Ability
 	/** The last stretch of a cast bar a sweet-spot tap must land in, in ms (#33). */
 	sweetSpotWindow?: number
+	/** Mana per second, and whether the five-second rule is currently letting it through. */
+	regen?: {rate: number; active: boolean}
 }
 
-export function Meter({value, max, type, potentialValue = 0, absorbValue = 0, ability, sweetSpotWindow}: MeterProps) {
+export function Meter({
+	value,
+	max,
+	type,
+	potentialValue = 0,
+	absorbValue = 0,
+	ability,
+	sweetSpotWindow,
+	regen,
+}: MeterProps) {
 	if (!value) value = 0
 	if (!max) max = 0
 
@@ -36,6 +47,10 @@ export function Meter({value, max, type, potentialValue = 0, absorbValue = 0, ab
 		potentialValue = potentialValue - (potentialValue / ability.repeat) * ability._cycles
 	}
 
+	/* One tick of regen is one second of it, so the rate is also the size of the next instalment —
+	   the same overlay a heal in the air uses, saying the same thing about mana. */
+	if (regen?.active) potentialValue = regen.rate
+
 	const label = type === 'cast' ? `${(value / 1000).toFixed(1)}s` : `${Math.round(value)}/${max}`
 
 	return html` <div class="Bar" data-type=${type}>
@@ -53,6 +68,6 @@ export function Meter({value, max, type, potentialValue = 0, absorbValue = 0, ab
 		${sweetSpotWindow
 			? html`<div class="Bar-sweetSpot" style=${`width: ${toPercent(sweetSpotWindow, max)}%`}></div>`
 			: null}
-		<span>${label}</span>
+		<span>${label}${regen ? html`<i class="Bar-regen" data-active=${regen.active}>+${regen.rate}</i>` : null}</span>
 	</div>`
 }

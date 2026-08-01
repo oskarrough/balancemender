@@ -36,7 +36,7 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 
 	return html`
 		<div
-			class=${`Unit ${isEnemy ? 'Enemy' : 'PartyMember'} ${isCurrentTarget ? 'Unit--targeted' : ''} ${unit.alive ? '' : 'Unit--dead'}`}
+			class=${`Unit ${isEnemy ? 'Enemy' : 'PartyMember'} ${unit === player ? 'Unit--player' : ''} ${isCurrentTarget ? 'Unit--targeted' : ''} ${unit.alive ? '' : 'Unit--dead'}`}
 			data-unit-id=${id}
 			data-condition=${unit.condition}
 			onclick=${() => (player.root as GameLoop).perform({type: 'target', unit: id})}
@@ -69,6 +69,10 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 								max: unit.mana.max,
 								potentialValue: 0,
 								ability: undefined,
+								/* Only your own pool carries its numbers and its rate. On anyone else mana is
+								   context, and `shouldTick` is the five-second rule itself rather than a copy of it. */
+								regen:
+									unit === player ? {rate: unit.mana.regen.regenRate, active: unit.mana.regen.shouldTick()} : undefined,
 							})
 						: null}
 				</div>

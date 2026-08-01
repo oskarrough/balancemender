@@ -152,14 +152,41 @@
 	--bg: var(--accent);
 }
 
-/* Mana is a strip, not a bar: on every unit but the player it is context, and the player reads
-   their own mana off the panel. */
+/* Mana is a strip, not a bar: on every unit but the player it is context, and a number nobody
+   heals off is noise. */
 .Unit .Bar[data-type='mana'] > div {
 	min-height: 0.4rem;
 }
 
 .Unit .Bar[data-type='mana'] span {
 	display: none;
+}
+
+/* Your own pool is the second instrument in the game, so it carries its numbers — but it stays
+   shorter than health, which is the bar you actually heal off. Just tall enough to hold the text. */
+.Unit--player .Bar[data-type='mana'] > div {
+	min-height: 1rem;
+}
+
+.Unit--player .Bar[data-type='mana'] span {
+	display: block;
+	top: 0;
+	font-size: 0.62rem;
+	line-height: 1rem;
+}
+
+/* The rate, lit while mana is coming back and faded while a cast is holding it off — the
+   five-second rule with no clock to read. */
+.Bar-regen {
+	margin-left: 0.4rem;
+	font-style: normal;
+	opacity: 0.35;
+	transition: opacity 200ms;
+}
+
+.Bar-regen[data-active='true'] {
+	opacity: 1;
+	color: color-mix(in oklab, var(--mana), white 40%);
 }
 
 /* Cast bar and auras come and go, so they hang out of flow and the party never shuffles under the
