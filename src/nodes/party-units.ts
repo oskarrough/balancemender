@@ -30,6 +30,5 @@ export class Wren extends Unit {
 	targeting = new Targeting(this, prefer.lowestHealth)
 	slingCadence = new SlingCadence(this)
 	name = 'Wren'
-	// Explicit temporary fallback until the authored Wren prompt has a generated portrait.
-	image = '/assets/generated/characters/player.png'
+	image = '/assets/generated/characters/wren.png'
 }
