@@ -143,8 +143,14 @@ folk names break that law on purpose by being nothing but the word, so the roste
 a neighbor with a guardian. And where the Green's animals wear what they _do_ (Snapjaw, Howler), a
 neighbor wears what they are _like_. Two so far: **Oak**, the shield-carrier from the Green (#82) —
 the tree you shelter under, which is the job; the class in code stays `Tank`, that being the coders'
-register — and **Wren**, the herder who joins in The Rust (#76): small, quick, never built for
-fighting, all of it audible in the name. They speak your language the whole way up. That is the point of them — the further upstream you get, the
+register — **Wren**, the herder who joins in The Rust (#76): small, quick, never built for
+fighting, all of it audible in the name — and **Clover**, the beekeeper who joins in The Glow (#88):
+the meadow flower bees work all day, the trade audible in the name. A beekeeper's craft is standing
+veiled and calm while a cloud of stinging things drifts around you, and in the Glow that is the job:
+the sivi drift to whoever glows brightest, and Clover is built to be lit — the mender paints the
+heal-mark on them on purpose, and they hold the drift. Each neighbor takes a different shelf of home
+— a tree, a bird, a flower — leaving ground and weather for whoever joins in the White. They speak
+your language the whole way up. That is the point of them — the further upstream you get, the
 more out of place their mud-boots and shield-straps look against the white stone, and the party
 becomes the piece of home you carry into the sublime.
 
@@ -263,7 +269,10 @@ quiet. This is the Isono register, wall to wall.
   sivi (wisps that drift toward whoever glows brightest — that would be the healer), and Orovan,
   something tall and slow that tends the mushrooms and does not like being interrupted.
 - **People** — masked pilgrims passing the other way, unbothered, on business they don't explain.
-  They are coming down from the First Water; the way you are going is a road to them.
+  They are coming down from the First Water; the way you are going is a road to them. And Clover,
+  the beekeeper (#88): the downstream hives emptied and the swarms went upstream, so Clover followed
+  their bees the way Wren came back for the herd. Veiled, smoke-calm, unafraid of drifting clouds of
+  small bright things — the party's third body. Kit waits for rooms; the direction is pinned above.
 - **Stimmung** — cathedral dusk. Held breath, reverence, the feeling of being watched by plants.
 - **Sounds** — deep hush, spore-fall soft as rain, a subsonic fungal thrum, water moving slowly.
 - **Tempo** — slow and ticking. Long fights of accumulating pressure rather than bursts; the
@@ -275,6 +284,12 @@ quiet. This is the Isono register, wall to wall.
 > Hand-painted, dense botanical detail in the manner of Hiro Isono, flat luminous color, serene,
 > reverent and alien, deep greens and cyans with warm gold accents. No text, no UI, no
 > photorealism.
+
+> **Image prompt (Clover)** — A village beekeeper standing calm at the edge of a luminous fungal
+> forest, homespun wool and a plain beekeeper's veil pushed back, a smoking tin smoker in hand, a
+> few faint glowing wisps drifting toward them like curious bees. Hand-painted, Ghibli warmth in
+> the face against dense Isono botany behind, flat luminous color, deep greens and cyans with one
+> warm gold glow on the smoker, gentle and utterly unafraid. No text, no UI, no photorealism.
 
 ## 4. The White — where the river begins
 
@@ -292,6 +307,12 @@ it. The weirdest place in the game and the calmest: the wound and the ward in on
 - **Stimmung** — the sublime. Awe. Monumental stillness. The end of the map.
 - **Sounds** — wind over stone, crystal resonance, water beginning. Almost nothing, and it's loud.
 - **Tempo** — monumental. Few encounters, each one an event; the boss fight is the dungeon.
+- **The walk (draft)** — four rooms, each an event. "The gliders": silent gliders that cast no
+  shadow, and the first taste of mana that doesn't come back (`white-silent-gliders` waits for this
+  room). "The ringing shelf": crystal-shelled things that ring when struck, a fight scored by its
+  own chimes. "The first water": the terraced pools with the rider on the horizon, close now
+  (`white-first-water`). "The source": Uvalu alone, one long fight out of a closing purse
+  (`white-source-keeper`).
 
 > **Image prompt** — An endless pale white-stone steppe under an enormous sky, terraced natural
 > spring pools stepping down from a glowing source, tall crystal formations, one tiny rider-shaped
