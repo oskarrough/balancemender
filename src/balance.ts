@@ -26,7 +26,7 @@ import {
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
 import {STAT_KEYS} from './nodes/stats'
-import {ApplyAura, DAMAGE_RULES} from './nodes/effects'
+import {ApplyAura, DAMAGE_RULES, type Effect} from './nodes/effects'
 
 export const ABILITY_KEYS = [
 	'cost',
@@ -65,13 +65,18 @@ export const abilityClasses = abilityRegistry
  */
 export const effectClasses: Record<string, NumberDict> = {}
 for (const [abilityId, AbilityClass] of Object.entries(abilityRegistry)) {
-	const labels: Record<string, number> = {}
-	for (const effect of AbilityClass.effects) {
+	// A subclass's `static effects` infers its own union of effect classes; the interface is
+	// where `id` lives, so read them as what the base declares them to be.
+	for (const effect of AbilityClass.effects as readonly Effect[]) {
 		if (effect.coefficient === undefined) continue
-		// Two of a kind on one ability still get one row each, in the order they land.
-		const seen = (labels[effect.label] = (labels[effect.label] ?? 0) + 1)
-		const label = seen > 1 ? `${effect.label}${seen}` : effect.label
-		effectClasses[`${abilityId}.${label}`] = effect as unknown as NumberDict
+		// The row name is the effect's own — its label, or the explicit `id` an ability declares
+		// when two of its effects would share one. Rows used to be numbered by declaration order,
+		// so reordering effects renamed their rows; a collision now fails loudly instead.
+		const alias = `${abilityId}.${effect.id ?? effect.label}`
+		if (effectClasses[alias]) {
+			throw new Error(`Two effects on ${abilityId} resolve to the same row "${alias}" — give one an explicit id`)
+		}
+		effectClasses[alias] = effect as unknown as NumberDict
 	}
 }
 

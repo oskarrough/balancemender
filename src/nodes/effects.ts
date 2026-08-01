@@ -59,6 +59,12 @@ export class Landing {
 export interface Effect {
 	/** Names this effect's row in the Balance Lab, under the ability that declares it. */
 	readonly label: string
+	/**
+	 * The stable row name when one ability carries two effects that would share a label — the
+	 * auto-numbering that used to tell them apart depended on declaration order. Defaults to the
+	 * label, so only a same-label pair needs to set it.
+	 */
+	readonly id?: string
 	/** Whether this effect can still land when the use's selected target has died. */
 	readonly targetIndependent?: boolean
 	coefficient?: number

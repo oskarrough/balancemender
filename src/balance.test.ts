@@ -11,6 +11,7 @@ import {
 } from './balance'
 import {GameLoop} from './nodes/game-loop'
 import {Renew} from './nodes/spells'
+import {abilityRegistry} from './nodes/registry'
 import {settle} from './test-setup'
 
 describe('parsing a tune', () => {
@@ -139,6 +140,15 @@ describe('the categories', () => {
 			expect(keys.length, kind).toBeGreaterThan(0)
 			expect(Object.keys(classes).length, kind).toBeGreaterThan(0)
 			for (const name of Object.keys(classes)) expect(state[name], `${kind} ${name}`).toBeDefined()
+		}
+	})
+
+	it('names every effect row after the effect itself, never its position', () => {
+		for (const [id, AbilityClass] of Object.entries(abilityRegistry)) {
+			for (const effect of AbilityClass.effects) {
+				if (effect.coefficient === undefined) continue
+				expect(balance.effects[`${id}.${effect.label}`], `${id} ${effect.label}`).toBeDefined()
+			}
 		}
 	})
 })
