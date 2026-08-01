@@ -239,13 +239,20 @@ export function parseTune(spec: string): Tune {
 }
 
 export function applyTunes(specs: string[]): Tune[] {
-	return specs.map((spec) => {
-		const tune = parseTune(spec)
-		if (!setBalanceValue(tune.kind, tune.name, tune.key, tune.value)) {
+	// Parse and validate the whole batch before applying any of it, so a failing spec leaves
+	// nothing half-tuned behind it — a sweep that lists three `--tune` flags either applies
+	// all three or applies none.
+	const tunes = specs.map((spec) => parseTune(spec))
+	for (const tune of tunes) {
+		const {classes} = balanceCategories[tune.kind]
+		if (!(tune.key in classes[tune.name])) {
 			throw new Error(`${tune.kind} "${tune.name}" has no ${tune.key} to tune`)
 		}
-		return tune
-	})
+		const invalid = validateBalanceValue(tune.kind, tune.value)
+		if (invalid) throw new Error(`${formatTune(tune)}: ${invalid}`)
+	}
+	for (const tune of tunes) setBalanceValue(tune.kind, tune.name, tune.key, tune.value)
+	return tunes
 }
 
 export const formatTune = (tune: Tune) => `${tune.kind}:${tune.name}.${tune.key}=${tune.value}`

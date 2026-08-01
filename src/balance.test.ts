@@ -61,6 +61,15 @@ describe('applying a tune', () => {
 		expect(() => applyTunes(['ability:SavageBite.cost=10'])).toThrow(/has no cost to tune/)
 	})
 
+	it('applies nothing when any tune in the batch is bad', () => {
+		expect(() => applyTunes(['ability:Mend.cost=10', 'ability:Fireball.cost=1'])).toThrow(/Unknown ability/)
+		expect(balance.abilities.Mend.cost).toBe(60)
+
+		expect(() => applyTunes(['ability:Mend.cost=10', 'unit:Tank.stamina=-1'])).toThrow(/at least 0/)
+		expect(balance.abilities.Mend.cost).toBe(60)
+		expect(balance.units.Tank.stamina).toBe(300)
+	})
+
 	it('snapshots cadence tuning onto newly spawned drivers', () => {
 		applyTunes(['cadence:SavageBiteCadence.delay=123'])
 		const game = new GameLoop({party: [], enemies: ['Runt']})
