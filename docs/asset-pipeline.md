@@ -11,3 +11,8 @@ A scene is one room painted twice — `<id>.png` wide and `<id>-portrait.png` ta
     bun run asset:prompt -- --variant portrait      # just the tall views
     bun run asset:optimize -- --dry-run             # preview PNG savings
     bun run asset:optimize -- --max 1024 renew      # shrink in place (default --max 1440)
+
+Generation is one-shot from the CLI — pipe the composed prompt (the exact format `asset:prompt`
+prints, including the output target path) into codex:
+
+    bun run asset:prompt -- <id> | codex exec --sandbox workspace-write --skip-git-repo-check -C . -
