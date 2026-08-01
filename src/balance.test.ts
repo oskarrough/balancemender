@@ -118,6 +118,7 @@ describe('the categories', () => {
 			'GrubWakeCadenceLate',
 			'GroundfallCadence',
 			'SiviAmbushCadence',
+			'HollowCadence',
 		])
 	})
 

@@ -232,3 +232,22 @@ export class SiviAmbushCadence extends AmbushCadence {
 	static delay = 3000
 	static interval = 6000
 }
+
+/**
+ * Hollow always wants the healer, the same way Spore does — reuses `SporeCadence`'s override
+ * rather than fighting a unit's own standing preference (Ringer- and Uvalu-shaped units still
+ * want threat or the tank for everything else they carry).
+ */
+export class HollowCadence extends Cadence {
+	static abilityId = 'Hollow'
+	static delay = 2000
+	static interval = 4000
+
+	tick() {
+		if (!this.shouldUse()) return
+		const healer = prefer.healerFirst.prefers(eligible(this.parent, 'enemy'))
+		if (!healer) return
+		const result = this.parent.useAbility(this.abilityId, healer)
+		if (!result.ok) log(`cadence:${this.parent.name}:${this.abilityId}:${result.error}`)
+	}
+}

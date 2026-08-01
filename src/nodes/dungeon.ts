@@ -158,5 +158,56 @@ export const TheGlow: Dungeon = {
 	],
 }
 
+/**
+ * The fourth dungeon. Where the Glow is visibility, the White is scarcity: mana does not come back
+ * the way it did downstream, and the finale is one long fight out of a closing purse (#89). The
+ * Glider's `Hollow` drains the healer's own pool directly — no hit, no wound — while the Ringer
+ * carries the bellwether family's telegraphed weight forward into white stone. Tempo is
+ * monumental: few rooms, each an event, per [universe.md](../../docs/universe.md#4-the-white-where-the-river-begins).
+ *
+ * Not yet in `dungeonRegistry`: the scene art doesn't exist on disk yet. Flip the export below
+ * once `white-gliders`, `white-ringing-shelf`, `white-first-water-room` and `white-source` each
+ * have a landscape and a portrait painting.
+ */
+export const TheWhite: Dungeon = {
+	id: 'TheWhite',
+	name: 'The White',
+	rooms: [
+		// The first taste of mana that doesn't come back. Both bots clear it every seed — the room
+		// is here to be felt, the way Muhl's Waft was in the Glow.
+		{
+			name: 'The gliders',
+			party: ['Tank', 'Wren'],
+			enemies: ['Glider', 'Glider'],
+			scene: 'white-gliders',
+		},
+		// Crystal-shelled things that ring when struck, a fight scored by its own chimes. Two
+		// Ringers carry the Rust's telegraphed weight; the Glider keeps the pool draining alongside
+		// it. Idle wipes every seed; triage clears it but ends the fight nearly dry.
+		{
+			name: 'The ringing shelf',
+			party: ['Tank', 'Wren'],
+			enemies: ['Ringer', 'Ringer', 'Glider'],
+			scene: 'white-ringing-shelf',
+		},
+		// The terraced pools, the rider close now. Two Gliders keep the drain constant while a
+		// single Ringer supplies the telegraph — idle still wipes, triage still clears.
+		{
+			name: 'The first water',
+			party: ['Tank', 'Wren'],
+			enemies: ['Glider', 'Glider', 'Ringer'],
+			scene: 'white-first-water-room',
+		},
+		// Uvalu alone, one long fight out of a closing purse — the fight is the dungeon. Meant to be
+		// genuinely hard: idle wipes every seed, triage clears roughly four fights in five.
+		{
+			name: 'The source',
+			party: ['Tank', 'Wren'],
+			enemies: ['Uvalu'],
+			scene: 'white-source',
+		},
+	],
+}
+
 /** Every dungeon, by id. */
-export const dungeonRegistry: Record<string, Dungeon> = {TheGreen, TheRust, TheGlow}
+export const dungeonRegistry: Record<string, Dungeon> = {TheGreen, TheRust, TheGlow, TheWhite}

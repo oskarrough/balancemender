@@ -16,6 +16,7 @@ import {
 	Spore,
 	Waft,
 	Groundfall,
+	Hollow,
 } from './attack'
 import {Lick} from './spells'
 import {
@@ -37,6 +38,7 @@ import {
 	GrubWakeCadenceLate,
 	GroundfallCadence,
 	SiviAmbushCadence,
+	HollowCadence,
 } from './cadence'
 
 export class Haruk extends Unit {
@@ -376,4 +378,71 @@ export class Orovan extends Unit {
 	targeting = new Targeting(this, prefer.tankFirst)
 	heavyBlowCadence = new HeavyBlowCadence(this)
 	groundfallCadence = new GroundfallCadence(this)
+}
+
+/**
+ * A silent glider that casts no shadow — the White's whole pressure in one unit. `Hollow` is its
+ * only ability: no hit, no wound, just the healer's own pool draining on `HollowCadence`'s slow
+ * beat. Sturdy enough to survive a few ticks rather than dying to the party's first swings — the
+ * room's lesson is the drain, and a glider that dies before it lands two casts teaches nothing.
+ * 200-seed sim, "The gliders" (`Glider*2`, full party): both idle and triage win every seed, ending
+ * with ~417/600 mana — visible, survivable, the taste rather than the bite.
+ */
+export class Glider extends Unit {
+	static stamina = 260
+	static intellect = 16
+	static strength = 0
+	static agility = 10
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Glider'
+	image = '/assets/generated/characters/runt.png'
+	abilities = {Hollow}
+	targeting = new Targeting(this, prefer.healerFirst)
+	hollowCadence = new HollowCadence(this)
+}
+
+/**
+ * Crystal-shelled, sturdy and slow — the bellwether family's own kit reused whole: `HeavyBlow`
+ * between wind-ups, `Trample` for the telegraph. Nothing new here on purpose; the White's rooms
+ * spend their invention on Glider and Uvalu, and a Ringer is the Rust's weight wearing white stone.
+ */
+export class Ringer extends Unit {
+	static stamina = 420
+	static intellect = 0
+	static strength = 15
+	static agility = 4
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	name = 'Ringer'
+	image = '/assets/generated/characters/runt.png'
+	abilities = {HeavyBlow, Trample}
+	targeting = new Targeting(this, prefer.tankFirst)
+	heavyBlowCadence = new HeavyBlowCadence(this)
+	trampleCadence = new TrampleCadence(this)
+}
+
+/**
+ * The source-keeper, alone — the fight is the dungeon. `Groundfall` and `HeavyBlow` carry the same
+ * telegraphed-boss shape as Orovan; `Hollow` runs alongside on its own `HollowCadence`, always
+ * aimed at the healer regardless of Uvalu's own tank-first preference (the same split Sivi's Spore
+ * and Nip already keep). Boss-scale health, and the two pressures — a closing purse and a wind-up
+ * to answer — arrive together rather than one after the other: 200-seed sim, "The source" (full
+ * party) — idle wipes every seed, triage clears 78% of them, ending with ~24/600 mana. The finale
+ * is meant to be genuinely hard rather than a guaranteed clear.
+ */
+export class Uvalu extends Unit {
+	static stamina = 900
+	static intellect = 20
+	static strength = 22
+	static agility = 4
+	static spirit = 0
+	static faction = FACTION.ENEMY
+	static boss = true
+	name = 'Uvalu'
+	abilities = {HeavyBlow, Groundfall, Hollow}
+	targeting = new Targeting(this, prefer.tankFirst)
+	heavyBlowCadence = new HeavyBlowCadence(this)
+	groundfallCadence = new GroundfallCadence(this)
+	hollowCadence = new HollowCadence(this)
 }

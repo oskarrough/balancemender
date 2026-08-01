@@ -219,6 +219,34 @@
 			"name": "The tender",
 			"prompt": "A cathedral clearing deep in the fungal forest where the glowing river pools at the roots of the largest mushrooms, tended in deliberate rows and rings — this garden is kept. Orovan the tender stands among them, tall and thin-limbed and mushroom-capped, mid-gesture over a young growth, back half-turned to the path. Reverent stillness, dense luminous Isono botany, deep greens and cyans with gold light pooling around the tender's work. No combat in progress.",
 			"portrait": "Portrait view: the great tended mushrooms rising past the top of the frame like columns, spore-light falling through them, and Orovan low in the frame at their feet, small against the garden, mid-tending beside the pooled river — the keeper and the kept as the clue."
+		},
+		{
+			"id": "white-gliders",
+			"type": "scene",
+			"name": "The gliders",
+			"prompt": "The fungal forest ends like a held breath: pale white-stone steppe opening under an enormous sky, the river now a thin bright thread beginning far ahead. Silent flat creatures glide low over the stone, casting no shadow though everything else casts long ones. Thin air, vast negative space, flat muted color fields, late-1970s French science-fiction comic mood a la Moebius' Arzach, pale stone whites and glacial blues, one tiny rider-shaped silhouette far off. No combat in progress.",
+			"portrait": "Portrait view: the enormous sky filling the top two-thirds with one small perfect cloud, the steppe running toward the viewer, and the gliders low in the frame skimming the stone — their missing shadows, beside the long shadows of everything else, the clue in the clear band."
+		},
+		{
+			"id": "white-ringing-shelf",
+			"type": "scene",
+			"name": "The ringing shelf",
+			"prompt": "A broad natural shelf of white stone terraced by wind, crowded with tall crystal formations that hum, and among them slow crystal-shelled creatures almost indistinguishable from the formations until one moves. The river-thread runs in a carved groove across the shelf. Flat muted color fields, precise elegant contours, Arzach stillness, pale whites and glacial blues with the faintest chime of refracted color in the crystal. No combat in progress.",
+			"portrait": "Portrait view: crystal formations rising past the top of the frame like organ pipes, sky between them, and low in the frame one crystal-shelled creature mid-step out of the formation it was pretending to be, beside the carved water-groove — the almost-mineral animal is the clue."
+		},
+		{
+			"id": "white-first-water-room",
+			"type": "scene",
+			"name": "The first water",
+			"prompt": "Terraced natural spring pools stepping down pale stone toward the viewer, each pool a mirror of the enormous sky, the highest terrace glowing faint gold where the water begins. On the far rim, closer than ever before, the rider and its mount stand watching — still too far to hail, no longer far enough to doubt. Flat muted color fields, monumental stillness, Arzach sublime, pale stone whites and glacial blues with one warm gold glow high at the source. No combat in progress.",
+			"portrait": "Portrait view: the terraces stacking down the full height of the frame like a stair of mirrors, sky reflected in every pool, the gold glow of the source at the very top, and the rider's silhouette low on a near rim — closer now — as the clue in the clear band."
+		},
+		{
+			"id": "white-source",
+			"type": "scene",
+			"name": "The source",
+			"prompt": "The spring itself: a perfect circular pool of glowing gold-white water sunk in pale stone, the first water of the whole river welling silently over its rim, and sitting in it an enormous pale ribbed shell with ribbon-like sails, inflamed past recognition yet utterly still — the wound and the ward in one. Thin air, crystal formations bowed toward the pool, monumental Arzach stillness, pale whites and glacial blues around one great warm gold glow. No combat in progress.",
+			"portrait": "Portrait view: Uvalu's sails rising the full height of the frame into the sky, the ribbed shell filling the middle distance, and the glowing pool with its silent overflowing rim low in the frame — the river being born as the clue in the clear band."
 		}
 	]
 }

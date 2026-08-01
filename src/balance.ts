@@ -20,6 +20,7 @@ import {
 	GrubWakeCadenceLate,
 	GroundfallCadence,
 	SiviAmbushCadence,
+	HollowCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
@@ -94,6 +95,7 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	GrubWakeCadenceLate,
 	GroundfallCadence,
 	SiviAmbushCadence,
+	HollowCadence,
 }
 
 /**

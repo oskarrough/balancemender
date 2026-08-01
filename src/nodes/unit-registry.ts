@@ -18,6 +18,9 @@ import {
 	Grub,
 	GrubDeep,
 	Orovan,
+	Glider,
+	Ringer,
+	Uvalu,
 } from './enemies'
 import {Tank, Wren} from './party-units'
 import {Player} from './player'
@@ -54,6 +57,9 @@ export const unitRegistry = {
 	Grub,
 	GrubDeep,
 	Orovan,
+	Glider,
+	Ringer,
+	Uvalu,
 } as const
 
 export type UnitId = keyof typeof unitRegistry

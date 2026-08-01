@@ -1,6 +1,6 @@
 import type {CombatEventType} from '../combatlog'
 import {Ability} from './ability'
-import {ApplyAura, AoeDamage, Damage, Interrupt} from './effects'
+import {ApplyAura, AoeDamage, Damage, Interrupt, ManaBurn} from './effects'
 import {HealMarkGate, ThreatMark} from './heal-mark'
 import {PeriodicAura} from './periodic-aura'
 import {StatModifierAura} from './stat-modifier-aura'
@@ -301,4 +301,17 @@ export class Groundfall extends Ability {
 	static sound = 'combat_strong_punch2'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
 	static effects = [new Damage(4.5)]
+}
+
+/**
+ * The White's whole pressure: no cast time, no hit, no wound — just the healer's own pool
+ * draining, the same way spending on their own cast would. Thin air at a blocked source.
+ */
+export class Hollow extends Ability {
+	static id = 'Hollow'
+	static name = 'Hollow'
+	static tags = ['spell'] as const
+	static school = 'holy' as const
+	static targets = 'enemy' as const
+	static effects = [new ManaBurn(1.0)]
 }

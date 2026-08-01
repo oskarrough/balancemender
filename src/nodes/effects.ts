@@ -162,6 +162,42 @@ export class Heal implements Effect {
 }
 
 /**
+ * Not a health hit: drains mana straight off the target's own pool — the White's whole pressure.
+ * A unit with no pool (`Tank`, `Wren`) is simply untouched, so this only ever lands on the healer.
+ * Reuses the same `RESOURCE_SPENT` event a unit's own cast already logs when it pays for itself
+ * (`AbilityUse.commit`), so `manaSpent` in the fight report and `mana/s` in a sweep already count
+ * it without a row of their own.
+ */
+export class ManaBurn implements Effect {
+	readonly label = 'manaBurn'
+
+	constructor(public coefficient: number) {}
+
+	apply(landing: Landing) {
+		const {target, ability} = landing
+		if (!target.mana) return
+		const amount = Math.round(landing.resolve(this.coefficient))
+		if (amount <= 0) return
+		target.mana.set(target.mana.current - amount)
+
+		const {combatLog} = ability.root as GameLoop
+		combatLog.add({
+			timestamp: Date.now(),
+			eventType: 'RESOURCE_SPENT',
+			sourceId: target.id,
+			sourceName: target.name,
+			targetId: ability.parent.id,
+			targetName: ability.parent.name,
+			abilityId: ability.id,
+			abilityName: ability.name,
+			castId: ability.castId,
+			value: -amount,
+			extraInfo: 'MANA',
+		})
+	}
+}
+
+/**
  * Cut every cast on the side this landed on, the target's included. The reach is the point and the
  * reason this is not aimed like the rest: what interrupts here is a sound, and a sound arrives at
  * whoever is standing in the room to hear it.
