@@ -59,6 +59,8 @@ export class Landing {
 export interface Effect {
 	/** Names this effect's row in the Balance Lab, under the ability that declares it. */
 	readonly label: string
+	/** Whether this effect can still land when the use's selected target has died. */
+	readonly targetIndependent?: boolean
 	coefficient?: number
 	apply(landing: Landing): void
 }
@@ -137,6 +139,7 @@ export class Damage implements Effect {
  */
 export class AoeDamage implements Effect {
 	readonly label = 'damage'
+	readonly targetIndependent = true
 
 	constructor(public coefficient: number) {}
 
@@ -207,6 +210,7 @@ export class ManaBurn implements Effect {
  */
 export class Interrupt implements Effect {
 	readonly label = 'interrupt'
+	readonly targetIndependent = true
 	/** Stated rather than left off: this is the one effect that lands something with no size. */
 	readonly coefficient = undefined
 

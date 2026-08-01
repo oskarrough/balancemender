@@ -4,6 +4,7 @@ import {GameLoop} from './game-loop'
 import {Ability} from './ability'
 import {abilityRegistry} from './registry'
 import {STAT} from './stats'
+import {AoeDamage} from './effects'
 
 describe('abilities', () => {
 	it('keeps ordinary attacks synchronous, free and independent from a concurrent cast', async () => {
@@ -59,6 +60,37 @@ describe('abilities', () => {
 		expect(use.magnitudes).toEqual([100])
 		expect(abilityRegistry.Patch.magnitudesFor(game.player)).toEqual([125])
 
+		game.disconnect()
+		await settle()
+	})
+
+	it('lets area damage land on survivors when its chosen target dies', async () => {
+		class AreaCast extends Ability {
+			static id = 'AreaCast'
+			static name = 'Area cast'
+			static tags = ['spell'] as const
+			static school = 'physical' as const
+			static targets = 'enemy' as const
+			static castTime = 1000
+			static effects = [new AoeDamage(0.2)]
+		}
+
+		const game = new GameLoop({party: [], enemies: ['Runt', 'Runt']})
+		await settle()
+		const [chosen, survivor] = game.enemies
+		game.player.abilities = {AreaCast}
+		const before = survivor.health.current
+
+		const use = game.player.useAbility('AreaCast', chosen)
+		expect(use.ok).toBe(true)
+		if (!use.ok) return
+		await settle()
+
+		chosen.health.set(0)
+		await settle()
+		use.value.tick()
+
+		expect(survivor.health.current).toBeLessThan(before)
 		game.disconnect()
 		await settle()
 	})

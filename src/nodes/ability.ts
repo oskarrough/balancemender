@@ -179,13 +179,16 @@ export class Ability extends Task {
 
 	/** Run what this ability does, in the order it declares it, and then say it out loud. */
 	land() {
-		if (!this.hasValidTarget()) return
+		const targetValid = this.hasValidTarget()
+		if (!targetValid && !this.effects.some((effect) => effect.targetIndependent)) return
 		// A sweet-spot hit scales the whole landing rather than any one effect, so no effect class
 		// has to know the sweet spot exists.
 		const landing = this.sweetSpotHit
 			? this.landing.scaled(1 + (this.sweetSpotBonus ?? DEFAULT_SWEET_SPOT_BONUS))
 			: this.landing
-		for (const effect of this.effects) effect.apply(landing)
+		for (const effect of this.effects) {
+			if (targetValid || effect.targetIndependent) effect.apply(landing)
+		}
 		this.playLandingSound()
 	}
 
