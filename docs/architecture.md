@@ -40,9 +40,9 @@ same interpreter, and get back `{ok: true, value}` or `{ok: false, error}` — a
 rather than a missing return value.
 
 ```js
-balancemender.perform({type: 'use', ability: 'Heal', target: someId})
+balancemender.perform({type: 'use', ability: 'Mend', target: someId})
 balancemender.perform({type: 'spawn', unit: 'Haruk'})
-balancemender.perform({type: 'tune', of: 'ability', name: 'Heal', key: 'cost', value: 40})
+balancemender.perform({type: 'tune', of: 'ability', name: 'Mend', key: 'cost', value: 40})
 ```
 
 The dev console is a text adapter over this and nothing more. Adding a capability means one more case

@@ -102,7 +102,7 @@ describe('an enemy cast cadence', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Denmother']})
 		const [wolf, denmother] = game.enemies
 		await settle()
-		expect(denmother.useAbility('Heal', wolf)).toMatchObject({ok: false, error: /Ability Heal/})
+		expect(denmother.useAbility('Mend', wolf)).toMatchObject({ok: false, error: /Ability Mend/})
 		expect(wolf.useAbility('Lick', denmother)).toMatchObject({ok: false})
 		expect(denmother.mana).toBeUndefined()
 		expect(Lick.cost).toBe(0)

@@ -52,9 +52,14 @@ describe('mana regeneration', () => {
 	 * The guard against regen quietly going back to decorative. Spending more than the pool holds
 	 * is only possible if regeneration paid for the difference, so this is the arithmetic #39 got
 	 * backwards, turned into an assertion.
+	 *
+	 * Three wolves rather than #39's Haruk, because Mend at 60 mana (#71) shrank a 60s boss fight to
+	 * 540 — it now fits inside the pool with room to spare, and inflating the boss to keep this one
+	 * assertion honest would undo the cheaper Mend by the back door. The wolves are the game's
+	 * longest fight: 85s and ~825 mana against a 600 pool, a margin no single roll closes.
 	 */
-	it('lets the healer spend more than one poolful over a boss fight', async () => {
-		const fight = await runFight({room: {enemies: ['Haruk']}, bot: 'triage', seed: 1})
+	it('lets the healer spend more than one poolful over a long fight', async () => {
+		const fight = await runFight({room: {enemies: ['Runt', 'Runt', 'Runt']}, bot: 'triage', seed: 1})
 		expect(fight.outcome).toBe('victory')
 
 		const player = analyze(fight.events, fight).units.find((unit) => unit.name === 'Player')

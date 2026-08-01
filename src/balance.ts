@@ -5,6 +5,7 @@ import {
 	LickCadence,
 	NipCadence,
 	ShieldBashCadence,
+	SlingCadence,
 	SavageBiteCadence,
 	PounceCadence,
 	WorryCadence,
@@ -71,6 +72,7 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	SavageBiteCadence,
 	NastyArrowCadence,
 	ShieldBashCadence,
+	SlingCadence,
 	LickCadence,
 	PounceCadence,
 	WorryCadence,
@@ -175,7 +177,7 @@ export function parseTune(spec: string): Tune {
 	const colon = spec.indexOf(':')
 	const equals = spec.lastIndexOf('=')
 	if (colon < 1 || equals < colon) {
-		throw new Error(`Bad tune "${spec}". Expected kind:Name.key=value, e.g. ability:Heal.cost=40`)
+		throw new Error(`Bad tune "${spec}". Expected kind:Name.key=value, e.g. ability:Mend.cost=40`)
 	}
 
 	const kind = spec.slice(0, colon) as BalanceKind

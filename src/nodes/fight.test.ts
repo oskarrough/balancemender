@@ -21,7 +21,7 @@ describe('Fight.spawn', () => {
 	// `unitId` too, because a minified build mangles `constructor.name` and nothing else would say so.
 	it('builds the fight from a room, player included', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
-		expect(names()).toEqual(['Tank', 'Player', 'Runt'])
+		expect(names()).toEqual(['Oak', 'Player', 'Runt'])
 		expect(game.fight.units.map((u) => u.unitId)).toEqual(['Tank', 'Player', 'Runt'])
 		expect(game.party[0]).toBeInstanceOf(Tank)
 	})
@@ -35,7 +35,7 @@ describe('Fight.spawn', () => {
 		game = new GameLoop({party: [], enemies: []})
 		game.fight.spawn('Tank')
 		game.fight.spawn('Haruk')
-		expect(game.party.map((u) => u.name)).toEqual(['Player', 'Tank'])
+		expect(game.party.map((u) => u.name)).toEqual(['Player', 'Oak'])
 		expect(game.enemies.map((u) => u.name)).toEqual(['Haruk'])
 	})
 
@@ -123,7 +123,7 @@ describe('death', () => {
 		await settle()
 		expect(tank.auras.size).toBe(1)
 
-		expect(tankGame.perform({type: 'use', ability: 'Heal', target: tank.id}).ok).toBe(true)
+		expect(tankGame.perform({type: 'use', ability: 'Mend', target: tank.id}).ok).toBe(true)
 		expect(tankGame.player.currentAbility).toBeDefined()
 
 		tankGame.player.health.set(0)

@@ -78,25 +78,24 @@ export const triage: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.9) return undefined
 	if (target.health.ratio < 0.4 && castable(player, 'Patch', target)) return {ability: 'Patch', target}
-	if (target.health.ratio < 0.7 && castable(player, 'Mend', target)) return {ability: 'Mend', target}
-	if (castable(player, 'Heal', target)) return {ability: 'Heal', target}
+	if (castable(player, 'Mend', target)) return {ability: 'Mend', target}
 	return undefined
 }
 
-/** Keep a Renew rolling on whoever needs it, fill with Heal. Cheap, but slow to react. */
+/** Keep a Renew rolling on whoever needs it, fill with Mend. Cheap, but slow to react. */
 export const renew: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
 	if (!hasAura(target, 'Renew') && castable(player, 'Renew', target)) return {ability: 'Renew', target}
-	if (target.health.ratio < 0.6 && castable(player, 'Heal', target)) return {ability: 'Heal', target}
+	if (target.health.ratio < 0.6 && castable(player, 'Mend', target)) return {ability: 'Mend', target}
 	return undefined
 }
 
 /**
- * Reach for Patch every time, and Heal when it is out of reach. Fast reactions, burns mana,
+ * Reach for Patch every time, and Mend when it is out of reach. Fast reactions, burns mana,
  * overheals a lot — the trap the spell ladder is built around.
  *
- * The Heal fallback is what keeps it a bot about spell *choice* (#41). A bot whose whole output is
+ * The Mend fallback is what keeps it a bot about spell *choice* (#41). A bot whose whole output is
  * one spell is not measuring bad play once that spell can be unavailable: it idles while the spell
  * is down, banking the mana it was supposed to waste, and a cooldown meant to punish it reads as a
  * buff instead. Any bot added here wants the same — a second spell to fall to.
@@ -105,7 +104,7 @@ export const panic: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
 	if (castable(player, 'Patch', target)) return {ability: 'Patch', target}
-	if (castable(player, 'Heal', target)) return {ability: 'Heal', target}
+	if (castable(player, 'Mend', target)) return {ability: 'Mend', target}
 	return undefined
 }
 
@@ -144,6 +143,21 @@ export const nettle: Bot = (player) => {
 	return undefined
 }
 
-export const bots = {idle, triage, renew, panic, shield, lance, nettle}
+/**
+ * Otherwise `triage`, but reaches for Steep where it would reach for Mend — the only bot that ever
+ * casts it. Measures Steep on its own terms: a `--bots triage,steep` sweep is not "which spell is
+ * bigger", it is "does starting Steep instead of Mend into Roha's toll change the outcome" (#81).
+ */
+export const steep: Bot = (player) => {
+	const target = mostHurt(player)
+	if (!target || target.health.ratio > 0.9) return undefined
+	if (target.health.ratio < 0.4 && castable(player, 'Patch', target)) return {ability: 'Patch', target}
+	// An interrupted Steep is still brewing. Recasting here would refresh away the very payout this
+	// bot exists to measure, turning Roha's interrupt protection into self-sabotage.
+	if (!hasAura(target, 'Steep') && castable(player, 'Steep', target)) return {ability: 'Steep', target}
+	return undefined
+}
+
+export const bots = {idle, triage, renew, panic, shield, lance, nettle, steep}
 
 export type BotName = keyof typeof bots

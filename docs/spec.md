@@ -150,8 +150,8 @@ Spell Implementation
     Damage spells create damage effect tasks (instant or damage-over-time). Buff spells attach a Buff effect to the target, modifying their stats for a duration.
     Shield spells apply a Shield effect that absorbs damage. All such effects are instances of the Effect system described above, utilizing the Task scheduler for timing.
     Example Spells: The initial spell set for the healer focuses on a mix of healing and support abilities:
-        Heal – A standard, efficient heal with a moderate cast time (basic single-target heal spell).
-        Flash Heal – A fast but mana-costly heal for emergencies (short cast time, higher mana per amount healed).
+        Mend – A slow, efficient single-target heal with a sweet spot during its cast.
+        Patch – A fast but mana-costly single-target heal for emergencies.
         Renew – A heal-over-time spell that continuously heals the target over several seconds (applied as a periodic effect).
         Shield – A protective shield that absorbs damage instead of healing (applies a damage absorption effect on the target).
         Smite – A minor offensive spell that deals damage to the enemy (allows the healer to contribute some DPS when healing is light).

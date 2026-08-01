@@ -15,7 +15,7 @@ describe('a fight full of Renew', () => {
 
 	it('credits Renew ticks to the caster, not the unit being healed', () => {
 		const report = analyze(fight.events, {units: fight.units})
-		const tank = report.units.find((a) => a.name === 'Tank')!
+		const tank = report.units.find((a) => a.name === 'Oak')!
 		const player = report.units.find((a) => a.name === 'Player')!
 		const renew = report.abilities.find((a) => a.name === 'Renew')!
 

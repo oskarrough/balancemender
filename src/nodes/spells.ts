@@ -1,27 +1,15 @@
 import {Ability} from './ability'
-import {ApplyAura, Damage, Heal as HealEffect} from './effects'
+import {AbilityUse} from './ability-use'
+import {ApplyAura, Damage, Heal} from './effects'
 import {PeriodicAura} from './periodic-aura'
 import {BarrierAura} from './barrier-aura'
 
 /**
  * Magical healing abilities opt into mana, cast timing and the global cooldown independently.
  *
- * The healing effect is imported as `HealEffect` only because the first spell below is itself
- * called Heal; everywhere else it is just `Heal`.
+ * The two direct heals are a pair on purpose (#71): Patch is fast and expensive, Mend slow and
+ * efficient with a sweet spot to hit. A third one in between was only ever the worse of both.
  */
-export class Heal extends Ability {
-	static id = 'Heal'
-	static name = 'Heal'
-	static tags = ['spell', 'healing'] as const
-	static school = 'holy' as const
-	static targets = 'ally' as const
-	static cost = 50
-	static castTime = 2000
-	static cooldown = 0
-	static gcd = true
-	static effects = [new HealEffect(0.8)]
-}
-
 export class Patch extends Ability {
 	static id = 'Patch'
 	static name = 'Patch'
@@ -32,7 +20,7 @@ export class Patch extends Ability {
 	static castTime = 1000
 	static cooldown = 0
 	static gcd = true
-	static effects = [new HealEffect(1)]
+	static effects = [new Heal(1)]
 }
 
 export class Mend extends Ability {
@@ -41,11 +29,13 @@ export class Mend extends Ability {
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
 	static targets = 'ally' as const
-	static cost = 100
+	// Cheaper than Patch on purpose: with the middle heal gone this is the kit's efficient cast,
+	// and at 100 the early rooms ran the healer dry — see the sweep in #71.
+	static cost = 60
 	static castTime = 3000
 	static cooldown = 0
 	static gcd = true
-	static effects = [new HealEffect(1.45)]
+	static effects = [new Heal(1.45)]
 	// Sweet spot experiment (#33): the one line it takes to opt an ability in. A long enough cast
 	// to give the default window something to land in; no override needed to try the defaults.
 	static sweetSpot = true
@@ -115,6 +105,60 @@ export class Nettle extends Ability {
 	static effects = [new ApplyAura(NettleAura, 0.3)]
 }
 
+/**
+ * The brew Steep leaves brewing, and the whole of the twist (#81): a single instalment, timed to
+ * land at what would be the cast's own end. Steep's cast time is the one stored duration; this
+ * interval forwards to it, so tuning either balance row cannot make cast and payout drift apart.
+ */
+class SteepAura extends PeriodicAura {
+	static id = 'Steep'
+	static name = 'Steep'
+	static get interval() {
+		return Steep.castTime
+	}
+	static set interval(value: number) {
+		Steep.castTime = value
+	}
+	static repeat = 1
+}
+
+/**
+ * Set a brew steeping on an ally: a normal cast, sized and costed like one, but the heal it leaves
+ * behind is committed the moment the cast begins rather than when it lands. Roha's toll cuts the
+ * cast, never the medicine — timing Steep to eat the toll costs only the tempo already spent (#81).
+ *
+ * Priced a notch below Mend's heal-per-mana so the twist is a trade, not a strict upgrade: worse
+ * than Mend whenever nothing interrupts it, and the one cast on the kit an interruption cannot
+ * waste.
+ */
+export class Steep extends Ability {
+	static id = 'Steep'
+	static name = 'Steep'
+	static tags = ['spell', 'healing'] as const
+	static school = 'holy' as const
+	static targets = 'ally' as const
+	static cost = 60
+	static castTime = 3000
+	static cooldown = 0
+	static gcd = true
+	static effects = [new ApplyAura(SteepAura, 1.3)]
+
+	/**
+	 * Plants the aura and pays the mana at cast start (#81) — you commit the herbs when you set the
+	 * brew, else cancelling your own cast (Escape, moving) would make the heal free. No `super.mount()`:
+	 * vroum runs the whole prototype chain itself (vroum.md), and calling it again logs the cast twice.
+	 */
+	mount() {
+		AbilityUse.commit(this)
+		if (this.hasValidTarget()) for (const effect of this.effects) effect.apply(this.landing)
+	}
+
+	/** The brew already started at cast start; a completed cast only signs itself off with a sound. */
+	land() {
+		if (this.hasValidTarget()) this.playLandingSound()
+	}
+}
+
 /** Shares the cast's id so its absorbs report as the same ability. */
 class ShieldBarrier extends BarrierAura {
 	static id = 'Shield'
@@ -146,5 +190,5 @@ export class Lick extends Ability {
 	static castTime = 2500
 	static cooldown = 0
 	static gcd = true
-	static effects = [new HealEffect(1.6)]
+	static effects = [new Heal(1.6)]
 }

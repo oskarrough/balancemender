@@ -27,8 +27,8 @@ describe('applyHit', () => {
 			source: game.player,
 			target: game.party[0],
 			amount: 40,
-			abilityId: 'Heal',
-			abilityName: 'Heal',
+			abilityId: 'Mend',
+			abilityName: 'Mend',
 			eventType: 'SPELL_HEAL',
 			school: 'holy',
 		})
@@ -112,7 +112,7 @@ describe('PeriodicAura', () => {
 	/**
 	 * The aura's number is a total over its whole life, not a per-tick one, and Renew sat
 	 * at 30 for years meaning 6 a tick — a fifth of what the number implied, and
-	 * less healing than Heal for more mana. Pin the total the spell advertises to the total
+	 * less healing than a direct heal for more mana. Pin the total the spell advertises to the total
 	 * that lands, so the two cannot drift apart again.
 	 */
 	it('lands the total a heal-over-time advertises, not a fraction of it', async () => {

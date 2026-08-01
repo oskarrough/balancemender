@@ -20,7 +20,7 @@ That is why the terminal and the in-game Fight report agree: one analysis, one e
 bun run sim                                        # the demo fight
 bun run sim --enemies 'Runt*3' --bot panic     # three wolves, a bad healer
 bun run sim --repeat 20                            # 20 seeds, summarised
-bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
+bun run sim --repeat 20 --tune 'ability:Mend.cost=40'
 bun run sim --json > fight.json                    # every event, for your own analysis
 bun run sim --party= --enemies Pup             # no tank — the dungeon's first room
 ```
@@ -36,22 +36,22 @@ tank, so a solo room belongs to `sim` or to `runFight({room})` directly.
 One fight prints health over time, per-unit and per-ability totals, and deaths:
 
 ```
-Tank + Player  vs  Runt + Runt
+Oak + Player  vs  Runt + Runt
 seed 1 · triage · victory in 60.0s
 
-  Tank         ██▇██▇██▇██▇██▇▇██▇███▇████▇███▇███▇████  271/300 (90%)
+  Oak          ██▇██▇██▇██▇██▇▇██▇███▇████▇███▇███▇████  271/300 (90%)
   Runt 1  █▇▇▇▆▆▅▅▅▄▄▃▃▃▂▁▁▁▁·····················  dead 28.8s
 
-  unit         dmg  dps  heal  hps  overheal  taken  casts  busy
-  Player         0  0.0   562  9.4       30%      0     10   33%
-  Tank         507  8.4     0  0.0        0%    591      0    0%
+  unit         dmg  dps   heal  hps  overheal  taken  casts  busy
+  Player         0  0.0  558.6  9.3       65%  257.6     11   55%
+  Oak          511  8.5      0  0.0        0%  362.6      0    0%
 
-  ability      casts  hits  total  per s   avg  overheal
-  Heal            10    10    807   13.4  80.7       30%
-  Savage Bite      0    22    121    2.0   5.5        0%
+  ability      casts  hits  total  per s    avg  overheal
+  Mend            11    11   1594   26.6  144.9       65%
+  Savage Bite      0    22    130    2.2    5.9        0%
 ```
 
-`busy` answers "was the healer out of time, or out of mana?" — at 33% they had two thirds of the
+`busy` answers "was the healer out of time, or out of mana?" — at 55% they had nearly half the
 fight spare. `per s` is there because a total says nothing about whether a bleed earns its slot
 next to a bite that swings three times as often. `--repeat` runs n seeds and prints the same fight
 as a distribution: outcomes, durations, and the healer's own throughput kept separate from the
@@ -119,8 +119,10 @@ Pin a seed and an ability that quietly becomes twice as strong fails the build.
 The healer needs to play somehow. `src/nodes/bot.ts` holds them, deliberately simple to read and
 to add to: `idle` never casts and is the control group, `triage` matches the heal to the
 emergency, `renew` keeps a heal-over-time rolling, `panic` reaches for Patch every time and
-drops to Heal when it cannot, `shield` keeps Shield on the tank, and `smite` follows
-triage while anyone needs healing before attacking the lowest-health enemy. Every bot but `idle` has a
+drops to Mend when it cannot, `shield` keeps Shield on the tank, `lance` and `nettle` follow
+triage while anyone needs healing before attacking the lowest-health enemy, and `steep` follows
+triage but reaches for Steep where it would reach for Mend — the one bot that ever casts it, for
+measuring the pays-out-after-interrupt heal against Roha's toll (#81). Every bot but `idle` has a
 spell to fall back on, deliberately: one whose whole output is a single spell stops
 measuring play and starts measuring that spell's availability (#41). Comparing bots on one
 composition usually tells you more than

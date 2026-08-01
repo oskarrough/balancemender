@@ -1,6 +1,6 @@
 # Balance Mender
 
-A tactical game inspired by healing raids and five-man dungeons back in Azeroth. Who remembers Heal Rank 2? Keep your party alive, kill the enemies.
+A tactical game inspired by healing raids and five-man dungeons back in Azeroth. Who remembers downranking? Keep your party alive, kill the enemies.
 
 The guiding idea: **nothing is planned and everything works**. Balance Mender is a malleable playground where the player sets the rules of play — compose whichever abilities, party and enemies you want, and tune the numbers until the fight feels right. Long term the balance lab grows into the game rather than sitting beside it.
 

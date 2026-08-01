@@ -34,7 +34,7 @@ describe('perform', () => {
 		const selected = game.player.selectedTarget
 		expect(selected).not.toBe(tank)
 
-		expect(game.perform({type: 'use', ability: 'Heal', target: tank.id}).ok).toBe(true)
+		expect(game.perform({type: 'use', ability: 'Mend', target: tank.id}).ok).toBe(true)
 		expect(game.player.currentAbility?.target).toBe(tank)
 		expect(game.player.selectedTarget).toBe(selected)
 		// Let the spell finish mounting before tearing the loop down — its global cooldown
@@ -44,15 +44,26 @@ describe('perform', () => {
 
 	it('does not start a cast when the target is bad', () => {
 		game = new GameLoop({party: [], enemies: []})
-		expect(game.perform({type: 'use', ability: 'Heal', target: 'nope'}).ok).toBe(false)
+		expect(game.perform({type: 'use', ability: 'Mend', target: 'nope'}).ok).toBe(false)
 		expect(game.player.currentAbility).toBeUndefined()
+	})
+
+	it('charges Steep even when the player cancels the cast', async () => {
+		game = new GameLoop({party: [], enemies: []})
+		const before = game.player.mana.current
+		expect(game.perform({type: 'use', ability: 'Steep'}).ok).toBe(true)
+		await settle()
+		expect(game.perform({type: 'interrupt'}).ok).toBe(true)
+		// The brew is committed at cast start — a free self-cancel would be an infinite heal (#81).
+		expect(game.player.mana.current).toBe(before - 60)
+		await settle()
 	})
 
 	it('refuses to interrupt when nothing is being cast', async () => {
 		game = new GameLoop({party: [], enemies: []})
 		expect(game.perform({type: 'interrupt'})).toMatchObject({ok: false})
 
-		game.perform({type: 'use', ability: 'Heal'})
+		game.perform({type: 'use', ability: 'Mend'})
 		expect(game.perform({type: 'interrupt'}).ok).toBe(true)
 		expect(game.player.currentAbility).toBeUndefined()
 		await settle()
@@ -99,7 +110,7 @@ describe('perform', () => {
 describe('refusals', () => {
 	it('remembers why and when, and says nothing about an action that went through', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
-		expect(game.perform({type: 'use', ability: 'Heal', target: game.party[0].id}).ok).toBe(true)
+		expect(game.perform({type: 'use', ability: 'Mend', target: game.party[0].id}).ok).toBe(true)
 		expect(game.lastRefusal).toBeUndefined()
 
 		game.elapsedTime = 5000
@@ -114,7 +125,7 @@ describe('refusals', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		game.player.mana?.set(0)
 
-		game.perform({type: 'use', ability: 'Heal', target: game.party[0].id})
+		game.perform({type: 'use', ability: 'Mend', target: game.party[0].id})
 
 		expect(game.lastRefusal?.error).toBe('Not enough mana')
 	})

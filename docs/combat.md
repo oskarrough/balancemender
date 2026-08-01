@@ -117,14 +117,14 @@ would be confidently wrong. From `Health.set()` it would land before its own cau
 source. The known gap runs the other way — the Balance Lab writes a health bar directly, so setting
 health or `max` changes a condition silently.
 
-The bots use their own ratios (0.4, 0.7, 0.9) and deliberately do **not** read these bands. They are
+The bots use their own ratios (0.4, 0.9) and deliberately do **not** read these bands. They are
 the measuring instrument every sweep quotes against, so unifying the numbers would move every win rate
 already recorded and make the sweep circular.
 
 ## Danger is burst, not dps
 
-Sustained damage cannot kill anyone a healer is watching: Heal repays 80 hp every 2s, so any enemy
-below ~40 dps only slows the fight, at _any_ stat value — measured up to 10× the wolf pup's
+Sustained damage cannot kill anyone a healer is watching: Mend repays 145 hp every 3s, so any enemy
+below ~48 dps only slows the fight, at _any_ stat value — measured up to 10× the wolf pup's
 strength, the sim's death rate stayed at zero. Turning sustained numbers up produces mana-starved
 timeouts before it ever produces deaths, which is a worse fight than an easy one. Watch `timeout%`
 next to `win%` when tuning.

@@ -33,8 +33,8 @@ const fight: CombatLogEvent[] = [
 		eventType: 'SPELL_CAST_START',
 		sourceId: 'player',
 		sourceName: 'Player',
-		abilityId: 'Heal',
-		abilityName: 'Heal',
+		abilityId: 'Mend',
+		abilityName: 'Mend',
 		value: 1500,
 		// The cast time or the global cooldown, whichever is longer — see `busyFor` in combatlog.ts.
 		busyFor: 1500,
@@ -44,8 +44,8 @@ const fight: CombatLogEvent[] = [
 		eventType: 'SPELL_CAST_SUCCESS',
 		sourceId: 'player',
 		sourceName: 'Player',
-		abilityId: 'Heal',
-		abilityName: 'Heal',
+		abilityId: 'Mend',
+		abilityName: 'Mend',
 	}),
 	event({
 		time: 2000,
@@ -54,8 +54,8 @@ const fight: CombatLogEvent[] = [
 		sourceName: 'Player',
 		targetId: 'tank',
 		targetName: 'Tank',
-		abilityId: 'Heal',
-		abilityName: 'Heal',
+		abilityId: 'Mend',
+		abilityName: 'Mend',
 		value: 40,
 		overheal: 10,
 	}),
@@ -134,7 +134,7 @@ describe('analyze', () => {
 	})
 
 	it('groups by ability', () => {
-		const heal = report.abilities.find((a) => a.name === 'Heal')!
+		const heal = report.abilities.find((a) => a.name === 'Mend')!
 		expect(heal).toMatchObject({casts: 1, hits: 1, total: 40, overheal: 10, avg: 40})
 	})
 

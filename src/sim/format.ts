@@ -1,16 +1,16 @@
 import {analyze, healerOf, margin, FightReport, Series} from './report'
-import type {FightResult, Trial, Outcome} from './run'
+import type {FightResult, Outcome} from './run'
 
 /** Plain-text fight reports. No colours, so they pipe and diff cleanly. */
 
 const BLOCKS = '▁▂▃▄▅▆▇█'
 const OUTCOMES: Outcome[] = ['victory', 'defeat', 'timeout']
 
-/** Who fought and how the healer played, with the defaults `runFight` would have filled in. */
-const lineup = (trial: Trial) => ({
-	party: trial.room?.party ?? ['Tank'],
-	enemies: trial.room?.enemies ?? ['Runt'],
-	bot: typeof trial.bot === 'string' ? trial.bot : (trial.bot?.name ?? 'triage'),
+/** Who fought, by display name, and how the healer played. */
+const lineup = (result: FightResult) => ({
+	party: result.units.filter((unit) => unit.faction === 'party').map((unit) => unit.name),
+	enemies: result.units.filter((unit) => unit.faction === 'enemy').map((unit) => unit.name),
+	bot: typeof result.trial.bot === 'string' ? result.trial.bot : (result.trial.bot?.name ?? 'triage'),
 })
 
 /** A health bar over time: one block per column, `·` once the unit is dead. */
@@ -25,10 +25,10 @@ export function sparkline(points: number[]) {
 
 export function formatFight(result: FightResult, report = analyze(result.events, result)): string {
 	const lines: string[] = []
-	const {party, enemies, bot} = lineup(result.trial)
+	const {party, enemies, bot} = lineup(result)
 
 	lines.push(
-		`${[...party, 'Player'].join(' + ')}  vs  ${enemies.join(' + ')}`,
+		`${party.join(' + ')}  vs  ${enemies.join(' + ')}`,
 		`seed ${result.seed} · ${bot} · ${result.outcome} in ${seconds(result.duration)}`,
 		'',
 	)
@@ -105,13 +105,13 @@ export function formatAggregate(results: FightResult[]): string {
 	const runtime = avg(durations)
 	const outcomes = count(results.map((r) => r.outcome))
 	const deaths = count(reports.flatMap((r) => r.deaths.map((d) => d.name)))
-	const {party, enemies, bot} = lineup(results[0].trial)
+	const {party, enemies, bot} = lineup(results[0])
 	const victories = outcomes.get('victory') ?? 0
 	const absorbed = avg(healers.map((h) => h?.absorbed ?? 0))
 	const wasted = avg(healers.map((h) => h?.wasted ?? 0))
 
 	const lines = [
-		`${results.length} fights · ${[...party, 'Player'].join(' + ')} vs ${enemies.join(' + ')} · ${bot}`,
+		`${results.length} fights · ${party.join(' + ')} vs ${enemies.join(' + ')} · ${bot}`,
 		'',
 		'  ' +
 			OUTCOMES.map(

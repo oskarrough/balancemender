@@ -58,9 +58,12 @@ export class SavageBite extends Ability {
 
 /**
  * The pup's leap. A cast time is the whole point: it puts a bar on the pup's own unit frame, so the
- * hit is one the player watched coming and chose what to do about. Big enough that ignoring it
- * twice in a row is fatal, slow enough that answering it is always possible — the first room's
- * lesson is that a telegraph is an instruction.
+ * hit is one the player watched coming and chose what to do about. Big enough that a leap answered
+ * with nothing is most of a Mend thrown away, slow enough that answering it is always possible —
+ * the first room's lesson is that a telegraph is an instruction.
+ *
+ * The size is also the room's only losing state: a player who heals and never fights back has to
+ * lose the pup, and with Mend at 60 mana (#71) the leap is the one thing outpacing their regen.
  */
 export class Pounce extends Ability {
 	static id = 'Pounce'
@@ -71,7 +74,19 @@ export class Pounce extends Ability {
 	static castTime = 1500
 	static sound = 'combat_strong_punch'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-	static effects = [new Damage(3.5)]
+	static effects = [new Damage(4)]
+}
+
+/** Wren's sling: riverbed pebbles aimed deliberately at the lowest-health living enemy. No wind-up, no cast time — a herder's plain aim. */
+export class Sling extends Ability {
+	static id = 'Sling'
+	static name = 'Sling'
+	static tags = ['attack', 'ranged'] as const
+	static school = 'physical' as const
+	static targets = 'enemy' as const
+	static sound = 'combat_arrow'
+	static eventType: CombatEventType = 'RANGE_DAMAGE'
+	static effects = [new Damage(0.45)]
 }
 
 export class NastyArrow extends Ability {
@@ -144,6 +159,10 @@ export class Ambush extends Ability {
  * is the instruction — a barrier fits comfortably inside it, and the hit is big enough that the tank
  * feels the difference. Roha teaches the same "answer the wind-up" lesson two rooms later with
  * sound instead of weight, which is why this one arrives first and only asks for a shield.
+ *
+ * Sized so one Shield still swallows a whole trample (120 against a 150 barrier): the room was
+ * tuned when the party was tank and healer, and Wren joining it (#76) halved how long the bell has
+ * to make its point.
  */
 export class Trample extends Ability {
 	static id = 'Trample'
@@ -154,7 +173,7 @@ export class Trample extends Ability {
 	static castTime = 2000
 	static sound = 'combat_strong_punch2'
 	static eventType: CombatEventType = 'SWING_DAMAGE'
-	static effects = [new Damage(1.8)]
+	static effects = [new Damage(3)]
 }
 
 /** The sound going on after the bell stops, declared before the toll that leaves it. */
@@ -181,7 +200,9 @@ export class Toll extends Ability {
 	static targets = 'enemy' as const
 	static castTime = 2500
 	static eventType: CombatEventType = 'SPELL_DAMAGE'
-	static effects = [new Interrupt(), new ApplyAura(Ringing, 1.25)]
+	// At 2.4, the five-second ringing makes lost Mend casts visible in tank deaths; Steep preserves
+	// the party without making the no-healing control viable in 200-seed Rust-room comparisons (#81).
+	static effects = [new Interrupt(), new ApplyAura(Ringing, 2.4)]
 }
 
 /** A pack buff to strength, declared before the howl that plants it. No modifier of its own — the planting effect sizes it. */

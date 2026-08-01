@@ -24,10 +24,10 @@ describe('parsing a tune', () => {
 
 	it('refuses what it cannot reach', () => {
 		expect(() => parseTune('Rend.coefficient=-0.4')).toThrow(/kind:Name.key=value/)
-		expect(() => parseTune('spell:Heal.cost=40')).toThrow(/Unknown tune kind/)
+		expect(() => parseTune('spell:Mend.cost=40')).toThrow(/Unknown tune kind/)
 		expect(() => parseTune('ability:Fireball.cost=1')).toThrow(/Unknown ability/)
-		expect(() => parseTune('ability:Heal.damage=5')).toThrow(/Unknown ability key/)
-		expect(() => parseTune('ability:Heal.cost=lots')).toThrow(/needs a number/)
+		expect(() => parseTune('ability:Mend.damage=5')).toThrow(/Unknown ability key/)
+		expect(() => parseTune('ability:Mend.cost=lots')).toThrow(/needs a number/)
 	})
 })
 
@@ -36,7 +36,7 @@ describe('applying a tune', () => {
 
 	it('writes spell- and attack-tagged abilities through one surface', () => {
 		applyTunes([
-			'ability:Heal.cost=10',
+			'ability:Mend.cost=10',
 			'effect:SavageBite.damage.coefficient=0.2',
 			'ability:ShieldBash.threatMultiplier=7',
 			'cadence:SavageBiteCadence.interval=5000',
@@ -45,7 +45,7 @@ describe('applying a tune', () => {
 			'effect:Shield.barrier.coefficient=1.2',
 			'aura:Rend.interval=1500',
 		])
-		expect(balance.abilities.Heal.cost).toBe(10)
+		expect(balance.abilities.Mend.cost).toBe(10)
 		expect(balance.effects['SavageBite.damage'].coefficient).toBe(0.2)
 		expect(balance.abilities.ShieldBash.threatMultiplier).toBe(7)
 		expect(balance.cadences.SavageBiteCadence.interval).toBe(5000)
@@ -89,6 +89,13 @@ describe('applying a tune', () => {
 })
 
 describe('the categories', () => {
+	it('balances Patch as the expensive fast heal and Mend as the efficient slow heal', () => {
+		expect(balance.abilities.Patch).toMatchObject({cost: 80, castTime: 1000})
+		expect(balance.effects['Patch.heal']).toMatchObject({coefficient: 1})
+		expect(balance.abilities.Mend).toMatchObject({cost: 60, castTime: 3000})
+		expect(balance.effects['Mend.heal']).toMatchObject({coefficient: 1.45})
+	})
+
 	it('keeps cadence timing separate', () => {
 		expect(Object.keys(cadenceClasses)).toEqual([
 			'NipCadence',
@@ -96,6 +103,7 @@ describe('the categories', () => {
 			'SavageBiteCadence',
 			'NastyArrowCadence',
 			'ShieldBashCadence',
+			'SlingCadence',
 			'LickCadence',
 			'PounceCadence',
 			'WorryCadence',

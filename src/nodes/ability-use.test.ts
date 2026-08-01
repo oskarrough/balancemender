@@ -5,7 +5,7 @@ import {AbilityUse} from './ability-use'
 import {GlobalCooldown} from './global-cooldown'
 import {abilityRegistry} from './registry'
 
-const Heal = abilityRegistry.Heal
+const Patch = abilityRegistry.Patch
 
 let game!: GameLoop
 afterEach(() => game.disconnect())
@@ -15,15 +15,15 @@ describe('ability use rules', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		const player = game.player
 		player.gcd = new GlobalCooldown(player)
-		expect(AbilityUse.whyNotAct(player, Heal)).toBe('global-cooldown')
-		expect(AbilityUse.whyNotUse(player, Heal, game.party[0])).toBeUndefined()
-		expect(AbilityUse.validate(player, Heal)).toBe('global-cooldown')
+		expect(AbilityUse.whyNotAct(player, Patch)).toBe('global-cooldown')
+		expect(AbilityUse.whyNotUse(player, Patch, game.party[0])).toBeUndefined()
+		expect(AbilityUse.validate(player, Patch)).toBe('global-cooldown')
 	})
 
 	it('enforces the target rule owned by the ability', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
-		expect(AbilityUse.whyNotUse(game.player, Heal, game.party[0])).toBeUndefined()
-		expect(AbilityUse.whyNotUse(game.player, Heal, game.enemies[0])).toBe('invalid-target')
+		expect(AbilityUse.whyNotUse(game.player, Patch, game.party[0])).toBeUndefined()
+		expect(AbilityUse.whyNotUse(game.player, Patch, game.enemies[0])).toBe('invalid-target')
 		expect(AbilityUse.whyNotUse(game.enemies[0], abilityRegistry.SavageBite, game.party[0])).toBeUndefined()
 	})
 
@@ -36,7 +36,7 @@ describe('ability use rules', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		const tank = game.party[0]
 		tank.health.set(10)
-		const use = game.player.useAbility('Heal', tank)
+		const use = game.player.useAbility('Patch', tank)
 		expect(use.ok).toBe(true)
 		if (!use.ok) return
 		await settle()
@@ -55,7 +55,7 @@ describe('ability use rules', () => {
 	it('lands nothing when the target does not survive the cast', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		game.party[0].health.set(10)
-		const use = game.player.useAbility('Heal', game.party[0])
+		const use = game.player.useAbility('Patch', game.party[0])
 		expect(use.ok).toBe(true)
 		if (!use.ok) return
 		await settle()
@@ -69,24 +69,24 @@ describe('ability use rules', () => {
 	it('holds one ability on its own cooldown', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		const player = game.player
-		expect(game.perform({type: 'tune', of: 'ability', name: 'Heal', key: 'cooldown', value: 8000}).ok).toBe(true)
-		expect(game.perform({type: 'use', ability: 'Heal', target: game.party[0].id}).ok).toBe(true)
+		expect(game.perform({type: 'tune', of: 'ability', name: 'Patch', key: 'cooldown', value: 8000}).ok).toBe(true)
+		expect(game.perform({type: 'use', ability: 'Patch', target: game.party[0].id}).ok).toBe(true)
 		player.currentAbility!._cycles = 1
 		player.currentAbility!.destroy()
 		await settle()
-		expect(AbilityUse.whyNotUse(player, Heal, game.party[0])).toBe('cooldown')
-		expect(AbilityUse.whyNotUse(player, abilityRegistry.Patch, game.party[0])).toBeUndefined()
+		expect(AbilityUse.whyNotUse(player, Patch, game.party[0])).toBe('cooldown')
+		expect(AbilityUse.whyNotUse(player, abilityRegistry.Renew, game.party[0])).toBeUndefined()
 		game.elapsedTime = 8000
-		expect(AbilityUse.whyNotUse(player, Heal, game.party[0])).toBeUndefined()
+		expect(AbilityUse.whyNotUse(player, Patch, game.party[0])).toBeUndefined()
 		game.perform({type: 'resetBalance'})
 	})
 
 	it('checks mana only when the ability opts into a cost', () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		const player = game.player
-		player.mana!.set(Heal.cost)
-		expect(AbilityUse.whyNotUse(player, Heal, game.party[0])).toBeUndefined()
-		expect(AbilityUse.whyNotUse(player, abilityRegistry.Mend, game.party[0])).toBe('missing-mana')
+		player.mana!.set(abilityRegistry.Mend.cost)
+		expect(AbilityUse.whyNotUse(player, abilityRegistry.Mend, game.party[0])).toBeUndefined()
+		expect(AbilityUse.whyNotUse(player, Patch, game.party[0])).toBe('missing-mana')
 		expect(AbilityUse.whyNotUse(player, abilityRegistry.ShieldBash, game.party[0])).toBe('invalid-target')
 	})
 })

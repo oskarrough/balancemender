@@ -223,7 +223,7 @@ export function worstCasts(casts: CastStats[], completed: boolean, onScrub: (tim
 	`
 }
 
-/** "Heal at 14.9s (93%)" — the same words whether it is a link or plain text. */
+/** "Mend at 14.9s (93%)" — the same words whether it is a link or plain text. */
 const castLabel = (cast: CastStats) =>
 	`${cast.abilityName} at ${(cast.time / 1000).toFixed(1)}s (${percent(cast.overheal, cast.total)})`
 

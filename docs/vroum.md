@@ -59,8 +59,8 @@ When extending Task or Node for game entities (like spells, bosses, or effects),
 - **Static Properties** define the "template" or "type":
 
   ```typescript
-  class Heal extends Spell {
-  	static name = 'Heal'
+  class Mend extends Spell {
+  	static name = 'Mend'
   	static cost = 295
   	static castTime = 3000
   }

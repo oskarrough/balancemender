@@ -49,15 +49,15 @@ describe('abilities', () => {
 	it('snapshots power into a use, so a mid-cast buff reaches only the next one', async () => {
 		const game = new GameLoop({party: ['Tank'], enemies: []})
 		await settle()
-		const use = new abilityRegistry.Heal(game.player, game.party[0])
+		const use = new abilityRegistry.Patch(game.player, game.party[0])
 		await settle()
-		expect(use.magnitudes).toEqual([80])
+		expect(use.magnitudes).toEqual([100])
 
 		const buff = {}
 		game.player.addStatModifier(buff, STAT.INTELLECT, 10)
 
-		expect(use.magnitudes).toEqual([80])
-		expect(abilityRegistry.Heal.magnitudesFor(game.player)).toEqual([100])
+		expect(use.magnitudes).toEqual([100])
+		expect(abilityRegistry.Patch.magnitudesFor(game.player)).toEqual([125])
 
 		game.disconnect()
 		await settle()

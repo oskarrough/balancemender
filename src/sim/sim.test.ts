@@ -5,6 +5,7 @@ import {settle} from '../test-setup'
 import {runFight} from './run'
 import {analyze} from './report'
 import {parseUnits} from './roster'
+import {formatFight} from './format'
 import {TheRust, TheGreen} from '../nodes/dungeon'
 import type {Room} from '../nodes/fight'
 
@@ -19,7 +20,8 @@ describe('running a fight', () => {
 		expect(fight.outcome).toBe('victory')
 		expect(fight.duration).toBeGreaterThan(1000)
 		expect(fight.events.length).toBeGreaterThan(20)
-		expect(fight.units.map((unit) => unit.name)).toEqual(['Tank', 'Player', 'Runt'])
+		expect(fight.units.map((unit) => unit.name)).toEqual(['Oak', 'Player', 'Runt'])
+		expect(formatFight(fight)).toMatch(/^Oak \+ Player  vs  Runt/)
 	})
 
 	it('replays identically for the same seed', async () => {
@@ -181,13 +183,26 @@ describe('healing changes the outcome', () => {
 		expect((await runFight({room: {enemies: five}, bot: 'triage', seed})).outcome).toBe('defeat')
 	})
 
+	/**
+	 * Averaged over seeds, and against a boss rather than two wolves. Overheal is a ratio of heal
+	 * size to the hole it lands in, so it only separates the two bots where the holes are deep: with
+	 * the middle heal removed (#71), the *expensive* heal is also the *small* one — Patch lands 100
+	 * for 80 mana where triage's Mend lands 145 for 60 — so on a shallow fight triage spills more
+	 * per cast than panic does and wins this comparison on 17 of 20 seeds. What panic wastes there is mana, not
+	 * healing. Haruk's arrow digs holes big enough that reaching for the small fast heal every time
+	 * is visibly the wrong call: 9 of 10 seeds, and a wide enough gap that the mean is not a coin
+	 * flip.
+	 */
 	it('spamming the expensive heal overheals more than triaging', async () => {
-		const trial = {room: {enemies: ['Runt', 'Runt'] as never}, seed: 5, maxDuration: 40_000}
-		const overheal = async (bot: 'panic' | 'triage') => {
-			const {totals} = analyze((await runFight({...trial, bot})).events)
+		const overheal = async (bot: 'panic' | 'triage', seed: number) => {
+			const {totals} = analyze((await runFight({room: {enemies: ['Haruk']}, bot, seed})).events)
 			return totals.overhealing / (totals.overhealing + totals.healing)
 		}
-		expect(await overheal('panic')).toBeGreaterThan(await overheal('triage'))
+		const mean = async (bot: 'panic' | 'triage') => {
+			const shares = await Promise.all([1, 2, 3, 4, 5].map((seed) => overheal(bot, seed)))
+			return shares.reduce((sum, share) => sum + share, 0) / shares.length
+		}
+		expect(await mean('panic')).toBeGreaterThan(await mean('triage'))
 	})
 })
 
@@ -198,6 +213,12 @@ describe('healing changes the outcome', () => {
  */
 describe('the first room', () => {
 	const room = TheGreen.rooms[0]
+
+	it('opens with Mend and Lance, then grants Patch for the skulker', () => {
+		expect(room.grants).toEqual(['Mend', 'Lance'])
+		expect(TheGreen.rooms[2]).toMatchObject({name: 'The skulker', grants: ['Patch']})
+		expect(TheGreen.rooms[4]).toMatchObject({name: 'Haruk', grants: ['Shield']})
+	})
 
 	it('kills a player who never fights back', async () => {
 		const fight = await runFight({room, bot: 'triage', seed: 1})
@@ -217,7 +238,7 @@ describe('The Rust room one', () => {
 	it('is won cleanly with efficient healing', async () => {
 		const fight = await runFight({room, bot: 'renew', seed: 1})
 		expect(fight.outcome).toBe('victory')
-		expect(fight.survivors.party).toBe(2)
+		expect(fight.survivors.party).toBe(3)
 	})
 
 	it('punishes expensive heal spam', async () => {
@@ -234,7 +255,7 @@ describe('The Rust room two', () => {
 	it('is winnable with efficient healing', async () => {
 		const fight = await runFight({room: second, bot: 'renew', seed: 1})
 		expect(fight.outcome).toBe('victory')
-		expect(fight.survivors.party).toBe(2)
+		expect(fight.survivors.party).toBe(3)
 	})
 
 	/**
@@ -249,6 +270,16 @@ describe('The Rust room two', () => {
 			return outcomes.filter((outcome) => outcome !== 'victory').length
 		}
 		expect(await losses(second)).toBeGreaterThan(await losses(first))
+	})
+})
+
+/** Wren must not shorten the closer until the healer can sit idle through its whole rhythm. */
+describe('The Rust room three', () => {
+	const room = TheRust.rooms[2]
+
+	it('needs healing, and is won by answering Toll with Steep', async () => {
+		expect((await runFight({room, bot: 'idle', seed: 1})).outcome).toBe('defeat')
+		expect((await runFight({room, bot: 'steep', seed: 1})).outcome).toBe('victory')
 	})
 })
 

@@ -7,12 +7,6 @@
 	},
 	"assets": [
 		{
-			"id": "heal",
-			"type": "spell",
-			"name": "Heal",
-			"prompt": "A steady warm golden healing light, calm and reliable, like a basic efficient restorative spell."
-		},
-		{
 			"id": "patch",
 			"type": "spell",
 			"name": "Patch",
@@ -105,8 +99,14 @@
 		{
 			"id": "tank",
 			"type": "character",
-			"name": "Tank",
+			"name": "Oak",
 			"prompt": "A sturdy fantasy tank adventurer in worn plate armor, protective stance, practical and dependable."
+		},
+		{
+			"id": "wren",
+			"type": "character",
+			"name": "Wren",
+			"prompt": "A young herder in dusty travel wool and mud-boots, a simple sling in hand and a small brass herd-bell at the belt, looking upstream with a quietly grieving but hopeful expression. Cracked dry riverbed and enormous pale-blue sky behind them, The Rust's flat rust-red and dun color fields, precise contours, Moebius-meets-warm-western calm with Ghibli warmth in the face."
 		},
 		{
 			"id": "player",

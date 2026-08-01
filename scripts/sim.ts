@@ -4,7 +4,7 @@
  *   bun run sim
  *   bun run sim --enemies Runt*3 --bot panic
  *   bun run sim --party Tank --enemies Haruk --repeat 20
- *   bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
+ *   bun run sim --repeat 20 --tune 'ability:Mend.cost=40'
  *   bun run sim --json > fight.json
  */
 import {parseArgs} from 'node:util'
@@ -50,7 +50,7 @@ bun run sim [options]
   --seed     <n>       dice seed; the same seed always plays out the same (default 1)
   --repeat   <n>       run n fights and summarise them
   --duration <s>       give up after n seconds of fight time (default 120)
-  --tune     <spec>    change a balance number first, e.g. 'ability:Heal.cost=40'
+  --tune     <spec>    change a balance number first, e.g. 'ability:Mend.cost=40'
                        kind:Name.key=value — ability, cadence, aura, unit or rule. Repeatable.
   --json               print the report as JSON instead
 

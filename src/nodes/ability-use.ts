@@ -183,7 +183,10 @@ export class AbilityUse {
 		if (ability.delay > 0) unit.gcd = undefined
 	}
 
-	private static commit(ability: Ability) {
+	/** Public so Steep can pay at cast start (#81); the guard keeps its completed casts from paying twice. */
+	static commit(ability: Ability) {
+		if (ability._committed) return
+		ability._committed = true
 		const unit = ability.parent
 		const game = ability.root as GameLoop
 		if (ability.cooldown) unit.cooldowns.set(ability.id, game.elapsedTime + ability.cooldown)

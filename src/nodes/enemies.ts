@@ -130,9 +130,13 @@ export class Skulker extends Unit {
  * trample beats so the healer never gets a free gap; it has no cast time, so it lands mid-wind-up.
  *
  * A real animal wearing a real bell, met before a bell with no animal in it (see Roha).
+ *
+ * Bulk is the dial that makes the room a fight rather than a checklist: the trample teaches by
+ * repetition, and a party that gained Wren (#76) kills twice as fast as the one this was first
+ * sized against. The room only punishes Patch spam because it lasts long enough to drain a pool.
  */
 export class Bellwether extends Unit {
-	static stamina = 380
+	static stamina = 600
 	static intellect = 0
 	static strength = 20
 	static agility = 4
@@ -153,12 +157,14 @@ export class Bellwether extends Unit {
  *
  * `Ambush` rather than an invention of its own — Skulker's leap is the same shape, and the two
  * differ in the only place that matters here, which is who they pick. Fast and fragile: the party
- * can kill it quickly, and the fight asks whether they choose to.
+ * can kill it quickly, and the fight asks whether they choose to — the stoop is heavier than the
+ * skulker's precisely so that ignoring the bird costs more than killing it, and the bird still
+ * falls to four sling stones.
  */
 export class Kite extends Unit {
 	static stamina = 110
 	static intellect = 0
-	static strength = 10
+	static strength = 18
 	static agility = 30
 	static spirit = 0
 	static faction = FACTION.ENEMY
@@ -170,18 +176,19 @@ export class Kite extends Unit {
 }
 
 /**
- * A husk-shelled beetle, and a cheap body before it is a creature. Low stamina, low damage, and
- * plain threat with none of a wolf's mischief — it chews whoever has earned its attention and never
- * thinks about it again. In a room this full that is regularly the healer rather than the tank,
- * whose bash names one beetle at a time while the rest sit adding up the healing they can see.
+ * A husk-shelled beetle, and a cheap body before it is a creature. It dies to two sling stones and
+ * carries plain threat with none of a wolf's mischief — it chews whoever has earned its attention
+ * and never thinks about it again. In a room this full that is regularly the healer rather than the
+ * tank, whose bash names one beetle at a time while the rest sit adding up the healing they can see.
  *
  * It exists so a Rust room can hold four or five units without becoming lethal: bodies are the
- * dungeon's difficulty curve, and this is the body.
+ * dungeon's difficulty curve, and this is the body. Its bite is what a body costs to leave alive —
+ * one is a nuisance, three chewing the healer is the reason the room cannot be spammed through.
  */
 export class Chafer extends Unit {
 	static stamina = 70
 	static intellect = 0
-	static strength = 8
+	static strength = 14
 	static agility = 6
 	static spirit = 0
 	static faction = FACTION.ENEMY
@@ -199,9 +206,15 @@ export class Chafer extends Unit {
  * at whoever is squared up in front of her, so the wound lands on the tank and the healer answers
  * it the ordinary way; what reaches the healer is the sound, which cuts whatever they were casting.
  * That split is the room: pressure to answer, and a beat you have to answer it between.
+ *
+ * Wren made the original 480-stamina fight short enough for an idle healer to win every seed.
+ * With Toll's final pressure, 480 now kills idle but lets both healing bots keep everyone standing;
+ * 680 gives the interaction enough cycles to show. In 200 seeds ordinary triage loses Oak in 39
+ * and wipes once, while Steep keeps the whole party standing in all 200. More bulk only lengthened
+ * the same result, so the interaction is tuned through Toll rather than another stamina bump.
  */
 export class Roha extends Unit {
-	static stamina = 480
+	static stamina = 680
 	static intellect = 40
 	static strength = 0
 	static agility = 5

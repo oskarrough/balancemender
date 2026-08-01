@@ -106,6 +106,9 @@ export class Ability extends Task {
 		)
 	}
 
+	/** Whether cooldown and mana were already committed for this use — see AbilityUse.commit. */
+	_committed = false
+
 	constructor(
 		public parent: Unit,
 		/**
@@ -165,14 +168,18 @@ export class Ability extends Task {
 		return true
 	}
 
+	/**
+	 * A cast outlives the target selection that started it. Death and removal are separate checks:
+	 * `Fight.remove()` leaves the health bar full, so `alive` alone cannot stop a cast from planting
+	 * an aura on a node vroum has already detached.
+	 */
+	protected hasValidTarget() {
+		return this.target.alive && eligible(this.parent, this.targets).includes(this.target)
+	}
+
 	/** Run what this ability does, in the order it declares it, and then say it out loud. */
 	land() {
-		// Eligibility was settled when the use was requested, but a cast outlives the moment it
-		// started: the target can die, and it can be removed from the fight outright. Removal is not
-		// death — `Fight.remove()` leaves the health bar full — so `alive` cannot see it and
-		// only eligibility can. Landing on someone who has left logs a hit naming a unit the report
-		// has never heard of, and plants auras on a node vroum has already detached.
-		if (!this.target.alive || !eligible(this.parent, this.targets).includes(this.target)) return
+		if (!this.hasValidTarget()) return
 		// A sweet-spot hit scales the whole landing rather than any one effect, so no effect class
 		// has to know the sweet spot exists.
 		const landing = this.sweetSpotHit
@@ -186,8 +193,11 @@ export class Ability extends Task {
 	 * One sound as the ability lands. An ability with a `sound` of its own plays that — an attack's
 	 * impact, Renew's chime — and a cast without one falls back to the generic cast chime, which is
 	 * also the moment to stop the looping precast it has been playing.
+	 *
+	 * Protected rather than private: Steep plants its effect at cast start (#81), so its `land()`
+	 * calls this on its own to still sign the cast off with a sound.
 	 */
-	private playLandingSound() {
+	protected playLandingSound() {
 		const audio = (this.root as GameLoop).audio
 		audio.stopOwned(this)
 		const sound = this.sound || (AbilityUse.usesCastRules(this.constructor as AbilityClass) ? 'spell_cast' : '')

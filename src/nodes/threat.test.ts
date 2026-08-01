@@ -43,8 +43,8 @@ describe('generating threat', () => {
 				source: game.player,
 				target: game.party[0],
 				amount: 50,
-				abilityId: 'Heal',
-				abilityName: 'Heal',
+				abilityId: 'Mend',
+				abilityName: 'Mend',
 				eventType: 'SPELL_HEAL',
 				school: 'holy',
 			})

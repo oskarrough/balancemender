@@ -109,6 +109,13 @@ export class ShieldBashCadence extends Cadence {
 	static interval = 2400
 }
 
+/** Wren's steady loose — no wind-up to wait on, so the interval alone is the dps dial. */
+export class SlingCadence extends Cadence {
+	static abilityId = 'Sling'
+	static delay = 500
+	static interval = 1800
+}
+
 /**
  * Slow on purpose. At 8s this healed for as much as the tank hit for, to the decimal, so the fight
  * stalled at exactly nobody winning (#51). Half as often puts daylight between the two numbers
@@ -139,11 +146,14 @@ export class TrampleCadence extends Cadence {
 	static interval = 7000
 }
 
-/** Roha's whole clock. Slow enough that the gap between two tolls is where the fight is played. */
+/**
+ * Roha's whole clock. A toll starts every five seconds: too tight for repeated Mend casts to slip
+ * through untouched, while an interrupted Steep still pays during the next wind-up (#81).
+ */
 export class TollCadence extends Cadence {
 	static abilityId = 'Toll'
 	static delay = 3000
-	static interval = 7000
+	static interval = 5000
 }
 
 export class RileCadence extends Cadence {
