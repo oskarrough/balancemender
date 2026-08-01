@@ -11,6 +11,8 @@
 	max-height: 86vh;
 	margin: 0 auto;
 	z-index: 100;
+	overflow-x: hidden;
+	overflow-y: auto;
 	background: var(--c-snow-white);
 	color: var(--c-black);
 	text-align: center;
@@ -18,52 +20,51 @@
 	border-bottom-width: 0.2rem;
 	border-radius: var(--radius);
 	box-shadow: 0 0.4rem 1rem hsla(0, 0%, 10%, 0.4);
-	overflow: auto;
-}
 
-/* The coloured strip is the only thing that tells victory, defeat and timeout apart. */
-.GameOver h2 {
-	margin: 0;
-	padding: 0.5rem 1rem;
-	border-bottom: 1px solid var(--c-black);
-	font-size: 1.5rem;
-}
+	/* The coloured strip is the only thing that tells victory, defeat and timeout apart. */
+	& h2 {
+		margin: 0;
+		padding: 0.5rem 1rem;
+		border-bottom: 1px solid var(--c-black);
+		font-size: 1.5rem;
+	}
 
-.GameOver[data-outcome='victory'] h2 {
-	background: var(--c-marigold);
-}
+	&[data-outcome='victory'] h2 {
+		background: var(--c-marigold);
+	}
 
-.GameOver[data-outcome='defeat'] h2 {
-	background: var(--c-crimson-lake);
-	color: var(--c-snow-white);
-}
+	&[data-outcome='defeat'] h2 {
+		background: var(--c-crimson-lake);
+		color: var(--c-snow-white);
+	}
 
-.GameOver[data-outcome='timeout'] h2 {
-	background: var(--c-blue-gray);
-}
+	&[data-outcome='timeout'] h2 {
+		background: var(--c-blue-gray);
+	}
 
-.GameOver > p {
-	margin: 1rem;
-	font-size: 1rem;
-}
+	& > p {
+		margin: 1rem;
+		font-size: 1rem;
+	}
 
-/* The run's rooms, same dots as the pager — this panel is the moment that position matters. */
-.GameOver-rooms {
-	display: flex;
-	justify-content: center;
-	gap: 0.4rem;
-}
+	/* The run's rooms, same dots as the pager — this panel is the moment that position matters. */
+	& .GameOver-rooms {
+		display: flex;
+		justify-content: center;
+		gap: 0.4rem;
+	}
 
-.GameOver > fight-report {
-	display: block;
-	margin: 0 1rem 1rem;
-	padding-top: 0.8rem;
-	border-top: 1px solid color-mix(in oklch, var(--c-black), transparent 80%);
-	text-align: left;
-}
+	& > fight-report {
+		display: block;
+		margin: 0 1rem 1rem;
+		padding-top: 0.8rem;
+		border-top: 1px solid color-mix(in oklch, var(--c-black), transparent 80%);
+		text-align: left;
+	}
 
-.GameOver .Button {
-	margin: 0 1rem 1rem;
-	padding: 0.4em 0.8em 0.3em;
-	font-size: 1rem;
+	& .Button {
+		margin: 0 1rem 1rem;
+		padding: 0.4em 0.8em 0.3em;
+		font-size: 1rem;
+	}
 }

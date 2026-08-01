@@ -62,8 +62,6 @@
 
 .Splash-dungeonsHeading {
 	display: block;
-	font-style: italic;
-	font-size: clamp(1rem, 2vw, 1.4rem);
 	margin-bottom: 0.5rem;
 }
 
@@ -76,31 +74,16 @@
 	margin: 0 auto;
 }
 
-.Splash-dungeon {
-	display: flex;
+.Button.Splash-dungeon {
 	justify-content: space-between;
 	align-items: baseline;
 	gap: 0.5rem;
-	padding: 0.5rem 1rem;
-	border: 1px solid var(--c-snow-white);
-	border-radius: var(--radius);
-	background: transparent;
+	min-height: 7rem;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), var(--dungeon-image);
+	background-position: center;
+	background-size: cover;
 	color: var(--c-snow-white);
-	font-weight: 700;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	cursor: pointer;
-	transition: background 0.2s;
-}
-
-.Splash-dungeon:hover {
-	background: var(--c-crimson-lake);
-	border-color: var(--c-crimson-lake);
-}
-
-/* Same 1px press nudge as .Button — every pressable thing in the game answers the same way. */
-.Splash-dungeon:active {
-	transform: translateY(1px);
+	text-shadow: 0 1px 0.2em rgba(0, 0, 0, 0.9);
 }
 
 .Splash-dungeon small {

@@ -24,8 +24,13 @@ export function buildSplashIntro(): gsap.core.Timeline {
 			ease: 'back.out(1.8)',
 		},
 	)
-	tl.fromTo('.Splash-subtitle', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'}, '>0.05')
-	tl.fromTo('.Splash-prompt', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'}, '<0.05')
+	tl.fromTo(
+		'.Splash-subtitle',
+		{autoAlpha: 0, y: 20},
+		{autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'},
+		'>-0.25',
+	)
+	tl.fromTo('.Splash-prompt', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'}, '<0.35')
 	return tl
 }
 

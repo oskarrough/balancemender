@@ -41,15 +41,23 @@ function DungeonPager(game: GameLoop) {
 		></i>`
 	return html`
 		<nav class="DungeonPager">
-			<span class="DungeonPager-dots">${rooms.slice(0, run.room).map((room) => dot(room, true))}</span>
-			<p class="DungeonPager-pill">
-				<span class="DungeonPager-dungeon">${run.dungeon.name}</span>
-				<span class="DungeonPager-count">${run.room + 1}/${rooms.length}</span>
-				<span class="DungeonPager-room">${rooms[run.room]?.name}</span>
-			</p>
-			<span class="DungeonPager-dots">${rooms.slice(run.room + 1).map((room) => dot(room, false))}</span>
+			<button class="Button" type="button" onclick=${leaveDungeon}>Leave</button>
+			<span class="DungeonPager-pages">
+				<span class="DungeonPager-dots">${rooms.slice(0, run.room).map((room) => dot(room, true))}</span>
+				<p class="DungeonPager-pill">
+					<span class="DungeonPager-dungeon">${run.dungeon.name}</span>
+					<span class="DungeonPager-count">${run.room + 1}/${rooms.length}</span>
+					<span class="DungeonPager-room">${rooms[run.room]?.name}</span>
+				</p>
+				<span class="DungeonPager-dots">${rooms.slice(run.room + 1).map((room) => dot(room, false))}</span>
+			</span>
 		</nav>
 	`
+}
+
+/** Dungeon choice is the app's start state, so leaving is a clean return rather than a half-reset fight. */
+function leaveDungeon() {
+	window.location.assign(window.location.pathname)
 }
 
 /**
@@ -134,8 +142,12 @@ export function UI(game: GameLoop) {
 	const refusal = game.lastRefusal
 	const showRefusal = refusal && game.elapsedTime - refusal.at < REFUSAL_DURATION
 
+	const wallpaper = game.dungeonRun?.dungeon.rooms[game.dungeonRun.room]?.wallpaper
+	const wallpaperClass = game.dungeonRun?.dungeon.id === 'TheRust' ? 'Game-bg Game-bg--rust' : 'Game-bg'
+
 	return html`
 		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
+			${wallpaper ? html`<div class=${wallpaperClass} style=${`background-image: url(${wallpaper})`}></div>` : null}
 			${game.gameOver ? GameOver(game) : null} ${DungeonPager(game)}
 
 			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>

@@ -125,11 +125,11 @@ export class BalanceInspector extends HTMLElement {
 				<div class="BalanceInspector-fields">${t.fields.map(this.renderField)}</div>
 				${t.actions?.length
 					? html`
-							<div class="BalanceInspector-actions">
+							<menu class="BalanceInspector-actions">
 								${t.actions.map(
 									(a) => html`
 										<button
-											class=${`BalanceInspector-action is-${a.variant ?? 'default'}`}
+											class=${`Button BalanceInspector-action is-${a.variant ?? 'default'}`}
 											onclick=${() => {
 												a.run()
 												this.render()
@@ -139,7 +139,7 @@ export class BalanceInspector extends HTMLElement {
 										</button>
 									`,
 								)}
-							</div>
+							</menu>
 						`
 					: ''}
 			`,

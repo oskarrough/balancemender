@@ -2,118 +2,140 @@
 	color: var(--clv-text);
 	display: flex;
 	flex-direction: column;
-}
 
-.CombatLogViewer-controls {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.2rem;
-	padding: 0.2rem;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+	& .CombatLogViewer-controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.2rem;
+		padding: 0.2rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
 
-.CombatLogViewer-filters {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.2rem;
-}
+	& .CombatLogViewer-filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.2rem;
 
-.CombatLogViewer-list {
-	list-style: none;
-}
+		& .Button {
+			text-transform: lowercase;
+		}
+	}
 
-.CombatLogViewer-item {
-	border-bottom: 1px solid rgba(50, 50, 50, 0.5);
-	display: grid;
-	grid-template-columns: auto auto 1fr;
-	align-items: baseline;
-	padding: 0 0.2rem;
-	gap: 0.2rem;
-}
+	& .CombatLogViewer-list {
+		list-style: none;
+	}
 
-.CombatLogViewer-item:nth-child(even) {
-	background-color: var(--clv-item-bg);
-}
+	& .CombatLogViewer-item {
+		display: grid;
+		grid-template-columns: auto auto 1fr;
+		align-items: baseline;
+		gap: 0.2rem;
+		padding: 0 0.2rem;
+		border-bottom: 1px solid rgba(50, 50, 50, 0.5);
 
-.CombatLogViewer-viewing {
-	align-self: center;
-	font-style: italic;
-	opacity: 0.6;
-}
+		&:nth-child(even) {
+			background-color: var(--clv-item-bg);
+		}
 
-.CombatLogViewer-item[data-seeked] {
-	background-color: color-mix(in oklch, var(--c-chrome-yellow), transparent 70%);
-}
+		&[data-seeked] {
+			background-color: color-mix(in oklch, var(--c-chrome-yellow), transparent 70%);
+		}
 
-.CombatLogViewer time {
-	color: var(--clv-timestamp);
-	min-width: 10ch;
-}
+		&[data-event-type='SPELL_CAST_START'] {
+			color: var(--c-blue-celeste);
+		}
 
-.CombatLogViewer-filters .Button,
-.CombatLogViewer-eventType {
-	text-transform: lowercase;
-}
+		&[data-event-type='SPELL_CAST_SUCCESS'] {
+			color: var(--c-emerald-green);
+		}
 
-[data-event-type='SPELL_CAST_START'] {
-	color: var(--c-blue-celeste);
-}
-[data-event-type='SPELL_CAST_SUCCESS'] {
-	color: var(--c-emerald-green);
-}
-[data-event-type='SPELL_CAST_FAILED'] {
-	color: var(--c-scarlet-lake);
-}
-[data-event-type='SPELL_CAST_INTERRUPTED'] {
-	color: var(--c-vermilion);
-}
-[data-event-type='SPELL_HEAL'] {
-	color: var(--c-viridian);
-}
-[data-event-type='SPELL_PERIODIC_HEAL'] {
-	color: var(--c-cerulean-blue);
-}
-[data-event-type='SPELL_DAMAGE'] {
-	color: var(--c-orange);
-}
-[data-event-type='SPELL_PERIODIC_DAMAGE'] {
-	color: var(--c-marigold);
-}
-[data-event-type='SWING_DAMAGE'] {
-	color: var(--c-burnt-sienna);
-}
-[data-event-type='RANGE_DAMAGE'] {
-	color: var(--c-chocolate);
-}
-[data-event-type='SPELL_AURA_APPLIED'] {
-	color: var(--c-heliotrope);
-}
-[data-event-type='SPELL_AURA_REMOVED'] {
-	color: var(--c-violet-pale);
-}
-[data-event-type='SPELL_AURA_REFRESH'] {
-	color: var(--c-mauve);
-}
-[data-event-type='RESOURCE_GAIN'],
-[data-event-type='RESOURCE_SPENT'] {
-	color: var(--c-yellow-ochre);
-}
-[data-event-type='UNIT_DIED'] {
-	color: var(--c-prussian-blue);
-}
-[data-event-type='FIGHT_START'] {
-	color: var(--c-imperial-green);
-}
-[data-event-type='FIGHT_END'] {
-	color: var(--c-crimson-lake);
-}
-[data-event-type='SWEET_SPOT_HIT'] {
-	color: var(--c-lemon-yellow);
-}
-[data-event-type='SWEET_SPOT_MISS'],
-[data-event-type='GAME_PAUSE'] {
-	color: var(--c-french-grey);
-}
-[data-event-type='GAME_RESUME'] {
-	color: var(--c-emerald-green);
+		&[data-event-type='SPELL_CAST_FAILED'] {
+			color: var(--c-scarlet-lake);
+		}
+
+		&[data-event-type='SPELL_CAST_INTERRUPTED'] {
+			color: var(--c-vermilion);
+		}
+
+		&[data-event-type='SPELL_HEAL'] {
+			color: var(--c-viridian);
+		}
+
+		&[data-event-type='SPELL_PERIODIC_HEAL'] {
+			color: var(--c-cerulean-blue);
+		}
+
+		&[data-event-type='SPELL_DAMAGE'] {
+			color: var(--c-orange);
+		}
+
+		&[data-event-type='SPELL_PERIODIC_DAMAGE'] {
+			color: var(--c-marigold);
+		}
+
+		&[data-event-type='SWING_DAMAGE'] {
+			color: var(--c-burnt-sienna);
+		}
+
+		&[data-event-type='RANGE_DAMAGE'] {
+			color: var(--c-chocolate);
+		}
+
+		&[data-event-type='SPELL_AURA_APPLIED'] {
+			color: var(--c-heliotrope);
+		}
+
+		&[data-event-type='SPELL_AURA_REMOVED'] {
+			color: var(--c-violet-pale);
+		}
+
+		&[data-event-type='SPELL_AURA_REFRESH'] {
+			color: var(--c-mauve);
+		}
+
+		&[data-event-type='RESOURCE_GAIN'],
+		&[data-event-type='RESOURCE_SPENT'] {
+			color: var(--c-yellow-ochre);
+		}
+
+		&[data-event-type='UNIT_DIED'] {
+			color: var(--c-prussian-blue);
+		}
+
+		&[data-event-type='FIGHT_START'] {
+			color: var(--c-imperial-green);
+		}
+
+		&[data-event-type='FIGHT_END'] {
+			color: var(--c-crimson-lake);
+		}
+
+		&[data-event-type='SWEET_SPOT_HIT'] {
+			color: var(--c-lemon-yellow);
+		}
+
+		&[data-event-type='SWEET_SPOT_MISS'],
+		&[data-event-type='GAME_PAUSE'] {
+			color: var(--c-french-grey);
+		}
+
+		&[data-event-type='GAME_RESUME'] {
+			color: var(--c-emerald-green);
+		}
+	}
+
+	& .CombatLogViewer-viewing {
+		align-self: center;
+		font-style: italic;
+		opacity: 0.6;
+	}
+
+	& time {
+		color: var(--clv-timestamp);
+		min-width: 10ch;
+	}
+
+	& .CombatLogViewer-eventType {
+		text-transform: lowercase;
+	}
 }

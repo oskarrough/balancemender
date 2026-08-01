@@ -35,3 +35,7 @@ html {
 :where([type='search']) {
 	-webkit-appearance: textfield;
 }
+
+[hidden] {
+	display: none;
+}

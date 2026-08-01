@@ -1,19 +1,23 @@
+/* Base rules and design tokens. */
 @import url('styles/reset.css');
+@import url('styles/colors.css');
+
+/* Shared visual primitives. */
 /* Plate is the bevel Ability and Aura are both built on; neither depends on load order any more. */
 @import url('styles/plate.css');
-@import url('styles/ability-icon.css');
 @import url('styles/bar.css');
-@import url('styles/log.css');
+@import url('styles/ability-icon.css');
+
+/* Game and panel components. Keep unit after bar: it intentionally overrides bar dimensions. */
 @import url('styles/layout.css');
-@import url('styles/game-over.css');
-@import url('styles/floating-combat-text.css');
 @import url('styles/unit.css');
+@import url('styles/floating-combat-text.css');
+@import url('styles/game-over.css');
 @import url('styles/floating-view.css');
 @import url('styles/combat-log.css');
 @import url('styles/fight-report.css');
 @import url('styles/dev-console.css');
 @import url('styles/color-palette.css');
-@import url('styles/colors.css');
 @import url('styles/splash.css');
 
 :root {
@@ -33,10 +37,7 @@ html {
 }
 
 /* Global input styles */
-input[type='text'],
-input[type='search'],
-textarea,
-select {
+:is(input[type='text'], input[type='search'], textarea, select) {
 	border: 1px solid var(--c-black);
 	border-radius: var(--radius);
 	padding: 0 0.2rem;
@@ -54,19 +55,26 @@ h6 {
 }
 
 .Title {
-	color: var(--paleyellow);
+	color: var(--c-lemon-yellow);
 	font-family: 'Rubik 80s Fade';
 	font-size: clamp(3rem, 7vw, 100px);
 	line-height: 1.2;
 	font-weight: 400;
 }
 
-h2 {
-	/* font-weight: 700; */
-}
+/* Shared control depth — buttons and selects stay in the same visual family. */
+:is(select, .Button) {
+	--input-shadow:
+		inset 0 0.5px 0.5px 0.5px rgba(255, 255, 255, 0.09), 0 2px 4px 0 rgba(0, 0, 0, 0.15),
+		0 1px 1.5px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 0 0 0 transparent;
+	--input-shadow-hover:
+		inset 0 0.5px 1px 0.5px rgba(255, 255, 255, 0.16), 0 2px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 1.5px 0 rgba(0, 0, 0, 0.2),
+		0 1px 2px 0 rgba(0, 0, 0, 0.4), 0 0 0 0 transparent;
+	box-shadow: var(--input-shadow);
 
-h3 {
-	/* font-weight: 700; */
+	&:hover {
+		box-shadow: var(--input-shadow-hover);
+	}
 }
 
 .Button {
@@ -80,13 +88,8 @@ h3 {
 	line-height: 1;
 	padding: 0.1em 0.3em 0;
 	border-radius: var(--radius);
-
-	&[hidden] {
-		display: none;
-	}
-
 	&:hover {
-		background: color-mix(in oklch, var(--c-snow-white), var(--c-black) 12%);
+		background-color: color-mix(in oklch, var(--c-snow-white), var(--c-black) 12%);
 	}
 
 	&:active {
@@ -95,7 +98,6 @@ h3 {
 	}
 
 	&.active {
-		/* background: var(--white); */
 		background: color-mix(in oklch, var(--c-opera), transparent 80%);
 	}
 }

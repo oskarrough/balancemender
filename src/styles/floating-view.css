@@ -1,10 +1,9 @@
 floating-view {
-	position: fixed;
+	position: absolute;
 	top: 0;
 	left: 0;
 	display: flex;
 	flex-flow: column nowrap;
-	position: absolute;
 	background: var(--c-snow-white);
 	border: 1px solid;
 	border-bottom-width: 2px;
