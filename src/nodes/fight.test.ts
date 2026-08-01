@@ -124,11 +124,17 @@ describe('death', () => {
 		expect(tank.auras.size).toBe(1)
 
 		expect(tankGame.perform({type: 'use', ability: 'Mend', target: tank.id}).ok).toBe(true)
+		await settle()
 		expect(tankGame.player.currentAbility).toBeDefined()
+		expect(tankGame.player.gcd).toBeDefined()
+		const gcd = tankGame.player.gcd!
 
 		tankGame.player.health.set(0)
 		await settle()
 		expect(tankGame.player.currentAbility).toBeUndefined()
+		expect(tankGame.player.gcd).toBeUndefined()
+		expect(gcd.done).toBe(true)
+		expect(tankGame.tasks).not.toContain(gcd)
 
 		tank.health.set(0)
 		await settle()

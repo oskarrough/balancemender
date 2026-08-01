@@ -114,6 +114,7 @@ export class Fight extends Node {
 	onDeath(unit: Unit) {
 		for (const aura of unit.auras) aura.disconnect()
 		unit.currentAbility?.disconnect()
+		unit.gcd?.disconnect()
 	}
 
 	/**
