@@ -31,10 +31,19 @@ export function Menu(game: GameLoop) {
 				<label class="Button SoundToggle"
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
 				</label>
-				<label class="Button VolumeControl">
-					<input type="range" min="0" max="100" value="50" onchange=${setVolume} oninput=${setVolume} />
-					Volume
-				</label>
+				${game.muted
+					? null
+					: html`<label class="Button VolumeControl">
+							<input
+								type="range"
+								min="0"
+								max="100"
+								value=${Math.round(game.audio.volume * 100)}
+								onchange=${setVolume}
+								oninput=${setVolume}
+							/>
+							Volume
+						</label>`}
 			</menu>
 		</div>
 	`

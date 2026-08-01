@@ -79,9 +79,13 @@
 	align-items: baseline;
 	gap: 0.5rem;
 	min-height: 7rem;
-	background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), var(--dungeon-image);
+	padding: 0.5rem 0.6rem;
+	border-color: rgba(255, 255, 255, 0.3);
+	background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), var(--dungeon-image);
 	background-position: center;
 	background-size: cover;
+	/* Lets the .Button background-color show as a tint through the art, so its hover reads here. */
+	background-blend-mode: multiply;
 	color: var(--c-snow-white);
 	text-shadow: 0 1px 0.2em rgba(0, 0, 0, 0.9);
 }
