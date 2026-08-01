@@ -30,7 +30,7 @@ describe('Stats', () => {
 	})
 
 	it('derives the shipped resource values without changing the fight', () => {
-		const game = new GameLoop({party: ['Tank'], enemies: ['Nakroth', 'TinyWolf', 'WolfShaman']})
+		const game = new GameLoop({party: ['Tank'], enemies: ['Haruk', 'Runt', 'Denmother']})
 
 		expect(game.player.stats).toMatchObject({
 			stamina: 160,

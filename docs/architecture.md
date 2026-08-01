@@ -14,7 +14,7 @@ index.html
         └── GameLoop         (vroum Loop) the clock and the root of everything
               ├── dungeonRun progress through a Dungeon (data in nodes/dungeon.ts), if any
               ├── Fight  owns the party + enemies
-              │     └── Unit…             Player, Tank, WolfPup, TinyWolf, WolfShaman, Nakroth
+              │     └── Unit…             Player, Tank, Pup, Runt, Denmother, Haruk
               │           ├── Stats       base + owned modifiers → health, mana, mana regen
               │           ├── Health/Mana (Resource nodes, emit change events)
               │           ├── Targeting   a preference its drivers ask for one target at a time
@@ -41,7 +41,7 @@ rather than a missing return value.
 
 ```js
 balancemender.perform({type: 'use', ability: 'Heal', target: someId})
-balancemender.perform({type: 'spawn', unit: 'Nakroth'})
+balancemender.perform({type: 'spawn', unit: 'Haruk'})
 balancemender.perform({type: 'tune', of: 'ability', name: 'Heal', key: 'cost', value: 40})
 ```
 
@@ -69,7 +69,7 @@ GameLoop).combatLog`. Nothing here is module state, which is what lets two fight
 without writing into each other (#67).
 
 - **Log both an id and a name** for whoever an event touches. The analyzer keys on the id; the name is
-  only a label, and it changes mid-fight — spawning a second wolf renames the first one to "Tiny wolf
+  only a label, and it changes mid-fight — spawning a second wolf renames the first one to "Runt
   1", so anything keyed by name splits that unit in two.
 - **Log enough that the analyzer needs no game constants.** `SPELL_CAST_START` carries a `busyFor` —
   the cast time or the global cooldown, whichever is longer — which is how the report can say what

@@ -9,18 +9,18 @@ afterEach(() => game.disconnect())
 
 describe('healerFirst', () => {
 	/**
-	 * The whole of #51. A `WolfShaman` is spawned behind the wolves, and the tank used to take the
-	 * first live enemy and stay there — so the shaman was reached only once every wolf was dead, and
+	 * The whole of #51. A `Denmother` is spawned behind the wolves, and the tank used to take the
+	 * first live enemy and stay there — so the denmother was reached only once every wolf was dead, and
 	 * no wolf could die while it was healing them. Three units, unwinnable by every bot.
 	 */
 	it('reaches past the wolves in front for the one that can heal', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Runt', 'Denmother']})
 		await settle()
-		const shaman = game.enemies.at(-1)
+		const denmother = game.enemies.at(-1)
 		const tank = game.party.find((unit): unit is Tank => unit instanceof Tank)
 		if (!tank) throw new Error('Room did not spawn its tank')
 
-		expect(tank.targeting.pick('enemy')).toBe(shaman)
+		expect(tank.targeting.pick('enemy')).toBe(denmother)
 	})
 
 	/**
@@ -28,7 +28,7 @@ describe('healerFirst', () => {
 	 * single out, this has to be the plain "whoever comes first" it replaced, switching never.
 	 */
 	it('is exactly first when nothing in the fight heals', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Runt']})
 		await settle()
 		const candidates = game.enemies
 
@@ -39,7 +39,7 @@ describe('healerFirst', () => {
 
 describe('current target', () => {
 	it('exposes the last live pick without choosing one for the UI', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 
 		expect(wolf.targeting?.current('enemy')).toBeUndefined()
@@ -57,7 +57,7 @@ describe('current target', () => {
 
 describe('player intended target', () => {
 	it('keeps a living selection, then falls back through the living tanks', async () => {
-		game = new GameLoop({party: ['Tank', 'Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank', 'Tank'], enemies: ['Runt']})
 		await settle()
 		const [firstTank, secondTank] = game.party
 		const enemy = game.enemies[0]

@@ -79,7 +79,7 @@ const PANELS: PanelSpec[] = [
 		title: (name) => abilityRegistry[name as AbilityId].name,
 		subtitle: (name) => {
 			const {tags, school} = abilityRegistry[name as AbilityId]
-			return `ability:${name} · ${tags.join(', ')} · ${school}`
+			return `ability · ${tags.join(', ')} · ${school}`
 		},
 	},
 	{

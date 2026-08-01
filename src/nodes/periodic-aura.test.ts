@@ -114,7 +114,7 @@ describe('tick timing', () => {
 			static repeat = 2
 		}
 
-		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const sim = new SimLoop({party: ['Tank'], enemies: ['Runt']})
 		game = sim
 		await settle()
 		new PatientAura(game.party[0], game.player)
@@ -147,7 +147,7 @@ describe('cast attribution', () => {
 
 describe('the wolf bleed', () => {
 	it('opens a wound that later bites refresh rather than stack', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		new SavageBite(wolf, game.party[0]).executeNow()
 		await settle()
@@ -163,7 +163,7 @@ describe('the wolf bleed', () => {
 	 * fresh wound would be joining. Planting one anyway leaves a Task mounted on a corpse.
 	 */
 	it('does not wound a target the same bite just killed', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		game.party[0].health.set(1)
 		new SavageBite(wolf, game.party[0]).executeNow()

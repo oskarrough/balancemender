@@ -19,7 +19,7 @@ only ~4s at 60fps.
 
 ```
 agent-browser batch --bail "open http://localhost:5173/?nosplash&muted" "wait 3000"
-agent-browser eval 'for (const u of ["TinyWolf","WolfPup","Snapjaw","Skulker","Howler","WolfShaman"]) balancemender.perform({type:"spawn",unit:u}); for (let i=0;i<4;i++) balancemender.perform({type:"spawn",unit:"Tank"}); setInterval(()=>balancemender.perform({type:"healParty"}), 400); import("/src/nodes/bot.ts").then(m => new m.BotDriver(balancemender.player, "triage"))'
+agent-browser eval 'for (const u of ["Runt","Pup","Snapjaw","Skulker","Howler","Denmother"]) balancemender.perform({type:"spawn",unit:u}); for (let i=0;i<4;i++) balancemender.perform({type:"spawn",unit:"Tank"}); setInterval(()=>balancemender.perform({type:"healParty"}), 400); import("/src/nodes/bot.ts").then(m => new m.BotDriver(balancemender.player, "triage"))'
 agent-browser eval 'perf.reset()'                    # a few seconds in
 agent-browser eval 'JSON.stringify(perf.report())'   # ~5s later
 ```

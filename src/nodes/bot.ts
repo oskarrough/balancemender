@@ -77,8 +77,8 @@ export const idle: Bot = () => undefined
 export const triage: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.9) return undefined
-	if (target.health.ratio < 0.4 && castable(player, 'FlashHeal', target)) return {ability: 'FlashHeal', target}
-	if (target.health.ratio < 0.7 && castable(player, 'GreaterHeal', target)) return {ability: 'GreaterHeal', target}
+	if (target.health.ratio < 0.4 && castable(player, 'Patch', target)) return {ability: 'Patch', target}
+	if (target.health.ratio < 0.7 && castable(player, 'Mend', target)) return {ability: 'Mend', target}
 	if (castable(player, 'Heal', target)) return {ability: 'Heal', target}
 	return undefined
 }
@@ -93,7 +93,7 @@ export const renew: Bot = (player) => {
 }
 
 /**
- * Reach for Flash Heal every time, and Heal when it is out of reach. Fast reactions, burns mana,
+ * Reach for Patch every time, and Heal when it is out of reach. Fast reactions, burns mana,
  * overheals a lot — the trap the spell ladder is built around.
  *
  * The Heal fallback is what keeps it a bot about spell *choice* (#41). A bot whose whole output is
@@ -104,7 +104,7 @@ export const renew: Bot = (player) => {
 export const panic: Bot = (player) => {
 	const target = mostHurt(player)
 	if (!target || target.health.ratio > 0.95) return undefined
-	if (castable(player, 'FlashHeal', target)) return {ability: 'FlashHeal', target}
+	if (castable(player, 'Patch', target)) return {ability: 'Patch', target}
 	if (castable(player, 'Heal', target)) return {ability: 'Heal', target}
 	return undefined
 }
@@ -120,30 +120,30 @@ export const shield: Bot = (player) => {
 }
 
 /** Heal exactly as `triage` while anyone needs it; only spend safe GCDs attacking. */
-export const smite: Bot = (player) => {
+export const lance: Bot = (player) => {
 	const hurtAlly = mostHurt(player)
 	// Do not turn an unavailable heal into permission to deal damage. At exactly 90%, triage still
 	// considers the ally hurt, so this boundary deliberately matches its `> 0.9` early return.
 	if (hurtAlly && hurtAlly.health.ratio <= 0.9) return triage(player)
 
 	const target = lowestHealthEnemy(player)
-	if (target && castable(player, 'Smite', target)) return {ability: 'Smite', target}
+	if (target && castable(player, 'Lance', target)) return {ability: 'Lance', target}
 	return undefined
 }
 
-/** Heal exactly as `triage`; keep Wither ticking on the target, then fill with Smite. */
-export const wither: Bot = (player) => {
+/** Heal exactly as `triage`; keep Nettle ticking on the target, then fill with Lance. */
+export const nettle: Bot = (player) => {
 	const hurtAlly = mostHurt(player)
 	if (hurtAlly && hurtAlly.health.ratio <= 0.9) return triage(player)
 
 	const target = lowestHealthEnemy(player)
-	if (target && !hasAura(target, 'Wither') && castable(player, 'Wither', target)) {
-		return {ability: 'Wither', target}
+	if (target && !hasAura(target, 'Nettle') && castable(player, 'Nettle', target)) {
+		return {ability: 'Nettle', target}
 	}
-	if (target && castable(player, 'Smite', target)) return {ability: 'Smite', target}
+	if (target && castable(player, 'Lance', target)) return {ability: 'Lance', target}
 	return undefined
 }
 
-export const bots = {idle, triage, renew, panic, shield, smite, wither}
+export const bots = {idle, triage, renew, panic, shield, lance, nettle}
 
 export type BotName = keyof typeof bots

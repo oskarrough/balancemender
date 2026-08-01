@@ -1,48 +1,48 @@
 import {Unit} from './unit'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
-import {NastyArrow, HeavyBlow, QuickStab, SavageBite, Pounce, Worry, Ambush, Bloodhowl} from './attack'
-import {Mend} from './spells'
+import {NastyArrow, HeavyBlow, Nip, SavageBite, Pounce, Worry, Ambush, Rile} from './attack'
+import {Lick} from './spells'
 import {
 	NastyArrowCadence,
 	HeavyBlowCadence,
-	MendCadence,
-	QuickStabCadence,
+	LickCadence,
+	NipCadence,
 	SavageBiteCadence,
 	PounceCadence,
 	WorryCadence,
 	AmbushCadence,
-	BloodhowlCadence,
+	RileCadence,
 } from './cadence'
 
-export class Nakroth extends Unit {
+export class Haruk extends Unit {
 	static stamina = 500
 	static intellect = 0
 	static strength = 25
 	static agility = 8
 	static spirit = 0
 	static faction = FACTION.ENEMY
-	name = 'Nakroth the Destroyer'
+	name = 'Haruk'
 	abilities = {HeavyBlow, NastyArrow}
 	targeting = new Targeting(this, prefer.tankFirst)
 	heavyBlowCadence = new HeavyBlowCadence(this)
 	nastyArrowCadence = new NastyArrowCadence(this)
 }
 
-export class TinyWolf extends Unit {
+export class Runt extends Unit {
 	static stamina = 240
 	static intellect = 0
 	static strength = 10
 	static agility = 20
 	static spirit = 0
 	static faction = FACTION.ENEMY
-	name = 'Tiny wolf'
-	image = '/assets/generated/characters/tiny-wolf.png'
-	abilities = {SavageBite, QuickStab}
+	name = 'Runt'
+	image = '/assets/generated/characters/runt.png'
+	abilities = {SavageBite, Nip}
 	// A fifth of its picks bite someone at random — a wolf, not a soldier (#42).
 	targeting = new Targeting(this, prefer.threat(this, 0.2))
 	savageBiteCadence = new SavageBiteCadence(this)
-	quickStabCadence = new QuickStabCadence(this)
+	nipCadence = new NipCadence(this)
 }
 
 /**
@@ -50,19 +50,19 @@ export class TinyWolf extends Unit {
  * wound ticking away while you are the one healing it is a later lesson — so all of its pressure
  * arrives through `Pounce`, where the player can see it coming and answer it.
  */
-export class WolfPup extends Unit {
+export class Pup extends Unit {
 	static stamina = 150
 	static intellect = 0
 	static strength = 6
 	static agility = 20
 	static spirit = 0
 	static faction = FACTION.ENEMY
-	name = 'Wolf pup'
-	image = '/assets/generated/characters/tiny-wolf.png'
-	abilities = {QuickStab, Pounce}
+	name = 'Pup'
+	image = '/assets/generated/characters/runt.png'
+	abilities = {Nip, Pounce}
 	// A fifth of its picks bite someone at random — a wolf, not a soldier (#42).
 	targeting = new Targeting(this, prefer.threat(this, 0.2))
-	quickStabCadence = new QuickStabCadence(this)
+	nipCadence = new NipCadence(this)
 	pounceCadence = new PounceCadence(this)
 }
 
@@ -72,17 +72,17 @@ export class WolfPup extends Unit {
  * is handed its own target and a bite and a mend no longer compete for one slot; it has none yet
  * only because a pack this size does not need more damage in it.
  */
-export class WolfShaman extends Unit {
+export class Denmother extends Unit {
 	static stamina = 180
 	static intellect = 20
 	static strength = 5
 	static agility = 12
 	static spirit = 5
 	static faction = FACTION.ENEMY
-	name = 'Wolf shaman'
-	abilities = {Mend}
+	name = 'Denmother'
+	abilities = {Lick}
 	targeting = new Targeting(this, prefer.lowestHealth)
-	cadence = new MendCadence(this)
+	cadence = new LickCadence(this)
 }
 
 /** Its bleed is the point — the tank's bar keeps falling after the hit. */
@@ -94,10 +94,10 @@ export class Snapjaw extends Unit {
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Snapjaw'
-	image = '/assets/generated/characters/tiny-wolf.png'
-	abilities = {QuickStab, Worry}
+	image = '/assets/generated/characters/runt.png'
+	abilities = {Nip, Worry}
 	targeting = new Targeting(this, prefer.threat(this, 0.2))
-	quickStabCadence = new QuickStabCadence(this)
+	nipCadence = new NipCadence(this)
 	worryCadence = new WorryCadence(this)
 }
 
@@ -110,10 +110,10 @@ export class Skulker extends Unit {
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Skulker'
-	image = '/assets/generated/characters/tiny-wolf.png'
-	abilities = {QuickStab, Ambush}
+	image = '/assets/generated/characters/runt.png'
+	abilities = {Nip, Ambush}
 	targeting = new Targeting(this, prefer.healerFirst)
-	quickStabCadence = new QuickStabCadence(this)
+	nipCadence = new NipCadence(this)
 	ambushCadence = new AmbushCadence(this)
 }
 
@@ -126,9 +126,9 @@ export class Howler extends Unit {
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Howler'
-	image = '/assets/generated/characters/tiny-wolf.png'
-	abilities = {QuickStab, Bloodhowl}
+	image = '/assets/generated/characters/runt.png'
+	abilities = {Nip, Rile}
 	targeting = new Targeting(this, prefer.atRandom())
-	quickStabCadence = new QuickStabCadence(this)
-	bloodhowlCadence = new BloodhowlCadence(this)
+	nipCadence = new NipCadence(this)
+	rileCadence = new RileCadence(this)
 }

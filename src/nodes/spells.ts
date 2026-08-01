@@ -22,9 +22,9 @@ export class Heal extends Ability {
 	static effects = [new HealEffect(0.8)]
 }
 
-export class FlashHeal extends Ability {
-	static id = 'FlashHeal'
-	static name = 'Flash Heal'
+export class Patch extends Ability {
+	static id = 'Patch'
+	static name = 'Patch'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
 	static targets = 'ally' as const
@@ -35,9 +35,9 @@ export class FlashHeal extends Ability {
 	static effects = [new HealEffect(1)]
 }
 
-export class GreaterHeal extends Ability {
-	static id = 'GreaterHeal'
-	static name = 'Greater Heal'
+export class Mend extends Ability {
+	static id = 'Mend'
+	static name = 'Mend'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
 	static targets = 'ally' as const
@@ -52,9 +52,9 @@ export class GreaterHeal extends Ability {
 }
 
 /** The player's holy ranged attack. Its inherited event type records the hit as spell damage. */
-export class Smite extends Ability {
-	static id = 'Smite'
-	static name = 'Smite'
+export class Lance extends Ability {
+	static id = 'Lance'
+	static name = 'Lance'
 	static tags = ['spell', 'attack', 'ranged'] as const
 	static school = 'holy' as const
 	static targets = 'enemy' as const
@@ -94,17 +94,17 @@ export class Renew extends Ability {
 }
 
 /** Renew's organic mirror: decay over time instead of life over time. Shares the cast's id. */
-class WitherAura extends PeriodicAura {
-	static id = 'Wither'
-	static name = 'Wither'
+class NettleAura extends PeriodicAura {
+	static id = 'Nettle'
+	static name = 'Nettle'
 	static harms = true
 	static interval = 2000
 	static repeat = 6
 }
 
-export class Wither extends Ability {
-	static id = 'Wither'
-	static name = 'Wither'
+export class Nettle extends Ability {
+	static id = 'Nettle'
+	static name = 'Nettle'
 	static tags = ['spell', 'attack', 'ranged'] as const
 	static school = 'holy' as const
 	static targets = 'enemy' as const
@@ -112,7 +112,7 @@ export class Wither extends Ability {
 	static castTime = 0
 	static cooldown = 0
 	static gcd = true
-	static effects = [new ApplyAura(WitherAura, 0.3)]
+	static effects = [new ApplyAura(NettleAura, 0.3)]
 }
 
 /** Shares the cast's id so its absorbs report as the same ability. */
@@ -135,10 +135,10 @@ export class Shield extends Ability {
 	static effects = [new ApplyAura(ShieldBarrier, 1.5)]
 }
 
-/** The shaman's own ability. It is registered like every other ability but not owned by the player. */
-export class Mend extends Ability {
-	static id = 'Mend'
-	static name = 'Mend'
+/** The denmother's own ability. It is registered like every other ability but not owned by the player. */
+export class Lick extends Ability {
+	static id = 'Lick'
+	static name = 'Lick'
 	static tags = ['spell', 'healing'] as const
 	static school = 'holy' as const
 	static targets = 'ally' as const

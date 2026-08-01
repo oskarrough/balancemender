@@ -65,7 +65,7 @@ export const prefer: {
 	 * saying so in its abilities and nowhere else.
 	 *
 	 * Without this the party had no way to express "kill the healer first" and no other way to win a
-	 * fight containing one: a `WolfShaman` at the back of the array was reached only after every
+	 * fight containing one: a `Denmother` at the back of the array was reached only after every
 	 * wolf died, and no wolf could die while it lived (#51).
 	 */
 	healerFirst: {

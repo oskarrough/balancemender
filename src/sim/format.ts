@@ -9,7 +9,7 @@ const OUTCOMES: Outcome[] = ['victory', 'defeat', 'timeout']
 /** Who fought and how the healer played, with the defaults `runFight` would have filled in. */
 const lineup = (trial: Trial) => ({
 	party: trial.room?.party ?? ['Tank'],
-	enemies: trial.room?.enemies ?? ['TinyWolf'],
+	enemies: trial.room?.enemies ?? ['Runt'],
 	bot: typeof trial.bot === 'string' ? trial.bot : (trial.bot?.name ?? 'triage'),
 })
 

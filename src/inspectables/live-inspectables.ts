@@ -58,7 +58,7 @@ function liveInspectable(game: GameLoop, unit: Unit): Inspectable {
 		id: `live:${unit.id}`,
 		kind: 'live',
 		title: unit.name || unit.unitId || '?',
-		subtitle: `${unit.faction} · ${unit.unitId}`,
+		subtitle: unit.faction,
 		fields: [poolField('hp', 'Health', health), ...(mana ? [poolField('mana', 'Mana', mana)] : [])],
 		actions,
 	}

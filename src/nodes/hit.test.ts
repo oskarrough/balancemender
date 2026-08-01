@@ -60,7 +60,7 @@ describe('applyHit', () => {
 	})
 
 	it('announces a death once, however many more hits land on the body', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		const hit = (amount: number) =>
 			applyHit({
@@ -86,7 +86,7 @@ describe('PeriodicAura', () => {
 	// The old DoT class applied damage without logging anything at all, so a poison was
 	// invisible to every report. One class for both directions is what stops that recurring.
 	it('logs damage as readily as it logs healing, and credits the caster either way', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 
 		class Poison extends PeriodicAura {

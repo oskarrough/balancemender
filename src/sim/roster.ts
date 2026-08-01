@@ -1,7 +1,7 @@
 import {unitRegistry, UnitId} from '../nodes/unit-registry'
 
 /**
- * `'TinyWolf*3, Nakroth'` → `['TinyWolf', 'TinyWolf', 'TinyWolf', 'Nakroth']`
+ * `'Runt*3, Haruk'` → `['Runt', 'Runt', 'Runt', 'Haruk']`
  *
  * Validates against the unit registry here, at the edge, so a typo on the command line
  * is a usage error rather than a throw from deep inside a fight.

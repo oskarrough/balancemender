@@ -18,11 +18,11 @@ That is why the terminal and the in-game Fight report agree: one analysis, one e
 
 ```
 bun run sim                                        # the demo fight
-bun run sim --enemies 'TinyWolf*3' --bot panic     # three wolves, a bad healer
+bun run sim --enemies 'Runt*3' --bot panic     # three wolves, a bad healer
 bun run sim --repeat 20                            # 20 seeds, summarised
 bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
 bun run sim --json > fight.json                    # every event, for your own analysis
-bun run sim --party= --enemies WolfPup             # no tank — the dungeon's first room
+bun run sim --party= --enemies Pup             # no tank — the dungeon's first room
 ```
 
 `--help` lists the flags for both commands. **Redirect `--json`, never pipe it** — a fight's events
@@ -36,11 +36,11 @@ tank, so a solo room belongs to `sim` or to `runFight({room})` directly.
 One fight prints health over time, per-unit and per-ability totals, and deaths:
 
 ```
-Tank + Player  vs  TinyWolf + TinyWolf
+Tank + Player  vs  Runt + Runt
 seed 1 · triage · victory in 60.0s
 
   Tank         ██▇██▇██▇██▇██▇▇██▇███▇████▇███▇███▇████  271/300 (90%)
-  Tiny wolf 1  █▇▇▇▆▆▅▅▅▄▄▃▃▃▂▁▁▁▁·····················  dead 28.8s
+  Runt 1  █▇▇▇▆▆▅▅▅▄▄▃▃▃▂▁▁▁▁·····················  dead 28.8s
 
   unit         dmg  dps  heal  hps  overheal  taken  casts  busy
   Player         0  0.0   562  9.4       30%      0     10   33%
@@ -65,16 +65,16 @@ it — every enemy group against every bot, one table.
 ```
 bun run sweep                                       # 10 seeds, the standard groups
 bun run sweep --seeds 200                           # enough to compare two candidates
-bun run sweep --enemies 'TinyWolf*3; Nakroth' --bots triage,renew
+bun run sweep --enemies 'Runt*3; Haruk' --bots triage,renew
 ```
 
 ```
 enemies     bot     win%  ±   hurt%  timeout%  median  hps   aps   overheal%  mana/s  busy%  casts
-TinyWolf*3  idle    0%    14  25%    0%        24.0s   0.0   0.0   0%         0.0     0%     0.0
-TinyWolf*3  triage  90%   19  12%    0%        88.8s   11.0  0.0   25%        9.1     37%    16.0
-TinyWolf*3  shield  90%   19  7%     0%        88.8s   5.5   6.1   35%        8.2     29%    13.6
-Nakroth     triage  100%  14  2%     0%        60.0s   14.9  0.0   12%        11.0    40%    10.2
-Nakroth     shield  100%  14  0%     0%        60.0s   3.4   12.7  32%        9.1     28%    9.4
+Runt*3  idle    0%    14  25%    0%        24.0s   0.0   0.0   0%         0.0     0%     0.0
+Runt*3  triage  90%   19  12%    0%        88.8s   11.0  0.0   25%        9.1     37%    16.0
+Runt*3  shield  90%   19  7%     0%        88.8s   5.5   6.1   35%        8.2     29%    13.6
+Haruk     triage  100%  14  2%     0%        60.0s   14.9  0.0   12%        11.0    40%    10.2
+Haruk     shield  100%  14  0%     0%        60.0s   3.4   12.7  32%        9.1     28%    9.4
 ```
 
 Read it in this order:
@@ -107,7 +107,7 @@ or another simulation running beside it (#67).
 Fights are deterministic per seed, so they make ordinary assertions:
 
 ```ts
-const fight = await runFight({room: {enemies: ['TinyWolf', 'TinyWolf']}, bot: 'triage', seed: 3})
+const fight = await runFight({room: {enemies: ['Runt', 'Runt']}, bot: 'triage', seed: 3})
 expect(fight.outcome).toBe('victory')
 expect(analyze(fight.events).totals.overhealing).toBeLessThan(500)
 ```
@@ -118,7 +118,7 @@ Pin a seed and an ability that quietly becomes twice as strong fails the build.
 
 The healer needs to play somehow. `src/nodes/bot.ts` holds them, deliberately simple to read and
 to add to: `idle` never casts and is the control group, `triage` matches the heal to the
-emergency, `renew` keeps a heal-over-time rolling, `panic` reaches for Flash Heal every time and
+emergency, `renew` keeps a heal-over-time rolling, `panic` reaches for Patch every time and
 drops to Heal when it cannot, `shield` keeps Shield on the tank, and `smite` follows
 triage while anyone needs healing before attacking the lowest-health enemy. Every bot but `idle` has a
 spell to fall back on, deliberately: one whose whole output is a single spell stops
@@ -178,7 +178,7 @@ Nothing has to be remembered here: the tests run in plain node, so a bad import 
 
 | file                | what it does                                               |
 | ------------------- | ---------------------------------------------------------- |
-| `src/sim/roster.ts` | `'TinyWolf*3'` → a validated list of unit ids              |
+| `src/sim/roster.ts` | `'Runt*3'` → a validated list of unit ids                  |
 | `src/sim/run.ts`    | runs the real loop on a stepped clock, returns the log     |
 | `src/sim/report.ts` | pure analysis of a combat log, including health over time  |
 | `src/sim/format.ts` | plain-text reports                                         |

@@ -18,7 +18,7 @@ describe('running a fight', () => {
 		expect(fight.outcome).toBe('victory')
 		expect(fight.duration).toBeGreaterThan(1000)
 		expect(fight.events.length).toBeGreaterThan(20)
-		expect(fight.units.map((unit) => unit.name)).toEqual(['Tank', 'Player', 'Tiny wolf'])
+		expect(fight.units.map((unit) => unit.name)).toEqual(['Tank', 'Player', 'Runt'])
 	})
 
 	it('replays identically for the same seed', async () => {
@@ -43,17 +43,17 @@ describe('running a fight', () => {
 	})
 
 	it('names duplicate units apart so the report can tell them apart', async () => {
-		const fight = await runFight({room: {enemies: ['TinyWolf', 'TinyWolf']}, maxDuration: 10_000})
-		expect(fight.units.map((unit) => unit.name)).toContain('Tiny wolf 1')
-		expect(fight.units.map((unit) => unit.name)).toContain('Tiny wolf 2')
+		const fight = await runFight({room: {enemies: ['Runt', 'Runt']}, maxDuration: 10_000})
+		expect(fight.units.map((unit) => unit.name)).toContain('Runt 1')
+		expect(fight.units.map((unit) => unit.name)).toContain('Runt 2')
 	})
 
 	it('rejects unknown units with the list of known ones', async () => {
-		await expect(runFight({room: {enemies: ['Murloc' as never]}})).rejects.toThrow(/Unknown unit.*TinyWolf/s)
+		await expect(runFight({room: {enemies: ['Murloc' as never]}})).rejects.toThrow(/Unknown unit.*Runt/s)
 	})
 
 	it('leaves the log of the game you are playing alone', async () => {
-		const live = new GameLoop({party: [], enemies: ['TinyWolf']})
+		const live = new GameLoop({party: [], enemies: ['Runt']})
 		try {
 			await settle() // let the live fight log its own FIGHT_START first
 			live.combatLog.add({timestamp: 1, eventType: 'GAME_PAUSE'})
@@ -69,7 +69,7 @@ describe('running a fight', () => {
 	})
 
 	it('does not make the live panels redraw for a fight nobody is watching', async () => {
-		const live = new GameLoop({party: [], enemies: ['TinyWolf']})
+		const live = new GameLoop({party: [], enemies: ['Runt']})
 		await settle() // its own FIGHT_START, before anyone is counting
 		let heard = 0
 		const listener = () => heard++
@@ -103,7 +103,7 @@ describe('running a fight', () => {
  */
 describe('fights running at the same time', () => {
 	const SEEDS = [1, 2, 3, 4]
-	const trial = (seed: number) => ({room: {enemies: ['TinyWolf', 'TinyWolf'] as never}, seed, maxDuration: 20_000})
+	const trial = (seed: number) => ({room: {enemies: ['Runt', 'Runt'] as never}, seed, maxDuration: 20_000})
 
 	it('gives each fight its own log and the outcome it would have had alone', async () => {
 		const concurrent = await Promise.all(SEEDS.map((seed) => runFight(trial(seed))))
@@ -126,7 +126,7 @@ describe('fights running at the same time', () => {
 
 describe('healing changes the outcome', () => {
 	it('a party that is healed outlasts one that is not', async () => {
-		const trial = {room: {enemies: ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never}, seed: 3}
+		const trial = {room: {enemies: ['Runt', 'Runt', 'Runt'] as never}, seed: 3}
 		const unhealed = await runFight({...trial, bot: 'idle'})
 		const healed = await runFight({...trial, bot: 'triage'})
 
@@ -136,7 +136,7 @@ describe('healing changes the outcome', () => {
 		expect(analyze(unhealed.events).totals.healing).toBe(0)
 	})
 
-	// Nakroth's spike used to be 500-700 against a 300hp tank, so the boss was unwinnable no
+	// Haruk's spike used to be 500-700 against a 300hp tank, so the boss was unwinnable no
 	// matter how well you healed. Pin both ends: a retune that puts it back out of reach, or
 	// one that makes it win itself, should fail here.
 	//
@@ -144,7 +144,7 @@ describe('healing changes the outcome', () => {
 	// sweep has this at 25/25 either way, so a retune that makes the boss merely *usually*
 	// winnable is a real change and should fail here rather than hide behind seed 1.
 	it.each([1, 2, 3, 4, 5])('makes the boss winnable by healing and only by healing (seed %i)', async (seed) => {
-		const trial = {room: {enemies: ['Nakroth'] as never}, seed}
+		const trial = {room: {enemies: ['Haruk'] as never}, seed}
 		const unhealed = await runFight({...trial, bot: 'idle'})
 		const healed = await runFight({...trial, bot: 'triage'})
 
@@ -165,7 +165,7 @@ describe('healing changes the outcome', () => {
 	const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 	it('keeps three wolves within reach', async () => {
-		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
+		const three = ['Runt', 'Runt', 'Runt'] as never
 		const outcomes = await Promise.all(SEEDS.map((seed) => runFight({room: {enemies: three}, bot: 'triage', seed})))
 		const wins = outcomes.filter((fight) => fight.outcome === 'victory').length / SEEDS.length
 		expect(wins).toBeGreaterThan(0.55)
@@ -173,15 +173,15 @@ describe('healing changes the outcome', () => {
 
 	it.each([1, 2, 3, 4, 5])('makes three wolves need a healer and five a wall (seed %i)', async (seed) => {
 		// Still not a fight healing is irrelevant to — the control group has to keep losing it.
-		const three = ['TinyWolf', 'TinyWolf', 'TinyWolf'] as never
+		const three = ['Runt', 'Runt', 'Runt'] as never
 		expect((await runFight({room: {enemies: three}, bot: 'idle', seed})).outcome).toBe('defeat')
 
-		const five = ['TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf', 'TinyWolf'] as never
+		const five = ['Runt', 'Runt', 'Runt', 'Runt', 'Runt'] as never
 		expect((await runFight({room: {enemies: five}, bot: 'triage', seed})).outcome).toBe('defeat')
 	})
 
 	it('spamming the expensive heal overheals more than triaging', async () => {
-		const trial = {room: {enemies: ['TinyWolf', 'TinyWolf'] as never}, seed: 5, maxDuration: 40_000}
+		const trial = {room: {enemies: ['Runt', 'Runt'] as never}, seed: 5, maxDuration: 40_000}
 		const overheal = async (bot: 'panic' | 'triage') => {
 			const {totals} = analyze((await runFight({...trial, bot})).events)
 			return totals.overhealing / (totals.overhealing + totals.healing)
@@ -196,7 +196,7 @@ describe('healing changes the outcome', () => {
  * what makes it a fight, so these pin that it stayed one.
  */
 describe('the first room', () => {
-	const room = WolfWoods.rooms[0]
+	const room = TheGreen.rooms[0]
 
 	it('kills a player who never fights back', async () => {
 		const fight = await runFight({room, bot: 'triage', seed: 1})
@@ -204,7 +204,7 @@ describe('the first room', () => {
 	})
 
 	it('is won by one who does', async () => {
-		const fight = await runFight({room, bot: 'smite', seed: 1})
+		const fight = await runFight({room, bot: 'lance', seed: 1})
 		expect(fight.outcome).toBe('victory')
 	})
 })
@@ -246,7 +246,7 @@ describe('The Rust room two', () => {
 
 describe('parseUnits', () => {
 	it('expands repeats', () => {
-		expect(parseUnits('TinyWolf*3, Nakroth')).toEqual(['TinyWolf', 'TinyWolf', 'TinyWolf', 'Nakroth'])
+		expect(parseUnits('Runt*3, Haruk')).toEqual(['Runt', 'Runt', 'Runt', 'Haruk'])
 	})
 
 	it('ignores empty entries', () => {

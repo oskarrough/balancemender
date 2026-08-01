@@ -47,7 +47,7 @@ way to choose, so its Cadence says so rather than beating in silence. The select
 read that memory through `Targeting.current(rule)` to show target-of-target, but it cannot choose or
 change one.
 
-A unit used to hold one `currentTarget` that every ability read back, so `WolfShaman` could not both
+A unit used to hold one `currentTarget` that every ability read back, so `Denmother` could not both
 bite and mend — the two drivers would have overwritten each other's aim. Now nothing stores a target
 on a unit, so it can carry both. Selecting a frame is player UI state and moves nobody else's aim: a
 `BotDriver` healing the tank no longer drags the player's selection with it.

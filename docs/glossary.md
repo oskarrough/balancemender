@@ -10,7 +10,7 @@ the codebase stop being able to read each other. Definitions only — the reason
 **Unit** — anyone in a fight, player or otherwise. Both the class,
 [`Unit`](../src/nodes/unit.ts), and the word for one in play. Prefer it in prose and in log messages.
 
-**Unit id** — the registry key a unit is spawned from (`'TinyWolf'`, `'Tank'`). Distinct from a
+**Unit id** — the registry key a unit is spawned from (`'Runt'`, `'Tank'`). Distinct from a
 unit's `id`, unique per spawned instance. Anything keyed across a fight uses the instance `id`; names
 change mid-fight when a duplicate is spawned.
 
@@ -26,7 +26,7 @@ other school uses spell power. There is one attack power for both melee and rang
 **Faction** — `'party'` or `'enemy'`. A static, so the registry can say which side a unit fights on
 without spawning one.
 
-**Room** — the plan for one fight: who fights, `{party: ['Tank'], enemies: ['TinyWolf']}`, plus how
+**Room** — the plan for one fight: who fights, `{party: ['Tank'], enemies: ['Runt']}`, plus how
 the scene is dressed. Every fight is built from a room, even a bare one outside any dungeon — the
 sim's ad-hoc groups included. A request, never a record: who actually fought is the report's
 `units`. Not "stage" or "phase" — those stay free for a boss that fights in several.
@@ -109,7 +109,7 @@ the verb for the whole category, and the combat log already files everything und
 `Hit.abilityId` is set by spells, swings and auras alike.
 
 **Spell** — a magical ability. **Attack** — an ability that strikes or otherwise directly harms a
-target. Tags, not subclasses, and they may overlap: Flash Heal is a spell, Savage Bite is an attack,
+target. Tags, not subclasses, and they may overlap: Patch is a spell, Savage Bite is an attack,
 Fireball is both. Neither who triggered an ability nor whether it repeats decides its tags. Renew is
 instant and still a spell; Nasty Arrow has a wind-up and is still an attack.
 
@@ -148,8 +148,8 @@ a spell and **swings** an attack; it **uses** either.
 **Id** and **name** — every ability and aura has both. The **id** is what everything files it under:
 registry, a unit's abilities, balance, `--tune`, the log's `abilityId`, cooldowns, stack keys. The
 **name** is what a player reads and is used for nothing else. Conventionally the id is the class name
-(`FlashHeal`) and the name the same words as prose (`Flash Heal`). Name the class after the ability,
-not after who owns it or how big it is: `QuickStab`, never `SmallAttack`. Renaming an ability should
+(`SavageBite`) and the name the same words as prose (`Savage Bite`). Name the class after the ability,
+not after who owns it or how big it is: `Nip`, never `SmallAttack`. Renaming an ability should
 touch one line. Mechanic bases keep neutral identities (`Periodic`, `Barrier`), while an
 ability-owned subclass such as `RenewAura` takes its spell's id, so a cast and the aura it leaves
 behind report as one ability.

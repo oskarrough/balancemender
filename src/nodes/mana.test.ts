@@ -7,7 +7,7 @@ import {MANA_PER_INTELLECT} from './stats'
 
 /**
  * The five-second rule is the whole mechanic: casting suppresses your own regeneration, so a lull
- * is worth something. #39 claimed regen never fired at all, reasoning that a Nakroth win spent
+ * is worth something. #39 claimed regen never fired at all, reasoning that a Haruk win spent
  * exactly the 600-point pool "and not one point more". That inference was wrong — it only holds if
  * the pool ends at zero, and it ended at 45. Regen was firing; it was just too small to matter.
  * These tests pin the mechanic and the size separately, because those are the two ways it breaks.
@@ -54,7 +54,7 @@ describe('mana regeneration', () => {
 	 * backwards, turned into an assertion.
 	 */
 	it('lets the healer spend more than one poolful over a boss fight', async () => {
-		const fight = await runFight({room: {enemies: ['Nakroth']}, bot: 'triage', seed: 1})
+		const fight = await runFight({room: {enemies: ['Haruk']}, bot: 'triage', seed: 1})
 		expect(fight.outcome).toBe('victory')
 
 		const player = analyze(fight.events, fight).units.find((unit) => unit.name === 'Player')

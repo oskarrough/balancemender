@@ -8,19 +8,31 @@ export interface Dungeon {
 }
 
 /** The first dungeon: a solo pup, then the tank arrives, a bleed, a healer-hunter, and a frenzy-caller. */
-export const WolfWoods: Dungeon = {
-	id: 'WolfWoods',
-	name: 'Wolf Woods',
+export const TheGreen: Dungeon = {
+	id: 'TheGreen',
+	name: 'The Green',
 	rooms: [
-		{name: 'The stray pup', party: [], enemies: ['WolfPup'], grants: ['Heal', 'Smite']},
+		{
+			name: 'The stray pup',
+			party: [],
+			enemies: ['Pup'],
+			grants: ['Heal', 'Lance'],
+			wallpaper: '/assets/generated/explorations/green-stray-pup.png',
+		},
 		// The bleed room — a heal-over-time answers a damage-over-time.
 		{name: 'First blood', party: ['Tank'], enemies: ['Snapjaw'], grants: ['Renew']},
 		// The ambush room — a fast heal answers a burst.
-		{name: 'The skulker', party: ['Tank'], enemies: ['TinyWolf', 'Skulker'], grants: ['FlashHeal']},
+		{name: 'The skulker', party: ['Tank'], enemies: ['Runt', 'Skulker'], grants: ['Patch']},
 		// Three enemies — the multi-dot room.
-		{name: 'The howling', party: ['Tank'], enemies: ['WolfShaman', 'Howler', 'TinyWolf'], grants: ['Wither']},
+		{name: 'The howling', party: ['Tank'], enemies: ['Denmother', 'Howler', 'Runt'], grants: ['Nettle']},
 		// The boss kit: pre-shield the telegraphed arrow, big heal for the long fight.
-		{name: 'Nakroth the Destroyer', party: ['Tank'], enemies: ['Nakroth'], grants: ['Shield', 'GreaterHeal']},
+		{
+			name: 'Haruk',
+			party: ['Tank'],
+			enemies: ['Haruk'],
+			grants: ['Shield', 'Mend'],
+			wallpaper: '/assets/generated/explorations/green-guardian-glade.png',
+		},
 	],
 }
 

@@ -14,7 +14,7 @@ afterEach(() => game.disconnect())
 
 describe('generating threat', () => {
 	it('credits actual damage only to the enemy it landed on', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Runt']})
 		const [target, observer] = game.enemies
 		target.health.set(5)
 
@@ -34,7 +34,7 @@ describe('generating threat', () => {
 	})
 
 	it('splits effective healing between living enemies and ignores overhealing', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf', 'TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Runt', 'Runt']})
 		const dead = game.enemies[2]
 		dead.health.set(0)
 		game.party[0].health.set(game.party[0].health.max - 20)
@@ -59,7 +59,7 @@ describe('generating threat', () => {
 	})
 
 	it("applies an ability's multiplier to direct damage", () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		const before = wolf.health.current
 
@@ -84,7 +84,7 @@ describe('generating threat', () => {
 			static effects = [new ApplyAura(TestAura, 0.2)]
 		}
 
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Runt']})
 		game.party[0].health.set(game.party[0].health.max - 20)
 		new TestAbility(game.player, game.party[0]).land()
 		await settle()
@@ -100,11 +100,11 @@ describe('generating threat', () => {
 
 describe('threat targeting', () => {
 	it('starts tied on the tank and switches only after a challenger exceeds 110%', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		wolf.targeting = new Targeting(wolf, prefer.threat(wolf))
 		const table = wolf.threat
-		if (!table) throw new Error('Tiny wolf needs a threat table')
+		if (!table) throw new Error('Runt needs a threat table')
 
 		expect([...table.keys()]).toEqual(game.party)
 		expect(wolf.targeting?.pick('enemy')).toBe(game.party[0])

@@ -10,7 +10,7 @@ export {unitsOf, type Outcome, type UnitInfo}
 /**
  * A room, plus the four things a browser would have supplied: who drives, how the dice fall, how
  * time steps, when to give up. Wraps a room rather than extending it, so an authored dungeon room
- * can be run as written — `runFight({room: WolfWoods.rooms[3], bot: 'triage'})`.
+ * can be run as written — `runFight({room: TheGreen.rooms[3], bot: 'triage'})`.
  */
 export interface Trial {
 	room?: Room

@@ -38,7 +38,7 @@ afterEach(() => game.disconnect())
 
 describe('an ordered list of effects', () => {
 	it('runs them in the order the ability declares', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		const before = wolf.health.current
 
@@ -57,7 +57,7 @@ describe('an ordered list of effects', () => {
 	 * runs.
 	 */
 	it('plants no aura once an earlier effect killed the target', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		wolf.health.set(4)
 
@@ -72,17 +72,17 @@ describe('an ordered list of effects', () => {
 
 describe('the effects themselves', () => {
 	it('heals by the ability amount, within a few percent', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		game.party[0].health.set(10)
 
-		class Mend extends Ability {
+		class Lick extends Ability {
 			static id = 'TestMend'
-			static name = 'Test Mend'
+			static name = 'Test Lick'
 			static targets = 'ally' as const
 			static school = 'holy' as const
 			static effects = [new Heal(1)]
 		}
-		new Mend(game.player, game.party[0]).land()
+		new Lick(game.player, game.party[0]).land()
 
 		const healed = game.party[0].health.current - 10
 		expect(healed).toBeGreaterThanOrEqual(95)
@@ -95,7 +95,7 @@ describe('the effects themselves', () => {
 	 * The whole point of a coefficient living on the effect: nothing forces them to the same size.
 	 */
 	it("sizes each of a composite ability's outcomes on its own", async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		const [bite, wound] = SavageBite.effects
 

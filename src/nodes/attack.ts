@@ -5,9 +5,9 @@ import {PeriodicAura} from './periodic-aura'
 import {StatModifierAura} from './stat-modifier-aura'
 import {STAT} from './stats'
 
-export class QuickStab extends Ability {
-	static id = 'QuickStab'
-	static name = 'Quick Stab'
+export class Nip extends Ability {
+	static id = 'Nip'
+	static name = 'Nip'
 	static tags = ['attack', 'melee'] as const
 	static school = 'physical' as const
 	static targets = 'enemy' as const
@@ -144,9 +144,9 @@ export class Frenzy extends StatModifierAura {
 }
 
 /** A howl that hands a packmate Frenzy instead of hitting anything itself. */
-export class Bloodhowl extends Ability {
-	static id = 'Bloodhowl'
-	static name = 'Bloodhowl'
+export class Rile extends Ability {
+	static id = 'Rile'
+	static name = 'Rile'
 	static tags = ['spell'] as const
 	static school = 'holy' as const
 	static targets = 'ally' as const

@@ -94,14 +94,20 @@ function main() {
 			prompt,
 			html`<span class="Splash-dungeonsHeading">Choose your dungeon</span>
 				<div class="Splash-dungeons">
-					${Object.values(dungeonRegistry).map(
-						(dungeon) => html`
-							<button class="Splash-dungeon" type="button" onclick=${() => startGame(dungeon.id)}>
+					${Object.values(dungeonRegistry).map((dungeon) => {
+						const wallpaper = dungeon.rooms[0]?.wallpaper
+						return html`
+							<button
+								class="Button Splash-dungeon"
+								type="button"
+								style=${wallpaper ? `--dungeon-image: url(${wallpaper})` : ''}
+								onclick=${() => startGame(dungeon.id)}
+							>
 								${dungeon.name}
 								<small>${dungeon.rooms.length} rooms</small>
 							</button>
-						`,
-					)}
+						`
+					})}
 				</div>`,
 		)
 
@@ -112,7 +118,7 @@ function main() {
 		return
 	}
 
-	if (skipSplash) startGame('WolfWoods')
+	if (skipSplash) startGame('TheGreen')
 }
 
 function setupDevTools(game: GameLoop) {

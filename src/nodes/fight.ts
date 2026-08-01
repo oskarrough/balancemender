@@ -16,14 +16,14 @@ export interface Room {
 	party?: UnitId[]
 	enemies?: UnitId[]
 	name?: string
-	/** Nothing renders this yet. */
+	/** URL of a scene painting shown behind the fight, faded so the UI stays readable. */
 	wallpaper?: string
 	/** Spells the player learns on walking in; only dungeon runs read it. */
 	grants?: PlayerAbilityId[]
 }
 
 /** The room a fresh boot starts from. */
-export const DEMO_ROOM: Room = {party: ['Tank'], enemies: ['TinyWolf']}
+export const DEMO_ROOM: Room = {party: ['Tank'], enemies: ['Runt']}
 
 /**
  * Owns the party + enemies, built from a `Room`.
@@ -107,9 +107,9 @@ export class Fight extends Node {
 	}
 
 	/**
-	 * Two wolves both called "Tiny wolf" make an unreadable report, so number them.
+	 * Two wolves both called "Runt" make an unreadable report, so number them.
 	 * Runs after every spawn/remove, which is why it works off `baseName` — renaming
-	 * an already-renamed unit would otherwise give you "Tiny wolf 1 2".
+	 * an already-renamed unit would otherwise give you "Runt 1 2".
 	 */
 	private renumber() {
 		const groups = new Map<string, Unit[]>()

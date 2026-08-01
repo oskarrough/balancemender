@@ -70,7 +70,7 @@ describe('perform', () => {
 
 	it('spawns and removes through the fight door', () => {
 		game = new GameLoop({party: [], enemies: []})
-		const spawned = game.perform({type: 'spawn', unit: 'Nakroth'})
+		const spawned = game.perform({type: 'spawn', unit: 'Haruk'})
 		expect(spawned.ok).toBe(true)
 		expect(game.enemies).toHaveLength(1)
 
@@ -138,7 +138,7 @@ describe('every player ability', () => {
 	// `cast()`. Nothing but this stops the next ability doing the same.
 	// An enemy has to be present, or the fight is already won and the loop stops before the cast lands.
 	it.each(Object.keys(playerAbilities))('logs a completed cast: %s', async (ability) => {
-		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const sim = new SimLoop({party: ['Tank'], enemies: ['Runt']})
 		game = sim
 		await settle()
 		const AbilityClass = playerAbilities[ability as keyof typeof playerAbilities]

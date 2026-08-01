@@ -10,7 +10,7 @@ describe('a fight full of Renew', () => {
 	let fight: FightResult
 
 	beforeAll(async () => {
-		fight = await runFight({room: {enemies: ['TinyWolf', 'TinyWolf']}, bot: 'renew', seed: 1})
+		fight = await runFight({room: {enemies: ['Runt', 'Runt']}, bot: 'renew', seed: 1})
 	})
 
 	it('credits Renew ticks to the caster, not the unit being healed', () => {

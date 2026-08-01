@@ -111,25 +111,25 @@ describe('analyze', () => {
 		expect(report.units.find((a) => a.name === 'Wolf')!.deathTime).toBe(3000)
 	})
 
-	// Spawning a second wolf renames the first one to "Tiny wolf 1" halfway through the log.
+	// Spawning a second wolf renames the first one to "Runt 1" halfway through the log.
 	// Keyed by name, that split one unit into two rows and merged the new one into the old.
 	it('follows a unit that gets renamed mid-fight', () => {
 		const renamed = analyze(
 			[
-				event({time: 0, eventType: 'SWING_DAMAGE', sourceId: 'w1', sourceName: 'Tiny wolf', value: 10}),
-				event({time: 1000, eventType: 'SWING_DAMAGE', sourceId: 'w2', sourceName: 'Tiny wolf 2', value: 5}),
-				event({time: 2000, eventType: 'SWING_DAMAGE', sourceId: 'w1', sourceName: 'Tiny wolf 1', value: 10}),
+				event({time: 0, eventType: 'SWING_DAMAGE', sourceId: 'w1', sourceName: 'Runt', value: 10}),
+				event({time: 1000, eventType: 'SWING_DAMAGE', sourceId: 'w2', sourceName: 'Runt 2', value: 5}),
+				event({time: 2000, eventType: 'SWING_DAMAGE', sourceId: 'w1', sourceName: 'Runt 1', value: 10}),
 			],
 			{
 				units: [
-					{id: 'w1', name: 'Tiny wolf 1', maxHealth: 50, faction: 'enemy'},
-					{id: 'w2', name: 'Tiny wolf 2', maxHealth: 50, faction: 'enemy'},
+					{id: 'w1', name: 'Runt 1', maxHealth: 50, faction: 'enemy'},
+					{id: 'w2', name: 'Runt 2', maxHealth: 50, faction: 'enemy'},
 				],
 			},
 		)
 		expect(renamed.units.map((a) => [a.name, a.damageDone])).toEqual([
-			['Tiny wolf 1', 20],
-			['Tiny wolf 2', 5],
+			['Runt 1', 20],
+			['Runt 2', 5],
 		])
 	})
 

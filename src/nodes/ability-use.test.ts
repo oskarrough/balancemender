@@ -21,7 +21,7 @@ describe('ability use rules', () => {
 	})
 
 	it('enforces the target rule owned by the ability', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		expect(AbilityUse.whyNotUse(game.player, Heal, game.party[0])).toBeUndefined()
 		expect(AbilityUse.whyNotUse(game.player, Heal, game.enemies[0])).toBe('invalid-target')
 		expect(AbilityUse.whyNotUse(game.enemies[0], abilityRegistry.SavageBite, game.party[0])).toBeUndefined()
@@ -75,7 +75,7 @@ describe('ability use rules', () => {
 		player.currentAbility!.destroy()
 		await settle()
 		expect(AbilityUse.whyNotUse(player, Heal, game.party[0])).toBe('cooldown')
-		expect(AbilityUse.whyNotUse(player, abilityRegistry.FlashHeal, game.party[0])).toBeUndefined()
+		expect(AbilityUse.whyNotUse(player, abilityRegistry.Patch, game.party[0])).toBeUndefined()
 		game.elapsedTime = 8000
 		expect(AbilityUse.whyNotUse(player, Heal, game.party[0])).toBeUndefined()
 		game.perform({type: 'resetBalance'})
@@ -86,7 +86,7 @@ describe('ability use rules', () => {
 		const player = game.player
 		player.mana!.set(Heal.cost)
 		expect(AbilityUse.whyNotUse(player, Heal, game.party[0])).toBeUndefined()
-		expect(AbilityUse.whyNotUse(player, abilityRegistry.GreaterHeal, game.party[0])).toBe('missing-mana')
+		expect(AbilityUse.whyNotUse(player, abilityRegistry.Mend, game.party[0])).toBe('missing-mana')
 		expect(AbilityUse.whyNotUse(player, abilityRegistry.ShieldBash, game.party[0])).toBe('invalid-target')
 	})
 })

@@ -71,8 +71,8 @@ export class Cadence extends Task {
 	}
 }
 
-export class QuickStabCadence extends Cadence {
-	static abilityId = 'QuickStab'
+export class NipCadence extends Cadence {
+	static abilityId = 'Nip'
 	static delay = 0
 	static interval = 1600
 }
@@ -96,7 +96,7 @@ export class PounceCadence extends Cadence {
 	static interval = 4500
 }
 
-/** Nakroth's telegraphed nuke. The interval is the boss's difficulty dial: every 2s shaved is one more wind-up to answer per fight (playtest wanted him meaner than 12s). */
+/** Haruk's telegraphed nuke. The interval is the boss's difficulty dial: every 2s shaved is one more wind-up to answer per fight (playtest wanted him meaner than 12s). */
 export class NastyArrowCadence extends Cadence {
 	static abilityId = 'NastyArrow'
 	static delay = 8000
@@ -112,10 +112,10 @@ export class ShieldBashCadence extends Cadence {
 /**
  * Slow on purpose. At 8s this healed for as much as the tank hit for, to the decimal, so the fight
  * stalled at exactly nobody winning (#51). Half as often puts daylight between the two numbers
- * without shaving `Mend` itself, which stays a heal big enough to be worth racing.
+ * without shaving `Lick` itself, which stays a heal big enough to be worth racing.
  */
-export class MendCadence extends Cadence {
-	static abilityId = 'Mend'
+export class LickCadence extends Cadence {
+	static abilityId = 'Lick'
 	static delay = 4000
 	static interval = 16000
 }
@@ -132,8 +132,8 @@ export class AmbushCadence extends Cadence {
 	static interval = 8000
 }
 
-export class BloodhowlCadence extends Cadence {
-	static abilityId = 'Bloodhowl'
+export class RileCadence extends Cadence {
+	static abilityId = 'Rile'
 	static delay = 5000
 	static interval = 12000
 }

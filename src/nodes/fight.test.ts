@@ -3,7 +3,7 @@ import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {unitsOf} from '../sim/run'
 import {PeriodicAura} from './periodic-aura'
-import type {TinyWolf} from './enemies'
+import type {Runt} from './enemies'
 import {eligible} from './targeting'
 import {Tank} from './party-units'
 
@@ -20,9 +20,9 @@ const names = () => game.fight.units.map((unit) => unit.name)
 describe('Fight.spawn', () => {
 	// `unitId` too, because a minified build mangles `constructor.name` and nothing else would say so.
 	it('builds the fight from a room, player included', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
-		expect(names()).toEqual(['Tank', 'Player', 'Tiny wolf'])
-		expect(game.fight.units.map((u) => u.unitId)).toEqual(['Tank', 'Player', 'TinyWolf'])
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
+		expect(names()).toEqual(['Tank', 'Player', 'Runt'])
+		expect(game.fight.units.map((u) => u.unitId)).toEqual(['Tank', 'Player', 'Runt'])
 		expect(game.party[0]).toBeInstanceOf(Tank)
 	})
 
@@ -34,28 +34,28 @@ describe('Fight.spawn', () => {
 	it('routes a unit to its own faction rather than the caller picking a side', () => {
 		game = new GameLoop({party: [], enemies: []})
 		game.fight.spawn('Tank')
-		game.fight.spawn('Nakroth')
+		game.fight.spawn('Haruk')
 		expect(game.party.map((u) => u.name)).toEqual(['Player', 'Tank'])
-		expect(game.enemies.map((u) => u.name)).toEqual(['Nakroth the Destroyer'])
+		expect(game.enemies.map((u) => u.name)).toEqual(['Haruk'])
 	})
 
 	it('numbers duplicates as they come and go, not just those in the starting room', () => {
-		game = new GameLoop({party: [], enemies: ['TinyWolf']})
-		expect(names()).toContain('Tiny wolf')
+		game = new GameLoop({party: [], enemies: ['Runt']})
+		expect(names()).toContain('Runt')
 
-		game.fight.spawn('TinyWolf')
-		expect(names()).toContain('Tiny wolf 1')
-		expect(names()).toContain('Tiny wolf 2')
+		game.fight.spawn('Runt')
+		expect(names()).toContain('Runt 1')
+		expect(names()).toContain('Runt 2')
 
 		game.fight.remove(game.enemies[0].id)
-		expect(game.enemies.map((u) => u.name)).toEqual(['Tiny wolf'])
+		expect(game.enemies.map((u) => u.name)).toEqual(['Runt'])
 	})
 
 	it('is the same door the dev console spawns through', () => {
 		game = new GameLoop({party: [], enemies: []})
-		const result = game.perform({type: 'spawn', unit: 'Nakroth'})
+		const result = game.perform({type: 'spawn', unit: 'Haruk'})
 		expect(result.ok).toBe(true)
-		expect(game.enemies.map((u) => u.unitId)).toEqual(['Nakroth'])
+		expect(game.enemies.map((u) => u.unitId)).toEqual(['Haruk'])
 	})
 })
 
@@ -65,7 +65,7 @@ describe('Fight.spawn', () => {
  */
 describe('death', () => {
 	it('keeps the fallen in the fight, so the report can still draw them', async () => {
-		game = new GameLoop({party: [], enemies: ['TinyWolf', 'TinyWolf']})
+		game = new GameLoop({party: [], enemies: ['Runt', 'Runt']})
 		await settle()
 		const [first, second] = game.enemies
 
@@ -99,10 +99,10 @@ describe('death', () => {
 	})
 
 	it('takes the dead out of targeting', async () => {
-		const tankGame = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		game = tankGame
 		await settle()
-		const wolf = tankGame.enemies[0] as TinyWolf
+		const wolf = tankGame.enemies[0] as Runt
 		// Let it settle on someone first — a wolf that never picked could not pick a corpse anyway.
 		wolf.targeting.pick('enemy')
 
@@ -136,10 +136,10 @@ describe('death', () => {
 	})
 
 	it('lets the fallen come back, rather than refilling an inert corpse', async () => {
-		const tankGame = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const tankGame = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		game = tankGame
 		await settle()
-		const wolf = tankGame.enemies[0] as TinyWolf
+		const wolf = tankGame.enemies[0] as Runt
 
 		tankGame.party[0].health.set(0)
 		await settle()
@@ -155,13 +155,13 @@ describe('death', () => {
 
 describe('restart', () => {
 	it('replays the room you were fighting, not the demo one', () => {
-		game = new GameLoop({party: [], enemies: ['Nakroth']})
+		game = new GameLoop({party: [], enemies: ['Haruk']})
 		game.restart()
-		expect(game.enemies.map((u) => u.name)).toEqual(['Nakroth the Destroyer'])
+		expect(game.enemies.map((u) => u.name)).toEqual(['Haruk'])
 	})
 
 	it('clears the combat log so the next fight is not read on top of the last one', () => {
-		game = new GameLoop({party: [], enemies: ['TinyWolf']})
+		game = new GameLoop({party: [], enemies: ['Runt']})
 		game.combatLog.add({timestamp: 1, eventType: 'SPELL_DAMAGE', value: 50})
 		expect(game.combatLog.events.length).toBeGreaterThan(0)
 

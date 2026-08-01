@@ -3,8 +3,8 @@
  *
  *   bun run sweep
  *   bun run sweep --seeds 25
- *   bun run sweep --enemies 'TinyWolf*3, Nakroth' --bots triage,renew
- *   bun run sweep --seeds 200 --enemies 'TinyWolf*4' --tune 'aura:Rend.coefficient=-0.8'
+ *   bun run sweep --enemies 'Runt*3, Haruk' --bots triage,renew
+ *   bun run sweep --seeds 200 --enemies 'Runt*4' --tune 'aura:Rend.coefficient=-0.8'
  *
  * `bun run sim --repeat` answers "how does this one fight usually go". This answers the question
  * above it: is the difficulty curve the shape we think it is? How to read the table is in
@@ -45,8 +45,7 @@ const {values: args} = attempt(() =>
  * and the interesting cells are the ones that are neither hopeless nor free — at four wolves
  * `renew` is the only bot still moving, which makes it the row a retune shows up in first.
  */
-const DEFAULT_ENEMIES =
-	'TinyWolf; TinyWolf*2; TinyWolf*3; TinyWolf*4; TinyWolf*5; TinyWolf*2, WolfShaman; Nakroth; Nakroth, TinyWolf*2'
+const DEFAULT_ENEMIES = 'Runt; Runt*2; Runt*3; Runt*4; Runt*5; Runt*2, Denmother; Haruk; Haruk, Runt*2'
 
 if (args.help) {
 	console.log(

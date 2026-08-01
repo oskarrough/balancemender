@@ -17,7 +17,7 @@ describe('abilities', () => {
 			static gcd = true
 		}
 
-		const game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		const game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		await settle()
 		const wolf = game.enemies[0]
 		wolf.abilities = {...wolf.abilities, WindUp}
@@ -25,7 +25,7 @@ describe('abilities', () => {
 
 		expect(wolf.useAbility('WindUp', game.party[0]).ok).toBe(true)
 		expect(wolf.currentAbility?.id).toBe('WindUp')
-		const attack = wolf.useAbility('QuickStab', game.party[0])
+		const attack = wolf.useAbility('Nip', game.party[0])
 		expect(attack.ok).toBe(true)
 		expect(game.party[0].health.current).toBeLessThan(before)
 		expect(wolf.mana).toBeUndefined()

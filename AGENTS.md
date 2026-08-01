@@ -1,4 +1,4 @@
-This project uses GitHub issues for tasks.
+This project uses GitHub issues for tasks. Treat this file as a living field guide, not a second source of truth: surface inconsistencies or contradictions explicitly, follow the authoritative reference, and add only durable general guidance or links that prevent the same stumble recurring.
 
 `bun run check` typechecks, lints and formats. `bun run test` runs the tests (never `bun test`). Run
 both before committing, not while working. The `main` branch deploys to balancemender.0sk.ar
@@ -33,7 +33,7 @@ two classes.
 Don't guess at balance — run it:
 
 ```
-bun run sim --enemies 'TinyWolf*3' --bot triage --repeat 10   # how this fight usually goes
+bun run sim --enemies 'Runt*3' --bot triage --repeat 10   # how this fight usually goes
 bun run sweep --seeds 200                                     # the shape of the curve
 ```
 
@@ -49,7 +49,7 @@ the fight is running on first paint (`src/main.ts`, also takes `&muted`):
 
 ```
 agent-browser batch --bail "open http://localhost:5173/?nosplash" "wait 1000" "screenshot /abs/path.png"
-agent-browser eval 'balancemender.perform({type: "spawn", unit: "Nakroth"})'
+agent-browser eval 'balancemender.perform({type: "spawn", unit: "Haruk"})'
 ```
 
 `window.balancemender` is the running game, so `eval` reaches all of it. A relative screenshot path

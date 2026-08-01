@@ -2,14 +2,14 @@ import {abilityRegistry} from './nodes/registry'
 import {
 	NastyArrowCadence,
 	HeavyBlowCadence,
-	MendCadence,
-	QuickStabCadence,
+	LickCadence,
+	NipCadence,
 	ShieldBashCadence,
 	SavageBiteCadence,
 	PounceCadence,
 	WorryCadence,
 	AmbushCadence,
-	BloodhowlCadence,
+	RileCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import {CONDITION_THRESHOLDS} from './nodes/types'
@@ -64,16 +64,16 @@ for (const [abilityId, AbilityClass] of Object.entries(abilityRegistry)) {
 }
 
 export const cadenceClasses: Record<string, CadenceClass> = {
-	QuickStabCadence,
+	NipCadence,
 	HeavyBlowCadence,
 	SavageBiteCadence,
 	NastyArrowCadence,
 	ShieldBashCadence,
-	MendCadence,
+	LickCadence,
 	PounceCadence,
 	WorryCadence,
 	AmbushCadence,
-	BloodhowlCadence,
+	RileCadence,
 }
 
 /**

@@ -94,7 +94,7 @@ describe('UNIT_CONDITION', () => {
 	const conditions = () => events().filter((event) => event.eventType === 'UNIT_CONDITION')
 
 	it('records a crossing once, after the hit that caused it, with who caused it', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		const wolf = game.enemies[0]
 		const hit = (amount: number) =>
 			applyHit({
@@ -123,7 +123,7 @@ describe('UNIT_CONDITION', () => {
 	})
 
 	it('says nothing extra when the hit kills, because a corpse reading injured is not news', () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
 		applyHit({
 			source: game.enemies[0],
 			target: game.party[0],

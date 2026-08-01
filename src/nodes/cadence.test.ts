@@ -3,9 +3,9 @@ import {settle} from '../test-setup'
 import {SimLoop} from '../sim/run'
 import {Cadence} from './cadence'
 import {GameLoop} from './game-loop'
-import {Nakroth, TinyWolf, WolfShaman} from './enemies'
-import {Mend} from './spells'
-import {QuickStab} from './attack'
+import {Haruk, Runt, Denmother} from './enemies'
+import {Lick} from './spells'
+import {Nip} from './attack'
 
 let game!: GameLoop
 const events = () => game.combatLog.events
@@ -13,13 +13,13 @@ afterEach(() => game.disconnect())
 
 describe('a cadence', () => {
 	it('requests every kind through the unit ability collection', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Denmother']})
 		await settle()
-		const [wolf, shaman] = game.enemies
-		new Cadence(wolf, 'QuickStab').tick()
-		expect(events().some((event) => event.abilityId === 'QuickStab')).toBe(true)
-		new Cadence(shaman, 'Mend').tick()
-		expect(shaman.currentAbility?.id).toBe('Mend')
+		const [wolf, denmother] = game.enemies
+		new Cadence(wolf, 'Nip').tick()
+		expect(events().some((event) => event.abilityId === 'Nip')).toBe(true)
+		new Cadence(denmother, 'Lick').tick()
+		expect(denmother.currentAbility?.id).toBe('Lick')
 		await settle()
 	})
 
@@ -29,19 +29,19 @@ describe('a cadence', () => {
 	})
 
 	it('preserves independent attack timings', async () => {
-		const sim = new SimLoop({party: ['Tank'], enemies: ['TinyWolf', 'Nakroth']})
+		const sim = new SimLoop({party: ['Tank'], enemies: ['Runt', 'Haruk']})
 		game = sim
 		await settle()
-		const wolf = game.enemies[0] as TinyWolf
-		const nakroth = game.enemies[1] as Nakroth
+		const wolf = game.enemies[0] as Runt
+		const haruk = game.enemies[1] as Haruk
 		for (const unit of [...game.party, ...game.enemies]) {
 			unit.health.max = 10_000
 			unit.health.set(10_000)
 		}
-		expect([wolf.quickStabCadence.delay, wolf.quickStabCadence.interval]).toEqual([0, 1600])
+		expect([wolf.nipCadence.delay, wolf.nipCadence.interval]).toEqual([0, 1600])
 		expect([wolf.savageBiteCadence.delay, wolf.savageBiteCadence.interval]).toEqual([4000, 3800])
-		expect([nakroth.heavyBlowCadence.delay, nakroth.heavyBlowCadence.interval]).toEqual([4000, 3800])
-		expect([nakroth.nastyArrowCadence.delay, nakroth.nastyArrowCadence.interval]).toEqual([8000, 10000])
+		expect([haruk.heavyBlowCadence.delay, haruk.heavyBlowCadence.interval]).toEqual([4000, 3800])
+		expect([haruk.nastyArrowCadence.delay, haruk.nastyArrowCadence.interval]).toEqual([8000, 10000])
 		for (let time = 0; time <= 8000; time += 100) {
 			sim.runFrame(time)
 			await settle()
@@ -50,7 +50,7 @@ describe('a cadence', () => {
 			events()
 				.filter((event) => event.abilityId === id && 'value' in event)
 				.map((event) => event.time)
-		expect(times('QuickStab')).toEqual([0, 1600, 3200, 4800, 6400, 8000])
+		expect(times('Nip')).toEqual([0, 1600, 3200, 4800, 6400, 8000])
 		expect(times('SavageBite')).toEqual([4000, 7800])
 		expect(times('HeavyBlow')).toEqual([4000, 7800])
 		expect(times('NastyArrow')).toEqual([8000])
@@ -60,18 +60,20 @@ describe('a cadence', () => {
 
 describe('an enemy cast cadence', () => {
 	it('mends the ally that needs it most', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
-		const [wolf, shaman] = game.enemies
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Denmother']})
+		const [wolf, denmother] = game.enemies
 		await settle()
 		wolf.health.set(wolf.health.max / 2)
 		const before = wolf.health.current
-		const use = shaman.useAbility('Mend', wolf)
+		const use = denmother.useAbility('Lick', wolf)
 		expect(use.ok).toBe(true)
 		if (!use.ok) return
 		await settle()
 		use.value.tick()
 		expect(wolf.health.current).toBeGreaterThan(before)
-		expect(events().filter((event) => event.eventType === 'SPELL_HEAL' && event.sourceId === shaman.id)).toHaveLength(1)
+		expect(
+			events().filter((event) => event.eventType === 'SPELL_HEAL' && event.sourceId === denmother.id),
+		).toHaveLength(1)
 	})
 
 	/**
@@ -79,17 +81,17 @@ describe('an enemy cast cadence', () => {
 	 * both an attack and a heal meant two drivers overwriting each other's aim.
 	 */
 	it('lets one unit strike an enemy and mend an ally at the same time', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Denmother']})
 		await settle()
-		const [wolf, shaman] = game.enemies
-		shaman.abilities = {...shaman.abilities, QuickStab}
+		const [wolf, denmother] = game.enemies
+		denmother.abilities = {...denmother.abilities, Nip}
 		wolf.health.set(wolf.health.max / 2)
 		const tankBefore = game.party[0].health.current
 
-		new Cadence(shaman, 'QuickStab').tick()
-		new Cadence(shaman, 'Mend').tick()
+		new Cadence(denmother, 'Nip').tick()
+		new Cadence(denmother, 'Lick').tick()
 		await settle()
-		shaman.currentAbility?.tick()
+		denmother.currentAbility?.tick()
 
 		expect(game.party[0].health.current).toBeLessThan(tankBefore)
 		expect(wolf.health.current).toBeGreaterThan(wolf.health.max / 2)
@@ -97,16 +99,16 @@ describe('an enemy cast cadence', () => {
 	})
 
 	it('uses its own collection, cast rules and cadence rather than mana', async () => {
-		game = new GameLoop({party: ['Tank'], enemies: ['TinyWolf', 'WolfShaman']})
-		const [wolf, shaman] = game.enemies
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Denmother']})
+		const [wolf, denmother] = game.enemies
 		await settle()
-		expect(shaman.useAbility('Heal', wolf)).toMatchObject({ok: false, error: /Ability Heal/})
-		expect(wolf.useAbility('Mend', shaman)).toMatchObject({ok: false})
-		expect(shaman.mana).toBeUndefined()
-		expect(Mend.cost).toBe(0)
-		expect((shaman as WolfShaman).cadence.interval).toBeGreaterThan(0)
-		expect(shaman.useAbility('Mend', wolf).ok).toBe(true)
-		expect((shaman as WolfShaman).cadence.shouldTick()).toBe(false)
+		expect(denmother.useAbility('Heal', wolf)).toMatchObject({ok: false, error: /Ability Heal/})
+		expect(wolf.useAbility('Lick', denmother)).toMatchObject({ok: false})
+		expect(denmother.mana).toBeUndefined()
+		expect(Lick.cost).toBe(0)
+		expect((denmother as Denmother).cadence.interval).toBeGreaterThan(0)
+		expect(denmother.useAbility('Lick', wolf).ok).toBe(true)
+		expect((denmother as Denmother).cadence.shouldTick()).toBe(false)
 		await settle()
 	})
 })

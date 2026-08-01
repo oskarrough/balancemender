@@ -2,8 +2,8 @@
  * Simulate fights from the terminal.
  *
  *   bun run sim
- *   bun run sim --enemies TinyWolf*3 --bot panic
- *   bun run sim --party Tank --enemies Nakroth --repeat 20
+ *   bun run sim --enemies Runt*3 --bot panic
+ *   bun run sim --party Tank --enemies Haruk --repeat 20
  *   bun run sim --repeat 20 --tune 'ability:Heal.cost=40'
  *   bun run sim --json > fight.json
  */
@@ -45,7 +45,7 @@ if (args.help) {
 bun run sim [options]
 
   --party    <units>   allies besides you, comma separated (default Tank)
-  --enemies  <units>   enemies, comma separated, "Name*3" to repeat (default TinyWolf)
+  --enemies  <units>   enemies, comma separated, "Name*3" to repeat (default Runt)
   --bot      <name>    how the healer plays: ${Object.keys(bots).join(', ')} (default triage)
   --seed     <n>       dice seed; the same seed always plays out the same (default 1)
   --repeat   <n>       run n fights and summarise them

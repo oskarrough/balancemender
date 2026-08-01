@@ -13,16 +13,16 @@
 			"prompt": "A steady warm golden healing light, calm and reliable, like a basic efficient restorative spell."
 		},
 		{
-			"id": "flash-heal",
+			"id": "patch",
 			"type": "spell",
-			"name": "Flash Heal",
-			"prompt": "A sharp burst of white-gold healing light, fast and urgent, like a single concentrated pulse."
+			"name": "Patch",
+			"prompt": "A quick bright stitch of white-gold light closing a small tear, fast and urgent, like a swift practical patch-up mid-fight."
 		},
 		{
-			"id": "greater-heal",
+			"id": "mend",
 			"type": "spell",
-			"name": "Greater Heal",
-			"prompt": "A powerful radiant healing surge, broad and weighty, with layered holy light and a sense of large impact."
+			"name": "Mend",
+			"prompt": "A broad deliberate wave of layered warm golden light knitting a deep wound closed, weighty and unhurried, the signature craft of a village mender."
 		},
 		{
 			"id": "renew",
@@ -37,22 +37,22 @@
 			"prompt": "A translucent blue-violet ward shaped like a compact domed shield, protecting one small warm golden spark at its center. Concentric runic arcs suggest sturdy magical absorption without using letters or text. Dark indigo background, cool luminous barrier, restrained gold core, clean centered silhouette."
 		},
 		{
-			"id": "smite",
+			"id": "lance",
 			"type": "spell",
-			"name": "Smite",
-			"prompt": "A sharp white-gold celestial spearhead driving downward into and splitting a dark circular stone sun-disc, precise and punitive rather than restorative. A small broken halo and three angular radiant shards reinforce the impact. Keep the entire compact symbol inside generous dark padding, with a deep charcoal-blue background and a clean silhouette readable at 64x64 pixels."
+			"name": "Lance",
+			"prompt": "A slender white-gold lancet of light piercing downward into a dark swollen orb, precise and surgical, releasing three small radiant droplets where it drains — a healer's tool turned on what festers. Keep the entire compact symbol inside generous dark padding, with a deep charcoal-blue background and a clean silhouette readable at 64x64 pixels."
 		},
 		{
-			"id": "wither",
+			"id": "nettle",
 			"type": "spell",
-			"name": "Wither",
-			"prompt": "A single crooked, bone-pale dying plant with bare branches and one large rust-red leaf just beginning to detach — the suspended instant before the last living thing falls. Make the whole plant and its final leaf one stark asymmetric emblem, not a close-up leaf or Renew-like botanical symbol. For this icon, use a grim late-1970s French science-fiction comic mood: elegant precise ink contours, sparse cross-hatching and stipple, flat muted color fields, surreal stillness, and vintage print texture on a deep midnight blue-black background. Desolate and terminal rather than magical, with a clear silhouette readable at 64x64 pixels."
+			"name": "Nettle",
+			"prompt": "A single tall stinging nettle, elegant and bristling, its serrated leaves haloed by fine drifting stinging hairs that catch a pale light — a patient herbal sting that works over time. Make the whole plant one stark asymmetric emblem. For this icon, use a late-1970s French science-fiction comic mood: elegant precise ink contours, sparse cross-hatching and stipple, flat muted color fields, surreal stillness, and vintage print texture on a deep midnight blue-black background. Quiet, botanical and needling, with a clear silhouette readable at 64x64 pixels."
 		},
 		{
-			"id": "tiny-wolf",
+			"id": "runt",
 			"type": "character",
-			"name": "Tiny wolf",
-			"prompt": "A small scrappy dungeon wolf with alert eyes, rough grey fur, and a mildly dangerous expression."
+			"name": "Runt",
+			"prompt": "A small scrappy mud-flecked wolf with alert eyes, rough grey fur, and a mildly dangerous expression — an animal having a bad day."
 		},
 		{
 			"id": "tank",
