@@ -133,7 +133,7 @@ export const TheGlow: Dungeon = {
 		// them. Idle loses this one outright (0% in a 200-seed sim); triage clears it every time.
 		{
 			name: 'The bright water',
-			party: ['Tank', 'Wren'],
+			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Sivi', 'Sivi', 'Muhl'],
 			scene: 'glow-bright-water',
 		},
@@ -142,7 +142,7 @@ export const TheGlow: Dungeon = {
 		// live alongside it.
 		{
 			name: 'The sap shells',
-			party: ['Tank', 'Wren'],
+			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Grub', 'Grub', 'GrubDeep', 'Sivi'],
 			scene: 'glow-sap-shells',
 		},
@@ -151,7 +151,7 @@ export const TheGlow: Dungeon = {
 		// clean (200-seed sim). Boss-scale health, like Haruk and Roha before her.
 		{
 			name: 'The tender',
-			party: ['Tank', 'Wren'],
+			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Orovan'],
 			scene: 'glow-tender',
 		},
@@ -164,10 +164,6 @@ export const TheGlow: Dungeon = {
  * Glider's `Hollow` drains the healer's own pool directly — no hit, no wound — while the Ringer
  * carries the bellwether family's telegraphed weight forward into white stone. Tempo is
  * monumental: few rooms, each an event, per [universe.md](../../docs/universe.md#4-the-white-where-the-river-begins).
- *
- * Not yet in `dungeonRegistry`: the scene art doesn't exist on disk yet. Flip the export below
- * once `white-gliders`, `white-ringing-shelf`, `white-first-water-room` and `white-source` each
- * have a landscape and a portrait painting.
  */
 export const TheWhite: Dungeon = {
 	id: 'TheWhite',
@@ -177,7 +173,7 @@ export const TheWhite: Dungeon = {
 		// is here to be felt, the way Muhl's Waft was in the Glow.
 		{
 			name: 'The gliders',
-			party: ['Tank', 'Wren'],
+			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Glider', 'Glider'],
 			scene: 'white-gliders',
 		},
@@ -186,7 +182,7 @@ export const TheWhite: Dungeon = {
 		// it. Idle wipes every seed; triage clears it but ends the fight nearly dry.
 		{
 			name: 'The ringing shelf',
-			party: ['Tank', 'Wren'],
+			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Ringer', 'Ringer', 'Glider'],
 			scene: 'white-ringing-shelf',
 		},
@@ -194,7 +190,7 @@ export const TheWhite: Dungeon = {
 		// single Ringer supplies the telegraph — idle still wipes, triage still clears.
 		{
 			name: 'The first water',
-			party: ['Tank', 'Wren'],
+			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Glider', 'Glider', 'Ringer'],
 			scene: 'white-first-water-room',
 		},
@@ -202,7 +198,7 @@ export const TheWhite: Dungeon = {
 		// genuinely hard: idle wipes every seed, triage clears roughly four fights in five.
 		{
 			name: 'The source',
-			party: ['Tank', 'Wren'],
+			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Uvalu'],
 			scene: 'white-source',
 		},

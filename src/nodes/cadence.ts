@@ -119,6 +119,12 @@ export class SlingCadence extends Cadence {
 	static interval = 1800
 }
 
+/** Clover's smoker puff, `Sling` reused at a beekeeper's slower tempo — same shape as `SiviAmbushCadence`. */
+export class CloverSlingCadence extends SlingCadence {
+	static delay = 1500
+	static interval = 3600
+}
+
 /**
  * Slow on purpose. At 8s this healed for as much as the tank hit for, to the decimal, so the fight
  * stalled at exactly nobody winning (#51). Half as often puts daylight between the two numbers
@@ -226,7 +232,7 @@ export class GroundfallCadence extends Cadence {
  * `Brightest`) hits like Skulker instead of only nipping. Faster than Skulker's own
  * `AmbushCadence`: at 6s it is the room's real threat, and its target is whoever the mark or the
  * threat table points it at, which is the whole "watch who you heal" lesson (200-seed sim with
- * the full party: idle loses "The bright water" ~60% of the time, triage still clears it).
+ * Tank, Wren and Clover: idle loses "The bright water" nearly every seed, triage still clears it).
  */
 export class SiviAmbushCadence extends AmbushCadence {
 	static delay = 3000

@@ -293,19 +293,20 @@ export class Howler extends Unit {
  * The Glow wisp: paints the Glow gate on the healer (`SporeCadence`), then chases whoever it
  * marked `Brightest` via plain threat. `Ambush` is reused whole — same leap Skulker uses, on its
  * own faster `SiviAmbushCadence` — so the wisp that drifts to the marked ally hits hard, and the
- * mark's redirect carries real risk: 200-seed sim with the full party, `Sivi*2, Muhl` — idle loses
- * ~60% of the time, triage still clears every seed.
+ * mark's redirect carries real risk: 200-seed sim with the full party (Tank, Wren, Clover),
+ * `Sivi*2, Muhl` — idle loses nearly every seed, triage still clears every seed. Stamina raised
+ * from 140 to hold that shape once Clover's extra body (#88) padded the party's health pool.
  * "Ambush" reads oddly on a wisp's lunge rather than a leap — a naming pass for a director later.
  */
 export class Sivi extends Unit {
-	static stamina = 140
+	static stamina = 200
 	static intellect = 0
 	static strength = 18
 	static agility = 22
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Sivi'
-	image = '/assets/generated/characters/runt.png'
+	image = '/assets/generated/characters/sivi.png'
 	abilities = {Nip, Spore, Ambush}
 	targeting = new Targeting(this, prefer.threat(this))
 	nipCadence = new NipCadence(this)
@@ -326,7 +327,7 @@ export class Muhl extends Unit {
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Muhl'
-	image = '/assets/generated/characters/runt.png'
+	image = '/assets/generated/characters/muhl.png'
 	abilities = {Waft}
 	// Waft hits the whole party regardless of who this settles on; any living ally keeps the cast valid.
 	targeting = new Targeting(this, prefer.atRandom())
@@ -348,7 +349,7 @@ export class Grub extends Unit {
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Grub'
-	image = '/assets/generated/characters/runt.png'
+	image = '/assets/generated/characters/grub.png'
 	abilities = {HeavyBlow}
 	targeting = new Targeting(this, prefer.threat(this))
 	heavyBlowCadence = new GrubWakeCadence(this)
@@ -363,10 +364,11 @@ export class GrubDeep extends Grub {
  * The dungeon's guardian: tall, slow, and the room's only threat. `Groundfall` is the whole
  * telegraph — long enough to answer, same shape as Trample and Toll — with `HeavyBlow` filling the
  * gap between wind-ups so the healer never gets a completely free beat. Boss-scale health, like
- * Haruk and Roha.
+ * Haruk and Roha. Raised from 650 once Clover's extra body (#88) let idle win nearly half its
+ * 200-seed sims; back at 700 idle wipes again while triage still clears clean.
  */
 export class Orovan extends Unit {
-	static stamina = 650
+	static stamina = 700
 	static intellect = 0
 	static strength = 22
 	static agility = 4
@@ -374,6 +376,7 @@ export class Orovan extends Unit {
 	static faction = FACTION.ENEMY
 	static boss = true
 	name = 'Orovan'
+	image = '/assets/generated/characters/orovan.png'
 	abilities = {HeavyBlow, Groundfall}
 	targeting = new Targeting(this, prefer.tankFirst)
 	heavyBlowCadence = new HeavyBlowCadence(this)
@@ -396,7 +399,7 @@ export class Glider extends Unit {
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Glider'
-	image = '/assets/generated/characters/runt.png'
+	image = '/assets/generated/characters/glider.png'
 	abilities = {Hollow}
 	targeting = new Targeting(this, prefer.healerFirst)
 	hollowCadence = new HollowCadence(this)
@@ -415,7 +418,7 @@ export class Ringer extends Unit {
 	static spirit = 0
 	static faction = FACTION.ENEMY
 	name = 'Ringer'
-	image = '/assets/generated/characters/runt.png'
+	image = '/assets/generated/characters/ringer.png'
 	abilities = {HeavyBlow, Trample}
 	targeting = new Targeting(this, prefer.tankFirst)
 	heavyBlowCadence = new HeavyBlowCadence(this)
@@ -427,12 +430,13 @@ export class Ringer extends Unit {
  * telegraphed-boss shape as Orovan; `Hollow` runs alongside on its own `HollowCadence`, always
  * aimed at the healer regardless of Uvalu's own tank-first preference (the same split Sivi's Spore
  * and Nip already keep). Boss-scale health, and the two pressures — a closing purse and a wind-up
- * to answer — arrive together rather than one after the other: 200-seed sim, "The source" (full
- * party) — idle wipes every seed, triage clears 78% of them, ending with ~24/600 mana. The finale
- * is meant to be genuinely hard rather than a guaranteed clear.
+ * to answer — arrive together rather than one after the other: 200-seed sim with Tank, Wren and
+ * Clover — idle wipes every seed, triage clears 83% of them. Stamina raised from 900 once Clover's
+ * extra body (#88) pushed triage's clear rate to 100%. The finale is meant to be genuinely hard
+ * rather than a guaranteed clear.
  */
 export class Uvalu extends Unit {
-	static stamina = 900
+	static stamina = 1100
 	static intellect = 20
 	static strength = 22
 	static agility = 4
@@ -440,6 +444,7 @@ export class Uvalu extends Unit {
 	static faction = FACTION.ENEMY
 	static boss = true
 	name = 'Uvalu'
+	image = '/assets/generated/characters/uvalu.png'
 	abilities = {HeavyBlow, Groundfall, Hollow}
 	targeting = new Targeting(this, prefer.tankFirst)
 	heavyBlowCadence = new HeavyBlowCadence(this)

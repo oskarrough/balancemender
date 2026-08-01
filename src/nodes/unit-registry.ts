@@ -22,7 +22,7 @@ import {
 	Ringer,
 	Uvalu,
 } from './enemies'
-import {Tank, Wren} from './party-units'
+import {Tank, Wren, Clover} from './party-units'
 import {Player} from './player'
 
 /**
@@ -40,6 +40,7 @@ export const unitRegistry = {
 	Player,
 	Tank,
 	Wren,
+	Clover,
 	Pup,
 	Runt,
 	Denmother,
