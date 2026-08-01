@@ -19,8 +19,8 @@ const GAME_OVER_COPY: Record<
 	NonNullable<GameLoop['outcome']>,
 	{headline: string; blurb: (seconds: number) => string}
 > = {
-	victory: {headline: 'Victory!', blurb: (s) => `Cleared in ${s}s.`},
-	defeat: {headline: 'Defeated', blurb: (s) => `You lasted ${s}s.`},
+	victory: {headline: 'Mended.', blurb: (s) => `Cleared in ${s}s.`},
+	defeat: {headline: 'The party falls', blurb: (s) => `You lasted ${s}s.`},
 	timeout: {headline: "Time's Up", blurb: (s) => `You held out the full ${s}s.`},
 }
 

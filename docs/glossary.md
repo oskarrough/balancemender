@@ -42,6 +42,13 @@ class's own faction, so nothing picks the array itself.
 
 **Alive** — health above zero. Not "in `fight.party`" — the dead stay in those arrays.
 
+**Settle** — what an enemy at zero health does, in anything the player reads: the inflammation
+breaks and the animal limps off. The code says `alive`, `kill` and `UNIT_DIED`; the narrator never
+does. A boss settling earns a whole sentence — see [universe.md](./universe.md).
+
+**Fall** — what a party member at zero health does, in anything the player reads. Down, not dead.
+Same split: `alive`, `kill` and `wipe` stay in the code.
+
 **Condition** — how hurt a unit is: `injured` below 35% health, `healthy` above 80%, `steady`
 between. A pure function of the health bar with no memory, and separate from `alive` (a corpse reads
 `injured`).

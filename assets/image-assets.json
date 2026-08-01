@@ -49,6 +49,24 @@
 			"prompt": "A single tall stinging nettle, elegant and bristling, its serrated leaves haloed by fine drifting stinging hairs that catch a pale light — a patient herbal sting that works over time. Make the whole plant one stark asymmetric emblem. For this icon, use a late-1970s French science-fiction comic mood: elegant precise ink contours, sparse cross-hatching and stipple, flat muted color fields, surreal stillness, and vintage print texture on a deep midnight blue-black background. Quiet, botanical and needling, with a clear silhouette readable at 64x64 pixels."
 		},
 		{
+			"id": "gash",
+			"type": "spell",
+			"name": "Gash",
+			"prompt": "An iconic flat emblem of two simple ivory wolf fangs closing around one jagged rust-red cleft. The cleft is a bold tapered shape like split bark or a cracked riverbed, with one small amber pulse at its center to suggest the wound hurting again and again. Use the warm natural palette of The Green: moss-black field, lichen green, sunlit ochre, clay red and a tiny stream-blue accent. Hand-painted gouache shapes with confident ink contours and almost no interior detail. Graphic and folkloric, not heraldic, aggressive or gory. One compact centered silhouette with generous padding, unmistakable at 64x64 pixels. No fur close-up, flesh, blood, splatter, claws, extra teeth, frame or circular badge."
+		},
+		{
+			"id": "rend",
+			"type": "spell",
+			"name": "Rend",
+			"prompt": "An iconic flat emblem of one small ivory wolf fang sweeping diagonally through a short clay-red ribbon and splitting it into two blunt jagged pieces. The torn ribbon should read as a brief rough wound that keeps tugging, distinct from Gash's long vertical cleft. Use The Green's warm natural palette: moss-black field, lichen green, sunlit ochre, weathered ivory and clay red. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. Scrappy and physical but still an ordinary animal's bite, never cruel or monstrous. One compact asymmetrical silhouette with generous padding, unmistakable at 64x64 pixels. No realistic flesh, blood, splatter, mouth, jaw, claws, extra teeth, frame, badge or decorative marks."
+		},
+		{
+			"id": "frenzy",
+			"type": "spell",
+			"name": "Frenzy",
+			"prompt": "An iconic flat emblem of three simple grey wolf-ear silhouettes leaning toward one warm amber howl-ring, the ring swelling around a small clay-red pulse. It should read as pack energy being stirred and passed from one animal to another, not rage or evil. Use The Green's warm natural palette: moss-black field, wolf grey, lichen green, sunlit ochre, clay red and one tiny stream-blue accent. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. Lively, rhythmic and folkloric, with one compact centered silhouette and generous padding, unmistakable at 64x64 pixels. No faces, eyes, teeth, open mouths, blood, claws, skulls, flames, heraldry, frame, badge or decorative marks."
+		},
+		{
 			"id": "runt",
 			"type": "character",
 			"name": "Runt",

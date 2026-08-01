@@ -1,5 +1,6 @@
 import type {CombatLogEvent} from '../combatlog'
 import type {GameLoop} from '../nodes/game-loop'
+import type {UnitId} from '../nodes/unit-registry'
 import {accumulateEvents, isDamage, isHeal} from './report-analysis'
 
 export type Outcome = 'victory' | 'defeat' | 'timeout'
@@ -10,6 +11,8 @@ export interface UnitInfo {
 	name: string
 	maxHealth: number
 	faction: string
+	/** The registry id, so a stored fight can still be read back against the unit registry. */
+	unitId?: UnitId
 }
 
 /** Who is in this fight — the analyzer needs starting health to rebuild the health graph. */
@@ -19,6 +22,7 @@ export function unitsOf(game: GameLoop): UnitInfo[] {
 		name: c.name || c.constructor.name,
 		maxHealth: c.health.max,
 		faction: c.faction,
+		unitId: c.unitId,
 	}))
 }
 

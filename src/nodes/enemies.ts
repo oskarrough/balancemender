@@ -22,6 +22,7 @@ export class Haruk extends Unit {
 	static agility = 8
 	static spirit = 0
 	static faction = FACTION.ENEMY
+	static boss = true
 	name = 'Haruk'
 	abilities = {HeavyBlow, NastyArrow}
 	targeting = new Targeting(this, prefer.tankFirst)

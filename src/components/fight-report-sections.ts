@@ -106,12 +106,14 @@ function healthRow(unit: Series, report: FightReport, cursor: number | null, onS
 	const death = report.deaths.find((candidate) => deathOf(candidate, unit))
 	const column = cursor === null ? -1 : Math.min(unit.points.length - 1, Math.floor(cursor * unit.points.length))
 	const ratio = cursor === null ? unit.endHealth / unit.maxHealth : unit.points[column]
+	// An enemy settles, a party member falls — the code keeps `alive`. See docs/universe.md.
+	const verb = unit.faction === 'party' ? 'fell' : 'settled'
 	const label =
 		cursor === null && death
-			? `dead ${(death.time / 1000).toFixed(1)}s`
+			? `${verb} ${(death.time / 1000).toFixed(1)}s`
 			: ratio > 0
 				? `${Math.round(ratio * 100)}%`
-				: 'dead'
+				: verb
 	const deadAt = death ? Math.min(1, death.time / report.duration) : null
 	return html`
 		<li class="FightReport-unit" data-faction=${unit.faction}>

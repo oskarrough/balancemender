@@ -27,6 +27,8 @@ export class Unit extends Node {
 	static spirit = 0
 	/** Which side this unit fights on. Static so the registry can be read without spawning anyone. */
 	static faction: Faction = FACTION.ENEMY
+	/** A named opponent the fight is about. Only the narration reads it, so far. */
+	static boss = false
 
 	name = ''
 	image = ''

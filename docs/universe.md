@@ -28,6 +28,25 @@ Touchstones, each with the thing we steal from it:
   the Expanse). This is where the color names come from: The Green, The Rust, The Glow, The White
   are what travelers would call them, half in awe.
 
+## Death lives in the land, not in your hands
+
+The soft combat premise is not a no-death universe. The Rust is a land dying of thirst; the
+herders' beasts did not all get out; things upstream were dead before you ever arrived. The game
+names death plainly and walks past it with respect — what it refuses is death as the player's
+transaction, dispensed two hundred times an hour until it means nothing. Ghibli's softness works
+exactly this way: Mononoke is soaked in death, and none of it is spectacle. No life without death;
+no death as a reward sound.
+
+The player-facing vocabulary (the code keeps `alive`, `kill` and `wipe` — that is the coders'
+register, not the narrator's):
+
+- An enemy reaching zero **settles** — the word disturbed water uses when balance returns.
+  "The Skulker settles."
+- A boss earns the full sentence: "The fever breaks. Haruk breathes evenly for the first time."
+- A party member **falls** — knocked down, folk-plain, honestly not death. Defeat stays real.
+- A room won is **Mended.** — the game's own verb, restated at every clear. Not "Victory!";
+  that is a conqueror's word.
+
 ## The red thread: walking upstream
 
 A river runs through all four dungeons, and its state is the story. In The Green it chatters along

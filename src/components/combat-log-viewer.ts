@@ -2,6 +2,9 @@ import {html, render} from 'uhtml'
 import {formatTimestamp} from '../utils'
 import {CombatLogEvent, combatEvents, CombatEventType} from '../combatlog'
 import {currentGame} from '../nodes/game-loop'
+import {unitRegistry, type UnitId} from '../nodes/unit-registry'
+import type {Unit} from '../nodes/unit'
+import {FACTION} from '../nodes/types'
 import {viewedFight, fightHistoryEvents} from '../fight-history'
 import '../components/floating-view.js'
 
@@ -41,9 +44,27 @@ const VERBS: Partial<Record<CombatEventType, {verb: string; amountWord?: string}
 	SPELL_AURA_REFRESH: {verb: 'refreshed'},
 }
 
+/**
+ * Nothing dies in the player's hands — see docs/universe.md. An enemy at zero settles, a party
+ * member falls, a boss gets the whole sentence. The code keeps `alive`, `kill` and `UNIT_DIED`.
+ */
+function deathPhrase(event: CombatLogEvent): string {
+	const name = event.targetName || 'Unknown unit'
+	const unit = event.targetId ? unitsInView().find((candidate) => candidate.id === event.targetId) : undefined
+	if (unit?.faction === FACTION.PARTY) return `${name} falls`
+	const Klass = unit?.unitId && (unitRegistry[unit.unitId] as unknown as typeof Unit)
+	if (Klass && Klass.boss) return `The fever breaks. ${name} breathes evenly for the first time.`
+	return `${name} settles`
+}
+
+/** Who is on screen: a stored fight's recorded roster, or the running fight's units. */
+function unitsInView(): readonly {id: string; faction: string; unitId?: UnitId}[] {
+	return viewedFight()?.units ?? currentGame()?.fight.units ?? []
+}
+
 function formatLogEntry(event: CombatLogEvent): string {
 	if (event.eventType === 'UNIT_DIED') {
-		return `${event.targetName || 'Unknown unit'} died${event.extraInfo ? ` (${event.extraInfo})` : ''}`
+		return `${deathPhrase(event)}${event.extraInfo ? ` (${event.extraInfo})` : ''}`
 	}
 	if (event.eventType === 'UNIT_CONDITION' && event.condition) {
 		return `${event.targetName || 'Unknown unit'} ${CONDITION_PHRASE[event.condition]}`
