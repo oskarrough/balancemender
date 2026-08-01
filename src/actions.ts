@@ -6,7 +6,9 @@ import {FACTION, type Faction} from './nodes/types'
 import type {Room} from './nodes/fight'
 // Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
 import {dungeonRegistry} from './nodes/dungeon'
-import type {UnitId} from './nodes/unit-registry'
+// The registry already reaches actions.ts through the dungeon import above; naming it directly is
+// the spawn boundary, so a console typing an unknown id is refused here instead of throwing below.
+import {unitRegistry, type UnitId} from './nodes/unit-registry'
 
 /**
  * Everything that can change a running game.
@@ -71,6 +73,9 @@ export const fail = (error: string): ActionResult<never> => ({ok: false, error})
 export function perform(game: GameLoop, action: GameAction): ActionResult<unknown> {
 	switch (action.type) {
 		case 'spawn':
+			// `Fight.spawn` throws for internal callers, who only pass ids the registry holds. A console
+			// can type anything, so the action boundary refuses before the fight ever sees it.
+			if (!(action.unit in unitRegistry)) return fail(`Unknown unit: ${action.unit}`)
 			return ok(game.fight.spawn(action.unit))
 
 		case 'remove':

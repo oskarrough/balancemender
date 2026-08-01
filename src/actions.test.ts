@@ -89,6 +89,17 @@ describe('perform', () => {
 		expect(game.enemies).toHaveLength(0)
 	})
 
+	it('refuses an unknown spawn id instead of throwing', () => {
+		game = new GameLoop({party: [], enemies: []})
+		expect(game.perform({type: 'spawn', unit: 'Hydra' as never})).toMatchObject({
+			ok: false,
+			error: 'Unknown unit: Hydra',
+		})
+		expect(game.enemies).toHaveLength(0)
+		// The player is always there; the point is that nothing else joined.
+		expect(game.party).toHaveLength(1)
+	})
+
 	it('sets globals, with the side effect the panel and the console both expected', () => {
 		game = new GameLoop({party: [], enemies: []})
 		game.player.mana!.set(10)
