@@ -1,0 +1,75 @@
+.Journal {
+	padding: 0.4rem;
+	font-size: var(--text-compact);
+}
+
+.Journal-dungeon + .Journal-dungeon {
+	margin-top: 0.5rem;
+}
+
+.Journal-dungeon[data-locked] {
+	opacity: 0.5;
+}
+
+.Journal-dungeonHead {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.5rem;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.Journal-dungeonHead h3 {
+	font-size: var(--text-base);
+}
+
+.Journal-note {
+	font-size: var(--text-sm);
+	font-style: italic;
+	opacity: 0.6;
+}
+
+.Journal-rooms {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.Journal-room {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.Journal-room > .Journal-note {
+	margin-left: auto;
+}
+
+/* A room ahead is on the page but unwritten — no state word, just a hollow mark. */
+.Journal-room[data-state='ahead'] {
+	opacity: 0.5;
+}
+
+.Journal-dot {
+	flex: none;
+	width: 0.5rem;
+	height: 0.5rem;
+	border: 1px solid var(--c-black);
+	border-radius: 50%;
+}
+
+.Journal-room[data-state='mended'] .Journal-dot {
+	background: var(--c-black);
+}
+
+.Journal-room[data-state='here'] .Journal-dot {
+	background: var(--c-chrome-yellow);
+}
+
+.Journal-craft {
+	margin-top: 0.5rem;
+	padding-top: 0.3rem;
+	border-top: 1px solid rgba(0, 0, 0, 0.2);
+	font-size: var(--text-sm);
+	opacity: 0.7;
+}

@@ -18,6 +18,7 @@ import {applyDefaultLayout} from './components/floating-view.js'
 import './components/floating-view.js'
 import './components/combat-log-viewer.js'
 import './components/fight-report'
+import './components/journal-view'
 import './components/color-palette.js'
 import './components/balance-lab'
 
