@@ -1,4 +1,5 @@
 import type {CombatEventType, CombatLogEvent} from '../combatlog'
+import {roundOne} from '../utils'
 import type {AbilityStats, CastStats, Death, UnitInfo, UnitStats} from './report'
 
 const DAMAGE: CombatEventType[] = ['SPELL_DAMAGE', 'SPELL_PERIODIC_DAMAGE', 'SWING_DAMAGE', 'RANGE_DAMAGE']
@@ -121,21 +122,21 @@ function finalize(
 	// Logs and combat state keep their full precision. A report is the presentation boundary, so
 	// clean up accumulated IEEE-754 noise here once rather than teaching every renderer about it.
 	for (const stats of units.values()) {
-		stats.damageDone = round(stats.damageDone)
-		stats.damageTaken = round(stats.damageTaken)
-		stats.healingDone = round(stats.healingDone)
-		stats.overhealing = round(stats.overhealing)
-		stats.healingTaken = round(stats.healingTaken)
-		stats.absorbed = round(stats.absorbed)
-		stats.wasted = round(stats.wasted)
-		stats.manaSpent = round(stats.manaSpent)
+		stats.damageDone = roundOne(stats.damageDone)
+		stats.damageTaken = roundOne(stats.damageTaken)
+		stats.healingDone = roundOne(stats.healingDone)
+		stats.overhealing = roundOne(stats.overhealing)
+		stats.healingTaken = roundOne(stats.healingTaken)
+		stats.absorbed = roundOne(stats.absorbed)
+		stats.wasted = roundOne(stats.wasted)
+		stats.manaSpent = roundOne(stats.manaSpent)
 	}
 	for (const stats of abilities.values()) {
-		stats.total = round(stats.total)
-		stats.overheal = round(stats.overheal)
-		stats.min = round(stats.min)
-		stats.max = round(stats.max)
-		stats.avg = round(stats.avg)
+		stats.total = roundOne(stats.total)
+		stats.overheal = roundOne(stats.overheal)
+		stats.min = roundOne(stats.min)
+		stats.max = roundOne(stats.max)
+		stats.avg = roundOne(stats.avg)
 	}
 
 	// Ratio first, so a fully wasted Renew outranks a big heal that mostly landed; the amount only
@@ -146,8 +147,8 @@ function finalize(
 		.slice(0, 5)
 	for (const cast of worstCasts) {
 		cast.time = Math.round(cast.time)
-		cast.total = round(cast.total)
-		cast.overheal = round(cast.overheal)
+		cast.total = roundOne(cast.total)
+		cast.overheal = roundOne(cast.overheal)
 	}
 
 	const list = [...units.values()].filter((unit) => unit.name !== 'unknown')
@@ -159,8 +160,8 @@ function finalize(
 		hps: 0,
 	}
 	const seconds = options.duration / 1000 || 1
-	totals.dps = round(totals.damage / seconds)
-	totals.hps = round(totals.healing / seconds)
+	totals.dps = roundOne(totals.damage / seconds)
+	totals.hps = roundOne(totals.healing / seconds)
 
 	return {
 		units: list.sort((a, b) => b.damageDone + b.healingDone - (a.damageDone + a.healingDone)),
@@ -217,7 +218,7 @@ function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id
 		stats.overheal += overheal
 		stats.min = Math.min(stats.min, value)
 		stats.max = Math.max(stats.max, value)
-		stats.avg = round(stats.total / stats.hits)
+		stats.avg = roundOne(stats.total / stats.hits)
 	}
 	return stats
 }
@@ -252,4 +253,3 @@ function cast(casts: Map<string, CastStats>, event: CombatLogEvent, time: number
  */
 export const at = (event: CombatLogEvent) => event.time ?? 0
 const sum = <T>(items: T[], get: (item: T) => number) => items.reduce((total, item) => total + get(item), 0)
-const round = (n: number) => Math.round(n * 10) / 10

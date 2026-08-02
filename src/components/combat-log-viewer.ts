@@ -9,34 +9,30 @@ import {viewedFight, fightHistoryEvents} from '../fight-history'
 import '../components/floating-view.js'
 
 type LogGroup = 'casts' | 'damage' | 'healing' | 'auras' | 'units' | 'fight'
+type EventMeta = {group: LogGroup; label: string; verb?: string; amountWord?: string}
 
 /**
- * What every event type is, in the panel's own words: the group whose chip switches it on, and the
- * short label a row shows in place of `SPELL_PERIODIC_DAMAGE` — 21 characters of a 60ch panel.
- *
- * `satisfies` over the whole union on purpose. This used to be a hand-kept list of the types worth
- * filtering, which drifted both ways: it offered `SPELL_CAST_FAILED`, which nothing logs, and had no
- * entry for the interrupts, absorbs and mana spends that fill a real fight. Now a new event type
- * fails the build here rather than quietly arriving in the log unfilterable.
+ * How the panel groups and names each event. Covering the whole union keeps new event types from
+ * reaching the log without a filter and label.
  */
-const EVENT_META = {
-	SPELL_CAST_START: {group: 'casts', label: 'casting'},
-	SPELL_CAST_SUCCESS: {group: 'casts', label: 'cast'},
-	SPELL_CAST_FAILED: {group: 'casts', label: 'failed'},
+const EVENT_META: Record<CombatEventType, EventMeta> = {
+	SPELL_CAST_START: {group: 'casts', label: 'casting', verb: 'begins casting'},
+	SPELL_CAST_SUCCESS: {group: 'casts', label: 'cast', verb: 'cast'},
+	SPELL_CAST_FAILED: {group: 'casts', label: 'failed', verb: 'failed to cast'},
 	SPELL_CAST_INTERRUPTED: {group: 'casts', label: 'stopped'},
 	SWEET_SPOT_HIT: {group: 'casts', label: 'sweet'},
 	SWEET_SPOT_MISS: {group: 'casts', label: 'no sweet'},
 	RESOURCE_GAIN: {group: 'casts', label: 'mana +'},
 	RESOURCE_SPENT: {group: 'casts', label: 'mana −'},
-	SPELL_DAMAGE: {group: 'damage', label: 'damage'},
+	SPELL_DAMAGE: {group: 'damage', label: 'damage', verb: 'cast', amountWord: 'damaged for'},
 	SPELL_PERIODIC_DAMAGE: {group: 'damage', label: 'dmg tick'},
 	SWING_DAMAGE: {group: 'damage', label: 'swing'},
 	RANGE_DAMAGE: {group: 'damage', label: 'shot'},
 	SPELL_ABSORBED: {group: 'damage', label: 'absorbed'},
-	SPELL_HEAL: {group: 'healing', label: 'heal'},
+	SPELL_HEAL: {group: 'healing', label: 'heal', verb: 'cast', amountWord: 'healed'},
 	SPELL_PERIODIC_HEAL: {group: 'healing', label: 'heal tick'},
-	SPELL_AURA_APPLIED: {group: 'auras', label: 'aura on'},
-	SPELL_AURA_REFRESH: {group: 'auras', label: 'aura +'},
+	SPELL_AURA_APPLIED: {group: 'auras', label: 'aura on', verb: 'applied'},
+	SPELL_AURA_REFRESH: {group: 'auras', label: 'aura +', verb: 'refreshed'},
 	SPELL_AURA_REMOVED: {group: 'auras', label: 'aura off'},
 	UNIT_DIED: {group: 'units', label: 'down'},
 	UNIT_CONDITION: {group: 'units', label: 'condition'},
@@ -44,7 +40,7 @@ const EVENT_META = {
 	FIGHT_END: {group: 'fight', label: 'fight end'},
 	GAME_PAUSE: {group: 'fight', label: 'pause'},
 	GAME_RESUME: {group: 'fight', label: 'resume'},
-} satisfies Record<CombatEventType, {group: LogGroup; label: string}>
+}
 
 /**
  * Chip order. Only the groups this log actually contains get a chip, so a quiet fight shows three —
@@ -57,17 +53,6 @@ const CONDITION_PHRASE = {
 	injured: 'is injured',
 	steady: 'is out of danger',
 	healthy: 'is healthy again',
-}
-
-// Verb + amount-word per event type. Defaults to "used" / value-only.
-const VERBS: Partial<Record<CombatEventType, {verb: string; amountWord?: string}>> = {
-	SPELL_HEAL: {verb: 'cast', amountWord: 'healed'},
-	SPELL_DAMAGE: {verb: 'cast', amountWord: 'damaged for'},
-	SPELL_CAST_SUCCESS: {verb: 'cast'},
-	SPELL_CAST_START: {verb: 'begins casting'},
-	SPELL_CAST_FAILED: {verb: 'failed to cast'},
-	SPELL_AURA_APPLIED: {verb: 'applied'},
-	SPELL_AURA_REFRESH: {verb: 'refreshed'},
 }
 
 /**
@@ -99,7 +84,7 @@ function formatLogEntry(event: CombatLogEvent): string {
 	if (event.eventType === 'SPELL_AURA_REMOVED') {
 		return `${event.abilityName} fades from ${event.targetName || 'Unknown unit'}`
 	}
-	const {verb = 'used', amountWord} = VERBS[event.eventType] ?? {}
+	const {verb = 'used', amountWord} = EVENT_META[event.eventType]
 	const source = event.sourceName ?? ''
 	const spell = event.abilityName ? ` ${verb} ${event.abilityName}` : ''
 	const target =

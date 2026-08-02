@@ -239,23 +239,11 @@ export class SiviAmbushCadence extends AmbushCadence {
 	static interval = 6000
 }
 
-/**
- * Hollow always wants the healer, the same way Spore does — reuses `SporeCadence`'s override
- * rather than fighting a unit's own standing preference (Ringer- and Uvalu-shaped units still
- * want threat or the tank for everything else they carry).
- */
-export class HollowCadence extends Cadence {
+/** Hollow targets the healer without changing its owner's standing preference. */
+export class HollowCadence extends SporeCadence {
 	static abilityId = 'Hollow'
 	static delay = 2000
 	static interval = 4000
-
-	tick() {
-		if (!this.shouldUse()) return
-		const healer = prefer.healerFirst.prefers(eligible(this.parent, 'enemy'))
-		if (!healer) return
-		const result = this.parent.useAbility(this.abilityId, healer)
-		if (!result.ok) log(`cadence:${this.parent.name}:${this.abilityId}:${result.error}`)
-	}
 }
 
 /** Gale's steady road-chip — slower than Wren's, quicker than Clover's; a messenger is always moving. */

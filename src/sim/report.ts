@@ -2,6 +2,7 @@ import type {CombatLogEvent} from '../combatlog'
 import type {FightLocation} from '../fight-location'
 import type {GameLoop} from '../nodes/game-loop'
 import type {UnitId} from '../nodes/unit-registry'
+import {clamp} from '../utils'
 import {accumulateEvents, at, isDamage, isHeal} from './report-analysis'
 
 export type Outcome = 'victory' | 'defeat' | 'timeout'
@@ -245,5 +246,3 @@ export function margin(part: number, whole: number) {
 	const half = (z / (1 + (z * z) / whole)) * Math.sqrt((p * (1 - p)) / whole + (z * z) / (4 * whole * whole))
 	return Math.round(half * 100)
 }
-
-const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max))
