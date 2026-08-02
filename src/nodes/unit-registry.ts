@@ -26,8 +26,8 @@ import {Tank, Wren, Clover, Gale} from './party-units'
 import {Player} from './player'
 
 /**
- * Every spawnable unit, by id. `Fight.spawn()` reads this and routes by the class's own
- * faction, so party and enemies go through one door.
+ * Every spawnable unit, by id. `Fight.spawn()` uses the class's faction by default, while an
+ * authored room may place it on either side. Both go through one door.
  *
  * Ids are stable strings, unlike `constructor.name`, which the production build minifies. They are
  * also the keys of `balance.units`.

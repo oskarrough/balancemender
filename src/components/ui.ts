@@ -9,6 +9,7 @@ import {scenePaths} from '../nodes/fight'
 import {UnitFrame} from './unitframe'
 import {nextRoom, restartDungeon, restartGame} from '../animations'
 import {bringToFront} from './floating-view.js'
+import {MalleablePanel} from './malleable-panel'
 
 register()
 
@@ -115,14 +116,14 @@ export function UI(game: GameLoop) {
 	const sceneClass = game.dungeonRun?.dungeon.id === 'TheRust' ? 'Game-bg Game-bg--rust' : 'Game-bg'
 
 	return html`
-		<div class="Game Debug" onkeyup=${handleShortcuts} tabindex="0">
+		<div class=${game.malleable ? 'Game Debug Game--malleable' : 'Game Debug'} onkeyup=${handleShortcuts} tabindex="0">
 			${painting
 				? html`<picture class=${sceneClass}>
 						<source media="(orientation: portrait)" srcset=${painting.portrait} />
 						<img src=${painting.landscape} alt="" />
 					</picture>`
 				: null}
-			${game.gameOver ? GameOver(game) : null}
+			${game.gameOver ? GameOver(game) : null} ${game.malleable ? MalleablePanel(game) : null}
 
 			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>
 

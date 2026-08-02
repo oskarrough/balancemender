@@ -64,13 +64,14 @@ on a unit, so it can carry both. Selecting a frame is player UI state and moves 
 Enemy casts are drawn on the caster's own unit frame; the player's has its own `CastingInfo` panel. A
 cast nobody can see warns nobody.
 
-## Threat is local to each enemy
+## Threat is local to each threat-driven unit
 
-Every enemy owns a `Map<Unit, number>` whose party entries begin at zero. Actual damage adds threat
-only to the enemy it landed on. Effective healing adds half as much, divided between every living
-enemy observing it; overhealing moves no health and adds none. Both are credited from `applyHit()`,
-after barriers and health-bar clamping have determined what actually landed, so direct and periodic
-effects cannot disagree.
+Every enemy owns a `Map<Unit, number>` whose opposing entries begin at zero. A unit whose authored
+targeting uses `prefer.threat` opts into the same table even when its effective faction is party. Actual
+damage adds threat only to the table on the unit it landed on. Effective healing adds half as much,
+divided between every living opposing unit with a table that observed it; overhealing moves no health
+and adds none. Both are credited from `applyHit()`, after barriers and health-bar clamping have determined
+what actually landed, so direct and periodic effects cannot disagree.
 
 An ability's `threatMultiplier` rides with its hit, including into an aura it plants. Shield Bash uses
 a high multiplier; it still earns attention only from the enemy it struck. Holding a pack therefore
@@ -84,11 +85,11 @@ directly and returns to ordinary threat when it fades; other enemies never read 
 logs both its new placement and its previous bearer leaving it, so the redirect is inspectable. See
 [`heal-mark.ts`](../src/nodes/heal-mark.ts).
 
-`prefer.threat(enemy)` picks the highest entry. It keeps the current target until a challenger exceeds
-it by 10%, and `Targeting.pick()` is still called by a Cadence only when that enemy acts. Dead and
+`prefer.threat(unit)` picks the highest entry. It keeps the current target until a challenger exceeds
+it by 10%, and `Targeting.pick()` is still called by a Cadence only when that unit acts. Dead and
 removed units need no threat cleanup because `eligible()` has already removed them from the
-candidates. A later taunt can write directly into one enemy's table without changing targeting. A
-second argument, `prefer.threat(enemy, 0.2)`, is mischief: those odds per pick of biting someone at
+candidates. A later taunt can write directly into one unit's table without changing targeting. A
+second argument, `prefer.threat(unit, 0.2)`, is mischief: those odds per pick of biting someone at
 random instead — one wander, then threat pulls it home. The wolf runs on it; a disciplined unit passes
 nothing.
 

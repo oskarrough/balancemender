@@ -4,6 +4,7 @@ import {combatEvents} from '../combatlog'
 import {allInspectables, Inspectable, InspectableSection} from '../inspectables'
 import {BalanceInspector} from './balance-inspector'
 import './balance-inspector'
+import {getMalleableOverride, setMalleableOverride} from '../access'
 
 export class BalanceLab extends HTMLElement {
 	private selectedId: string | null = 'globals'
@@ -82,6 +83,14 @@ export class BalanceLab extends HTMLElement {
 		render(
 			this,
 			() => html`
+				<label class="BalanceLab-access">
+					<input
+						type="checkbox"
+						.checked=${getMalleableOverride()}
+						onchange=${(event: Event) => setMalleableOverride((event.target as HTMLInputElement).checked)}
+					/>
+					Malleable override
+				</label>
 				<nav class="BalanceLab-nav">
 					${sections.map(
 						(sec) => html`

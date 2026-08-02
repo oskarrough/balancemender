@@ -23,8 +23,8 @@ regeneration; agility has no derived effect until later dodge or crit work.
 `intellect × 2.5`; attack power is `strength × 2`. Physical abilities use attack power and every
 other school uses spell power. There is one attack power for both melee and ranged abilities.
 
-**Faction** — `'party'` or `'enemy'`. A static, so the registry can say which side a unit fights on
-without spawning one.
+**Faction** — `'party'` or `'enemy'`. A unit class sets the default; a spawn may put an instance
+on either side.
 
 **Room** — the plan for one fight: who fights, `{party: ['Tank'], enemies: ['Runt']}`, plus how
 the scene is dressed. Every authored room has a stable **room id**; its name is display text and may
@@ -37,8 +37,8 @@ clock they share. `FightResult` and `FightReport` are what came of one.
 **Dungeon** — an ordered sequence of rooms played back to back. Described by data, never live in
 the game tree; the game holds progress through one as a dungeon run.
 
-**Spawn** — the one way a unit joins a fight. `Fight.spawn(unitId)` routes it to a side by the
-class's own faction, so nothing picks the array itself.
+**Spawn** — the one way a unit joins a fight. `Fight.spawn(unitId, side?)` uses the explicit side
+when given, or the class default; its faction and fight array always agree.
 
 **Alive** — health above zero. Not "in `fight.party`" — the dead stay in those arrays.
 
@@ -82,10 +82,11 @@ which remembers one pick per `targets` value — so a unit that both attacks and
 and an ally at once — and exposes the settled pick
 read-only through `current()`.
 
-**Threat** — one enemy's numerical attention toward each opposing unit. Actual damage earns threat
-only from the enemy it landed on; effective healing earns less and is divided between every living
-enemy that observed it. Overhealing earns none. Every party unit enters every enemy's table at zero,
-and dead entries may remain because eligibility already keeps corpses out of targeting.
+**Threat** — one threat-driven unit's numerical attention toward each opposing unit. Enemy units get a
+table by default; an authored `prefer.threat` can opt in a unit on either faction. Actual damage earns
+threat in the table on the unit it landed on; effective healing earns less and is divided between every
+living opposing unit with a table that observed it. Overhealing earns none. Every opposing unit enters
+its table at zero, and dead entries may remain because eligibility already keeps corpses out of targeting.
 
 **Aggro** — being the unit an enemy currently attacks. Highest threat takes aggro, but a challenger
 must exceed the current target by 10%, so two close scores do not trade it back and forth. The enemy
@@ -180,7 +181,7 @@ prose — a buff or a debuff; nothing in the code branches on which.
 on their living target, including at full health. A mark changes no threat by itself; an authored
 preference such as Sivi's `auraFirst(Brightest, threat)` may seek it directly. A move logs both the
 new mark and the previous bearer losing it. See
-[combat.md](./combat.md#threat-is-local-to-each-enemy).
+[combat.md](./combat.md#threat-is-local-to-each-threat-driven-unit).
 
 **Barrier** — an aura with a finite pool that absorbs later damage before it reaches the health bar.
 `Shield` is the ability that applies the only barrier today; absorb is what the barrier does.

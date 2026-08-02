@@ -3,6 +3,10 @@ import {settle} from './test-setup'
 import {GameLoop} from './nodes/game-loop'
 import {SimLoop} from './sim/run'
 import {playerAbilities} from './nodes/registry'
+import {dungeonRegistry} from './nodes/dungeon'
+import type {RoomInput} from './nodes/fight'
+import {emptyMalleable} from './malleable'
+import {loadMalleable, saveMalleable} from './malleable-store'
 
 /**
  * `game.perform()` is the only way anything changes a fight, so these assertions cover the
@@ -13,6 +17,7 @@ import {playerAbilities} from './nodes/registry'
 let game!: GameLoop
 afterEach(async () => {
 	game.perform({type: 'resetBalance'})
+	saveMalleable(emptyMalleable())
 	game.disconnect()
 	await settle()
 })
@@ -304,6 +309,100 @@ describe('navigation actions', () => {
 		expect(game.dungeonRun).toBeUndefined()
 		expect(game.fight.room.name).toBe('arena')
 		expect(game.enemies[0].unitId).toBe('Runt')
+	})
+
+	it.each([
+		{party: ['Player'], enemies: []},
+		{party: [], enemies: ['Player']},
+	] satisfies RoomInput[])('refuses Player in a room roster before entering (%#)', async (room) => {
+		game = new GameLoop({party: [], enemies: ['Runt']})
+		await settle()
+		const currentFight = game.fight
+		game.dungeonRun = {dungeon: dungeonRegistry.TheGreen, room: 0, times: []}
+		const currentRun = game.dungeonRun
+
+		expect(game.perform({type: 'enter', room})).toEqual({
+			ok: false,
+			error: 'Player is added automatically and cannot be listed in a room',
+		})
+		expect(game.fight).toBe(currentFight)
+		expect(game.dungeonRun).toBe(currentRun)
+	})
+
+	it('accepts a room roster that does not list Player', async () => {
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+		const room = {party: ['Haruk'], enemies: ['Tank']} satisfies RoomInput
+
+		expect(game.perform({type: 'enter', room})).toMatchObject({ok: true})
+		await settle()
+		expect(game.fight.room).toBe(room)
+	})
+
+	it('enters Malleable paused with its saved composition', async () => {
+		saveMalleable({version: 1, party: ['Haruk'], enemies: ['Tank', 'Runt']})
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+
+		expect(game.perform({type: 'enterMalleable'})).toMatchObject({ok: true})
+		await settle()
+
+		expect(game.malleable).toBe(true)
+		expect(game.running).toBe(false)
+		expect(game.party.map((unit) => unit.unitId)).toEqual(['Haruk', 'Player'])
+		expect(game.enemies.map((unit) => unit.unitId)).toEqual(['Tank', 'Runt'])
+	})
+
+	it('adds Malleable units to either side and refuses Player', async () => {
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+		game.perform({type: 'enterMalleable'})
+		await settle()
+
+		expect(game.perform({type: 'malleableAdd', side: 'party', unit: 'Runt'})).toMatchObject({ok: true})
+		expect(game.party.at(-1)?.unitId).toBe('Runt')
+		expect(game.perform({type: 'malleableAdd', side: 'enemy', unit: 'Tank'})).toMatchObject({ok: true})
+		expect(game.enemies.at(-1)?.unitId).toBe('Tank')
+		expect(game.perform({type: 'malleableAdd', side: 'enemy', unit: 'Player'})).toEqual({
+			ok: false,
+			error: 'Player is added automatically and cannot be added to Malleable',
+		})
+		expect(loadMalleable()).toEqual({version: 1, party: ['Runt'], enemies: ['Tank']})
+	})
+
+	it('removes a Malleable unit but never the designated Player', async () => {
+		saveMalleable({version: 1, party: ['Runt'], enemies: []})
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+		game.perform({type: 'enterMalleable'})
+		await settle()
+
+		expect(game.perform({type: 'malleableRemove', unit: game.player.id})).toEqual({
+			ok: false,
+			error: 'The designated Player cannot be removed',
+		})
+		expect(game.perform({type: 'malleableRemove', unit: game.party[0].id})).toMatchObject({ok: true})
+		expect(loadMalleable().party).toEqual([])
+		expect(game.party).toEqual([game.player])
+	})
+
+	it('restarts Malleable from the autosaved composition and keeps it paused', async () => {
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+		game.perform({type: 'enterMalleable'})
+		await settle()
+		game.perform({type: 'malleableAdd', side: 'enemy', unit: 'Runt'})
+		const previous = game.enemies[0]
+		game.elapsedTime = 5000
+
+		expect(game.perform({type: 'restart'})).toMatchObject({ok: true})
+		await settle()
+
+		expect(game.malleable).toBe(true)
+		expect(game.running).toBe(false)
+		expect(game.elapsedTime).toBe(0)
+		expect(game.enemies.map((unit) => unit.unitId)).toEqual(['Runt'])
+		expect(game.enemies[0]).not.toBe(previous)
 	})
 
 	it('starts a known dungeon and refuses an unknown one', async () => {

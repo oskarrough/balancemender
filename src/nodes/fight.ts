@@ -1,7 +1,7 @@
 import {Node} from '../vroum'
 import {Player} from './player'
 import {unitRegistry, UnitId} from './unit-registry'
-import {FACTION} from './types'
+import {FACTION, type Faction} from './types'
 import type {GameLoop} from './game-loop'
 import type {Unit} from './unit'
 import type {PlayerAbilityId} from './registry'
@@ -61,10 +61,10 @@ export class Fight extends Node {
 		public room: RoomInput = DEMO_ROOM,
 	) {
 		super(parent)
-		for (const id of room.party ?? []) this.spawn(id)
-		this.player = this.spawn('Player') as Player
+		for (const id of room.party ?? []) this.spawn(id, FACTION.PARTY)
+		this.player = this.spawn('Player', FACTION.PARTY) as Player
 		this.player.selectedTarget = this.player
-		for (const id of room.enemies ?? []) this.spawn(id)
+		for (const id of room.enemies ?? []) this.spawn(id, FACTION.ENEMY)
 	}
 
 	/** Everyone in the fight, both sides. The dead included — see `onDeath`. */
@@ -72,23 +72,23 @@ export class Fight extends Node {
 		return [...this.party, ...this.enemies]
 	}
 
-	/**
-	 * Add a unit to the fight. The class's own `faction` decides which side it joins,
-	 * so callers never pick the array themselves.
-	 */
-	spawn(id: UnitId): Unit {
+	/** Add a unit to the given side, or its class default. */
+	spawn(id: UnitId, side?: Faction): Unit {
 		const Klass = unitRegistry[id]
 		if (!Klass) {
 			throw new Error(`Unknown unit: "${id}". Known: ${Object.keys(unitRegistry).join(', ')}`)
 		}
-		const unit = new Klass(this) as Unit
+		const unit = new Klass(this, side ?? Klass.faction) as Unit
 		unit.unitId = id
-		if (unit.faction === FACTION.PARTY) {
-			this.party.push(unit)
-			// A party unit joining an existing fight enters every enemy's table at zero.
-			for (const enemy of this.enemies) enemy.threat?.set(unit, 0)
-		} else {
-			this.enemies.push(unit)
+		if (unit.faction === FACTION.PARTY) this.party.push(unit)
+		else this.enemies.push(unit)
+
+		// A new unit enters any threat tables on both sides at zero. This also completes tables
+		// initialized before the opposing side's later spawns.
+		const opposing = unit.faction === FACTION.PARTY ? this.enemies : this.party
+		for (const opponent of opposing) {
+			unit.threat?.set(opponent, 0)
+			opponent.threat?.set(unit, 0)
 		}
 		this.renumber()
 		return unit

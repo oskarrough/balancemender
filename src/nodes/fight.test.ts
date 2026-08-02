@@ -6,10 +6,14 @@ import {PeriodicAura} from './periodic-aura'
 import type {Runt} from './enemies'
 import {eligible} from './targeting'
 import {Tank} from './party-units'
+import {dungeonRegistry} from './dungeon'
+import {FACTION} from './types'
+import {unitRegistry} from './unit-registry'
 
 /**
  * One spawn door. Whatever adds a unit — boot, a room, the dev console, a simulation —
- * ends up in `Fight.spawn()`, so these assertions hold for all of them.
+ * ends up in `Fight.spawn()`, so these assertions hold for all of them. A room supplies each
+ * side; an unqualified spawn uses the class default.
  */
 
 let game!: GameLoop
@@ -31,12 +35,71 @@ describe('Fight.spawn', () => {
 		expect(game.party.filter((unit) => unit instanceof Tank)).toHaveLength(2)
 	})
 
-	it('routes a unit to its own faction rather than the caller picking a side', () => {
+	it('uses the class faction when no side is given', () => {
 		game = new GameLoop({party: [], enemies: []})
 		game.fight.spawn('Tank')
 		game.fight.spawn('Haruk')
 		expect(game.party.map((u) => u.name)).toEqual(['Player', 'Oak'])
 		expect(game.enemies.map((u) => u.name)).toEqual(['Haruk'])
+	})
+
+	it('uses an explicit side without changing the class default', () => {
+		game = new GameLoop({party: [], enemies: []})
+		const enemyTank = game.fight.spawn('Tank', FACTION.ENEMY)
+		const partyHaruk = game.fight.spawn('Haruk', FACTION.PARTY)
+
+		expect(enemyTank).toMatchObject({unitId: 'Tank', faction: FACTION.ENEMY})
+		expect(partyHaruk).toMatchObject({unitId: 'Haruk', faction: FACTION.PARTY})
+		expect(game.party).toContain(partyHaruk)
+		expect(game.enemies).toContain(enemyTank)
+		expect(partyHaruk.threat).toBeUndefined()
+		expect(enemyTank.threat?.get(game.player)).toBe(0)
+		expect(enemyTank.threat?.get(partyHaruk)).toBe(0)
+		expect(unitRegistry.Tank.faction).toBe(FACTION.PARTY)
+		expect(unitRegistry.Haruk.faction).toBe(FACTION.ENEMY)
+	})
+
+	it('keeps threat targeting when a threat-driven class joins the party side', () => {
+		game = new GameLoop({party: [], enemies: []})
+		const runt = game.fight.spawn('Runt', FACTION.PARTY)
+		const tank = game.fight.spawn('Tank', FACTION.ENEMY)
+		const haruk = game.fight.spawn('Haruk', FACTION.ENEMY)
+
+		expect(runt.threat?.get(tank)).toBe(0)
+		expect(runt.threat?.get(haruk)).toBe(0)
+		runt.threat!.set(tank, 1)
+		runt.threat!.set(haruk, 2)
+		expect(runt.targeting?.pick('enemy')).toBe(haruk)
+	})
+
+	it('uses room rosters as sides even when classes default opposite', () => {
+		game = new GameLoop({party: ['Haruk'], enemies: ['Tank']})
+		const haruk = game.party.find((unit) => unit.unitId === 'Haruk')!
+		const tank = game.enemies[0]
+
+		expect(haruk.faction).toBe(FACTION.PARTY)
+		expect(tank.faction).toBe(FACTION.ENEMY)
+		expect(haruk.threat).toBeUndefined()
+		expect(tank.threat?.get(haruk)).toBe(0)
+		expect(tank.threat?.get(game.player)).toBe(0)
+		expect(game.party.filter((unit) => unit.unitId === 'Player')).toHaveLength(1)
+	})
+
+	it('keeps every authored room roster on its side and adds one Player', async () => {
+		game = new GameLoop({party: [], enemies: []})
+
+		for (const dungeon of Object.values(dungeonRegistry)) {
+			for (const room of dungeon.rooms) {
+				game.enter(room)
+				await settle()
+
+				expect(game.party.every((unit) => unit.faction === FACTION.PARTY)).toBe(true)
+				expect(game.enemies.every((unit) => unit.faction === FACTION.ENEMY)).toBe(true)
+				expect(game.party.filter((unit) => unit.unitId === 'Player')).toHaveLength(1)
+				expect(game.party.filter((unit) => unit !== game.player).map((unit) => unit.unitId)).toEqual(room.party ?? [])
+				expect(game.enemies.map((unit) => unit.unitId)).toEqual(room.enemies ?? [])
+			}
+		}
 	})
 
 	it('numbers duplicates as they come and go, not just those in the starting room', () => {

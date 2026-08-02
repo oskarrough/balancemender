@@ -1,0 +1,127 @@
+.MalleablePanel {
+	position: fixed;
+	top: 3rem;
+	left: 50%;
+	z-index: 10;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.4rem;
+	width: min(30rem, calc(100vw - 0.4rem));
+	transform: translateX(-50%);
+	pointer-events: none;
+}
+
+.MalleablePanel-side {
+	pointer-events: auto;
+	min-width: 0;
+	max-height: 10rem;
+	padding: 0.4rem;
+	border: 1px solid var(--c-black);
+	border-radius: var(--radius);
+	background: color-mix(in oklch, var(--c-snow-white), transparent 10%);
+	box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+	font-size: var(--text-sm);
+}
+
+.MalleablePanel-side > header {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.4rem;
+	margin-bottom: 0.2rem;
+}
+
+.MalleablePanel-side ul {
+	max-height: 6rem;
+	list-style: none;
+	overflow-y: auto;
+}
+
+.MalleablePanel-side li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.4rem;
+	min-height: 1.5rem;
+	border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.MalleablePanel-side small {
+	opacity: 0.5;
+}
+
+.MalleablePanel-remove {
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.MalleablePanel-remove:hover {
+	color: var(--c-vermilion);
+}
+
+.MalleablePanel-picker > summary {
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	list-style: none;
+	cursor: pointer;
+}
+
+.MalleablePanel-picker > summary::-webkit-details-marker {
+	display: none;
+}
+
+.MalleablePanel-picker form {
+	position: absolute;
+	top: 1.5rem;
+	z-index: 1;
+	display: grid;
+	grid-template-columns: minmax(6rem, 1fr) 3rem auto;
+	gap: 0.2rem;
+	padding: 0.4rem;
+	border: 1px solid var(--c-black);
+	border-radius: var(--radius);
+	background: var(--c-snow-white);
+	box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+.MalleablePanel-side[data-side='party'] .MalleablePanel-picker form {
+	left: 0;
+}
+
+.MalleablePanel-side[data-side='enemy'] .MalleablePanel-picker form {
+	right: 0;
+}
+
+.MalleablePanel-picker input[type='number'] {
+	width: 3rem;
+	min-width: 0;
+}
+
+.BalanceLab-access {
+	grid-column: 1 / -1;
+	display: flex;
+	align-items: center;
+	gap: 0.2rem;
+}
+
+@media (min-width: 48rem) {
+	.Game--malleable {
+		padding-top: 14rem;
+	}
+}
+
+@media (max-width: 48rem) {
+	.MalleablePanel {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: min(24rem, calc(100vw - 0.4rem));
+		margin-bottom: 0.5rem;
+		transform: none;
+	}
+}

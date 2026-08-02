@@ -20,7 +20,7 @@ index.html
               │           ├── Targeting   a preference its drivers ask for one target at a time
               │           ├── abilities   stable id → one-shot Ability class
               │           ├── Cadence     (Task) requests an ability on an interval
-              │           ├── threat      enemy-local attention table
+              │           ├── threat      unit-local attention table
               │           └── auras       HOT / DoT (Tasks)
               ├── AudioPlayer
               └── tick() → game.draw(), which main.ts points at components/ui.ts
@@ -47,7 +47,7 @@ balancemender.perform({type: 'tune', of: 'ability', name: 'Mend', key: 'cost', v
 
 The dev console is a text adapter over this and nothing more. Adding a capability means one more case
 in the union, not a new command plus a panel button plus a test helper. Spawning goes further: every
-unit that joins a fight goes through `Fight.spawn(unitId)`, so faction routing, duplicate
+unit that joins a fight goes through `Fight.spawn(unitId)`, so side routing, duplicate
 numbering and unknown-id errors are written once.
 
 `src/balance.ts` snapshots the tunable statics of every ability, effect, cadence, aura and unit and

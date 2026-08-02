@@ -26,7 +26,7 @@ export class Unit extends Node {
 	static strength = 0
 	static agility = 0
 	static spirit = 0
-	/** Which side this unit fights on. Static so the registry can be read without spawning anyone. */
+	/** The side this class uses unless a spawn overrides it. */
 	static faction: Faction = FACTION.ENEMY
 	/** A named opponent the fight is about. Only the narration reads it, so far. */
 	static boss = false
@@ -47,7 +47,8 @@ export class Unit extends Node {
 	health: Health
 	mana?: Mana
 	auras = new Set<Aura>()
-	faction: Faction = (this.constructor as typeof Unit).faction
+	/** The side this instance fights on. */
+	faction: Faction
 	/**
 	 * How this unit's standing drivers choose among the units an ability may land on. A preference
 	 * and its settled picks. The UI may read a pick for target-of-target, but only a driver changes
@@ -55,10 +56,10 @@ export class Unit extends Node {
 	 */
 	targeting?: Targeting
 	/**
-	 * What an enemy currently thinks of each opposing unit. Party units have no table: threat is a
-	 * PvE enemy concern, even though both factions use the same Unit class.
+	 * What this unit currently thinks of each opposing unit. Enemy units get a table by default;
+	 * authored threat targeting can opt in on either faction.
 	 */
-	readonly threat?: ThreatTable
+	threat?: ThreatTable
 
 	/**
 	 * Still standing. This — not membership of `fight.party`/`enemies` — is who is in the
@@ -138,10 +139,14 @@ export class Unit extends Node {
 		return true
 	}
 
-	constructor(public parent: Fight) {
+	constructor(
+		public parent: Fight,
+		faction?: Faction,
+	) {
 		super(parent)
 		this.id = createId()
 		const bases = this.constructor as typeof Unit
+		this.faction = faction ?? bases.faction
 		this.stats = new Stats({
 			stamina: bases.stamina,
 			intellect: bases.intellect,
@@ -151,7 +156,13 @@ export class Unit extends Node {
 		})
 		this.health = new Health(this, this.stats.maxHealth)
 		this.health.on(HEALTH_EVENTS.EMPTY, this.onHealthEmpty)
-		if (this.faction === FACTION.ENEMY) this.threat = new Map(parent.party.map((unit) => [unit, 0] as const))
+		if (this.faction === FACTION.ENEMY) this.ensureThreatTable()
+	}
+
+	/** Return this unit's threat table, creating it from the current opposing side when needed. */
+	ensureThreatTable() {
+		const opposing = this.faction === FACTION.PARTY ? this.parent.enemies : this.parent.party
+		return (this.threat ??= new Map(opposing.map((unit) => [unit, 0] as const)))
 	}
 
 	setBaseStat(stat: Stat, value: number) {

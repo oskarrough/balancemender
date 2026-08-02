@@ -11,6 +11,7 @@ import * as perf from './perf'
 import {loadFightHistory} from './fight-history'
 import {dungeonOrder, dungeonRegistry} from './nodes/dungeon'
 import {loadJournal, readJournal} from './journal'
+import {canAccessMalleable} from './access'
 import {scenePaths} from './nodes/fight'
 import './components/dev-console'
 import './components/animation-debugger'
@@ -37,7 +38,9 @@ async function main() {
 	await loadJournal()
 	void loadFightHistory().catch((err) => console.error('Failed to load fight history', err))
 
-	const skipSplash = new URLSearchParams(window.location.search).has('nosplash')
+	const urlParams = new URLSearchParams(window.location.search)
+	const skipSplash = urlParams.has('nosplash')
+	const debugSplash = urlParams.has('debug-splash')
 
 	// Wait for web fonts before animating the splash — otherwise "Rubik 80s Fade" swaps in mid-tween
 	// and re-rasterizes the giant title, which reads as jank no matter what GSAP does.
@@ -49,14 +52,12 @@ async function main() {
 				splashIntro = buildSplashIntro()
 			}, 100)
 		})
-	const debugSplash = new URLSearchParams(window.location.search).has('debug-splash')
-
-	const startGame = (dungeonId: string) => {
+	const bootGame = (init: (game: GameLoop) => void) => {
 		splashIntro?.kill()
 
 		// Construct the game only now — vroum's Loop schedules `mount()` and starts ticking immediately on construction.
 		const game = new GameLoop()
-		game.perform({type: 'startDungeon', dungeon: dungeonId})
+		init(game)
 		// vroum's mount() runs in a microtask and sets running=true, so a synchronous pause()
 		// here would be overwritten. Queue it so it lands after mount.
 		queueMicrotask(() => game.pause())
@@ -76,7 +77,6 @@ async function main() {
 		window.balancemender = game
 		// @ts-ignore
 		window.perf = perf
-		const urlParams = new URLSearchParams(window.location.search)
 		if (urlParams.has('muted')) game.muted = true
 
 		const animDebugger = document.querySelector('animation-debugger') as AnimationDebugger | null
@@ -86,17 +86,24 @@ async function main() {
 		new InputManager(game)
 
 		const intro = buildIntro(game)
-		intro.eventCallback('onComplete', () => game.play())
-		// ?nosplash jumps the whole intro to its end state — game running on first paint.
-		// progress(1) fires onComplete's play() synchronously, but the pause() queued at
-		// construction hasn't run yet and would override it — queue play() behind it.
+		// Malleable is composed while paused. Its visible Play control is the only player input that
+		// starts the clock; ordinary dungeons still begin when their intro completes.
+		if (!game.malleable) intro.eventCallback('onComplete', () => game.play())
+		// ?nosplash jumps the whole intro to its end state — ordinary games run on first paint, while
+		// Malleable remains behind the pause queued after mount above.
 		if (skipSplash) {
 			intro.progress(1)
-			queueMicrotask(() => game.play())
+			if (!game.malleable) queueMicrotask(() => game.play())
 		}
+	}
+
+	const startGame = (dungeonId: string) => bootGame((game) => game.perform({type: 'startDungeon', dungeon: dungeonId}))
+	const startMalleable = () => {
+		if (canAccessMalleable(readJournal())) bootGame((game) => game.perform({type: 'enterMalleable'}))
 	}
 	// One step: the splash IS the dungeon list. A tap on a dungeon starts the run.
 	const prompt = document.querySelector('.Splash-prompt')
+	const malleableUnlocked = canAccessMalleable(readJournal())
 	if (prompt && !skipSplash)
 		render(
 			prompt,
@@ -124,6 +131,14 @@ async function main() {
 							</button>
 						`
 					})}
+					<button
+						class="Button Splash-dungeon Splash-malleable"
+						type="button"
+						.disabled=${!malleableUnlocked}
+						onclick=${startMalleable}
+					>
+						Malleable <span>${malleableUnlocked ? 'Compose any room' : 'Mend all four dungeons'}</span>
+					</button>
 				</div>`,
 		)
 
@@ -134,7 +149,11 @@ async function main() {
 		return
 	}
 
-	if (skipSplash) startGame('TheGreen')
+	if (skipSplash) {
+		const malleable = urlParams.has('malleable')
+		if (malleable && canAccessMalleable(readJournal())) startMalleable()
+		else startGame('TheGreen')
+	}
 }
 
 function setupDevTools(game: GameLoop) {

@@ -119,8 +119,8 @@ function toFreshFight(game: GameLoop, load: () => void): gsap.core.Timeline {
 		// `.AppChrome-game` creates a stacking context over the fixed menu and intercepts its clicks.
 		clearAnimationState()
 		// Fires here, not on the timeline's onComplete below — the player can act while the
-		// fade-in below is still playing.
-		game.play()
+		// fade-in below is still playing. Malleable stays paused until its visible Play control.
+		if (!game.malleable) game.play()
 	})
 	tl.fromTo(animatedGame, {autoAlpha: 0}, {autoAlpha: 1, duration: 0.2})
 	return tl

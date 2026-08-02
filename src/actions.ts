@@ -22,6 +22,11 @@ import {readJournal, startingRoomIndex} from './journal'
 // The registry already reaches actions.ts through the dungeon import above; naming it directly is
 // the spawn boundary, so a console typing an unknown id is refused here instead of throwing below.
 import {unitRegistry, type UnitId} from './nodes/unit-registry'
+import {canAccessMalleable} from './access'
+import {addUnit, removeUnit, toRoomInput} from './malleable'
+import {loadMalleable, saveMalleable} from './malleable-store'
+
+const MALLEABLE_LOCKED = 'Malleable unlocks after all four dungeons are mended'
 
 /**
  * Everything that can change a running game.
@@ -34,7 +39,7 @@ import {unitRegistry, type UnitId} from './nodes/unit-registry'
  * action is a request that may be refused; an event is a record of something that happened.
  */
 export type GameAction =
-	/** Add a unit to the fight. It joins the side its class belongs to. */
+	/** Add a unit to the fight on its class's default side. */
 	| {type: 'spawn'; unit: UnitId}
 	/** Take a unit out of the fight, by unit id. */
 	| {type: 'remove'; unit: string}
@@ -61,6 +66,12 @@ export type GameAction =
 	| {type: 'wipe'; faction: Faction}
 	/** Walk into a room outside any dungeon — a one-off fight. */
 	| {type: 'enter'; room: RoomInput}
+	/** Enter the autosaved player-authored sandbox room. */
+	| {type: 'enterMalleable'}
+	/** Add a registered non-Player unit to one side of the Malleable room. */
+	| {type: 'malleableAdd'; side: Faction; unit: UnitId}
+	/** Remove one live unit from the Malleable room by its fight id. */
+	| {type: 'malleableRemove'; unit: string}
 	/** Start a dungeon from its first room, by dungeon id. */
 	| {type: 'startDungeon'; dungeon: string}
 	/** Move on to the next room of the dungeon you cleared. */
@@ -156,10 +167,48 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 		}
 
 		case 'enter':
+			if (action.room.party?.includes('Player') || action.room.enemies?.includes('Player'))
+				return fail('Player is added automatically and cannot be listed in a room')
 			// Walking into an arbitrary room steps off the dungeon.
 			game.dungeonRun = undefined
 			game.enter(action.room)
 			return ok(undefined)
+
+		case 'enterMalleable':
+			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
+			game.dungeonRun = undefined
+			enterMalleable(game)
+			return ok(undefined)
+
+		case 'malleableAdd': {
+			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
+			if (!game.malleable) return fail('Not in Malleable')
+			if (!(action.unit in unitRegistry)) return fail(`Unknown unit: ${action.unit}`)
+			const composition = addUnit(loadMalleable(), action.side, action.unit)
+			if (!composition) return fail('Player is added automatically and cannot be added to Malleable')
+			const unit = game.fight.spawn(action.unit, action.side)
+			saveMalleable(composition)
+			game.render()
+			return ok(unit)
+		}
+
+		case 'malleableRemove': {
+			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
+			if (!game.malleable) return fail('Not in Malleable')
+			const unit = findUnit(game, action.unit)
+			if (!unit) return fail(`No unit with id ${action.unit}`)
+			if (unit === game.player) return fail('The designated Player cannot be removed')
+			const side = unit.faction
+			const roster = (side === FACTION.PARTY ? game.party : game.enemies).filter(
+				(candidate) => candidate !== game.player,
+			)
+			const composition = removeUnit(loadMalleable(), side, roster.indexOf(unit))
+			if (!composition) return fail('Unit is not in the saved Malleable composition')
+			game.fight.remove(unit.id)
+			saveMalleable(composition)
+			game.render()
+			return ok(unit.id)
+		}
 
 		case 'startDungeon': {
 			const dungeon = dungeonRegistry[action.dungeon as DungeonId]
@@ -186,7 +235,12 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 		}
 
 		case 'restart':
-			game.enter(game.fight.room)
+			if (game.malleable) {
+				if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
+				enterMalleable(game)
+			} else {
+				game.enter(game.fight.room)
+			}
 			return ok(undefined)
 
 		case 'running': {
@@ -207,6 +261,12 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 }
 
 const findUnit = (game: GameLoop, id: string): Unit | undefined => game.fight.units.find((unit) => unit.id === id)
+
+function enterMalleable(game: GameLoop) {
+	game.enter(toRoomInput(loadMalleable()))
+	game.malleable = true
+	game.render()
+}
 
 /** God mode is the party's, so it is what a party unit cannot be killed past. */
 const protectedByGodMode = (game: GameLoop, unit: Unit) => game.godMode && unit.faction === FACTION.PARTY

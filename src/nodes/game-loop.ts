@@ -49,6 +49,9 @@ export interface DungeonRun {
 export class GameLoop extends Loop {
 	gameOver = false
 
+	/** True only while the current fight is the player-authored autosaved sandbox room. */
+	malleable = false
+
 	/** Browser games own Journal progression; headless simulations must never mutate the player save. */
 	persistJournal = true
 
@@ -162,6 +165,7 @@ export class GameLoop extends Loop {
 			this.player.abilities = playerAbilities
 		}
 		this.gameOver = false
+		this.malleable = false
 		this.outcome = undefined
 		this.elapsedTime = 0
 		// Stamped against a clock that just went back to zero, so it would otherwise read as

@@ -95,12 +95,13 @@ export const prefer: {
 
 	/**
 	 * Highest threat, with enough hysteresis that two nearly equal units do not trade aggro every
-	 * attack. The table belongs to the enemy captured by this preference.
+	 * attack. The table belongs to the unit captured by this preference.
 	 *
 	 * `mischief` is the odds per pick of ignoring the table and biting someone at random — one
 	 * wander, then threat pulls it home. The fight's own dice, like everything it replays.
 	 */
 	threat: (owner: Unit, mischief = 0) => {
+		const table = owner.ensureThreatTable()
 		let wandering = false
 		return {
 			prefers: (candidates: Unit[]) => {
@@ -108,12 +109,12 @@ export const prefer: {
 					wandering = false
 					return candidates[Math.floor(diceOf(owner).float() * candidates.length)]
 				}
-				return highestThreat(threatTable(owner), candidates)
+				return highestThreat(table, candidates)
 			},
 			reconsiders: (current: Unit, candidates: Unit[]) => {
 				// Guarded so a mischief-less unit draws no random and replays untouched.
 				wandering = mischief > 0 && diceOf(owner).float() < mischief
-				return wandering || pullsAggro(threatTable(owner), current, candidates)
+				return wandering || pullsAggro(table, current, candidates)
 			},
 		}
 	},
@@ -121,11 +122,6 @@ export const prefer: {
 
 /** The dice of the fight this unit is in. */
 const diceOf = (unit: Unit) => (unit.root as GameLoop).rng
-
-function threatTable(owner: Unit) {
-	if (!owner.threat) throw new Error(`${owner.name || owner.id} cannot prefer threat without a threat table`)
-	return owner.threat
-}
 
 /**
  * A unit's standing preference, asked once per use of an ability.
