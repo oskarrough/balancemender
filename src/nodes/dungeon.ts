@@ -43,13 +43,12 @@ export const TheGreen: Dungeon = {
 			grants: ['Patch'],
 			scene: 'green-skulker',
 		},
-		// Three enemies — the multi-dot room.
+		// Three enemies, no new button — the Green's one room that only tests.
 		{
 			id: 'green-howling',
 			name: 'The howling',
 			party: ['Tank'],
 			enemies: ['Denmother', 'Howler', 'Runt'],
-			grants: ['Nettle'],
 			scene: 'green-howling',
 		},
 		// The boss kit: pre-shield the telegraphed arrow.
@@ -133,11 +132,14 @@ export const TheGlow: Dungeon = {
 	rooms: [
 		// Two puffballs, nothing else — Waft's tick lands on the whole party at once, small enough
 		// that even an idle healer walks out unhurt. The room is here to be felt, not survived.
+		// Nettle is granted here: a patient sting wants the quiet room, and it targets an enemy, so
+		// it is the one global you can spend without planting Brightest on an ally.
 		{
 			id: 'glow-drowned-trees',
 			name: 'The drowned trees',
 			party: ['Tank', 'Wren'],
 			enemies: ['Muhl', 'Muhl'],
+			grants: ['Nettle'],
 			scene: 'glow-drowned-trees',
 		},
 		// The heal-mark lesson: two Sivi chase whoever Brightest just landed on rather than whoever

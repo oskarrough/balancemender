@@ -107,7 +107,7 @@ describe('dungeon abilities', () => {
 
 		expect(game.perform({type: 'startDungeon', dungeon: 'TheRust'}).ok).toBe(true)
 		await settle()
-		expect(Object.keys(game.player.abilities)).toEqual(['Mend', 'Lance', 'Renew', 'Patch', 'Nettle', 'Shield', 'Steep'])
+		expect(Object.keys(game.player.abilities)).toEqual(['Mend', 'Lance', 'Renew', 'Patch', 'Shield', 'Steep'])
 	})
 
 	it('keeps Glow and White entries nonempty through normal progression', async () => {

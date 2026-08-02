@@ -89,7 +89,7 @@ Weirdness curve: familiar → familiar-but-off → lush-weird → sublime.
 
 ## The journey
 
-Each dungeon owns one pressure, and that pressure is the progression. The six abilities you
+Each dungeon owns one pressure, and that pressure is the progression. The abilities you
 already hold mean something different under each one:
 
 1. **The Green — you learn your hands.** The kit arrives a room at a time. Shipped.
@@ -114,6 +114,9 @@ Two things grow as you walk, and neither is a bigger spellbook:
   cast carrying it is cut. The Glow teaches attention through Clover's mark and smoke; the White
   teaches scarcity through Glider's Hollow and Gale's Wind rather than another player spell. The
   Green teaches Mend in its first quiet room and Patch when a burst first demands one (#71).
+  The Green keeps only buttons that answer its own pressures, so the howling grants nothing — the
+  one room that tests instead of teaching. **Nettle** moved to the Glow's quiet first room: it
+  targets an enemy, so it is the one global that does not plant the mark on an ally.
 - **The mender's journal.** The player's own book of the walk, opened outside the fight: places
   mended, folk met, wounds tended, each room marked **Mended.** when it is. A record, not a trophy
   room. The craft is written in the same book — what your hands know, the page growing as the walk
