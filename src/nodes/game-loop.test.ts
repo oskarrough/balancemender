@@ -1,4 +1,5 @@
 import {afterEach, describe, expect, it} from 'vitest'
+import {clearJournal, readJournal} from '../journal'
 import {settle} from '../test-setup'
 import {GameLoop} from './game-loop'
 import {playerAbilities} from './registry'
@@ -8,6 +9,7 @@ let game: GameLoop | undefined
 afterEach(async () => {
 	game?.disconnect()
 	await settle()
+	await clearJournal()
 })
 
 describe('game over', () => {
@@ -25,6 +27,19 @@ describe('game over', () => {
 		game.onGameOver()
 
 		expect(game.combatLog.events.filter((event) => event.eventType === 'FIGHT_END')).toHaveLength(1)
+	})
+})
+
+describe('Journal victories', () => {
+	it('does not mend a room when the debugger ends a live fight', async () => {
+		game = new GameLoop()
+		await settle()
+
+		expect(game.perform({type: 'startDungeon', dungeon: 'TheGreen'}).ok).toBe(true)
+		game.onGameOver()
+		await settle()
+
+		expect(readJournal().completedRooms).toEqual({})
 	})
 })
 

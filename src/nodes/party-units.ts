@@ -34,11 +34,10 @@ export class Wren extends Unit {
 }
 
 /**
- * The beekeeper, and the party's answer to a crowd: their smoker puffs over the whole room at once,
- * the only area damage anyone on this side does. Built to be lit as well — the mender keeps the
- * heal-mark on them on purpose so Sivi drift to them instead of squishier bodies. Sturdier than
- * Wren, softer than Oak. Standing calm inside a cloud of stinging things is
- * the trade, so both halves of them are the same job.
+ * The beekeeper, and the party's answer to a crowd: their smoker softens the whole room at once.
+ * Built to be lit as well — the mender keeps the heal-mark on them on purpose so Sivi drift to them
+ * instead of squishier bodies. Sturdier than Wren, softer than Oak. Standing calm inside a cloud of
+ * stinging things is the trade, so both halves of them are the same job.
  */
 export class Clover extends Unit {
 	static stamina = 200

@@ -13,6 +13,7 @@ import {Rng} from '../rng'
 import {perform, type GameAction} from '../actions'
 import {unitsOf, type Outcome} from '../sim/report'
 import {saveFight} from '../fight-history'
+import {recordVictory} from '../journal'
 
 declare global {
 	interface Window {
@@ -47,6 +48,9 @@ export interface DungeonRun {
 /** The clock and the root of everything. See [architecture](../../docs/architecture.md). */
 export class GameLoop extends Loop {
 	gameOver = false
+
+	/** Browser games own Journal progression; headless simulations must never mutate the player save. */
+	persistJournal = true
 
 	/** How the fight ended — unset until `gameOver` flips. See `Outcome` in the glossary. */
 	outcome?: Outcome
@@ -227,7 +231,13 @@ export class GameLoop extends Loop {
 		// back to reading the fight directly rather than showing no outcome at all.
 		if (!this.outcome) this.outcome = this.fight.isPartyDefeated() ? 'defeat' : 'victory'
 		const outcome = this.outcome
+		const location = this.combatLog.location
 		this.render()
+		// Journal progression is independent of evictable fight history. It also deliberately does
+		// not sit inside the draw branch: a node-level GameLoop can record a win without a browser UI.
+		const actualVictory = outcome === 'victory' && !this.fight.isPartyDefeated() && this.fight.isEnemiesDefeated()
+		if (this.persistJournal && actualVictory && location)
+			void recordVictory(location).catch((err) => logger.error({err}, 'Failed to save Journal progress'))
 		// Only worth animating — or saving — for someone who is watching it. Headless SimLoop
 		// fights have no draw and must never be persisted.
 		if (this.draw) {

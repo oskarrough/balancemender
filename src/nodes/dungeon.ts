@@ -121,9 +121,9 @@ export const TheRust: Dungeon = {
 
 /**
  * The third dungeon. Where the Rust is bulk and bodies, the Glow's pressure is a heal-mark: a
- * gate on the healer makes each heal plant an exclusive threat mark on the patient, so
- * `prefer.threat` enemies (the Sivi) drift to whoever was last healed — see
- * [`heal-mark.ts`](./heal-mark.ts) and [combat.md](../../docs/combat.md#threat-is-local-to-each-enemy).
+ * gate on the healer makes each heal plant an exclusive mark on its living target, and
+ * Sivi seek that mark directly before falling back to threat — see [`heal-mark.ts`](./heal-mark.ts)
+ * and [combat.md](../../docs/combat.md#threat-is-local-to-each-enemy).
  * Everything else here ticks slowly and accumulates rather than bursts — Muhl's `Waft` and Grub's
  * delayed wake both read that way, in contrast to Orovan's one telegraphed hit closing the
  * dungeon.
@@ -229,3 +229,6 @@ export const TheWhite: Dungeon = {
 
 /** Every dungeon, by id. */
 export const dungeonRegistry: Record<DungeonId, Dungeon> = {TheGreen, TheRust, TheGlow, TheWhite}
+
+/** Authored progression order. Keep this explicit rather than relying on object insertion order. */
+export const dungeonOrder: readonly DungeonId[] = ['TheGreen', 'TheRust', 'TheGlow', 'TheWhite']

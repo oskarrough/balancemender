@@ -1,7 +1,8 @@
 import {afterEach, describe, expect, it} from 'vitest'
+import {clearJournal, recordVictory} from './journal'
 import {formatFightLocation} from './fight-location'
 import {getFight, listFights, saveFight} from './fight-history'
-import {TheRust} from './nodes/dungeon'
+import {TheGreen, TheRust} from './nodes/dungeon'
 import {GameLoop} from './nodes/game-loop'
 import {analyze, unitsOf} from './sim/report'
 import {runFight} from './sim/run'
@@ -11,6 +12,7 @@ let game!: GameLoop
 afterEach(async () => {
 	game?.disconnect()
 	await settle()
+	await clearJournal()
 })
 
 describe('fight location', () => {
@@ -18,6 +20,7 @@ describe('fight location', () => {
 		game = new GameLoop({id: 'location-test', party: [], enemies: []})
 		await settle()
 
+		for (const room of TheGreen.rooms) await recordVictory({dungeonId: 'TheGreen', roomId: room.id})
 		expect(game.perform({type: 'startDungeon', dungeon: 'TheRust'}).ok).toBe(true)
 		await settle()
 

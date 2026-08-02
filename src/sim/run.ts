@@ -138,6 +138,7 @@ export class SimLoop extends GameLoop {
 
 	constructor(room?: RoomInput, seed: number | null = null) {
 		super(room, seed)
+		this.persistJournal = false
 		// Nobody is watching this fight: the live panels must not redraw off its log, and its
 		// thousands of events must not reach the console.
 		this.combatLog.notify = false

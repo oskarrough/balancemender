@@ -9,7 +9,8 @@ import {InputManager} from './input-manager'
 import {installTooltips, drawTooltip} from './components/tooltip'
 import * as perf from './perf'
 import {loadFightHistory} from './fight-history'
-import {dungeonRegistry} from './nodes/dungeon'
+import {dungeonOrder, dungeonRegistry} from './nodes/dungeon'
+import {loadJournal, readJournal} from './journal'
 import {scenePaths} from './nodes/fight'
 import './components/dev-console'
 import './components/animation-debugger'
@@ -24,12 +25,15 @@ import './components/balance-lab'
  * Main entry point for the game.
  * Renders two components, the splash "menu" and the "game" itself.
  */
-function main() {
+async function main() {
 	// Panels upgrade synchronously when floating-view.js defines the element, so they have
 	// their intrinsic size by now and the rails can stack them.
 	applyDefaultLayout()
 	installTooltips()
 
+	// Progression must be hydrated before the splash renders its dungeon choices. Fight history is
+	// supporting evidence and may load alongside it, but it never gates the menu.
+	await loadJournal()
 	void loadFightHistory().catch((err) => console.error('Failed to load fight history', err))
 
 	const skipSplash = new URLSearchParams(window.location.search).has('nosplash')
@@ -97,13 +101,16 @@ function main() {
 			prompt,
 			html`<span class="Splash-dungeonsHeading">Choose your dungeon</span>
 				<div class="Splash-dungeons">
-					${Object.values(dungeonRegistry).map((dungeon) => {
+					${dungeonOrder.map((dungeonId) => {
+						const dungeon = dungeonRegistry[dungeonId]
+						const progression = readJournal().dungeonProgression.find((candidate) => candidate.dungeonId === dungeon.id)
 						const scene = dungeon.rooms[0]?.scene
 						const painting = scene ? scenePaths(scene) : null
 						return html`
 							<button
 								class="Button Splash-dungeon"
 								type="button"
+								.disabled=${!progression?.unlocked}
 								style=${painting
 									? `--dungeon-image: url(${painting.landscape}); --dungeon-image-portrait: url(${painting.portrait})`
 									: ''}
@@ -139,4 +146,4 @@ function setupDevTools(game: GameLoop) {
 	game.console = devConsole
 }
 
-main()
+void main().catch((err) => console.error('Failed to start game', err))

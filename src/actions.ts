@@ -18,6 +18,7 @@ import {STAT_KEYS} from './nodes/stats'
 import type {RoomInput} from './nodes/fight'
 // Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
 import {dungeonRegistry, type DungeonId} from './nodes/dungeon'
+import {readJournal, startingRoomIndex} from './journal'
 // The registry already reaches actions.ts through the dungeon import above; naming it directly is
 // the spawn boundary, so a console typing an unknown id is refused here instead of throwing below.
 import {unitRegistry, type UnitId} from './nodes/unit-registry'
@@ -163,8 +164,11 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 		case 'startDungeon': {
 			const dungeon = dungeonRegistry[action.dungeon as DungeonId]
 			if (!dungeon) return fail(`Unknown dungeon: ${action.dungeon}`)
-			game.dungeonRun = {dungeon, room: 0, times: []}
-			game.enter(dungeon.rooms[0])
+			const progress = readJournal().dungeonProgression.find((candidate) => candidate.dungeonId === dungeon.id)
+			if (!progress?.unlocked) return fail(`Dungeon locked: ${dungeon.name}`)
+			const room = startingRoomIndex(dungeon.id)
+			game.dungeonRun = {dungeon, room, times: []}
+			game.enter(dungeon.rooms[room])
 			return ok(dungeon)
 		}
 

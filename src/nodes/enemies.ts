@@ -296,8 +296,8 @@ export class Howler extends Unit {
  * marked `Brightest`, falling back to ordinary threat. `Ambush` is reused whole — same leap
  * Skulker uses, on its own faster `SiviAmbushCadence` — so the wisp that drifts to the marked ally
  * hits hard, and the mark's redirect carries real risk: 200-seed sim with the full party (Tank,
- * Wren, Clover), `Sivi*2, Muhl` — idle loses nearly every seed, triage still clears every seed. Stamina raised
- * from 140 to hold that shape once Clover's extra body (#88) padded the party's health pool.
+ * Wren, Clover), `Sivi*2, Muhl` — idle loses nearly every seed, triage still clears every seed.
+ * Stamina raised from 140 to hold that shape once Clover's extra body (#88) padded the party's health pool.
  * "Ambush" reads oddly on a wisp's lunge rather than a leap — a naming pass for a director later.
  */
 export class Sivi extends Unit {
