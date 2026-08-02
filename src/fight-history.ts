@@ -69,7 +69,9 @@ function readLocation(id: string): FightLocation | undefined {
 		if (
 			typeof candidate.dungeonId !== 'string' ||
 			typeof candidate.roomId !== 'string' ||
-			typeof candidate.roomNumber !== 'number'
+			typeof candidate.roomNumber !== 'number' ||
+			!Number.isInteger(candidate.roomNumber) ||
+			candidate.roomNumber < 1
 		)
 			return undefined
 		return {

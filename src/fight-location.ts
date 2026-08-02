@@ -15,7 +15,7 @@ export interface FightLocation {
 export function formatFightLocation(location?: FightLocation): string | undefined {
 	if (!location) return undefined
 
-	const dungeon = dungeonRegistry[location.dungeonId]
+	const dungeon = Object.values(dungeonRegistry).find((candidate) => candidate.id === location.dungeonId)
 	const room = dungeon?.rooms.find((candidate) => candidate.id === location.roomId)
 	const dungeonName = dungeon?.name || location.dungeonId || 'Unknown dungeon'
 	const roomName = room?.name || location.roomId || `Room ${location.roomNumber}`
