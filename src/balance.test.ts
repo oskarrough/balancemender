@@ -115,7 +115,7 @@ describe('the categories', () => {
 			'NastyArrowCadence',
 			'ShieldBashCadence',
 			'SlingCadence',
-			'CloverSlingCadence',
+			'SmokeCadence',
 			'LickCadence',
 			'PounceCadence',
 			'WorryCadence',

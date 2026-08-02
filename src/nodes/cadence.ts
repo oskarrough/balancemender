@@ -119,8 +119,9 @@ export class SlingCadence extends Cadence {
 	static interval = 1800
 }
 
-/** Clover's smoker puff, `Sling` reused at a beekeeper's slower tempo — same shape as `SiviAmbushCadence`. */
-export class CloverSlingCadence extends SlingCadence {
+/** Clover's smoker, kept at the beekeeper's slower tempo — a cloud drifts out, it does not snap. */
+export class SmokeCadence extends Cadence {
+	static abilityId = 'Smoke'
 	static delay = 1500
 	static interval = 3600
 }
@@ -183,8 +184,8 @@ export class RileCadence extends Cadence {
 }
 
 /**
- * Spore always wants the healer, while its owner's standing preference is threat (Brightest chase).
- * Pick the healer here rather than fighting that preference.
+ * Spore always wants the healer, while Sivi's standing preference seeks Brightest or falls back to
+ * threat. Pick the healer here rather than fighting that preference.
  */
 export class SporeCadence extends Cadence {
 	static abilityId = 'Spore'
@@ -228,10 +229,10 @@ export class GroundfallCadence extends Cadence {
 }
 
 /**
- * Sivi's lunge — `Ambush` reused as-is, so the wisp that drifts to whoever holds threat (or
- * `Brightest`) hits like Skulker instead of only nipping. Faster than Skulker's own
- * `AmbushCadence`: at 6s it is the room's real threat, and its target is whoever the mark or the
- * threat table points it at, which is the whole "watch who you heal" lesson (200-seed sim with
+ * Sivi's lunge — `Ambush` reused as-is, so the wisp that seeks `Brightest` before ordinary threat
+ * hits like Skulker instead of only nipping. Faster than Skulker's own `AmbushCadence`: at 6s it is
+ * the room's real threat, and its target is whoever the mark or the threat table points it at,
+ * which is the whole "watch who you heal" lesson (200-seed sim with
  * Tank, Wren and Clover: idle loses "The bright water" nearly every seed, triage still clears it).
  */
 export class SiviAmbushCadence extends AmbushCadence {

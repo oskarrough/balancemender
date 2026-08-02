@@ -90,6 +90,36 @@ export class Sling extends Ability {
 	static effects = [new Damage(0.45)]
 }
 
+/** The calm the smoke leaves behind. Shares the ability's id so the cloud reports as one thing. */
+export class SmokeAura extends StatModifierAura {
+	static id = 'Smoke'
+	static name = 'Smoke'
+	static stat = STAT.STRENGTH
+	static lifetime = 8000
+}
+
+/**
+ * Clover's smoker, and the mirror of Gale's Wind: the same party-wide `StatModifierAura` machinery
+ * pointed at the other side with the sign flipped. Nothing here moves a health bar — every enemy in
+ * the cloud simply swings softer while it hangs.
+ *
+ * Damage was the first attempt and it scaled with how many enemies were in front of it — strong in
+ * a crowd of cheap bodies, a third of a sling against one fat one, which broke The White. A
+ * reduction scales with what the enemies were going to hit for instead, so it is worth about the
+ * same in every room shape. It also pays the mender directly rather than through the kill: damage
+ * that never arrives is a heal never cast, which is the mana the party is actually short of.
+ *
+ * Clover deals no damage at all now. That is the trade — the fight lasts longer and costs less.
+ */
+export class Smoke extends Ability {
+	static id = 'Smoke'
+	static name = 'Smoke'
+	static tags = ['spell'] as const
+	static school = 'physical' as const
+	static targets = 'enemy' as const
+	static effects = [new AoeAura(SmokeAura, -0.16)]
+}
+
 export class NastyArrow extends Ability {
 	static id = 'NastyArrow'
 	static name = 'Nasty Arrow'
@@ -244,10 +274,11 @@ export class Rile extends Ability {
 	static effects = [new ApplyAura(Frenzy, 0.12)]
 }
 
-/** Exclusive heal-mark on the patient while present. */
+/** Exclusive mark that makes Sivi target this ally directly. */
 export class Brightest extends ThreatMark {
 	static id = 'Brightest'
 	static name = 'Brightest'
+	static description = 'Sivi target this ally directly.'
 	static exclusive = true
 }
 
@@ -255,6 +286,8 @@ export class Brightest extends ThreatMark {
 export class Glow extends HealMarkGate {
 	static id = 'Glow'
 	static name = 'Glow'
+	static description =
+		'Positive heals move Brightest to the living ally they land on, even at full health.'
 	static lifetime = 9000
 	static mark = Brightest
 }

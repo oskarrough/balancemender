@@ -1,6 +1,6 @@
 import {Unit} from './unit'
-import {ShieldBash, Sling, Wind} from './attack'
-import {GaleSlingCadence, GaleWindCadence, ShieldBashCadence, SlingCadence, CloverSlingCadence} from './cadence'
+import {ShieldBash, Sling, Smoke, Wind} from './attack'
+import {GaleSlingCadence, GaleWindCadence, ShieldBashCadence, SlingCadence, SmokeCadence} from './cadence'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
 
@@ -34,10 +34,11 @@ export class Wren extends Unit {
 }
 
 /**
- * The beekeeper, built to be lit: the mender keeps the heal-mark on them on purpose so
- * `prefer.threat` enemies drift to them instead of squishier bodies. Sturdier than Wren, softer
- * than Oak — they survive being lit but don't tank hits like a shield-carrier. No specials; their
- * whole mechanical identity is being a good mark-holder.
+ * The beekeeper, and the party's answer to a crowd: their smoker puffs over the whole room at once,
+ * the only area damage anyone on this side does. Built to be lit as well — the mender keeps the
+ * heal-mark on them on purpose so Sivi drift to them instead of squishier bodies. Sturdier than
+ * Wren, softer than Oak. Standing calm inside a cloud of stinging things is
+ * the trade, so both halves of them are the same job.
  */
 export class Clover extends Unit {
 	static stamina = 200
@@ -46,9 +47,9 @@ export class Clover extends Unit {
 	static agility = 10
 	static spirit = 0
 	static faction = FACTION.PARTY
-	abilities = {Sling}
+	abilities = {Smoke}
 	targeting = new Targeting(this, prefer.lowestHealth)
-	cloverSlingCadence = new CloverSlingCadence(this)
+	smokeCadence = new SmokeCadence(this)
 	name = 'Clover'
 	image = '/assets/generated/characters/clover.png'
 }

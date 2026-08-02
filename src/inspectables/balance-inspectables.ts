@@ -47,6 +47,8 @@ const LABELS: {
 		repeat: 'Ticks',
 		delay: 'First tick delay (ms)',
 		maxStacks: 'Max stacks (per caster)',
+		pool: 'Absorb pool',
+		lifetime: 'Barrier lifetime (ms)',
 	},
 	rule: {
 		injured: 'Injured below (% health)',

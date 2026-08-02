@@ -33,16 +33,16 @@ export class BarrierAura extends Aura {
 	static pool = 0
 	/**
 	 * How long an unspent barrier lasts, in ms. Mirrored onto `Task.delay` at construction, the way
-	 * `Ability.castTime` is.
-	 *
-	 * Not a balance number: `AURA_KEYS` holds a periodic aura's dials, which a barrier has none of,
-	 * and the pool already arrives as the planting effect's resolved magnitude.
+	 * `Ability.castTime` is. In `AURA_KEYS` as its own key rather than folded into `delay`, which
+	 * means a periodic aura's dial, not a barrier's.
 	 */
 	static lifetime = 15000
 
 	/**
 	 * The effect that planted this barrier sizes its pool — see `Shield`, whose apply-aura effect
-	 * owns the coefficient. A class default only stands in for a barrier constructed without one.
+	 * owns the coefficient — and overwrites this default the moment one does. A barrier a unit wears
+	 * instead of one an ability plants (`SapShell`) has no planting effect to size it, so this
+	 * default is the whole of its pool, and `AURA_KEYS` carries it as a real dial.
 	 */
 	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
 		super(parent, caster)

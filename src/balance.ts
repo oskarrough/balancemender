@@ -6,7 +6,7 @@ import {
 	NipCadence,
 	ShieldBashCadence,
 	SlingCadence,
-	CloverSlingCadence,
+	SmokeCadence,
 	SavageBiteCadence,
 	PounceCadence,
 	WorryCadence,
@@ -26,6 +26,7 @@ import {
 	GaleWindCadence,
 } from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
+import type {Unit} from './nodes/unit'
 import {CONDITION_THRESHOLDS} from './nodes/types'
 import {STAT_KEYS} from './nodes/stats'
 import {ApplyAura, DAMAGE_RULES, type Effect} from './nodes/effects'
@@ -41,7 +42,7 @@ export const ABILITY_KEYS = [
 export const EFFECT_KEYS = ['coefficient'] as const
 export const CADENCE_KEYS = ['delay', 'interval'] as const
 export const UNIT_KEYS = STAT_KEYS
-export const AURA_KEYS = ['interval', 'repeat', 'delay', 'maxStacks'] as const
+export const AURA_KEYS = ['interval', 'repeat', 'delay', 'maxStacks', 'pool', 'lifetime'] as const
 export const RULE_KEYS = ['injured', 'healthy', 'variance'] as const
 
 export type AbilityKey = (typeof ABILITY_KEYS)[number]
@@ -89,7 +90,7 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 	NastyArrowCadence,
 	ShieldBashCadence,
 	SlingCadence,
-	CloverSlingCadence,
+	SmokeCadence,
 	LickCadence,
 	PounceCadence,
 	WorryCadence,
@@ -110,9 +111,11 @@ export const cadenceClasses: Record<string, CadenceClass> = {
 }
 
 /**
- * One row per aura a fight can carry, keyed by aura id and walked out of the abilities that plant
- * them — a new spell's aura is tunable without a list here to remember. A row holds what is left
- * once the planting effect owns the size: the timing, and how many copies stack.
+ * One row per aura a fight can carry, keyed by aura id. Walked from two places a fight can pick one
+ * up: the abilities that plant them, and the units that wear one from their own field initializer
+ * (`Grub.wornAuras`) — either way a new aura is tunable without a list here to remember. A row holds
+ * what is left once the planting effect owns the size: the timing, and how many copies stack. A worn
+ * aura has no planting effect to size it, so its own static — `pool`, say — is the row instead.
  *
  * Its own namespace, so an aura that borrows its ability's id keeps its own row: `aura:Renew` is
  * the heal-over-time, `ability:Renew` the cast that plants it.
@@ -121,6 +124,11 @@ export const auraClasses: Record<string, NumberDict> = {}
 for (const AbilityClass of Object.values(abilityRegistry)) {
 	for (const effect of AbilityClass.effects) {
 		if (effect instanceof ApplyAura) auraClasses[effect.auraClass.id] = effect.auraClass as unknown as NumberDict
+	}
+}
+for (const UnitClass of Object.values(unitRegistry)) {
+	for (const AuraClass of (UnitClass as unknown as typeof Unit).wornAuras) {
+		auraClasses[AuraClass.id] = AuraClass as unknown as NumberDict
 	}
 }
 export const ruleClasses: Record<string, NumberDict> = {Condition: CONDITION_THRESHOLDS, Damage: DAMAGE_RULES}

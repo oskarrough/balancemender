@@ -30,6 +30,12 @@ export class Unit extends Node {
 	static faction: Faction = FACTION.ENEMY
 	/** A named opponent the fight is about. Only the narration reads it, so far. */
 	static boss = false
+	/**
+	 * Auras an instance field constructs straight onto this unit (`shell = new SapShell(this,
+	 * this)`), as opposed to one an ability plants. `balance.ts` walks this the same way it walks
+	 * `Ability.effects` for planted auras, so a worn one is tunable through the same door.
+	 */
+	static wornAuras: (typeof Aura)[] = []
 
 	name = ''
 	image = ''

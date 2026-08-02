@@ -1,4 +1,5 @@
 import {Unit} from './unit'
+import {BarrierAura} from './barrier-aura'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
 import {
@@ -14,6 +15,7 @@ import {
 	Toll,
 	Trample,
 	Spore,
+	Brightest,
 	Waft,
 	Groundfall,
 	Hollow,
@@ -290,11 +292,11 @@ export class Howler extends Unit {
 }
 
 /**
- * The Glow wisp: paints the Glow gate on the healer (`SporeCadence`), then chases whoever it
- * marked `Brightest` via plain threat. `Ambush` is reused whole — same leap Skulker uses, on its
- * own faster `SiviAmbushCadence` — so the wisp that drifts to the marked ally hits hard, and the
- * mark's redirect carries real risk: 200-seed sim with the full party (Tank, Wren, Clover),
- * `Sivi*2, Muhl` — idle loses nearly every seed, triage still clears every seed. Stamina raised
+ * The Glow wisp: paints the Glow gate on the healer (`SporeCadence`), then targets whoever it
+ * marked `Brightest`, falling back to ordinary threat. `Ambush` is reused whole — same leap
+ * Skulker uses, on its own faster `SiviAmbushCadence` — so the wisp that drifts to the marked ally
+ * hits hard, and the mark's redirect carries real risk: 200-seed sim with the full party (Tank,
+ * Wren, Clover), `Sivi*2, Muhl` — idle loses nearly every seed, triage still clears every seed. Stamina raised
  * from 140 to hold that shape once Clover's extra body (#88) padded the party's health pool.
  * "Ambush" reads oddly on a wisp's lunge rather than a leap — a naming pass for a director later.
  */
@@ -308,7 +310,7 @@ export class Sivi extends Unit {
 	name = 'Sivi'
 	image = '/assets/generated/characters/sivi.png'
 	abilities = {Nip, Spore, Ambush}
-	targeting = new Targeting(this, prefer.threat(this))
+	targeting = new Targeting(this, prefer.auraFirst(Brightest.id, prefer.threat(this)))
 	nipCadence = new NipCadence(this)
 	sporeCadence = new SporeCadence(this)
 	ambushCadence = new SiviAmbushCadence(this)
@@ -316,7 +318,7 @@ export class Sivi extends Unit {
 
 /**
  * A sighing puffball, all pressure and no aim. `Waft` reaches every living ally at once in small
- * ticks — the Glow's tempo lesson before the mark-and-threat one arrives: a long fight at
+ * ticks — the Glow's tempo lesson before the mark-and-chase one arrives: a long fight at
  * heal-over-time speed rather than a burst any single Mend answers outright.
  */
 export class Muhl extends Unit {
@@ -341,6 +343,26 @@ export class Muhl extends Unit {
  * awake it swings the same `HeavyBlow` as everything else, just carried by more strength than its
  * size explains.
  */
+/**
+ * The sap shell itself, as a barrier the grub wears from the first frame: whatever you spend on a
+ * sleeping grub goes into the shell, not the animal. It falls away exactly when the grub cracks
+ * open, so `lifetime` belongs to the wake cadence and each subclass forwards to its own.
+ *
+ * Without it a shell was only a late cadence — the grub fully targetable from t=0 — so the room's
+ * stagger was something the party could skip rather than wait out, and one area ability cleared all
+ * three before the deep one ever woke. The shell is what makes the sleep cost something.
+ */
+class SapShell extends BarrierAura {
+	static id = 'SapShell'
+	static name = 'Sap shell'
+	static pool = 40
+	static lifetime = GrubWakeCadence.delay
+}
+
+class SapShellDeep extends SapShell {
+	static lifetime = GrubWakeCadenceLate.delay
+}
+
 export class Grub extends Unit {
 	static stamina = 130
 	static intellect = 0
@@ -348,16 +370,20 @@ export class Grub extends Unit {
 	static agility = 4
 	static spirit = 0
 	static faction = FACTION.ENEMY
+	static wornAuras = [SapShell]
 	name = 'Grub'
 	image = '/assets/generated/characters/grub.png'
 	abilities = {HeavyBlow}
 	targeting = new Targeting(this, prefer.threat(this))
 	heavyBlowCadence = new GrubWakeCadence(this)
+	shell = new SapShell(this, this)
 }
 
 /** The same grub, buried deeper in its shell — cracks open only once its siblings already have, for a room where all three do not wake together. */
 export class GrubDeep extends Grub {
+	static wornAuras = [SapShellDeep]
 	heavyBlowCadence = new GrubWakeCadenceLate(this)
+	shell = new SapShellDeep(this, this)
 }
 
 /**
@@ -442,7 +468,10 @@ export class Ringer extends Unit {
  * clear.
  */
 export class Uvalu extends Unit {
-	static stamina = 1680
+	// Raised from 1680 when Clover's smoke replaced her sling: the reduction handed the party enough
+	// slack that the finale became a certainty. Stamina is a knife-edge here — the fight is bounded by
+	// the purse, not the health bar, so 1850 already drops it to 7%.
+	static stamina = 1720
 	static intellect = 20
 	static strength = 22
 	static agility = 4
