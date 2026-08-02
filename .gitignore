@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules/
 dist/
+tmp/image-assets/
 *.local
 
 # Editor directories and files

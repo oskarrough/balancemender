@@ -1,38 +1,110 @@
-# Image Asset Pipeline
+# Image asset pipeline
 
-Define assets in `assets/image-assets.json` (type, style, type-prompt, individual prompt). Print the composed Codex prompt, generate in Codex, save approved output under `public/assets/generated/`. Spells are action-bar icons, characters are unit-frame avatars, and scenes are dungeon-room paintings.
+This is the canonical execution guide for humans and agents creating image assets. Sorrel owns the
+artistic brief and recommends the winning image; Oskar makes the visual decision. This document owns
+how prompts become safe files.
 
-A scene is one room painted twice — `<id>.png` wide and `<id>-portrait.png` tall — from the room prompt plus that asset's `portrait` recomposition note, so the room is never written out twice. Rooms name the scene id and `scenePaths()` derives both files; `registry.test.ts` fails if either is missing.
+## Agent contract
 
-    bun run asset:prompt -- --list                  # list all assets
-    bun run asset:prompt -- renew heal              # print prompts by id
-    bun run asset:prompt -- --type spell            # filter by type (combine with ids ok)
-    bun run asset:prompt -- --type scene            # print every room-painting prompt, both views
-    bun run asset:prompt -- --variant portrait      # just the tall views
-    bun run asset:optimize -- --dry-run             # preview PNG savings
-    bun run asset:optimize -- --max 1024 renew      # shrink in place (default --max 1440)
+When asked to create or repaint Balance Mender artwork, summon Sorrel and give it the request. Sorrel
+reads this document first, grounds the brief in the game, generates candidates, checks them at their
+actual display size, and presents a visual choice. Never write directly over approved artwork and
+never promote a candidate without an explicit visual decision.
 
-Optimizer ids are exact, not substrings — `glow` matches nothing, and a portrait variant is its
-own id (`glow-tender-portrait`). Optimize every new PNG before jj touches it: the repo refuses to
-snapshot new files over 1MiB.
+## Route the request
 
-Generation is one-shot from the CLI — pipe the composed prompt (the exact format `asset:prompt`
-prints, including the output target path) into codex:
+Create deterministic raster requests directly. Do not ask an image model for a solid red 50×50 PNG:
 
-    bun run asset:prompt -- <id> | codex exec --sandbox workspace-write --skip-git-repo-check -C . -
+```sh
+bun -e "import sharp from 'sharp'; await sharp({create:{width:50,height:50,channels:4,background:'#f00'}}).png().toFile('public/assets/example.png')"
+```
 
-## Composing a scene
+Illustrative spells, characters and dungeon scenes go through Sorrel, the manifest, candidate
+generation, review and explicit promotion. Generated candidates never write approved public paths.
 
-[universe.md](./universe.md) is what the place should feel like; this is how it has to sit on a
-screen.
+## 1. Brief and manifest
 
-- The tall view is the same place **looked at again** for a narrow screen, never a crop of the wide
-  one — same landmarks, same hour, same palette, so the two are unmistakably one place.
-- It stacks around the combat UI rather than around the eye. Unit frames come down from the top and
-  reach two-thirds of the way down a crowded room, so the upper two-thirds is sky, canopy or open
-  space that reads fine behind them. The room's defining clue lives low: the strip between
-  two-thirds and four-fifths is the only clear air a phone has. Put the bell where it can be seen.
-- Adjacent rooms carry landmarks forward — above all the river and the path beside it — so pressing
-  Next feels like walking farther into the same country.
-- The painting establishes the encounter, it does not illustrate the combat. A narrow ford explains
-  an animal holding the crossing; high cover explains an ambush. Unit frames carry the fight.
+Sorrel reads the universe and glossary, directs one artistic decision at a time, and records the
+approved brief in `assets/image-assets.json`. The manifest owns the house style, type prompts, asset
+prompts, output folders and scene variants. Spells and characters are exactly 1024×1024. Scenes use
+the exact `sceneVariants.*.size` dimensions.
+
+Inspect composed prompts without generating:
+
+```sh
+bun run asset:prompt -- --list
+bun run asset:prompt -- renew
+bun run asset:prompt -- green-first-blood          # both scene variants
+bun run asset:prompt -- green-first-blood --variant portrait
+bun run asset:prompt -- --type spell
+bun run asset:prompt -- --type scene --variant landscape
+```
+
+A scene is one room painted twice: landscape and portrait are separate generation jobs, with the
+portrait recomposed rather than cropped. Generate and approve the landscape first; portrait
+generation automatically attaches it as a visual reference unless another `--reference` is given.
+
+Scene composition is part of correctness:
+
+- The two views preserve landmarks, hour and palette so they are unmistakably the same place.
+- Unit frames cover the upper two-thirds of a crowded phone view. Keep that area as sky, canopy or
+  open space; put the room's defining clue in the clear band between two-thirds and four-fifths.
+- Carry the river, path and other landmarks into adjacent rooms so **Next** reads as walking onward.
+- Establish why the encounter behaves as it does without depicting combat. Unit frames carry the fight.
+
+## 2. Generate candidates
+
+Generation accepts exactly one asset id. Scenes require a variant. Candidate count defaults to one
+and is capped at four; candidates run concurrently in isolated temporary workspaces. Repeated
+candidates explore drawing and composition, **not reliably a different style**—change the brief or
+references when style is the question. The model and reasoning defaults are explicit
+(`gpt-5.6-sol`, `low`). References are repeatable and default to the `style` role.
+
+```sh
+bun run asset:generate -- renew
+bun run asset:generate -- renew --candidates 4
+bun run asset:generate -- green-first-blood --variant landscape --candidates 2
+bun run asset:generate -- ringing --reference ./gash.png --reference ./rend.png
+bun run asset:generate -- roha --reference ./roha-concept.png --reference-role identity
+bun run asset:generate -- renew --model gpt-5.6-sol --effort low
+```
+
+A `style` reference controls medium, shape language, line treatment, texture and detail while the
+written brief retains subject, palette and composition. An `identity` reference also carries subject
+anatomy, landmarks, palette, materials and light; portrait scenes select this role automatically.
+
+Each Codex process receives only the fully composed prompt and optional reference images. Runs are
+kept under gitignored `tmp/image-assets/<run>/`: candidate PNGs, exact prompts, Codex JSONL, stderr
+and metadata including duration, model, effort and exit status. OS temporary workspaces are removed,
+and a stuck Codex process is stopped after five minutes. A candidate is retained only if Sharp can
+decode it as PNG at the manifest's exact dimensions. If Codex exits unsuccessfully after writing a
+valid staged image, the image is recovered, metadata marks it `recovered-after-codex-error`, and the
+command still reports failure rather than hiding the bad exit.
+
+## 3. Review and select
+
+Sorrel compares the candidate PNGs against the brief, adjacent assets and actual UI role, then names
+one candidate for promotion. Repaint by changing the manifest brief or supplying references and run
+generation again. Candidate runs remain unchanged as review evidence.
+
+## 4. Promote explicitly
+
+Approval takes the selected candidate and asset id. Scenes again require the matching variant.
+Existing approved files are protected unless `--replace` is explicit.
+
+```sh
+bun run asset:approve -- tmp/image-assets/<run>/candidate-1.png renew
+bun run asset:approve -- tmp/image-assets/<run>/candidate-2.png green-first-blood --variant landscape
+bun run asset:approve -- tmp/image-assets/<run>/candidate-2.png green-first-blood --variant portrait --replace
+```
+
+Approval revalidates PNG type and exact dimensions, preserves the candidate, and atomically writes a
+palette-optimized delivery copy to the manifest-derived path under `public/assets/generated/`. It
+tries palette quality 90 first and lowers it only when needed to stay at or below 1 MiB.
+
+For already-approved legacy PNGs, the separate in-place optimizer remains available:
+
+```sh
+bun run asset:optimize -- --dry-run
+bun run asset:optimize -- --max 1024 renew
+```
