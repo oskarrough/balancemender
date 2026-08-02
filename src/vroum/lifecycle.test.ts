@@ -114,7 +114,10 @@ describe('task cancellation', () => {
 			const loop = new ManualLoop()
 			const events: string[] = []
 			class CancellingTask extends Task {
-				constructor(private cancelAt: CancelPhase, parent: Loop) {
+				constructor(
+					private cancelAt: CancelPhase,
+					parent: Loop,
+				) {
 					super(parent)
 				}
 
@@ -216,7 +219,7 @@ describe('loop animation frames', () => {
 		}
 
 		try {
-			const loop = new StoppingLoop()
+			new StoppingLoop()
 			await settle()
 			const first = [...pending.keys()][0]
 			const callback = pending.get(first)!
