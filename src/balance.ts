@@ -128,7 +128,12 @@ for (const AbilityClass of Object.values(abilityRegistry)) {
 }
 for (const UnitClass of Object.values(unitRegistry)) {
 	for (const AuraClass of (UnitClass as unknown as typeof Unit).wornAuras) {
-		auraClasses[AuraClass.id] = AuraClass as unknown as NumberDict
+		// A subclass unit's own aura variant (`GrubDeep`'s `SapShellDeep`) borrows its base's id on
+		// purpose, so the two report as one "Sap shell" row. First claim wins the row rather than the
+		// last one overwriting it, so the row stays the base class — a static a subclass does not
+		// re-declare (`pool`) is read off it anyway through the prototype chain, and one it does
+		// (`lifetime`) simply is not reached from this row, same as it was not reachable before.
+		if (!(AuraClass.id in auraClasses)) auraClasses[AuraClass.id] = AuraClass as unknown as NumberDict
 	}
 }
 export const ruleClasses: Record<string, NumberDict> = {Condition: CONDITION_THRESHOLDS, Damage: DAMAGE_RULES}
