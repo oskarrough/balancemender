@@ -107,11 +107,13 @@ export class Aura extends Task {
 	/**
 	 * Pushed off by a fresh copy of itself. Leaves `auras` and stops ticking now rather than on
 	 * the microtask `disconnect()` defers to, so what the unit frame draws and what `applyHit`
-	 * sees never includes an aura that has already been replaced.
+	 * sees never includes an aura that has already been replaced. Ordinary refreshes log only the
+	 * replacement; a caller that changes targets may name the departure instead.
 	 */
-	supersede() {
+	supersede(removal?: Partial<CombatLogEvent>) {
 		this.superseded = true
 		this.parent.auras.delete(this)
+		if (removal) this.logAura('SPELL_AURA_REMOVED', this.stacked.length, {...this.removalFields(), ...removal})
 		this.pause()
 		this.disconnect()
 	}

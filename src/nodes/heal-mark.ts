@@ -37,7 +37,7 @@ export class ThreatMark extends Aura {
 		for (const unit of this.parent.parent.units) {
 			if (unit === this.parent) continue
 			const stale = [...unit.auras].filter((aura) => aura.id === this.id)
-			for (const aura of stale) aura.supersede()
+			for (const aura of stale) aura.supersede({extraInfo: `moved to ${this.parent.name}`})
 		}
 	}
 }

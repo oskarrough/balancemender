@@ -3,17 +3,29 @@ import {settle} from '../test-setup'
 import {Brightest, Glow} from './attack'
 import {GameLoop} from './game-loop'
 import {applyHit} from './hit'
+import {SimLoop} from '../sim/run'
+import {TheGlow} from './dungeon'
 import {HEALING_THREAT_MULTIPLIER} from './threat'
 import type {Unit} from './unit'
 
 let game!: GameLoop
-afterEach(() => game.disconnect())
+let sim: SimLoop | undefined
+afterEach(async () => {
+	game?.disconnect()
+	sim?.disconnect()
+	sim = undefined
+	await settle()
+})
 
 const brightestOn = (unit: Unit) => [...unit.auras].find((aura): aura is Brightest => aura instanceof Brightest)
 
 function heal(target: Unit, amount = 40) {
+	return healFrom(game, target, amount)
+}
+
+function healFrom(loop: GameLoop, target: Unit, amount = 40) {
 	return applyHit({
-		source: game.player,
+		source: loop.player,
 		target,
 		amount,
 		abilityId: 'TestHeal',
@@ -58,6 +70,12 @@ describe('Glow heal-mark', () => {
 		await settle()
 		expect(brightestOn(tank)).toBeUndefined()
 		expect(brightestOn(clover)).toBeDefined()
+		expect(
+			game.combatLog.events.find(
+				(event) =>
+					event.eventType === 'SPELL_AURA_REMOVED' && event.abilityId === Brightest.id && event.targetId === tank.id,
+			),
+		).toMatchObject({extraInfo: 'moved to Clover'})
 	})
 
 	it('redirects only Sivi, then falls back to ordinary threat when Brightest fades', async () => {
@@ -101,6 +119,52 @@ describe('Glow heal-mark', () => {
 		).toBe(true)
 	})
 
+	it('Sivi naturally applies Glow, then returns to threat when Brightest expires', async () => {
+		sim = new SimLoop({party: ['Tank', 'Clover'], enemies: ['Sivi']}, 1)
+		await settle()
+		const [tank, clover] = sim.party
+		const sivi = sim.enemies[0]
+		if (!sivi.threat) throw new Error('Sivi needs a threat table')
+		sivi.threat.set(tank, 100)
+
+		await advance(sim, 0, 2100)
+		expect([...sim.player.auras].some((aura) => aura instanceof Glow)).toBe(true)
+
+		expect(healFrom(sim, clover)).toBe(0)
+		await settle()
+		expect(sivi.targeting?.pick('enemy')).toBe(clover)
+
+		await advance(sim, 2200, 7200)
+		expect(brightestOn(clover)).toBeUndefined()
+		expect(sivi.targeting?.pick('enemy')).toBe(tank)
+	})
+
+	it('lets Brightest spare a wounded ally in the bright-water composition', async () => {
+		sim = new SimLoop(TheGlow.rooms[1], 1)
+		await settle()
+		const [, wren, clover] = sim.party
+		const sivi = sim.enemies[0]
+		if (!sivi.threat) throw new Error('Sivi needs a threat table')
+
+		await advance(sim, 0, 2100)
+		sivi.threat.set(wren, 1000)
+		wren.health.set(50)
+		clover.health.set(clover.health.max)
+		expect(sivi.targeting?.pick('enemy')).toBe(wren)
+		expect(healFrom(sim, clover)).toBe(0)
+		await settle()
+		expect(sivi.targeting?.pick('enemy')).toBe(clover)
+
+		const ambush = sivi.useAbility('Ambush', sivi.targeting?.pick('enemy'))
+		expect(ambush.ok).toBe(true)
+		if (!ambush.ok) throw new Error(ambush.error)
+		await settle()
+		ambush.value.tick()
+
+		expect(wren.health.current).toBe(50)
+		expect(clover.health.current).toBeLessThan(clover.health.max)
+	})
+
 	it('plants no mark when the healer lacks Glow', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['Sivi']})
 
@@ -110,3 +174,10 @@ describe('Glow heal-mark', () => {
 		expect(brightestOn(game.party[0])).toBeUndefined()
 	})
 })
+
+async function advance(loop: SimLoop, from: number, through: number, step = 100) {
+	for (let time = from; time <= through; time += step) {
+		loop.runFrame(time)
+		await settle()
+	}
+}

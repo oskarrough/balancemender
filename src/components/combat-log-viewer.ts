@@ -82,7 +82,9 @@ function formatLogEntry(event: CombatLogEvent): string {
 	}
 	// Written from the target's side: nobody casts a fade, the aura simply runs out.
 	if (event.eventType === 'SPELL_AURA_REMOVED') {
-		return `${event.abilityName} fades from ${event.targetName || 'Unknown unit'}`
+		const target = event.targetName || 'Unknown unit'
+		const moved = event.extraInfo?.startsWith('moved to ')
+		return `${event.abilityName} ${moved ? 'leaves' : 'fades from'} ${target}${event.extraInfo ? ` (${event.extraInfo})` : ''}`
 	}
 	const {verb = 'used', amountWord} = EVENT_META[event.eventType]
 	const source = event.sourceName ?? ''
