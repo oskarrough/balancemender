@@ -52,6 +52,18 @@ register, not the narrator's):
 - A room won is **Mended.** — the game's own verb, restated at every clear. Not "Victory!";
   that is a conqueror's word.
 
+## Nothing here is taken from
+
+The healing only looks one-way. Oak's shield is why you have the seconds to cast in; Wren's sling is
+why a fight ends before your mana does; the enemy you subdue keeps its life and limps off with it;
+and the river you give its flow back to is the road you are walking on. That mutualism is the floor
+under the soft combat premise — the reason an enemy at zero settles rather than dies is not mercy,
+it is that this world has no transactions in it.
+
+Nothing outward-facing says so, because nothing mechanises it yet — mana flows out of the mender and
+nothing flows back in. If an ability, a neighbour or a dungeon ever hands the mender something back,
+it comes from here.
+
 ## The red thread: walking upstream
 
 A river runs through all four dungeons, and its state is the story. In The Green it chatters along
@@ -111,6 +123,16 @@ Two things grow as you walk, and neither is a bigger spellbook:
   cast carrying it is cut. The Glow's and the White's wait for their dungeons, register one
   holding — small warm words a village healer would use. The Green teaches Mend in its first quiet
   room and Patch when a burst first demands one (#71).
+- **The mender's journal.** The player's own book of the walk — the healer's record of places
+  mended, folk met, wounds tended — written in register one, and opened outside the fight: the
+  walk upstream laid out a page at a time, each room marked **Mended.** when it is. It is a record,
+  not a trophy room: what the land needed and what was done about it (#93). The journal is the
+  player-facing word; `book` and `codex` are registers it refuses. The craft is written down in
+  the same book: what your hands know, the page growing as the walk teaches it — unwritten until
+  it is, the hands' register, never a spell book (#93). Nothing is announced; a new page simply
+  appears — the journal is found, not pushed (#83). When the walk is done it stays the place
+  the endgame is decided from —
+  the mender turns the last page and chooses what to carry next.
 
 When the river is mended, the gating comes off: the mender chooses their own kit freely. You walked
 the whole length of it — you have earned the right to decide what you carry.
@@ -334,11 +356,25 @@ it. The weirdest place in the game and the calmest: the wound and the ward in on
 > the face, pale stone whites and glacial blues with one warm gold glow, sublime and serene. No
 > text, no UI, no photorealism.
 
-## README sentence (draft, not yet earned)
+## How the game describes itself
 
-> One world, walked upstream through four colors — the Green, the Rust, the Glow, the White — from
-> wolf-scruffy forest to the pale place where the river begins. Ghibli warmth, Moebius silence, and
-> every enemy a wound the land wants mended.
+There is no tagline. The name holds both halves already — _balance_ is the numbers and the lab,
+_mender_ is the healer and the land — so a slogan can only restate it in more words. The splash
+carries the title, the art and the dungeon buttons, and nothing else.
+
+Where a sentence is needed (meta description, the manifest, the repo), it is plain:
+
+> A tactical healing game for the web. Heal the people with you, and rebuild any ability, enemy or
+> number you like.
+
+No counts in it — the party grows a neighbour per dungeon, the dungeon list is only the authored
+half, and the kit keeps growing. A number in a description is a number that goes stale.
+
+The README follows it with the one line of this doc that faces outward:
+
+> One world, walked upstream through four colours — the Green, the Rust, the Glow, the White.
+> Nothing you fight is evil; every creature is inflamed by a wound in the land, and a room won is
+> Mended.
 
 ## First paintings
 
