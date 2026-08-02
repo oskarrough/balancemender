@@ -45,7 +45,6 @@ export class Task extends Node implements PromiseLike<void> {
 	private _cycleStartTime = 0
 	private _cycleEndTime = 0
 	private _lastTick = 0
-	private _disconnectVersion = 0
 	private _disconnectRequested = false
 
 	protected begin?(): void
@@ -60,7 +59,6 @@ export class Task extends Node implements PromiseLike<void> {
 		if (this.mounted) {
 			this.running = false
 			this._disconnectRequested = true
-			this._disconnectVersion++
 		}
 		super.connect(parent)
 	}
@@ -68,7 +66,6 @@ export class Task extends Node implements PromiseLike<void> {
 	disconnect() {
 		this.running = false
 		this._disconnectRequested = true
-		this._disconnectVersion++
 		super.disconnect()
 	}
 
@@ -117,9 +114,7 @@ export class Task extends Node implements PromiseLike<void> {
 
 	run() {
 		if (!this.running || !this.mounted || this._disconnectRequested) return
-		const disconnectVersion = this._disconnectVersion
-		const canContinue = () =>
-			this.mounted && !this._disconnectRequested && this._disconnectVersion === disconnectVersion
+		const canContinue = () => this.mounted && !this._disconnectRequested
 
 		if (!this._firstRun) this.elapsedTime += this.root.frameTime
 		else this._firstRun = false

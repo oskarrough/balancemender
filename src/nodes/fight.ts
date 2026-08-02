@@ -78,7 +78,7 @@ export class Fight extends Node {
 		if (!Klass) {
 			throw new Error(`Unknown unit: "${id}". Known: ${Object.keys(unitRegistry).join(', ')}`)
 		}
-		const unit = new Klass(this, side ?? Klass.faction) as Unit
+		const unit = new Klass(this, side) as Unit
 		unit.unitId = id
 		if (unit.faction === FACTION.PARTY) this.party.push(unit)
 		else this.enemies.push(unit)

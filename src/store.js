@@ -16,4 +16,4 @@ try {
 	console.warn('Local persistence is unavailable; changes will last for this page only', error)
 }
 
-export {store, KEY}
+export {store}

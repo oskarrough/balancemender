@@ -32,7 +32,7 @@ type ProcessResult = {
 	timedOut: boolean
 }
 
-type CandidateResult = {ok: boolean; path?: string; error?: string}
+type CandidateResult = {path: string; error?: string} | {error: string; path?: never}
 
 function optionValue(args: string[], index: number, option: string): string {
 	const value = args[index + 1]
@@ -263,10 +263,9 @@ async function generateCandidate(
 	}
 	await writeFile(metadataPath, JSON.stringify(metadata, null, 2) + '\n')
 
-	if (status === 'generated') return {ok: true, path: candidatePath}
+	if (status === 'generated') return {path: candidatePath}
 	if (status === 'recovered-after-codex-error') {
 		return {
-			ok: false,
 			path: candidatePath,
 			error:
 				'Candidate ' +
@@ -278,7 +277,6 @@ async function generateCandidate(
 		}
 	}
 	return {
-		ok: false,
 		error:
 			'Candidate ' +
 			number +
@@ -347,7 +345,7 @@ export async function generateImageAsset(args: string[]): Promise<void> {
 		if (result.path) console.log('Candidate: ' + result.path)
 		if (result.error) console.error(result.error)
 	}
-	const failures = results.filter((result) => !result.ok).length
+	const failures = results.filter((result) => result.error).length
 	if (failures > 0) {
 		throw new Error(
 			failures + ' of ' + results.length + ' candidate generation process(es) failed; logs kept in ' + runDirectory,

@@ -337,13 +337,6 @@ export class Muhl extends Unit {
 }
 
 /**
- * Asleep in its sap shell for the first ten seconds of a fight — `GrubWakeCadence` is a plain
- * `HeavyBlowCadence` with its `delay` pushed out, the same lever every telegraphed cast already
- * uses for a wind-up, stretched to cover a whole unit's opening beat instead of one cast. Once
- * awake it swings the same `HeavyBlow` as everything else, just carried by more strength than its
- * size explains.
- */
-/**
  * The sap shell itself, as a barrier the grub wears from the first frame: whatever you spend on a
  * sleeping grub goes into the shell, not the animal. It falls away exactly when the grub cracks
  * open, so `lifetime` belongs to the wake cadence and each subclass forwards to its own.

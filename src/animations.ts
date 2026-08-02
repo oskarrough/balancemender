@@ -52,15 +52,15 @@ export function buildLeaveGame(): gsap.core.Timeline {
 }
 
 /** Full intro: splash outro → game intro, scrubbable as one timeline. */
-export function buildIntro(game: GameLoop): gsap.core.Timeline {
+export function buildIntro(): gsap.core.Timeline {
 	const tl = gsap.timeline()
 	tl.add(buildSplashOutro())
-	tl.add(buildStartGame(game), '>-0.3')
+	tl.add(buildStartGame(), '>-0.3')
 	return tl
 }
 
 /** Intro sequence. Pure — assumes the game UI is already rendered. */
-export function buildStartGame(_game: GameLoop): gsap.core.Timeline {
+export function buildStartGame(): gsap.core.Timeline {
 	const tl = gsap.timeline()
 	tl.fromTo('.AppChrome', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5})
 	tl.fromTo('.IngameMenu', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.5}, '<')
@@ -73,7 +73,7 @@ export function buildStartGame(_game: GameLoop): gsap.core.Timeline {
 }
 
 /** Game-over flourish. Pure — assumes `gameOver` is already true and the `.GameOver` element is rendered. */
-export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
+export function buildGameOver(): gsap.core.Timeline {
 	const tl = gsap.timeline()
 	tl.fromTo(
 		'.Enemies, .PartyGroup',
@@ -168,7 +168,7 @@ export const animations: NamedAnimation[] = [
 	{
 		name: 'Splash intro',
 		prepare: resetSplashForPreview,
-		build: () => buildSplashIntro(),
+		build: buildSplashIntro,
 	},
 	{
 		name: 'Splash outro',
@@ -177,7 +177,7 @@ export const animations: NamedAnimation[] = [
 			// Put the splash in its "fully visible" idle state so the outro has something to remove.
 			buildSplashIntro().progress(1).kill()
 		},
-		build: () => buildSplashOutro(),
+		build: buildSplashOutro,
 	},
 	{
 		name: 'New game',

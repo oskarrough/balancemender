@@ -1,4 +1,5 @@
 import {formatFightLocation} from '../fight-location'
+import {formatFightTime} from '../utils'
 import {analyze, healerOf, margin, FightReport, Series} from './report'
 import type {FightResult, Outcome} from './run'
 
@@ -32,7 +33,7 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 	lines.push(
 		`${party.join(' + ')}  vs  ${enemies.join(' + ')}`,
 		...(location ? [location] : []),
-		`seed ${result.seed} · ${bot} · ${result.outcome} in ${seconds(result.duration)}`,
+		`seed ${result.seed} · ${bot} · ${result.outcome} in ${formatFightTime(result.duration)}`,
 		'',
 	)
 
@@ -109,13 +110,13 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 		lines.push(
 			'',
 			`  wasted casts  ${report.worstCasts
-				.map((c) => `${c.abilityName} ${seconds(c.time)} (${percentOf(c.overheal, c.total)})`)
+				.map((c) => `${c.abilityName} ${formatFightTime(c.time)} (${percentOf(c.overheal, c.total)})`)
 				.join(', ')}`,
 		)
 	}
 
 	if (report.deaths.length) {
-		lines.push('', `  deaths  ${report.deaths.map((d) => `${d.name} ${seconds(d.time)}`).join(', ')}`)
+		lines.push('', `  deaths  ${report.deaths.map((d) => `${d.name} ${formatFightTime(d.time)}`).join(', ')}`)
 	}
 
 	return lines.join('\n')
@@ -143,7 +144,7 @@ export function formatAggregate(results: FightResult[]): string {
 			OUTCOMES.map(
 				(key) => `${key} ${outcomes.get(key) ?? 0} (${Math.round(((outcomes.get(key) ?? 0) / results.length) * 100)}%)`,
 			).join('   '),
-		`  duration  avg ${seconds(runtime)}  min ${seconds(Math.min(...durations))}  max ${seconds(Math.max(...durations))}`,
+		`  duration  avg ${formatFightTime(runtime)}  min ${formatFightTime(Math.min(...durations))}  max ${formatFightTime(Math.max(...durations))}`,
 		`  healing   avg ${avg(reports.map((r) => r.totals.hps)).toFixed(1)} hps  overheal ${percentOf(
 			avg(reports.map((r) => r.totals.overhealing)),
 			avg(reports.map((r) => r.totals.overhealing + r.totals.healing)),
@@ -178,7 +179,7 @@ export function formatAggregate(results: FightResult[]): string {
 
 function endState(unit: Series, report: FightReport) {
 	const death = report.deaths.find((d) => deathOf(d, unit))
-	if (death) return `dead ${seconds(death.time)}`
+	if (death) return `dead ${formatFightTime(death.time)}`
 	if (unit.endHealth <= 0) return 'dead'
 	return `${Math.round(unit.endHealth)}/${unit.maxHealth} (${Math.round((unit.endHealth / unit.maxHealth) * 100)}%)`
 }
@@ -196,7 +197,6 @@ export const deathOf = (death: {id?: string; name: string}, unit: {id: string; n
 
 const pad = (value: string | number, width: number) => String(value).padEnd(width)
 const padStart = (value: string | number, width: number) => String(value).padStart(width)
-const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`
 const perSecond = (total: number, ms: number) => (total / (ms / 1000 || 1)).toFixed(1)
 /** Shared with the Fight report panel so the terminal and the browser round the same way. */
 export const percentOf = (part: number, whole: number) => (whole > 0 ? `${Math.round((part / whole) * 100)}%` : '0%')

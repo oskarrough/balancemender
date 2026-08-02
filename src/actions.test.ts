@@ -5,7 +5,7 @@ import {SimLoop} from './sim/run'
 import {playerAbilities} from './nodes/registry'
 import {dungeonRegistry} from './nodes/dungeon'
 import type {RoomInput} from './nodes/fight'
-import {emptyCustomRoom, loadCustomRoom, saveCustomRoom} from './custom-room'
+import {loadCustomRoom, saveCustomRoom} from './custom-room'
 import {clearJournal, readJournal, setAbilityBar} from './journal'
 
 /**
@@ -17,7 +17,7 @@ import {clearJournal, readJournal, setAbilityBar} from './journal'
 let game!: GameLoop
 afterEach(async () => {
 	game.perform({type: 'resetBalance'})
-	saveCustomRoom(emptyCustomRoom())
+	saveCustomRoom({party: [], enemies: []})
 	await clearJournal()
 	game.disconnect()
 	await settle()

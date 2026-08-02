@@ -45,8 +45,7 @@ export const manifest = manifestJson as Manifest
 export const variantNames = ['landscape', 'portrait'] as const
 export type VariantName = (typeof variantNames)[number]
 
-/** One job is exactly one generated image. */
-export type Job = {asset: Asset; variantName?: VariantName; variant?: SceneVariant}
+export type Job = {asset: Asset; variant?: SceneVariant}
 
 export function findAsset(id: string): Asset {
 	const asset = manifest.assets.find((candidate) => candidate.id === id)
@@ -59,10 +58,9 @@ export function jobs(asset: Asset, variantName?: VariantName): Job[] {
 	if (asset.type !== 'scene') return [{asset}]
 	return variantNames
 		.filter((name) => variantName === undefined || name === variantName)
-		.map((name) => ({asset, variantName: name, variant: manifest.sceneVariants[name]}))
+		.map((name) => ({asset, variant: manifest.sceneVariants[name]}))
 }
 
-/** Resolve the single image job required by generation and approval. */
 export function singleJob(asset: Asset, variantName?: VariantName): Job {
 	if (asset.type === 'scene' && variantName === undefined) {
 		throw new Error('Scene asset ' + asset.id + ' requires --variant landscape|portrait')

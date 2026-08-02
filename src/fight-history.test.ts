@@ -109,35 +109,6 @@ function bumpDatabaseVersion(): Promise<void> {
 	)
 }
 
-/** Make one persisted row look like an older save without exposing the TinyBase store. */
-function removeReportCells(id: string): Promise<void> {
-	return new Promise((resolve, reject) => {
-		const request = indexedDB.open(DB_NAME)
-		request.onerror = () => reject(request.error)
-		request.onsuccess = () => {
-			const database = request.result
-			const transaction = database.transaction('t', 'readwrite')
-			const table = transaction.objectStore('t')
-			const stored = table.get('fights')
-			stored.onsuccess = () => {
-				const fights = stored.result as {k: string; v: Record<string, Record<string, unknown>>}
-				delete fights.v[id].allUnitDamage
-				delete fights.v[id].allUnitHealing
-				delete fights.v[id].allUnitOverhealing
-				table.put(fights)
-			}
-			transaction.oncomplete = () => {
-				database.close()
-				resolve()
-			}
-			transaction.onerror = transaction.onabort = () => {
-				database.close()
-				reject(transaction.error)
-			}
-		}
-	})
-}
-
 async function freshHistory(): Promise<FightHistory> {
 	vi.resetModules()
 	history = await import('./fight-history')
@@ -176,20 +147,6 @@ describe('fight history', () => {
 
 		expect(history.readFightHistory()).toMatchObject({status: 'ready', savedFights: []})
 		expect((await databaseInfo()).objectStoreCount).toBeGreaterThan(0)
-	})
-
-	it('defines an empty saved-fight record', () => {
-		expect(history.readFightHistory().savedFightRecord).toEqual({
-			scope: 'saved-fights',
-			fightCount: 0,
-			reportCount: 0,
-			outcomeCounts: {victory: 0, defeat: 0, timeout: 0},
-			totalDuration: 0,
-			averageDuration: null,
-			allUnitDamage: 0,
-			allUnitHealing: 0,
-			allUnitOverhealing: 0,
-		})
 	})
 
 	it('reloads an existing current database and keeps detail lazy', async () => {
@@ -259,40 +216,6 @@ describe('fight history', () => {
 		const reopened = analyzeReport(saved)
 
 		expect(reopened).toEqual(live)
-	})
-
-	it('aggregates every saved row and names all-unit attribution', async () => {
-		await history.saveFight(fight(500, 'victory'))
-		await history.saveFight(fight(1500, 'defeat'))
-		await history.saveFight(fight(1000, 'timeout'))
-
-		expect(history.readFightHistory().savedFightRecord).toEqual({
-			scope: 'saved-fights',
-			fightCount: 3,
-			reportCount: 3,
-			outcomeCounts: {victory: 1, defeat: 1, timeout: 1},
-			totalDuration: 3000,
-			averageDuration: 1000,
-			allUnitDamage: 36,
-			allUnitHealing: 21,
-			allUnitOverhealing: 9,
-		})
-	})
-
-	it('reports incomplete aggregate coverage for older rows', async () => {
-		await history.saveFight(fight(500))
-		const id = history.readFightHistory().savedFights[0].id
-		await removeReportCells(id)
-
-		const reloaded = await freshHistory()
-		await reloaded.loadFightHistory()
-		expect(reloaded.readFightHistory().savedFightRecord).toMatchObject({
-			fightCount: 1,
-			reportCount: 0,
-			allUnitDamage: null,
-			allUnitHealing: null,
-			allUnitOverhealing: null,
-		})
 	})
 
 	it('keys live, ready, and unavailable selections separately', () => {

@@ -74,8 +74,6 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 								type: 'mana',
 								value: unit.mana.current,
 								max: unit.mana.max,
-								potentialValue: 0,
-								ability: undefined,
 								/* Only your own pool carries its numbers and its rate. On anyone else mana is
 								   context, and `shouldTick` is the five-second rule itself rather than a copy of it. */
 								regen:

@@ -243,7 +243,7 @@ export class GameLoop extends Loop {
 		// Only worth animating — or saving — for someone who is watching it. Headless SimLoop
 		// fights have no draw and must never be persisted.
 		if (this.draw) {
-			buildGameOver(this)
+			buildGameOver()
 			saveFight({
 				outcome,
 				duration: Math.round(this.elapsedTime),

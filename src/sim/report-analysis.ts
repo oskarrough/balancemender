@@ -143,12 +143,12 @@ function finalize(
 		stats.manaNet = roundOne(stats.manaGained - stats.manaSpent - stats.manaBurned)
 	}
 	for (const stats of abilities.values()) {
+		stats.avg = stats.hits ? roundOne(stats.total / stats.hits) : 0
 		stats.total = roundOne(stats.total)
 		stats.overheal = roundOne(stats.overheal)
 		stats.manaSpent = roundOne(stats.manaSpent)
 		stats.min = roundOne(stats.min)
 		stats.max = roundOne(stats.max)
-		stats.avg = roundOne(stats.avg)
 	}
 
 	// Ratio first, so a fully wasted Renew outranks a big heal that mostly landed; the amount only
@@ -233,7 +233,6 @@ function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id
 		stats.overheal += overheal
 		stats.min = Math.min(stats.min, value)
 		stats.max = Math.max(stats.max, value)
-		stats.avg = roundOne(stats.total / stats.hits)
 	}
 	return stats
 }

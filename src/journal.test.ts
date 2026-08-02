@@ -46,12 +46,12 @@ describe('Journal', () => {
 		for (const room of dungeonRegistry.TheGreen.rooms) await recordVictory(location('TheGreen', room.id))
 		let journal = readJournal()
 		expect(journal.dungeonProgression.map((progress) => progress.unlocked)).toEqual([true, true, false, false])
-		expect(journal.completedDungeons).toEqual(['TheGreen'])
+		expect(journal.dungeonProgression.map((progress) => progress.completed)).toEqual([true, false, false, false])
 
 		for (const room of dungeonRegistry.TheRust.rooms) await recordVictory(location('TheRust', room.id))
 		journal = readJournal()
 		expect(journal.dungeonProgression.map((progress) => progress.unlocked)).toEqual([true, true, true, false])
-		expect(journal.completedDungeons).toEqual(['TheGreen', 'TheRust'])
+		expect(journal.dungeonProgression.map((progress) => progress.completed)).toEqual([true, true, false, false])
 	})
 
 	it('starts an incomplete dungeon at its first unmended room and replays a completed one from room zero', async () => {
@@ -69,8 +69,7 @@ describe('Journal', () => {
 
 		const journal = readJournal()
 		expect(journal.allComplete).toBe(true)
-		expect(journal.completedDungeons).toEqual([...dungeonOrder])
-		expect(journal.dungeonProgression.every((progress) => progress.unlocked)).toBe(true)
+		expect(journal.dungeonProgression.every((progress) => progress.completed && progress.unlocked)).toBe(true)
 	})
 
 	it('persists and reloads the ordered ability bar', async () => {

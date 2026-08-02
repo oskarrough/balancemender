@@ -13,8 +13,6 @@
 .Splash-bg {
 	position: absolute;
 	inset: 0;
-	/** disabled until we find a proper image */
-	/* background-image: url(/assets/splash.png); */
 	background-size: contain;
 	background-position: center;
 	opacity: 0;

@@ -9,10 +9,6 @@
 	box-sizing: border-box;
 }
 
-/* html { */
-/*   scrollbar-gutter: stable; */
-/* } */
-
 :where(audio, iframe, img, svg, video) {
 	max-block-size: 100%;
 	max-inline-size: 100%;

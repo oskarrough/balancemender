@@ -17,8 +17,6 @@ register()
 /** How long a refused action stays on screen, in fight-clock milliseconds. */
 const REFUSAL_DURATION = 1200
 
-const raiseGameOver = (element: Element) => bringToFront(element)
-
 /** Headline and blurb per `Outcome` — same panel structure, different voice and accent colour. */
 const GAME_OVER_COPY: Record<
 	NonNullable<GameLoop['outcome']>,
@@ -70,7 +68,7 @@ function GameOver(game: GameLoop) {
 		<div
 			class="GameOver"
 			data-outcome=${outcome}
-			ref=${raiseGameOver}
+			ref=${bringToFront}
 			onpointerdown=${(event: PointerEvent) => bringToFront(event.currentTarget as HTMLElement)}
 		>
 			<h2>${headline}</h2>

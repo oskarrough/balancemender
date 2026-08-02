@@ -5,7 +5,6 @@ import {assertPngMetadata} from './image-asset-files'
 describe('image asset jobs', () => {
 	it('keeps both views when one scene is requested without a variant', () => {
 		const queue = jobs(findAsset('green-first-blood'))
-		expect(queue.map((job) => job.variantName)).toEqual(['landscape', 'portrait'])
 		expect(queue.map(outputPath)).toEqual([
 			'/assets/generated/explorations/green-first-blood.png',
 			'/assets/generated/explorations/green-first-blood-portrait.png',
@@ -14,7 +13,9 @@ describe('image asset jobs', () => {
 
 	it('requires one scene variant for a single production job', () => {
 		expect(() => singleJob(findAsset('green-first-blood'))).toThrow('requires --variant')
-		expect(singleJob(findAsset('green-first-blood'), 'portrait').variantName).toBe('portrait')
+		expect(outputPath(singleJob(findAsset('green-first-blood'), 'portrait'))).toBe(
+			'/assets/generated/explorations/green-first-blood-portrait.png',
+		)
 		expect(() => singleJob(findAsset('renew'), 'portrait')).toThrow('only valid for scene')
 	})
 
@@ -35,7 +36,6 @@ describe('image asset validation', () => {
 	it('derives scene dimensions from SceneVariant.size', () => {
 		const job: Job = {
 			asset: findAsset('green-first-blood'),
-			variantName: 'landscape',
 			variant: {...manifest.sceneVariants.landscape, size: '321x654'},
 		}
 		expect(expectedSize(job)).toEqual({width: 321, height: 654})

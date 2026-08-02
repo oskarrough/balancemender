@@ -3,7 +3,6 @@ import {
 	setBalanceValue,
 	resetBalance,
 	validateBalanceValue,
-	unitClasses,
 	AbilityKey,
 	EffectKey,
 	CadenceKey,
@@ -24,7 +23,7 @@ import {abilityRegistry, type AbilityId} from './nodes/registry'
 // the spawn boundary, so a console typing an unknown id is refused here instead of throwing below.
 import {unitRegistry, type UnitId} from './nodes/unit-registry'
 import {canAccessMalleable} from './access'
-import {addRoomUnit, loadCustomRoom, removeRoomUnit, saveCustomRoom} from './custom-room'
+import {loadCustomRoom, saveCustomRoom} from './custom-room'
 
 const MALLEABLE_LOCKED = 'Malleable unlocks after all four dungeons are mended'
 
@@ -190,8 +189,9 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
 			if (!game.malleable) return fail('Not in Malleable')
 			if (!(action.unit in unitRegistry)) return fail(`Unknown unit: ${action.unit}`)
-			const room = addRoomUnit(loadCustomRoom(), action.side, action.unit)
-			if (!room) return fail('Player is added automatically and cannot be added to Malleable')
+			if (action.unit === 'Player') return fail('Player is added automatically and cannot be added to Malleable')
+			const room = loadCustomRoom()
+			room[action.side === FACTION.PARTY ? 'party' : 'enemies'].push(action.unit)
 			const unit = game.fight.spawn(action.unit, action.side)
 			saveCustomRoom(room)
 			game.render()
@@ -208,8 +208,11 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			const roster = (side === FACTION.PARTY ? game.party : game.enemies).filter(
 				(candidate) => candidate !== game.player,
 			)
-			const room = removeRoomUnit(loadCustomRoom(), side, roster.indexOf(unit))
-			if (!room) return fail('Unit is not in the saved custom room')
+			const room = loadCustomRoom()
+			const savedRoster = room[side === FACTION.PARTY ? 'party' : 'enemies']
+			const index = roster.indexOf(unit)
+			if (index < 0 || index >= savedRoster.length) return fail('Unit is not in the saved custom room')
+			savedRoster.splice(index, 1)
 			game.fight.remove(unit.id)
 			saveCustomRoom(room)
 			game.render()
@@ -355,7 +358,7 @@ function retuneLiveUnits(game: GameLoop, unitId: string, key: UnitKey, value: nu
 
 /** After a reset, push every stat of the class template back onto a live unit. */
 function retuneLiveUnitFromTemplate(unit: Unit) {
-	const template = unit.unitId ? unitClasses[unit.unitId] : undefined
+	const template = unit.unitId ? unitRegistry[unit.unitId] : undefined
 	if (!template) return
 	for (const stat of STAT_KEYS) unit.setBaseStat(stat, template[stat])
 }

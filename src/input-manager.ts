@@ -19,33 +19,21 @@ export class InputManager {
 			)
 				return
 			event.preventDefault() // or the page scrolls
-			this.togglePlayPause()
+			this.game.perform({type: 'running', value: !this.game.running})
 		}
 
 		if (event.key === '`' || event.key === '~') {
 			event.preventDefault()
-			this.toggleConsole()
+			this.game.console?.toggleConsole()
 		}
 
 		if (event.key === 'Escape') {
 			this.game.perform({type: 'target'})
-			this.closeConsole()
-		}
-	}
-
-	togglePlayPause() {
-		this.game.perform({type: 'running', value: !this.game.running})
-	}
-
-	toggleConsole() {
-		this.game.console?.toggleConsole()
-	}
-
-	closeConsole() {
-		if (this.game.console) {
-			const floatingView = this.game.console.closest('floating-view')
-			if (floatingView && !floatingView.hasAttribute('minimized')) {
-				floatingView.setAttribute('minimized', '')
+			if (this.game.console) {
+				const floatingView = this.game.console.closest('floating-view')
+				if (floatingView && !floatingView.hasAttribute('minimized')) {
+					floatingView.setAttribute('minimized', '')
+				}
 			}
 		}
 	}

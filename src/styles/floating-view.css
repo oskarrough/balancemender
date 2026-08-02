@@ -2,9 +2,7 @@
 	background: var(--c-snow-white);
 	border: 1px solid;
 	border-bottom-width: 2px;
-	/* border-right-width: 2px; */
 	border-radius: var(--radius);
-	/* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); */
 }
 
 /* Direct child only — panel content may have headers of its own. */
@@ -43,7 +41,6 @@ floating-view {
 		flex: 1;
 		overflow-y: auto;
 		scrollbar-width: thin;
-		/* background: color-mix(in oklch, var(--c-french-grey), var(--c-snow-white)); */
 	}
 }
 

@@ -3,8 +3,8 @@ import {GameLoop} from './nodes/game-loop'
 import {UI} from './components/ui'
 import {Menu} from './components/menu'
 import {buildSplashIntro, buildIntro, buildLeaveGame} from './animations'
-import {DevConsole} from './components/dev-console'
-import {AnimationDebugger} from './components/animation-debugger'
+import type {DevConsole} from './components/dev-console'
+import type {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
 import {installTooltips, drawTooltip} from './components/tooltip'
 import * as perf from './perf'
@@ -16,7 +16,6 @@ import {scenePaths} from './nodes/fight'
 import './components/dev-console'
 import './components/animation-debugger'
 import {applyDefaultLayout} from './components/floating-view.js'
-import './components/floating-view.js'
 import './components/combat-log-viewer.js'
 import './components/fight-report'
 import './components/journal-view'
@@ -104,7 +103,7 @@ async function main() {
 		animDebugger?.init(game)
 
 		game.render()
-		intro = buildIntro(game)
+		intro = buildIntro()
 		// Malleable is composed while paused. Its visible Play control is the only player input that
 		// starts the clock; ordinary dungeons still begin when their intro completes.
 		if (!game.malleable) intro.eventCallback('onComplete', () => game.play())

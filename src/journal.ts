@@ -11,7 +11,6 @@ type CompletedRooms = Partial<Record<DungeonId, string[]>>
 /** The canonical data that is persisted. Derived progression is deliberately absent. */
 export interface JournalRecord {
 	schemaVersion: typeof JOURNAL_SCHEMA_VERSION
-	name: string
 	abilityBar: AbilityId[]
 	completedRooms: CompletedRooms
 }
@@ -31,8 +30,6 @@ export interface DungeonProgression {
 export interface JournalView extends Readonly<JournalRecord> {
 	/** Abilities taught by rooms whose victories have been recorded. */
 	readonly learnedAbilities: readonly PlayerAbilityId[]
-	/** Fully mended dungeons, derived from completed room IDs. */
-	readonly completedDungeons: readonly DungeonId[]
 	readonly dungeonProgression: readonly DungeonProgression[]
 	readonly allComplete: boolean
 }
@@ -68,7 +65,6 @@ let operations = Promise.resolve()
 function emptyRecord(): JournalRecord {
 	return {
 		schemaVersion: JOURNAL_SCHEMA_VERSION,
-		name: '',
 		abilityBar: [],
 		completedRooms: {},
 	}
@@ -97,7 +93,6 @@ function normalize(value: unknown): JournalRecord {
 	const abilityBar = uniqueStrings(value.abilityBar).filter((id): id is AbilityId => id in abilityRegistry)
 	return {
 		schemaVersion: JOURNAL_SCHEMA_VERSION,
-		name: typeof value.name === 'string' ? value.name : '',
 		abilityBar,
 		completedRooms,
 	}
@@ -202,16 +197,6 @@ export function setAbilityBar(abilityIds: readonly AbilityId[]): Promise<void> {
 	return updateAbilityBar(() => abilityIds).then(() => undefined)
 }
 
-export function setJournalName(name: string): Promise<void> {
-	return enqueue(() => {
-		ensureLoaded()
-		if (record.name === name) return
-		record.name = name
-		persist()
-		notify()
-	})
-}
-
 /** Subscribe without handing callers the mutable persisted record or store. */
 export function subscribeJournal(listener: () => void): () => void {
 	const onChange = () => listener()
@@ -258,21 +243,16 @@ function deriveAbilities(): PlayerAbilityId[] {
 export function readJournal(): JournalView {
 	ensureLoaded()
 	const dungeonProgression = deriveProgression()
-	const completedDungeons = dungeonProgression
-		.filter((progress) => progress.completed)
-		.map((progress) => progress.dungeonId)
 	const completedRooms = Object.fromEntries(
 		Object.entries(record.completedRooms).map(([dungeonId, roomIds]) => [dungeonId, [...(roomIds ?? [])]]),
 	) as CompletedRooms
 	return {
 		schemaVersion: record.schemaVersion,
-		name: record.name,
 		abilityBar: [...record.abilityBar],
 		completedRooms,
 		learnedAbilities: deriveAbilities(),
-		completedDungeons,
 		dungeonProgression,
-		allComplete: completedDungeons.length === dungeonOrder.length,
+		allComplete: dungeonProgression.every((progress) => progress.completed),
 	}
 }
 

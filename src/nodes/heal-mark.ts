@@ -64,16 +64,15 @@ export class HealMarkGate extends Aura {
 	}
 }
 
-function gateOn(unit: Unit): HealMarkGate | undefined {
-	for (const aura of unit.auras) {
-		if (aura instanceof HealMarkGate) return aura
-	}
-	return undefined
-}
-
 /** Plant (or move) the gate's mark on the target. No-op without a gate or a living target. */
 export function afterHeal(source: Unit, target: Unit, castId?: string) {
-	const gate = gateOn(source)
+	let gate: HealMarkGate | undefined
+	for (const aura of source.auras) {
+		if (aura instanceof HealMarkGate) {
+			gate = aura
+			break
+		}
+	}
 	if (!gate || !target.alive) return
 	const Mark = (gate.constructor as GateClass).mark
 	new Mark(target, source, {castId})

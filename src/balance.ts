@@ -57,9 +57,6 @@ type PartialDict = Record<string, number | undefined>
 type CadenceClass = {delay: number; interval: number}
 type UnitClass = Record<UnitKey, number>
 
-/** One tunable surface for every ability; absent keys remain absent rather than becoming zero rules. */
-export const abilityClasses = abilityRegistry
-
 /**
  * Effect size belongs to the effect that lands it, so that is what a coefficient is
  * tuned on: `effect:SavageBite.rend.coefficient=0.6`. Rows are named for the ability that declares
@@ -137,7 +134,6 @@ for (const UnitClass of Object.values(unitRegistry)) {
 	}
 }
 export const ruleClasses: Record<string, NumberDict> = {Condition: CONDITION_THRESHOLDS, Damage: DAMAGE_RULES}
-export const unitClasses: Record<string, UnitClass> = unitRegistry
 
 function snapshot<K extends string>(src: Record<string, NumberDict>, keys: readonly K[]) {
 	const out: Record<string, Partial<Record<K, number>>> = {}
@@ -150,11 +146,11 @@ function snapshot<K extends string>(src: Record<string, NumberDict>, keys: reado
 }
 
 const defaults = {
-	abilities: snapshot(abilityClasses as unknown as Record<string, NumberDict>, ABILITY_KEYS),
+	abilities: snapshot(abilityRegistry as unknown as Record<string, NumberDict>, ABILITY_KEYS),
 	effects: snapshot(effectClasses, EFFECT_KEYS),
 	cadences: snapshot(cadenceClasses as Record<string, NumberDict>, CADENCE_KEYS),
 	auras: snapshot(auraClasses, AURA_KEYS),
-	units: snapshot(unitClasses as Record<string, NumberDict>, UNIT_KEYS),
+	units: snapshot(unitRegistry as unknown as Record<string, NumberDict>, UNIT_KEYS),
 	rules: snapshot(ruleClasses, RULE_KEYS),
 }
 
@@ -171,14 +167,19 @@ interface BalanceCategory {
 export const balanceCategories: Record<BalanceKind, BalanceCategory> = {
 	ability: {
 		keys: ABILITY_KEYS,
-		classes: abilityClasses as unknown as Record<string, NumberDict>,
+		classes: abilityRegistry as unknown as Record<string, NumberDict>,
 		state: balance.abilities,
 		defaults: defaults.abilities,
 	},
 	effect: {keys: EFFECT_KEYS, classes: effectClasses, state: balance.effects, defaults: defaults.effects},
 	cadence: {keys: CADENCE_KEYS, classes: cadenceClasses, state: balance.cadences, defaults: defaults.cadences},
 	aura: {keys: AURA_KEYS, classes: auraClasses, state: balance.auras, defaults: defaults.auras},
-	unit: {keys: UNIT_KEYS, classes: unitClasses, state: balance.units, defaults: defaults.units},
+	unit: {
+		keys: UNIT_KEYS,
+		classes: unitRegistry as unknown as Record<string, UnitClass>,
+		state: balance.units,
+		defaults: defaults.units,
+	},
 	rule: {
 		keys: RULE_KEYS,
 		classes: ruleClasses,

@@ -2,7 +2,7 @@ import {createStore} from 'tinybase'
 import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db'
 import {COMBATLOG_SCHEMA, type CombatLogEvent} from './combatlog'
 import type {FightLocation} from './fight-location'
-import {analyzeReport, type Outcome, type UnitInfo} from './sim/report'
+import type {Outcome, UnitInfo} from './sim/report'
 
 const DB_NAME = 'balancemender-fight-history-v1'
 const TABLE = 'fights'
@@ -24,20 +24,6 @@ export interface SavedFightDetail extends SavedFight {
 	readonly units: readonly UnitInfo[]
 }
 
-/** Totals over exactly the rows currently present in saved fight history. */
-export interface SavedFightRecord {
-	readonly scope: 'saved-fights'
-	readonly fightCount: number
-	/** Rows with stored combat totals. All-unit totals are null unless this matches `fightCount`. */
-	readonly reportCount: number
-	readonly outcomeCounts: Readonly<Record<Outcome, number>>
-	readonly totalDuration: number
-	readonly averageDuration: number | null
-	readonly allUnitDamage: number | null
-	readonly allUnitHealing: number | null
-	readonly allUnitOverhealing: number | null
-}
-
 export type FightSelection =
 	| {readonly status: 'live'}
 	| {readonly status: 'ready'; readonly fight: SavedFightDetail}
@@ -52,7 +38,6 @@ export function fightSelectionKey(selection: FightSelection): string {
 export interface FightHistoryView {
 	readonly status: 'loading' | 'ready'
 	readonly savedFights: readonly SavedFight[]
-	readonly savedFightRecord: SavedFightRecord
 }
 
 const store = createStore()
@@ -62,7 +47,6 @@ const persister = createIndexedDbPersister(store, DB_NAME, undefined, (error) =>
 
 let status: FightHistoryView['status'] = 'loading'
 let selection: FightSelection = {status: 'live'}
-let savedFightRecord = emptySavedFightRecord()
 let operations = Promise.resolve()
 
 /** Keep persistence mutations ordered and the queue usable after a failure. */
@@ -75,25 +59,11 @@ function enqueue<T>(operation: () => T | PromiseLike<T>): Promise<T> {
 	return result
 }
 
-/** Fires when loading, rows, aggregate data, or the shared panel selection changes. */
+/** Fires when loading, rows, or the shared panel selection changes. */
 export const fightHistoryEvents = new EventTarget()
 
 function notify() {
 	fightHistoryEvents.dispatchEvent(new Event('change'))
-}
-
-function emptySavedFightRecord(): SavedFightRecord {
-	return {
-		scope: 'saved-fights',
-		fightCount: 0,
-		reportCount: 0,
-		outcomeCounts: {victory: 0, defeat: 0, timeout: 0},
-		totalDuration: 0,
-		averageDuration: null,
-		allUnitDamage: 0,
-		allUnitHealing: 0,
-		allUnitOverhealing: 0,
-	}
 }
 
 /** TinyBase creates its stores on save, but a first load must work on an empty database. */
@@ -141,7 +111,6 @@ export function loadFightHistory(): Promise<void> {
 			changed = evictOldest() || changed
 			if (changed) await persister.save()
 		} finally {
-			updateSavedFightRecord()
 			checkSelection(true)
 			status = 'ready'
 			notify()
@@ -151,7 +120,6 @@ export function loadFightHistory(): Promise<void> {
 
 export function saveFight(fight: Omit<SavedFightDetail, 'id' | 'timestamp'>): Promise<void> {
 	return enqueue(async () => {
-		const report = analyzeReport(fight)
 		const timestamp = Date.now()
 		const id = uniqueId(timestamp)
 		store.setRow(TABLE, id, {
@@ -161,13 +129,9 @@ export function saveFight(fight: Omit<SavedFightDetail, 'id' | 'timestamp'>): Pr
 			duration: fight.duration,
 			events: JSON.stringify(fight.events),
 			units: JSON.stringify(fight.units),
-			allUnitDamage: report.totals.damage,
-			allUnitHealing: report.totals.healing,
-			allUnitOverhealing: report.totals.overhealing,
 			...(fight.location ? {location: JSON.stringify(fight.location)} : {}),
 		})
 		evictOldest()
-		updateSavedFightRecord()
 		checkSelection()
 		try {
 			await persister.save()
@@ -241,14 +205,7 @@ function readSavedFights(): SavedFight[] {
 
 /** Read a fresh metadata snapshot. Event and unit payloads stay serialized. */
 export function readFightHistory(): FightHistoryView {
-	return {
-		status,
-		savedFights: readSavedFights(),
-		savedFightRecord: {
-			...savedFightRecord,
-			outcomeCounts: {...savedFightRecord.outcomeCounts},
-		},
-	}
+	return {status, savedFights: readSavedFights()}
 }
 
 /** Parse only the requested row's full event and unit payloads. */
@@ -300,48 +257,12 @@ function checkSelection(reload = false) {
 	}
 }
 
-/** Update from metadata and compact report cells only; fight detail remains serialized. */
-function updateSavedFightRecord() {
-	const savedFights = readSavedFights()
-	const outcomeCounts: Record<Outcome, number> = {victory: 0, defeat: 0, timeout: 0}
-	let reportCount = 0
-	let allUnitDamage = 0
-	let allUnitHealing = 0
-	let allUnitOverhealing = 0
-	let totalDuration = 0
-	for (const savedFight of savedFights) {
-		totalDuration += savedFight.duration
-		outcomeCounts[savedFight.outcome]++
-		const damage = store.getCell(TABLE, savedFight.id, 'allUnitDamage')
-		const healing = store.getCell(TABLE, savedFight.id, 'allUnitHealing')
-		const overhealing = store.getCell(TABLE, savedFight.id, 'allUnitOverhealing')
-		if (typeof damage !== 'number' || typeof healing !== 'number' || typeof overhealing !== 'number') continue
-		reportCount++
-		allUnitDamage += damage
-		allUnitHealing += healing
-		allUnitOverhealing += overhealing
-	}
-	const complete = reportCount === savedFights.length
-	savedFightRecord = {
-		scope: 'saved-fights',
-		fightCount: savedFights.length,
-		reportCount,
-		outcomeCounts,
-		totalDuration,
-		averageDuration: savedFights.length ? totalDuration / savedFights.length : null,
-		allUnitDamage: complete ? allUnitDamage : null,
-		allUnitHealing: complete ? allUnitHealing : null,
-		allUnitOverhealing: complete ? allUnitOverhealing : null,
-	}
-}
-
 /** Clear saved rows without touching canonical Journal progression. */
 export function clearFightHistory(): Promise<void> {
 	return enqueue(async () => {
 		const selectedId =
 			selection.status === 'ready' ? selection.fight.id : selection.status === 'not-found' ? selection.id : null
 		store.delTable(TABLE)
-		savedFightRecord = emptySavedFightRecord()
 		status = 'ready'
 		if (selectedId) selection = {status: 'not-found', id: selectedId}
 		try {
