@@ -87,6 +87,9 @@ startup update script runs `bun install`; everything else is the commands alread
 
 `bun dev` serves on `http://localhost:5173`; append `?nosplash` to land straight in a running fight.
 
-Gotcha: `agent-browser` and `ast-grep` referenced above are **not** installed in the cloud VM. For UI
-work, drive the game with the browser test tooling instead (open `http://localhost:5173/?nosplash`, click
-an ability like Mend to cast a heal); `window.balancemender` is still the live game for console `eval`.
+`ast-grep` and `agent-browser` (used throughout this guide) are installed globally via `bun` and persist
+in the VM image, so the `bun install` update script does not reinstall them. `agent-browser` drives its
+own Chrome (fetched once via `agent-browser install` into `~/.agent-browser`) and works headless against
+the dev server — its `eval` reaches `window.balancemender`. One `eval` gotcha: returning a game object
+fails with "Object reference chain is too long", so read a primitive (`balancemender.fight.units.length`)
+rather than the object itself.
