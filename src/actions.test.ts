@@ -5,8 +5,8 @@ import {SimLoop} from './sim/run'
 import {playerAbilities} from './nodes/registry'
 import {dungeonRegistry} from './nodes/dungeon'
 import type {RoomInput} from './nodes/fight'
-import {emptyMalleable} from './malleable'
-import {loadMalleable, saveMalleable} from './malleable-store'
+import {emptyCustomRoom, loadCustomRoom, saveCustomRoom} from './custom-room'
+import {clearJournal, readJournal, setAbilityBar} from './journal'
 
 /**
  * `game.perform()` is the only way anything changes a fight, so these assertions cover the
@@ -17,7 +17,8 @@ import {loadMalleable, saveMalleable} from './malleable-store'
 let game!: GameLoop
 afterEach(async () => {
 	game.perform({type: 'resetBalance'})
-	saveMalleable(emptyMalleable())
+	saveCustomRoom(emptyCustomRoom())
+	await clearJournal()
 	game.disconnect()
 	await settle()
 })
@@ -296,6 +297,89 @@ describe('perform', () => {
 	})
 })
 
+describe('ability bar actions', () => {
+	it('appends a catalog ability and mirrors the Journal order to the Player', async () => {
+		await setAbilityBar(['Mend'])
+		game = new GameLoop({party: [], enemies: []})
+		game.perform({type: 'enterMalleable'})
+
+		expect(game.perform({type: 'abilityAdd', ability: 'Toll'})).toMatchObject({ok: true})
+		await settle()
+
+		expect(readJournal().abilityBar).toEqual(['Mend', 'Toll'])
+		expect(Object.keys(game.player.abilities)).toEqual(['Mend', 'Toll'])
+	})
+
+	it('refuses duplicate and unknown abilities', async () => {
+		await setAbilityBar(['Mend'])
+		game = new GameLoop({party: [], enemies: []})
+
+		expect(game.perform({type: 'abilityAdd', ability: 'Mend'})).toEqual({
+			ok: false,
+			error: 'Ability already on bar: Mend',
+		})
+		expect(game.perform({type: 'abilityAdd', ability: 'Nope'})).toEqual({
+			ok: false,
+			error: 'Unknown ability: Nope',
+		})
+		expect(readJournal().abilityBar).toEqual(['Mend'])
+	})
+
+	it('removes an ability from the Journal and the live Player', async () => {
+		await setAbilityBar(['Mend', 'Toll', 'Patch'])
+		game = new GameLoop({party: [], enemies: []})
+		game.perform({type: 'enterMalleable'})
+
+		expect(game.perform({type: 'abilityRemove', ability: 'Toll'})).toMatchObject({ok: true})
+		await settle()
+
+		expect(readJournal().abilityBar).toEqual(['Mend', 'Patch'])
+		expect(Object.keys(game.player.abilities)).toEqual(['Mend', 'Patch'])
+	})
+
+	it('moves abilities one slot in either direction without sorting the bar', async () => {
+		await setAbilityBar(['Mend', 'Toll', 'Patch'])
+		game = new GameLoop({party: [], enemies: []})
+		game.perform({type: 'enterMalleable'})
+
+		game.perform({type: 'abilityMove', ability: 'Toll', direction: -1})
+		await settle()
+		expect(readJournal().abilityBar).toEqual(['Toll', 'Mend', 'Patch'])
+		expect(Object.keys(game.player.abilities)).toEqual(['Toll', 'Mend', 'Patch'])
+
+		game.perform({type: 'abilityMove', ability: 'Mend', direction: 1})
+		await settle()
+		expect(readJournal().abilityBar).toEqual(['Toll', 'Patch', 'Mend'])
+		expect(Object.keys(game.player.abilities)).toEqual(['Toll', 'Patch', 'Mend'])
+	})
+
+	it('applies back-to-back edits to the latest queued bar', async () => {
+		await setAbilityBar(['Mend', 'Toll', 'Patch'])
+		game = new GameLoop({party: [], enemies: []})
+		game.perform({type: 'enterMalleable'})
+
+		game.perform({type: 'abilityMove', ability: 'Toll', direction: -1})
+		game.perform({type: 'abilityMove', ability: 'Toll', direction: 1})
+		await settle()
+
+		expect(readJournal().abilityBar).toEqual(['Mend', 'Toll', 'Patch'])
+		expect(Object.keys(game.player.abilities)).toEqual(['Mend', 'Toll', 'Patch'])
+	})
+
+	it('mirrors a queued edit onto a restarted Malleable Player', async () => {
+		await setAbilityBar(['Mend'])
+		game = new GameLoop({party: [], enemies: []})
+		game.perform({type: 'enterMalleable'})
+
+		game.perform({type: 'abilityAdd', ability: 'Toll'})
+		game.perform({type: 'restart'})
+		await settle()
+
+		expect(readJournal().abilityBar).toEqual(['Mend', 'Toll'])
+		expect(Object.keys(game.player.abilities)).toEqual(['Mend', 'Toll'])
+	})
+})
+
 describe('navigation actions', () => {
 	it('enters a one-off room', async () => {
 		game = new GameLoop({party: [], enemies: []})
@@ -340,7 +424,7 @@ describe('navigation actions', () => {
 	})
 
 	it('enters Malleable paused with its saved composition', async () => {
-		saveMalleable({version: 1, party: ['Haruk'], enemies: ['Tank', 'Runt']})
+		saveCustomRoom({party: ['Haruk'], enemies: ['Tank', 'Runt']})
 		game = new GameLoop({party: [], enemies: []})
 		await settle()
 
@@ -359,30 +443,30 @@ describe('navigation actions', () => {
 		game.perform({type: 'enterMalleable'})
 		await settle()
 
-		expect(game.perform({type: 'malleableAdd', side: 'party', unit: 'Runt'})).toMatchObject({ok: true})
+		expect(game.perform({type: 'customRoomAdd', side: 'party', unit: 'Runt'})).toMatchObject({ok: true})
 		expect(game.party.at(-1)?.unitId).toBe('Runt')
-		expect(game.perform({type: 'malleableAdd', side: 'enemy', unit: 'Tank'})).toMatchObject({ok: true})
+		expect(game.perform({type: 'customRoomAdd', side: 'enemy', unit: 'Tank'})).toMatchObject({ok: true})
 		expect(game.enemies.at(-1)?.unitId).toBe('Tank')
-		expect(game.perform({type: 'malleableAdd', side: 'enemy', unit: 'Player'})).toEqual({
+		expect(game.perform({type: 'customRoomAdd', side: 'enemy', unit: 'Player'})).toEqual({
 			ok: false,
 			error: 'Player is added automatically and cannot be added to Malleable',
 		})
-		expect(loadMalleable()).toEqual({version: 1, party: ['Runt'], enemies: ['Tank']})
+		expect(loadCustomRoom()).toEqual({party: ['Runt'], enemies: ['Tank']})
 	})
 
 	it('removes a Malleable unit but never the designated Player', async () => {
-		saveMalleable({version: 1, party: ['Runt'], enemies: []})
+		saveCustomRoom({party: ['Runt'], enemies: []})
 		game = new GameLoop({party: [], enemies: []})
 		await settle()
 		game.perform({type: 'enterMalleable'})
 		await settle()
 
-		expect(game.perform({type: 'malleableRemove', unit: game.player.id})).toEqual({
+		expect(game.perform({type: 'customRoomRemove', unit: game.player.id})).toEqual({
 			ok: false,
 			error: 'The designated Player cannot be removed',
 		})
-		expect(game.perform({type: 'malleableRemove', unit: game.party[0].id})).toMatchObject({ok: true})
-		expect(loadMalleable().party).toEqual([])
+		expect(game.perform({type: 'customRoomRemove', unit: game.party[0].id})).toMatchObject({ok: true})
+		expect(loadCustomRoom().party).toEqual([])
 		expect(game.party).toEqual([game.player])
 	})
 
@@ -391,7 +475,7 @@ describe('navigation actions', () => {
 		await settle()
 		game.perform({type: 'enterMalleable'})
 		await settle()
-		game.perform({type: 'malleableAdd', side: 'enemy', unit: 'Runt'})
+		game.perform({type: 'customRoomAdd', side: 'enemy', unit: 'Runt'})
 		const previous = game.enemies[0]
 		game.elapsedTime = 5000
 

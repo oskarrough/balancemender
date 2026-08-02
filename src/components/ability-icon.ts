@@ -6,10 +6,11 @@ import {ApplyAura, Damage, Heal, Interrupt, type Effect} from '../nodes/effects'
 import {PeriodicAura} from '../nodes/periodic-aura'
 import {BarrierAura} from '../nodes/barrier-aura'
 import {roundOne} from '../utils'
+import {abilityRegistry, type AbilityId} from '../nodes/registry'
 import {registerTip} from './tooltip'
 import {spellIconPath} from './icon-path'
 
-function iconPath(AbilityClass: AbilityClass) {
+export function abilityIconPath(AbilityClass: AbilityClass) {
 	return spellIconPath(AbilityClass.icon || AbilityClass.name)
 }
 
@@ -46,7 +47,7 @@ export function AbilityIcon(game: GameLoop, abilityId: string, shortcut: string 
 			onclick=${() => game.perform({type: 'use', ability: abilityId})}
 			.disabled=${game.gameOver}
 		>
-			<img class="Plate-image" src=${iconPath(AbilityClass)} alt="" />
+			<img class="Plate-image" src=${abilityIconPath(AbilityClass)} alt="" />
 			<div class="Plate-inner">
 				<h3>${AbilityClass.name}</h3>
 				<p>
@@ -112,8 +113,9 @@ function costLine(AbilityClass: AbilityClass) {
 
 /** The ability under the pointer, sized for the player as they are now. */
 registerTip('ability', (abilityId, game) => {
-	const AbilityClass = game?.player?.abilities[abilityId]
-	if (!AbilityClass) return null
+	const AbilityClass: AbilityClass | undefined =
+		game?.player?.abilities[abilityId] ?? abilityRegistry[abilityId as AbilityId]
+	if (!AbilityClass || !game?.player) return null
 
 	const magnitudes = AbilityClass.magnitudesFor(game.player)
 	let next = 0

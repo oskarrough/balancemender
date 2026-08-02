@@ -83,7 +83,7 @@ export class BalanceLab extends HTMLElement {
 		render(
 			this,
 			() => html`
-				<label class="BalanceLab-access">
+				<label class="BalanceLab-malleable">
 					<input
 						type="checkbox"
 						.checked=${getMalleableOverride()}

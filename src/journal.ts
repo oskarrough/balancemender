@@ -177,20 +177,29 @@ export function recordVictory(location: Pick<FightLocation, 'dungeonId' | 'roomI
 	})
 }
 
-/** Replace the single ordered loadout owned by the Journal. */
-export function setAbilityBar(abilityIds: readonly AbilityId[]): Promise<void> {
+/** Change the ordered loadout against the latest queued Journal state. */
+export function updateAbilityBar(
+	update: (abilityIds: readonly AbilityId[]) => readonly AbilityId[],
+): Promise<readonly AbilityId[]> {
 	return enqueue(() => {
 		ensureLoaded()
-		const abilityBar = uniqueStrings(abilityIds).filter((id): id is AbilityId => id in abilityRegistry)
-		if (
-			abilityBar.every((id, index) => id === record.abilityBar[index]) &&
-			abilityBar.length === record.abilityBar.length
+		const abilityBar = uniqueStrings(update([...record.abilityBar])).filter(
+			(id): id is AbilityId => id in abilityRegistry,
 		)
-			return
-		record.abilityBar = abilityBar
-		persist()
-		notify()
+		const changed =
+			abilityBar.length !== record.abilityBar.length || abilityBar.some((id, index) => id !== record.abilityBar[index])
+		if (changed) {
+			record.abilityBar = abilityBar
+			persist()
+			notify()
+		}
+		return [...record.abilityBar]
 	})
+}
+
+/** Replace the single ordered loadout owned by the Journal. */
+export function setAbilityBar(abilityIds: readonly AbilityId[]): Promise<void> {
+	return updateAbilityBar(() => abilityIds).then(() => undefined)
 }
 
 export function setJournalName(name: string): Promise<void> {

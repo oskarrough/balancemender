@@ -12,11 +12,11 @@ function addPicker(game: GameLoop, side: Faction) {
 		const data = new FormData(form)
 		const unit = data.get('unit') as UnitId
 		const count = Math.min(99, Math.max(1, Math.floor(Number(data.get('count')) || 1)))
-		for (let index = 0; index < count; index++) game.perform({type: 'malleableAdd', side, unit})
+		for (let index = 0; index < count; index++) game.perform({type: 'customRoomAdd', side, unit})
 	}
 
 	return html`
-		<details class="MalleablePanel-picker">
+		<details class="RoomEditor-picker">
 			<summary class="Button" aria-label=${`Add a unit to the ${side}`}>＋</summary>
 			<form onsubmit=${add}>
 				<select name="unit" aria-label="Unit type">
@@ -32,7 +32,7 @@ function addPicker(game: GameLoop, side: Faction) {
 function roster(game: GameLoop, side: Faction) {
 	const units = side === FACTION.PARTY ? game.party : game.enemies
 	return html`
-		<section class="MalleablePanel-side" data-side=${side}>
+		<section class="RoomEditor-side" data-side=${side}>
 			<header>
 				<strong>${side === FACTION.PARTY ? 'Party' : 'Enemies'}</strong>
 				${addPicker(game, side)}
@@ -45,10 +45,10 @@ function roster(game: GameLoop, side: Faction) {
 							${unit === game.player
 								? html`<small>fixed</small>`
 								: html`<button
-										class="MalleablePanel-remove"
+										class="RoomEditor-remove"
 										type="button"
 										aria-label=${`Remove ${unit.name}`}
-										onclick=${() => game.perform({type: 'malleableRemove', unit: unit.id})}
+										onclick=${() => game.perform({type: 'customRoomRemove', unit: unit.id})}
 									>
 										×
 									</button>`}
@@ -60,9 +60,9 @@ function roster(game: GameLoop, side: Faction) {
 	`
 }
 
-export function MalleablePanel(game: GameLoop) {
+export function RoomEditor(game: GameLoop) {
 	return html`
-		<aside class="MalleablePanel" aria-label="Malleable composition">
+		<aside class="RoomEditor" aria-label="Room composition">
 			${roster(game, FACTION.PARTY)} ${roster(game, FACTION.ENEMY)}
 		</aside>
 	`

@@ -9,7 +9,8 @@ import {scenePaths} from '../nodes/fight'
 import {UnitFrame} from './unitframe'
 import {nextRoom, restartDungeon, restartGame} from '../animations'
 import {bringToFront} from './floating-view.js'
-import {MalleablePanel} from './malleable-panel'
+import {RoomEditor} from './room-editor'
+import {AbilityEditor} from './ability-editor'
 
 register()
 
@@ -123,7 +124,7 @@ export function UI(game: GameLoop) {
 						<img src=${painting.landscape} alt="" />
 					</picture>`
 				: null}
-			${game.gameOver ? GameOver(game) : null} ${game.malleable ? MalleablePanel(game) : null}
+			${game.gameOver ? GameOver(game) : null} ${game.malleable ? RoomEditor(game) : null}
 
 			<div class="Enemies">${game.enemies.map((enemy) => UnitFrame(enemy, casting, player))}</div>
 
@@ -146,12 +147,11 @@ export function UI(game: GameLoop) {
 				${showRefusal ? html`<p class="Refusal" role="status">${refusal.error}</p>` : null}
 			</div>
 
-			<div class="ActionBar">
-				${Object.keys(player.abilities).length > 0
-					? Object.keys(player.abilities).map((abilityId, index) => AbilityIcon(game, abilityId, index + 1))
-					: ''}
-			</div>
-
+			${game.malleable
+				? AbilityEditor(game)
+				: html`<div class="ActionBar">
+						${Object.keys(player.abilities).map((abilityId, index) => AbilityIcon(game, abilityId, index + 1))}
+					</div>`}
 			${Monitor(game)}
 		</div>
 	`

@@ -1,4 +1,4 @@
-.MalleablePanel {
+.RoomEditor {
 	position: fixed;
 	top: 3rem;
 	left: 50%;
@@ -11,7 +11,7 @@
 	pointer-events: none;
 }
 
-.MalleablePanel-side {
+.RoomEditor-side {
 	pointer-events: auto;
 	min-width: 0;
 	max-height: 10rem;
@@ -23,7 +23,7 @@
 	font-size: var(--text-sm);
 }
 
-.MalleablePanel-side > header {
+.RoomEditor-side > header {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -32,13 +32,13 @@
 	margin-bottom: 0.2rem;
 }
 
-.MalleablePanel-side ul {
+.RoomEditor-side ul {
 	max-height: 6rem;
 	list-style: none;
 	overflow-y: auto;
 }
 
-.MalleablePanel-side li {
+.RoomEditor-side li {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -47,11 +47,11 @@
 	border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
 }
 
-.MalleablePanel-side small {
+.RoomEditor-side small {
 	opacity: 0.5;
 }
 
-.MalleablePanel-remove {
+.RoomEditor-remove {
 	width: 1.5rem;
 	height: 1.5rem;
 	border: 0;
@@ -59,11 +59,11 @@
 	cursor: pointer;
 }
 
-.MalleablePanel-remove:hover {
+.RoomEditor-remove:hover {
 	color: var(--c-vermilion);
 }
 
-.MalleablePanel-picker > summary {
+.RoomEditor-picker > summary {
 	justify-content: center;
 	width: 1.5rem;
 	height: 1.5rem;
@@ -71,11 +71,11 @@
 	cursor: pointer;
 }
 
-.MalleablePanel-picker > summary::-webkit-details-marker {
+.RoomEditor-picker > summary::-webkit-details-marker {
 	display: none;
 }
 
-.MalleablePanel-picker form {
+.RoomEditor-picker form {
 	position: absolute;
 	top: 1.5rem;
 	z-index: 1;
@@ -89,24 +89,17 @@
 	box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
 }
 
-.MalleablePanel-side[data-side='party'] .MalleablePanel-picker form {
+.RoomEditor-side[data-side='party'] .RoomEditor-picker form {
 	left: 0;
 }
 
-.MalleablePanel-side[data-side='enemy'] .MalleablePanel-picker form {
+.RoomEditor-side[data-side='enemy'] .RoomEditor-picker form {
 	right: 0;
 }
 
-.MalleablePanel-picker input[type='number'] {
+.RoomEditor-picker input[type='number'] {
 	width: 3rem;
 	min-width: 0;
-}
-
-.BalanceLab-access {
-	grid-column: 1 / -1;
-	display: flex;
-	align-items: center;
-	gap: 0.2rem;
 }
 
 @media (min-width: 48rem) {
@@ -116,7 +109,7 @@
 }
 
 @media (max-width: 48rem) {
-	.MalleablePanel {
+	.RoomEditor {
 		position: relative;
 		top: auto;
 		left: auto;

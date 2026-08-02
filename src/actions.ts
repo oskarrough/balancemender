@@ -18,13 +18,13 @@ import {STAT_KEYS} from './nodes/stats'
 import type {RoomInput} from './nodes/fight'
 // Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
 import {dungeonRegistry, type DungeonId} from './nodes/dungeon'
-import {readJournal, startingRoomIndex} from './journal'
+import {readJournal, startingRoomIndex, updateAbilityBar} from './journal'
+import {abilityRegistry, type AbilityId} from './nodes/registry'
 // The registry already reaches actions.ts through the dungeon import above; naming it directly is
 // the spawn boundary, so a console typing an unknown id is refused here instead of throwing below.
 import {unitRegistry, type UnitId} from './nodes/unit-registry'
 import {canAccessMalleable} from './access'
-import {addUnit, removeUnit, toRoomInput} from './malleable'
-import {loadMalleable, saveMalleable} from './malleable-store'
+import {addRoomUnit, loadCustomRoom, removeRoomUnit, saveCustomRoom} from './custom-room'
 
 const MALLEABLE_LOCKED = 'Malleable unlocks after all four dungeons are mended'
 
@@ -68,10 +68,16 @@ export type GameAction =
 	| {type: 'enter'; room: RoomInput}
 	/** Enter the autosaved player-authored sandbox room. */
 	| {type: 'enterMalleable'}
-	/** Add a registered non-Player unit to one side of the Malleable room. */
-	| {type: 'malleableAdd'; side: Faction; unit: UnitId}
-	/** Remove one live unit from the Malleable room by its fight id. */
-	| {type: 'malleableRemove'; unit: string}
+	/** Add a registered non-Player unit to one side of the custom room. */
+	| {type: 'customRoomAdd'; side: Faction; unit: UnitId}
+	/** Remove one live unit from the custom room by its fight id. */
+	| {type: 'customRoomRemove'; unit: string}
+	/** Append an ability from the full catalog to the Journal-owned action bar. */
+	| {type: 'abilityAdd'; ability: string}
+	/** Remove an ability from the Journal-owned action bar. */
+	| {type: 'abilityRemove'; ability: string}
+	/** Swap an ability with its neighbor on the Journal-owned action bar. */
+	| {type: 'abilityMove'; ability: string; direction: -1 | 1}
 	/** Start a dungeon from its first room, by dungeon id. */
 	| {type: 'startDungeon'; dungeon: string}
 	/** Move on to the next room of the dungeon you cleared. */
@@ -180,19 +186,19 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			enterMalleable(game)
 			return ok(undefined)
 
-		case 'malleableAdd': {
+		case 'customRoomAdd': {
 			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
 			if (!game.malleable) return fail('Not in Malleable')
 			if (!(action.unit in unitRegistry)) return fail(`Unknown unit: ${action.unit}`)
-			const composition = addUnit(loadMalleable(), action.side, action.unit)
-			if (!composition) return fail('Player is added automatically and cannot be added to Malleable')
+			const room = addRoomUnit(loadCustomRoom(), action.side, action.unit)
+			if (!room) return fail('Player is added automatically and cannot be added to Malleable')
 			const unit = game.fight.spawn(action.unit, action.side)
-			saveMalleable(composition)
+			saveCustomRoom(room)
 			game.render()
 			return ok(unit)
 		}
 
-		case 'malleableRemove': {
+		case 'customRoomRemove': {
 			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
 			if (!game.malleable) return fail('Not in Malleable')
 			const unit = findUnit(game, action.unit)
@@ -202,12 +208,37 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			const roster = (side === FACTION.PARTY ? game.party : game.enemies).filter(
 				(candidate) => candidate !== game.player,
 			)
-			const composition = removeUnit(loadMalleable(), side, roster.indexOf(unit))
-			if (!composition) return fail('Unit is not in the saved Malleable composition')
+			const room = removeRoomUnit(loadCustomRoom(), side, roster.indexOf(unit))
+			if (!room) return fail('Unit is not in the saved custom room')
 			game.fight.remove(unit.id)
-			saveMalleable(composition)
+			saveCustomRoom(room)
 			game.render()
 			return ok(unit.id)
+		}
+
+		case 'abilityAdd': {
+			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
+			const ability = action.ability
+			if (!isAbilityId(ability)) return fail(`Unknown ability: ${ability}`)
+			const bar = readJournal().abilityBar
+			if (bar.includes(ability)) return fail(`Ability already on bar: ${ability}`)
+			return editAbilityBar(game, (abilityIds) => [...abilityIds, ability])
+		}
+
+		case 'abilityRemove': {
+			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
+			return editAbilityBar(game, (abilityIds) => abilityIds.filter((ability) => ability !== action.ability))
+		}
+
+		case 'abilityMove': {
+			if (!canAccessMalleable(readJournal())) return fail(MALLEABLE_LOCKED)
+			return editAbilityBar(game, (abilityIds) => {
+				const bar = [...abilityIds]
+				const from = bar.findIndex((ability) => ability === action.ability)
+				const to = from + action.direction
+				if (from >= 0 && to >= 0 && to < bar.length) [bar[from], bar[to]] = [bar[to], bar[from]]
+				return bar
+			})
 		}
 
 		case 'startDungeon': {
@@ -263,9 +294,31 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 const findUnit = (game: GameLoop, id: string): Unit | undefined => game.fight.units.find((unit) => unit.id === id)
 
 function enterMalleable(game: GameLoop) {
-	game.enter(toRoomInput(loadMalleable()))
+	game.enter(loadCustomRoom())
+	mirrorBar(game, readJournal().abilityBar)
 	game.malleable = true
 	game.render()
+}
+
+function isAbilityId(id: string): id is AbilityId {
+	return id in abilityRegistry
+}
+
+function editAbilityBar(
+	game: GameLoop,
+	edit: (abilityIds: readonly AbilityId[]) => readonly AbilityId[],
+): ActionResult<void> {
+	const player = game.player
+	void updateAbilityBar(edit).then((abilityIds) => {
+		if (game.player !== player && !game.malleable) return
+		mirrorBar(game, abilityIds)
+		game.render()
+	})
+	return ok(undefined)
+}
+
+function mirrorBar(game: GameLoop, abilityIds: readonly AbilityId[]) {
+	game.player.abilities = Object.fromEntries(abilityIds.map((id) => [id, abilityRegistry[id]]))
 }
 
 /** God mode is the party's, so it is what a party unit cannot be killed past. */
