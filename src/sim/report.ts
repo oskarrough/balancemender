@@ -149,7 +149,7 @@ export interface FightReport {
 }
 
 export interface AnalyzeOptions {
-	units?: UnitInfo[]
+	units?: readonly UnitInfo[]
 	outcome?: Outcome
 	/** Stable dungeon location carried alongside the event stream. */
 	location?: FightLocation
@@ -158,7 +158,16 @@ export interface AnalyzeOptions {
 	columns?: number
 }
 
-export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}): FightReport {
+/** The common pure boundary used by live, simulated, and saved fight reports. */
+export interface ReportInput extends AnalyzeOptions {
+	events: readonly CombatLogEvent[]
+}
+
+export function analyzeReport({events, ...options}: ReportInput): FightReport {
+	return analyze(events, options)
+}
+
+export function analyze(events: readonly CombatLogEvent[], options: AnalyzeOptions = {}): FightReport {
 	const {units, outcome, location, columns = 40} = options
 	const sorted = [...events].sort((a, b) => at(a) - at(b))
 	// Events can surround a fight in a live log, so markers—not an unrelated first or last event—
@@ -187,8 +196,8 @@ export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}):
  * The log holds every hit and heal, so the bars can be rebuilt without recording them.
  */
 export function healthSeries(
-	events: CombatLogEvent[],
-	units: UnitInfo[],
+	events: readonly CombatLogEvent[],
+	units: readonly UnitInfo[],
 	start: number,
 	duration: number,
 	columns: number,

@@ -1,35 +1,45 @@
 import {html} from 'uhtml'
 import {formatFightLocation} from '../fight-location'
-import type {StoredFightMeta} from '../fight-history'
+import type {FightHistoryView, SavedFight} from '../fight-history'
 import {deathOf, percentOf as percent} from '../sim/format'
 import type {CastStats, FightReport, Series} from '../sim/report'
 
 export function historySelect({
+	status,
 	fights,
 	selected,
 	onSelect,
 }: {
-	fights: StoredFightMeta[]
+	status: FightHistoryView['status']
+	fights: readonly SavedFight[]
 	selected: string | null
 	onSelect: (id: string | null) => void
 }) {
-	if (!fights.length) return ''
+	if (status === 'loading' && !fights.length && selected === null)
+		return html`<select class="FightReport-history" disabled>
+			<option>Loading saved fights…</option>
+		</select>`
+	if (!fights.length && selected === null) return ''
+	const selectedFight = fights.find((fight) => fight.id === selected)
 	return html`
 		<select
 			class="FightReport-history"
-			data-outcome=${fights.find((fight) => fight.id === selected)?.outcome ?? 'live'}
+			data-outcome=${selectedFight?.outcome ?? (selected ? 'unavailable' : 'live')}
 			onchange=${(event: Event) => {
 				const value = (event.target as HTMLSelectElement).value
 				onSelect(value === 'live' ? null : value)
 			}}
 		>
 			<option value="live" ?selected=${selected === null}>Live</option>
+			${selected && !selectedFight
+				? html`<option value=${selected} selected disabled>Unavailable saved fight</option>`
+				: ''}
 			${fights.map((fight) => historyOption(fight, selected))}
 		</select>
 	`
 }
 
-function historyOption(fight: StoredFightMeta, selected: string | null) {
+function historyOption(fight: SavedFight, selected: string | null) {
 	const date = new Date(fight.timestamp)
 	const when = date.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})
 	const location = formatFightLocation(fight.location)
@@ -40,20 +50,12 @@ function historyOption(fight: StoredFightMeta, selected: string | null) {
 	`
 }
 
-export function fightSummary({
-	report,
-	duration,
-	live,
-}: {
-	report: FightReport
-	duration: number
-	live: {fps: number; gcd: boolean} | null
-}) {
+export function fightSummary({report, live}: {report: FightReport; live: {fps: number; gcd: boolean} | null}) {
 	const location = formatFightLocation(report.location)
 	return html`
 		${location ? html`<p class="FightReport-location">${location}</p>` : ''}
 		<p class="FightReport-summary">
-			<strong class="FightReport-stat" data-stat="duration">${(duration / 1000).toFixed(1)}s</strong> ·
+			<strong class="FightReport-stat" data-stat="duration">${(report.duration / 1000).toFixed(1)}s</strong> ·
 			<span class="FightReport-stat" data-stat="events">${report.events} events</span> ·
 			<span class="FightReport-stat" data-stat="rate">${report.totals.hps} hps</span> ·
 			<span class="FightReport-stat" data-stat="rate">${report.totals.dps} dps</span> ·

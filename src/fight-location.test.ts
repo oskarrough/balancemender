@@ -1,17 +1,21 @@
-import {afterEach, describe, expect, it} from 'vitest'
+import {afterEach, beforeEach, describe, expect, it} from 'vitest'
 import {clearJournal, recordVictory} from './journal'
 import {formatFightLocation} from './fight-location'
-import {getFight, listFights, saveFight} from './fight-history'
+import {clearFightHistory, readFightHistory, readSavedFight, saveFight} from './fight-history'
 import {TheGreen, TheRust} from './nodes/dungeon'
 import {GameLoop} from './nodes/game-loop'
-import {analyze, unitsOf} from './sim/report'
+import {analyze, analyzeReport, unitsOf} from './sim/report'
 import {runFight} from './sim/run'
 import {settle} from './test-setup'
 
 let game!: GameLoop
+beforeEach(async () => {
+	await clearFightHistory()
+})
 afterEach(async () => {
 	game?.disconnect()
 	await settle()
+	await clearFightHistory()
 	await clearJournal()
 })
 
@@ -52,10 +56,10 @@ describe('fight location', () => {
 		const location = {dungeonId: 'TheRust' as const, roomId: TheRust.rooms[0].id, roomNumber: 1}
 		await saveFight({outcome: 'victory', duration: 0, events: [], units: [], location})
 
-		const meta = listFights()[0]
-		const stored = meta && getFight(meta.id)
-		expect(stored?.location).toEqual(location)
-		expect(analyze(stored?.events ?? [], {location: stored?.location}).location).toEqual(location)
+		const meta = readFightHistory().savedFights[0]
+		const stored = readSavedFight(meta.id)!
+		expect(stored.location).toEqual(location)
+		expect(analyzeReport(stored).location).toEqual(location)
 	})
 
 	it('leaves location absent for a terminal fight without dungeon context', async () => {

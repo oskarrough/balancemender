@@ -10,7 +10,7 @@ export const isHeal = (eventType: CombatEventType) => HEAL.includes(eventType)
 const AURA_ENDED: CombatEventType[] = ['SPELL_AURA_REMOVED', 'SPELL_AURA_REFRESH']
 
 interface AccumulateOptions {
-	units?: UnitInfo[]
+	units?: readonly UnitInfo[]
 	start: number
 	duration: number
 }

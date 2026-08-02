@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto'
 import {setLogLevel} from './combatlog'
 
 /**

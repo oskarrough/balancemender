@@ -1,61 +1,189 @@
 import {createStore} from 'tinybase'
 import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db'
-import type {FightLocation} from './fight-location'
-import type {Outcome, UnitInfo} from './sim/report'
 import {COMBATLOG_SCHEMA, type CombatLogEvent} from './combatlog'
+import type {FightLocation} from './fight-location'
+import {analyzeReport, type Outcome, type UnitInfo} from './sim/report'
 
 const DB_NAME = 'balancemender-fight-history-v1'
 const TABLE = 'fights'
 
 export const MAX_FIGHTS = 40
 
-export interface StoredFightMeta {
-	id: string
-	timestamp: number
-	outcome: Outcome
-	duration: number
-	location?: FightLocation
+/** The lightweight saved-fight metadata used by pickers and Journal views. */
+export interface SavedFight {
+	readonly id: string
+	readonly timestamp: number
+	readonly outcome: Outcome
+	readonly duration: number
+	readonly location?: FightLocation
 }
 
-export interface StoredFight extends StoredFightMeta {
-	events: CombatLogEvent[]
-	units: UnitInfo[]
+/** The full, lazily parsed payload for one saved fight. */
+export interface SavedFightDetail extends SavedFight {
+	readonly events: readonly CombatLogEvent[]
+	readonly units: readonly UnitInfo[]
+}
+
+/** Totals over exactly the rows currently present in saved fight history. */
+export interface SavedFightRecord {
+	readonly scope: 'saved-fights'
+	readonly fightCount: number
+	/** Rows with stored combat totals. All-unit totals are null unless this matches `fightCount`. */
+	readonly reportCount: number
+	readonly outcomeCounts: Readonly<Record<Outcome, number>>
+	readonly totalDuration: number
+	readonly averageDuration: number | null
+	readonly allUnitDamage: number | null
+	readonly allUnitHealing: number | null
+	readonly allUnitOverhealing: number | null
+}
+
+export type FightSelection =
+	| {readonly status: 'live'}
+	| {readonly status: 'ready'; readonly fight: SavedFightDetail}
+	| {readonly status: 'not-found'; readonly id: string}
+
+export function fightSelectionKey(selection: FightSelection): string {
+	if (selection.status === 'live') return 'live'
+	if (selection.status === 'ready') return `ready:${selection.fight.id}`
+	return `not-found:${selection.id}`
+}
+
+export interface FightHistoryView {
+	readonly status: 'loading' | 'ready'
+	readonly savedFights: readonly SavedFight[]
+	readonly savedFightRecord: SavedFightRecord
 }
 
 const store = createStore()
-const persister = createIndexedDbPersister(store, DB_NAME)
+const persister = createIndexedDbPersister(store, DB_NAME, undefined, (error) => {
+	throw error
+})
 
-/** Fires after `loadFightHistory()` resolves and after every `saveFight()`. */
+let status: FightHistoryView['status'] = 'loading'
+let selection: FightSelection = {status: 'live'}
+let savedFightRecord = emptySavedFightRecord()
+let operations = Promise.resolve()
+
+/** Keep persistence mutations ordered and the queue usable after a failure. */
+function enqueue<T>(operation: () => T | PromiseLike<T>): Promise<T> {
+	const result = operations.then(operation)
+	operations = result.then(
+		() => undefined,
+		() => undefined,
+	)
+	return result
+}
+
+/** Fires when loading, rows, aggregate data, or the shared panel selection changes. */
 export const fightHistoryEvents = new EventTarget()
 
 function notify() {
 	fightHistoryEvents.dispatchEvent(new Event('change'))
 }
 
-/** Loads once — call explicitly, no autosave and no top-level await. */
-export async function loadFightHistory(): Promise<void> {
-	await persister.load()
-	// Fights logged under a stale event shape can't be read back safely — drop them.
-	for (const id of store.getRowIds(TABLE)) {
-		if (store.getCell(TABLE, id, 'schema') !== COMBATLOG_SCHEMA) store.delRow(TABLE, id)
+function emptySavedFightRecord(): SavedFightRecord {
+	return {
+		scope: 'saved-fights',
+		fightCount: 0,
+		reportCount: 0,
+		outcomeCounts: {victory: 0, defeat: 0, timeout: 0},
+		totalDuration: 0,
+		averageDuration: null,
+		allUnitDamage: 0,
+		allUnitHealing: 0,
+		allUnitOverhealing: 0,
 	}
-	notify()
 }
 
-export async function saveFight(f: Omit<StoredFight, 'id' | 'timestamp'>): Promise<void> {
-	const id = String(Date.now())
-	store.setRow(TABLE, id, {
-		schema: COMBATLOG_SCHEMA,
-		timestamp: Date.now(),
-		outcome: f.outcome,
-		duration: f.duration,
-		events: JSON.stringify(f.events),
-		units: JSON.stringify(f.units),
-		...(f.location ? {location: JSON.stringify(f.location)} : {}),
+/** TinyBase creates its stores on save, but a first load must work on an empty database. */
+async function ensurePersisterDatabase(): Promise<void> {
+	const hasNoObjectStores = await new Promise<boolean>((resolve, reject) => {
+		let settled = false
+		const request = indexedDB.open(DB_NAME)
+		const rejectOnce = (error: unknown) => {
+			if (settled) return
+			settled = true
+			reject(error)
+		}
+		request.onerror = () => rejectOnce(request.error)
+		request.onblocked = () => rejectOnce(new Error(`IndexedDB initialization blocked for ${DB_NAME}`))
+		request.onsuccess = () => {
+			const database = request.result
+			if (settled) {
+				database.close()
+				return
+			}
+			settled = true
+			const hasNoObjectStores = database.objectStoreNames.length === 0
+			database.close()
+			resolve(hasNoObjectStores)
+		}
 	})
-	evictOldest()
-	await persister.save()
-	notify()
+	if (hasNoObjectStores) await persister.save()
+}
+
+/** Load explicitly; the Journal may render progression while this remains `loading`. */
+export function loadFightHistory(): Promise<void> {
+	return enqueue(async () => {
+		status = 'loading'
+		notify()
+		try {
+			await ensurePersisterDatabase()
+			await persister.load()
+			let changed = false
+			for (const id of store.getRowIds(TABLE)) {
+				if (store.getCell(TABLE, id, 'schema') !== COMBATLOG_SCHEMA) {
+					store.delRow(TABLE, id)
+					changed = true
+				}
+			}
+			changed = evictOldest() || changed
+			if (changed) await persister.save()
+		} finally {
+			updateSavedFightRecord()
+			checkSelection(true)
+			status = 'ready'
+			notify()
+		}
+	})
+}
+
+export function saveFight(fight: Omit<SavedFightDetail, 'id' | 'timestamp'>): Promise<void> {
+	return enqueue(async () => {
+		const report = analyzeReport(fight)
+		const timestamp = Date.now()
+		const id = uniqueId(timestamp)
+		store.setRow(TABLE, id, {
+			schema: COMBATLOG_SCHEMA,
+			timestamp,
+			outcome: fight.outcome,
+			duration: fight.duration,
+			events: JSON.stringify(fight.events),
+			units: JSON.stringify(fight.units),
+			allUnitDamage: report.totals.damage,
+			allUnitHealing: report.totals.healing,
+			allUnitOverhealing: report.totals.overhealing,
+			...(fight.location ? {location: JSON.stringify(fight.location)} : {}),
+		})
+		evictOldest()
+		updateSavedFightRecord()
+		checkSelection()
+		try {
+			await persister.save()
+		} finally {
+			notify()
+		}
+	})
+}
+
+/** Date-based ids remain readable while same-millisecond saves get a stable suffix. */
+function uniqueId(timestamp: number): string {
+	const base = String(timestamp)
+	if (!store.hasRow(TABLE, base)) return base
+	let suffix = 1
+	while (store.hasRow(TABLE, `${base}-${String(suffix).padStart(6, '0')}`)) suffix++
+	return `${base}-${String(suffix).padStart(6, '0')}`
 }
 
 /** Read optional metadata without making pre-location rows invalid. */
@@ -84,17 +212,18 @@ function readLocation(id: string): FightLocation | undefined {
 	}
 }
 
-/** Keeps only the newest `MAX_FIGHTS` rows. */
-function evictOldest() {
+/** Keep only the newest rows; a suffixed id breaks same-millisecond timestamp ties. */
+function evictOldest(): boolean {
 	const ids = store.getRowIds(TABLE)
-	if (ids.length <= MAX_FIGHTS) return
+	if (ids.length <= MAX_FIGHTS) return false
 	const sorted = ids
 		.map((id) => ({id, timestamp: store.getCell(TABLE, id, 'timestamp') as number}))
-		.sort((a, b) => b.timestamp - a.timestamp)
+		.sort((a, b) => b.timestamp - a.timestamp || b.id.localeCompare(a.id))
 	for (const {id} of sorted.slice(MAX_FIGHTS)) store.delRow(TABLE, id)
+	return true
 }
 
-export function listFights(): StoredFightMeta[] {
+function readSavedFights(): SavedFight[] {
 	return store
 		.getRowIds(TABLE)
 		.map((id) => {
@@ -107,36 +236,118 @@ export function listFights(): StoredFightMeta[] {
 				...(location ? {location} : {}),
 			}
 		})
-		.sort((a, b) => b.timestamp - a.timestamp)
+		.sort((a, b) => b.timestamp - a.timestamp || b.id.localeCompare(a.id))
 }
 
-/**
- * Which fight the panels are looking at — a stored fight, or `undefined` for the live one.
- * Lives here rather than in any one panel so the Fight report and the Combat log viewer always
- * agree on what a scrub or a seek refers to. Cached on selection: `getFight` parses the whole
- * event log back out of the store, too much to repeat on every render.
- */
-let viewed: StoredFight | undefined
+/** Read a fresh metadata snapshot. Event and unit payloads stay serialized. */
+export function readFightHistory(): FightHistoryView {
+	return {
+		status,
+		savedFights: readSavedFights(),
+		savedFightRecord: {
+			...savedFightRecord,
+			outcomeCounts: {...savedFightRecord.outcomeCounts},
+		},
+	}
+}
 
+/** Parse only the requested row's full event and unit payloads. */
+export function readSavedFight(id: string): SavedFightDetail | undefined {
+	if (!store.hasRow(TABLE, id)) return undefined
+	try {
+		const events: unknown = JSON.parse(store.getCell(TABLE, id, 'events') as string)
+		const units: unknown = JSON.parse(store.getCell(TABLE, id, 'units') as string)
+		if (!Array.isArray(events) || !Array.isArray(units)) return undefined
+		const location = readLocation(id)
+		return {
+			id,
+			timestamp: store.getCell(TABLE, id, 'timestamp') as number,
+			outcome: store.getCell(TABLE, id, 'outcome') as Outcome,
+			duration: store.getCell(TABLE, id, 'duration') as number,
+			events: events as CombatLogEvent[],
+			units: units as UnitInfo[],
+			...(location ? {location} : {}),
+		}
+	} catch {
+		return undefined
+	}
+}
+
+/** Select one saved row, or explicitly return both panels to the live fight. */
 export function viewFight(id: string | null): void {
-	viewed = id ? getFight(id) : undefined
+	if (id === null) selection = {status: 'live'}
+	else {
+		const fight = readSavedFight(id)
+		selection = fight ? {status: 'ready', fight} : {status: 'not-found', id}
+	}
 	notify()
 }
 
-export function viewedFight(): StoredFight | undefined {
-	return viewed
+export function viewedFight(): FightSelection {
+	return selection
 }
 
-export function getFight(id: string): StoredFight | undefined {
-	if (!store.hasRow(TABLE, id)) return undefined
-	const location = readLocation(id)
-	return {
-		id,
-		timestamp: store.getCell(TABLE, id, 'timestamp') as number,
-		outcome: store.getCell(TABLE, id, 'outcome') as Outcome,
-		duration: store.getCell(TABLE, id, 'duration') as number,
-		events: JSON.parse(store.getCell(TABLE, id, 'events') as string),
-		units: JSON.parse(store.getCell(TABLE, id, 'units') as string),
-		...(location ? {location} : {}),
+function checkSelection(reload = false) {
+	if (selection.status === 'live') return
+	const id = selection.status === 'ready' ? selection.fight.id : selection.id
+	if (!store.hasRow(TABLE, id)) {
+		selection = {status: 'not-found', id}
+		return
 	}
+	if (reload) {
+		const fight = readSavedFight(id)
+		selection = fight ? {status: 'ready', fight} : {status: 'not-found', id}
+	}
+}
+
+/** Update from metadata and compact report cells only; fight detail remains serialized. */
+function updateSavedFightRecord() {
+	const savedFights = readSavedFights()
+	const outcomeCounts: Record<Outcome, number> = {victory: 0, defeat: 0, timeout: 0}
+	let reportCount = 0
+	let allUnitDamage = 0
+	let allUnitHealing = 0
+	let allUnitOverhealing = 0
+	let totalDuration = 0
+	for (const savedFight of savedFights) {
+		totalDuration += savedFight.duration
+		outcomeCounts[savedFight.outcome]++
+		const damage = store.getCell(TABLE, savedFight.id, 'allUnitDamage')
+		const healing = store.getCell(TABLE, savedFight.id, 'allUnitHealing')
+		const overhealing = store.getCell(TABLE, savedFight.id, 'allUnitOverhealing')
+		if (typeof damage !== 'number' || typeof healing !== 'number' || typeof overhealing !== 'number') continue
+		reportCount++
+		allUnitDamage += damage
+		allUnitHealing += healing
+		allUnitOverhealing += overhealing
+	}
+	const complete = reportCount === savedFights.length
+	savedFightRecord = {
+		scope: 'saved-fights',
+		fightCount: savedFights.length,
+		reportCount,
+		outcomeCounts,
+		totalDuration,
+		averageDuration: savedFights.length ? totalDuration / savedFights.length : null,
+		allUnitDamage: complete ? allUnitDamage : null,
+		allUnitHealing: complete ? allUnitHealing : null,
+		allUnitOverhealing: complete ? allUnitOverhealing : null,
+	}
+}
+
+/** Clear saved rows without touching canonical Journal progression. */
+export function clearFightHistory(): Promise<void> {
+	return enqueue(async () => {
+		const selectedId =
+			selection.status === 'ready' ? selection.fight.id : selection.status === 'not-found' ? selection.id : null
+		store.delTable(TABLE)
+		savedFightRecord = emptySavedFightRecord()
+		status = 'ready'
+		if (selectedId) selection = {status: 'not-found', id: selectedId}
+		try {
+			await persister.save()
+		} finally {
+			notify()
+		}
+	})
 }

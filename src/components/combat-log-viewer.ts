@@ -5,11 +5,12 @@ import {currentGame} from '../nodes/game-loop'
 import {unitRegistry, type UnitId} from '../nodes/unit-registry'
 import type {Unit} from '../nodes/unit'
 import {FACTION} from '../nodes/types'
-import {viewedFight, fightHistoryEvents} from '../fight-history'
+import {fightSelectionKey, viewedFight, fightHistoryEvents} from '../fight-history'
 import '../components/floating-view.js'
 
 type LogGroup = 'casts' | 'damage' | 'healing' | 'auras' | 'units' | 'fight'
 type EventMeta = {group: LogGroup; label: string; verb?: string; amountWord?: string}
+type ViewedUnit = {id: string; faction: string; unitId?: UnitId}
 
 /**
  * How the panel groups and names each event. Covering the whole union keeps new event types from
@@ -59,23 +60,18 @@ const CONDITION_PHRASE = {
  * Nothing dies in the player's hands — see docs/universe.md. An enemy at zero settles, a party
  * member falls, a boss gets the whole sentence. The code keeps `alive`, `kill` and `UNIT_DIED`.
  */
-function deathPhrase(event: CombatLogEvent): string {
+function deathPhrase(event: CombatLogEvent, units: readonly ViewedUnit[]): string {
 	const name = event.targetName || 'Unknown unit'
-	const unit = event.targetId ? unitsInView().find((candidate) => candidate.id === event.targetId) : undefined
+	const unit = event.targetId ? units.find((candidate) => candidate.id === event.targetId) : undefined
 	if (unit?.faction === FACTION.PARTY) return `${name} falls`
 	const Klass = unit?.unitId && (unitRegistry[unit.unitId] as unknown as typeof Unit)
 	if (Klass && Klass.boss) return `The fever breaks. ${name} breathes evenly for the first time.`
 	return `${name} settles`
 }
 
-/** Who is on screen: a stored fight's recorded roster, or the running fight's units. */
-function unitsInView(): readonly {id: string; faction: string; unitId?: UnitId}[] {
-	return viewedFight()?.units ?? currentGame()?.fight.units ?? []
-}
-
-function formatLogEntry(event: CombatLogEvent): string {
+function formatLogEntry(event: CombatLogEvent, units: readonly ViewedUnit[]): string {
 	if (event.eventType === 'UNIT_DIED') {
-		return `${deathPhrase(event)}${event.extraInfo ? ` (${event.extraInfo})` : ''}`
+		return `${deathPhrase(event, units)}${event.extraInfo ? ` (${event.extraInfo})` : ''}`
 	}
 	if (event.eventType === 'UNIT_CONDITION' && event.condition) {
 		return `${event.targetName || 'Unknown unit'} ${CONDITION_PHRASE[event.condition]}`
@@ -106,11 +102,12 @@ export class CombatLogViewer extends HTMLElement {
 	/** One exact type, from clicking a row's label. Beats `groups` while it is set. */
 	private exactType: CombatEventType | null = null
 	private searchTerm = ''
-	/** Live events don't touch a stored fight's view — skip the redraw while one is up. */
-	private handleLogUpdate = () => !viewedFight() && this.render()
+	/** Live events don't touch a saved or unavailable fight's view. */
+	private handleLogUpdate = () => viewedFight().status === 'live' && this.render()
 	private handleHistoryChange = () => this.render()
 	/** Fight time the report's scrub cursor points at — the nearest event gets highlighted. */
 	private seekTime: number | null = null
+	private viewedSelection = fightSelectionKey(viewedFight())
 	private handleSeek = (event: Event) => {
 		this.seekTime = (event as CustomEvent<number>).detail
 		this.render()
@@ -134,10 +131,9 @@ export class CombatLogViewer extends HTMLElement {
 	 * Everything the search matches, newest first. The chips count over this rather than over the
 	 * whole log, so a chip's number is what clicking it would actually show.
 	 */
-	private searched(): CombatLogEvent[] {
-		// A stored fight selected in the Fight report replaces the live log wholesale. Copied
-		// before reversing — the stored events are a cached array someone else reads too.
-		let events = [...(viewedFight()?.events ?? currentGame()?.combatLog.events ?? [])]
+	private searched(source: readonly CombatLogEvent[]): CombatLogEvent[] {
+		// Copy before reversing; live and saved logs are shared with the report.
+		let events = [...source]
 		if (this.searchTerm) {
 			const term = this.searchTerm.toLowerCase()
 			events = events.filter(
@@ -191,7 +187,23 @@ export class CombatLogViewer extends HTMLElement {
 	}
 
 	render() {
-		const searched = this.searched()
+		const selection = viewedFight()
+		const identity = fightSelectionKey(selection)
+		if (identity !== this.viewedSelection) {
+			this.viewedSelection = identity
+			this.seekTime = null
+		}
+		let events: readonly CombatLogEvent[] = []
+		let units: readonly ViewedUnit[] = []
+		if (selection.status === 'ready') {
+			events = selection.fight.events
+			units = selection.fight.units
+		} else if (selection.status === 'live') {
+			const game = currentGame()
+			events = game?.combatLog.events ?? []
+			units = game?.fight.units ?? []
+		}
+		const searched = this.searched(events)
 		const counts = new Map<LogGroup, number>()
 		for (const log of searched) {
 			const {group} = EVENT_META[log.eventType]
@@ -238,7 +250,11 @@ export class CombatLogViewer extends HTMLElement {
 						value=${this.searchTerm}
 						oninput=${this.handleSearch}
 					/>
-					${viewedFight() ? html`<span class="CombatLogViewer-viewing">past fight</span>` : ''}
+					${selection.status === 'ready'
+						? html`<span class="CombatLogViewer-viewing">past fight</span>`
+						: selection.status === 'not-found'
+							? html`<span class="CombatLogViewer-viewing">fight unavailable</span>`
+							: ''}
 				</div>
 				<div class="CombatLogViewer-content">
 					${filtered.length > 0
@@ -251,13 +267,17 @@ export class CombatLogViewer extends HTMLElement {
 												<button class="CombatLogViewer-type" title=${`Only ${log.eventType}`}>
 													${EVENT_META[log.eventType].label}
 												</button>
-												<span class="CombatLogViewer-message">${formatLogEntry(log)}</span>
+												<span class="CombatLogViewer-message">${formatLogEntry(log, units)}</span>
 											</li>
 										`,
 									)}
 								</ul>
 							`
-						: html`<p class="CombatLogViewer-empty">Nothing here${filtering ? ' — try another filter' : ''}</p>`}
+						: html`<p class="CombatLogViewer-empty">
+								${selection.status === 'not-found'
+									? 'That saved fight is unavailable.'
+									: `Nothing here${filtering ? ' — try another filter' : ''}`}
+							</p>`}
 				</div>
 			</div>
 		`

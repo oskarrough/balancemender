@@ -1,11 +1,11 @@
 import {html, render} from 'uhtml'
 import {combatEvents} from '../combatlog'
-import {fightHistoryEvents, listFights, viewedFight, viewFight} from '../fight-history'
+import {fightHistoryEvents, fightSelectionKey, readFightHistory, viewedFight, viewFight} from '../fight-history'
 import {bots, type BotName} from '../nodes/bot'
 import {currentGame, type GameLoop} from '../nodes/game-loop'
 import {formatAggregate} from '../sim/format'
-import {analyze} from '../sim/report'
-import {runFights, unitsOf} from '../sim/run'
+import {analyzeReport, unitsOf, type ReportInput} from '../sim/report'
+import {runFights} from '../sim/run'
 import {
 	abilityStatsTable,
 	fightSummary,
@@ -17,11 +17,7 @@ import {
 	worstCasts,
 } from './fight-report-sections'
 
-/**
- * The fight you are playing, read the same way a simulated fight is read: `analyze()` over
- * the combat log. Also runs that fight headlessly a few times, so you can see whether the
- * run you just had was typical.
- */
+/** Reports live or saved fights and can replay the live composition headlessly. */
 export class FightReportView extends HTMLElement {
 	private pending = 0
 	private simulation: string | null = null
@@ -32,6 +28,7 @@ export class FightReportView extends HTMLElement {
 	private onHistoryChange = () => this.render()
 	/** Where the cursor sits on a completed fight, ms into it. `null` parks it at the end. */
 	private scrubTime: number | null = null
+	private renderedSelectionKey: string | null = null
 
 	private get game(): GameLoop | undefined {
 		return currentGame()
@@ -82,25 +79,70 @@ export class FightReportView extends HTMLElement {
 
 	render() {
 		const game = this.game
-		if (!game) {
-			render(this, () => html`<p>Waiting for game…</p>`)
-			return
-		}
 		const resultOnly = this.getAttribute('mode') === 'result'
 		// The result panel is pinned to the fight that just ended, whatever the other panels view.
-		const stored = resultOnly ? undefined : viewedFight()
-		const viewingHistory = !!stored
-		const report = stored
-			? analyze(stored.events, {units: stored.units, duration: stored.duration, location: stored.location})
-			: analyze(game.combatLog.events, {
+		const selection = resultOnly ? ({status: 'live'} as const) : viewedFight()
+		const selectionKey = fightSelectionKey(selection)
+		if (selectionKey !== this.renderedSelectionKey) {
+			this.renderedSelectionKey = selectionKey
+			this.scrubTime = null
+		}
+		const history = readFightHistory()
+		const selected =
+			selection.status === 'ready' ? selection.fight.id : selection.status === 'not-found' ? selection.id : null
+		const picker = resultOnly
+			? ''
+			: historySelect({
+					status: history.status,
+					fights: history.savedFights,
+					selected,
+					onSelect: (id) => viewFight(id),
+				})
+
+		let input: ReportInput
+		let live: {fps: number; gcd: boolean} | null
+		switch (selection.status) {
+			case 'not-found':
+				render(
+					this,
+					() =>
+						html`<div class="FightReport">
+							${picker}
+							<p>That saved fight is unavailable.</p>
+						</div>`,
+				)
+				return
+			case 'ready':
+				input = selection.fight
+				live = null
+				break
+			case 'live': {
+				if (!game) {
+					render(
+						this,
+						() =>
+							html`<div class="FightReport">
+								${picker}
+								<p>Waiting for game…</p>
+							</div>`,
+					)
+					return
+				}
+				input = {
+					events: game.combatLog.events,
 					units: unitsOf(game),
 					duration: game.elapsedTime,
 					location: game.combatLog.location,
-				})
-		const duration = stored ? stored.duration : game.elapsedTime
-		const fps = game.deltaTime > 0 ? Math.round(1000 / game.deltaTime) : 0
+				}
+				const fps = game.deltaTime > 0 ? Math.round(1000 / game.deltaTime) : 0
+				live = resultOnly ? null : {fps, gcd: !!game.player?.gcd}
+				break
+			}
+		}
+		const report = analyzeReport(input)
+		const viewingHistory = selection.status === 'ready'
 		// The scrub only exists on a finished fight — a live one grows under the cursor.
-		const completed = viewingHistory || resultOnly || game.gameOver
+		const completed = viewingHistory || resultOnly || !!game?.gameOver
 		const cursor =
 			completed && this.scrubTime !== null && report.duration > 0 ? Math.min(1, this.scrubTime / report.duration) : null
 		const onScrub = completed && report.duration > 0 ? (time: number) => this.scrubTo(time) : null
@@ -109,21 +151,7 @@ export class FightReportView extends HTMLElement {
 			this,
 			() => html`
 				<div class="FightReport">
-					${resultOnly
-						? ''
-						: historySelect({
-								fights: listFights(),
-								selected: stored?.id ?? null,
-								onSelect: (id) => {
-									this.scrubTime = null
-									viewFight(id)
-								},
-							})}
-					${fightSummary({
-						report,
-						duration,
-						live: stored || resultOnly ? null : {fps, gcd: !!game.player?.gcd},
-					})}
+					${picker} ${fightSummary({report, live})}
 					${healthTimeline({report, cursor, scrubTime: this.scrubTime, onScrub})} ${unitStatsTable(report)}
 					${manaStatsTable(report)} ${abilityStatsTable(report)}
 					${worstCasts(report.worstCasts, completed, (time) => this.scrubTo(time))}
@@ -148,10 +176,11 @@ export class FightReportView extends HTMLElement {
 	/** Move the cursor and point the Combat log at the same moment. */
 	private scrubTo(time: number) {
 		this.scrubTime = time
-		const stored = viewedFight()
-		// The result panel is pinned to the live fight — while the other panels are on a stored
-		// one, its times would land somewhere meaningless in them.
-		if (!(this.getAttribute('mode') === 'result' && stored)) {
+		const selection = viewedFight()
+		const stored = selection.status === 'ready' ? selection.fight : undefined
+		// The result panel is pinned to the live fight — while the other panels are not, its times
+		// would land somewhere meaningless in them.
+		if (!(this.getAttribute('mode') === 'result' && selection.status !== 'live')) {
 			const start = (stored?.events ?? this.game?.combatLog.events ?? [])[0]?.time ?? 0
 			combatEvents.dispatchEvent(new CustomEvent('combatlog-seek', {detail: start + time}))
 		}
