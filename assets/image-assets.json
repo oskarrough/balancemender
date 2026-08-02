@@ -145,6 +145,12 @@
 			"prompt": "An iconic flat emblem of three widening rust-red rings spreading from one small tarnished bronze bell-mouth at the lower left, the outermost ring thinning and breaking apart. It should read as a sound still going on after the bell has stopped \u2014 pressure that lingers, not an impact. Use The Rust's dry palette: bleached bone-white field, tarnished bronze, rust red, dun and sun-gold. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. Still, patient and uncanny rather than loud or aggressive. One compact asymmetrical silhouette with generous padding, unmistakable at 64x64 pixels. No ears, faces, heads, lightning bolts, music notes, speech marks, frame, badge or decorative marks."
 		},
 		{
+			"id": "steep",
+			"type": "spell",
+			"name": "Steep",
+			"prompt": "An iconic flat emblem of a small dark earthen cup steeping one sprig of healing herbs, with three warm amber drops falling slowly into the brew and one quiet ring spreading across its surface. The drops and ring should make the delayed promise of healing unmistakable, not a burst or an instant spell. Use The Rust's dry palette: midnight blue-black field, weathered clay, tarnished bronze, rust red, dun and a restrained warm gold glow. Hand-painted gouache shapes with confident dark ink contours and almost no interior detail. One compact centered silhouette with generous padding, calm and patient, readable at 64x64 pixels. No text, faces, hands, steam cloud, smoke, lightning, leaves scattered outside the cup, frame, badge or decorative marks."
+		},
+		{
 			"id": "runt",
 			"type": "character",
 			"name": "Runt",

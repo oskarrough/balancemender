@@ -4,6 +4,7 @@ import {dungeonRegistry} from './dungeon'
 import {scenePaths} from './fight'
 import {Heal} from './effects'
 import {abilityRegistry, playerAbilities} from './registry'
+import {spellIconPath} from '../components/icon-path'
 import * as spells from './spells'
 
 describe('the dungeon registry', () => {
@@ -52,6 +53,13 @@ describe('the ability registry', () => {
 	 * The exception is an effect with nothing to size — `Interrupt` cuts a cast rather than landing
 	 * an amount — which declares `coefficient = undefined` to say so out loud.
 	 */
+	it('gives every player ability a spell icon', () => {
+		for (const [id, AbilityClass] of Object.entries(playerAbilities)) {
+			const path = spellIconPath(AbilityClass.icon || AbilityClass.name)
+			expect(existsSync('public' + path), `${id} is missing ${path}`).toBe(true)
+		}
+	})
+
 	it('gives every declared effect a size to land', () => {
 		for (const [id, AbilityClass] of Object.entries(abilityRegistry)) {
 			expect(AbilityClass.effects, `${id} has no effects`).not.toHaveLength(0)
