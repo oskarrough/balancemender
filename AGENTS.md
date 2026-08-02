@@ -78,3 +78,15 @@ a recreation of the current UI as the control. Screenshot them and compare.
 build, and `perf.report()` in the page prints the table. Measure before believing anything is slow.
 
 CSS values stick to a coarse scale — 0.2, 0.4, 0.5 — not 0.35.
+
+## Cursor Cloud specific instructions
+
+The toolchain is `bun` (installed at `~/.bun/bin`, on `PATH` via `~/.bashrc`; a login shell finds it). The
+startup update script runs `bun install`; everything else is the commands already documented above and in
+`README.md`/`package.json` (`bun run check`, `bun run test`, `bun run build`, `bun dev`, `bun run sim`).
+
+`bun dev` serves on `http://localhost:5173`; append `?nosplash` to land straight in a running fight.
+
+Gotcha: `agent-browser` and `ast-grep` referenced above are **not** installed in the cloud VM. For UI
+work, drive the game with the browser test tooling instead (open `http://localhost:5173/?nosplash`, click
+an ability like Mend to cast a heal); `window.balancemender` is still the live game for console `eval`.
