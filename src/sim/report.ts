@@ -13,6 +13,9 @@ export interface UnitInfo {
 	name: string
 	maxHealth: number
 	faction: string
+	/** End-of-fight mana state, when this unit has a mana pool. */
+	maxMana?: number
+	endMana?: number
 	/** The registry id, so a stored fight can still be read back against the unit registry. */
 	unitId?: UnitId
 }
@@ -24,6 +27,7 @@ export function unitsOf(game: GameLoop): UnitInfo[] {
 		name: c.name || c.constructor.name,
 		maxHealth: c.health.max,
 		faction: c.faction,
+		...(c.mana ? {maxMana: c.mana.max, endMana: c.mana.current} : {}),
 		unitId: c.unitId,
 	}))
 }
@@ -58,7 +62,16 @@ export interface UnitStats {
 	wasted: number
 	casts: number
 	hits: number
+	/** Mana paid for the unit's own abilities. */
 	manaSpent: number
+	/** Mana removed by another unit's ability. */
+	manaBurned: number
+	/** Mana returned by regeneration or another resource effect. */
+	manaGained: number
+	/** Net mana change during the fight: gained minus spent and burned. */
+	manaNet: number
+	maxMana?: number
+	endMana?: number
 	/**
 	 * Milliseconds this unit spent committed to a cast or its global cooldown. Against the fight's
 	 * duration it answers what a cast count cannot: was this healer out of time, or out of mana?
@@ -81,6 +94,8 @@ export interface AbilityStats {
 	hits: number
 	total: number
 	overheal: number
+	/** Mana moved by resource events attributed to this ability. */
+	manaSpent: number
 	min: number
 	max: number
 	avg: number

@@ -22,9 +22,9 @@ Nothing here is taken from. The healing only looks one-way: Oak's shield is why 
 to cast in, Wren's sling is why a fight ends before your mana does, the enemy you subdue keeps its
 life, and the river you give its flow back to is the road you walk on. That mutualism is the floor
 under the soft combat premise — an enemy at zero settles not out of mercy, but because this world has
-no transactions in it. Nothing outward-facing says so, because nothing mechanises it yet; mana flows
-out of the mender and nothing flows back in. If an ability, a person or a dungeon ever hands the
-mender something back, it comes from here.
+no transactions in it. Mana leaves the mender during a fight and returns only in a lull; it never
+carries from one room to the next. If an ability, a person or a dungeon ever hands the mender
+something back, it comes from here.
 
 Touchstones, each with the thing we steal from it:
 
@@ -100,20 +100,20 @@ already hold mean something different under each one:
 3. **The Glow — you learn you are visible.** The sivi drift toward whoever glows brightest.
    Healing moves that light between allies, drawing the sivi's attention without changing the
    threat seen by anything else.
-4. **The White — you learn scarcity.** Thin air at a blocked source. Mana does not come back the
-   way it did downstream, and the finale is one long fight out of a closing purse.
+4. **The White — you learn scarcity.** Thin air at a blocked source. Hollow closes the purse inside
+   each fight; efficient healing, a five-second lull and Gale's wind decide how long it stays open.
 
 Two things grow as you walk, and neither is a bigger spellbook:
 
 - **Company.** One more body beside you per dungeon. More bodies is more to keep standing — the
   difficulty and the story are the same curve, and by the White the party is a crowd of mud-boots
   under white stone, which is the whole point of them.
-- **One ability per dungeon**, each answering that dungeon's pressure — something that survives an
-  interruption, something that puts attention back where it belongs, something that stretches a last
-  mouthful of mana. The Rust's is named: **Steep** (#81), the brew that pays out even when the cast
-  carrying it is cut. The Glow's and the White's wait for their dungeons, register one holding —
-  small warm words a village healer would use. The Green teaches Mend in its first quiet room and
-  Patch when a burst first demands one (#71).
+- **A lesson per dungeon**, each answering that dungeon's pressure — something that survives an
+  interruption, something that puts attention back where it belongs, and finally a purse that closes
+  under pressure. The Rust's player ability is **Steep** (#81), the brew that pays out even when the
+  cast carrying it is cut. The Glow teaches attention through Clover's mark and smoke; the White
+  teaches scarcity through Glider's Hollow and Gale's Wind rather than another player spell. The
+  Green teaches Mend in its first quiet room and Patch when a burst first demands one (#71).
 - **The mender's journal.** The player's own book of the walk, opened outside the fight: places
   mended, folk met, wounds tended, each room marked **Mended.** when it is. A record, not a trophy
   room. The craft is written in the same book — what your hands know, the page growing as the walk
@@ -287,9 +287,10 @@ it. The weirdest place in the game and the calmest: the wound and the ward in on
 - **Stimmung** — the sublime. Awe. Monumental stillness. The end of the map.
 - **Sounds** — wind over stone, crystal resonance, water beginning. Almost nothing, and it's loud.
 - **Tempo** — monumental. Few encounters, each one an event; the boss fight is the dungeon.
-- **The walk** — four rooms, each an event. The gliders, and the first taste of mana that doesn't
-  come back. The ringing shelf, a fight scored by its own chimes. The first water, where the rider
-  finally stops. The source: Uvalu alone, one long fight out of a closing purse.
+- **The walk** — four rooms, each an event. The gliders introduce Hollow's direct drain and the
+  five-second recovery. The ringing shelf combines it with the bell's telegraphed weight. The first
+  water adds Gale and Wind to shorten the purse's demand. The source: Uvalu alone, one long fight out
+  of a closing purse.
 
 ## How the game describes itself
 

@@ -73,8 +73,14 @@ export function accumulateEvents(events: CombatLogEvent[], options: AccumulateOp
 			source(event).casts++
 			const stats = ability(abilities, event.abilityId, event.abilityName, 0, 0)
 			stats.casts++
+		} else if (event.eventType === 'RESOURCE_GAIN') {
+			source(event).manaGained += Math.max(0, value)
 		} else if (event.eventType === 'RESOURCE_SPENT') {
-			source(event).manaSpent += Math.abs(value)
+			const amount = Math.abs(value)
+			const stats = source(event)
+			if (event.targetId) stats.manaBurned += amount
+			else stats.manaSpent += amount
+			if (event.abilityId) ability(abilities, event.abilityId, event.abilityName, 0, 0).manaSpent += amount
 		} else if (event.eventType === 'UNIT_CONDITION') {
 			const stats = target(event)
 			if (event.condition === 'injured') {
@@ -116,6 +122,8 @@ function finalize(
 			const stats = unit(units, entry.id, entry.name)
 			stats.name = entry.name
 			stats.faction = entry.faction
+			if (entry.maxMana !== undefined) stats.maxMana = entry.maxMana
+			if (entry.endMana !== undefined) stats.endMana = entry.endMana
 		}
 	}
 
@@ -130,10 +138,14 @@ function finalize(
 		stats.absorbed = roundOne(stats.absorbed)
 		stats.wasted = roundOne(stats.wasted)
 		stats.manaSpent = roundOne(stats.manaSpent)
+		stats.manaBurned = roundOne(stats.manaBurned)
+		stats.manaGained = roundOne(stats.manaGained)
+		stats.manaNet = roundOne(stats.manaGained - stats.manaSpent - stats.manaBurned)
 	}
 	for (const stats of abilities.values()) {
 		stats.total = roundOne(stats.total)
 		stats.overheal = roundOne(stats.overheal)
+		stats.manaSpent = roundOne(stats.manaSpent)
 		stats.min = roundOne(stats.min)
 		stats.max = roundOne(stats.max)
 		stats.avg = roundOne(stats.avg)
@@ -193,6 +205,9 @@ function unit(units: Map<string, UnitStats>, id?: string, name = 'unknown') {
 			casts: 0,
 			hits: 0,
 			manaSpent: 0,
+			manaBurned: 0,
+			manaGained: 0,
+			manaNet: 0,
 			busyTime: 0,
 			injuredTime: 0,
 		}
@@ -209,7 +224,7 @@ function unit(units: Map<string, UnitStats>, id?: string, name = 'unknown') {
 function ability(abilities: Map<string, AbilityStats>, id = 'unknown', name = id, value: number, overheal: number) {
 	let stats = abilities.get(id)
 	if (!stats) {
-		stats = {id, name, casts: 0, hits: 0, total: 0, overheal: 0, min: Infinity, max: 0, avg: 0}
+		stats = {id, name, casts: 0, hits: 0, total: 0, overheal: 0, manaSpent: 0, min: Infinity, max: 0, avg: 0}
 		abilities.set(id, stats)
 	}
 	if (value) {

@@ -79,5 +79,9 @@ describe('mana regeneration', () => {
 
 		const player = analyze(fight.events, fight).units.find((unit) => unit.name === 'Player')
 		expect(player!.manaSpent).toBeGreaterThan(Player.intellect * MANA_PER_INTELLECT)
+		expect(player!.manaGained).toBeGreaterThan(0)
+		expect(player!.manaBurned).toBe(0)
+		expect(player!.manaNet).toBe(player!.manaGained - player!.manaSpent - player!.manaBurned)
+		expect(player!.endMana).toBe(player!.maxMana! + player!.manaNet)
 	})
 })

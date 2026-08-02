@@ -117,18 +117,38 @@ describe('analyze', () => {
 		expect(failed.abilities).toEqual([])
 	})
 
-	it('counts spent mana without inventing a mana-gained report field', () => {
+	it('breaks mana into costs, drain, recovery, net and end state', () => {
 		const report = analyze(
 			[
 				event({time: 1000, eventType: 'RESOURCE_GAIN', sourceId: 'player', sourceName: 'Player', value: 30}),
 				event({time: 2000, eventType: 'RESOURCE_SPENT', sourceId: 'player', sourceName: 'Player', value: -12}),
+				event({
+					time: 3000,
+					eventType: 'RESOURCE_SPENT',
+					sourceId: 'player',
+					sourceName: 'Player',
+					targetId: 'wolf',
+					targetName: 'Wolf',
+					abilityId: 'Hollow',
+					abilityName: 'Hollow',
+					value: -25,
+				}),
 			],
-			{units},
+			{
+				units: [...units, {id: 'player', name: 'Player', maxHealth: 100, faction: 'party', maxMana: 100, endMana: 93}],
+			},
 		)
 		const player = report.units.find((a) => a.name === 'Player')!
 
-		expect(player.manaSpent).toBe(12)
-		expect(player).not.toHaveProperty('manaGained')
+		expect(player).toMatchObject({
+			manaSpent: 12,
+			manaBurned: 25,
+			manaGained: 30,
+			manaNet: -7,
+			maxMana: 100,
+			endMana: 93,
+		})
+		expect(report.abilities.find((ability) => ability.id === 'Hollow')).toMatchObject({manaSpent: 25})
 	})
 
 	it('uses explicit fight boundaries for duration and per-second rates', () => {

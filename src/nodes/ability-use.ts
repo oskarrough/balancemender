@@ -217,14 +217,19 @@ export class AbilityUse {
 		const game = ability.root as GameLoop
 		if (ability.cooldown) unit.cooldowns.set(ability.id, game.elapsedTime + ability.cooldown)
 		if (ability.cost === undefined || !unit.mana) return
-		unit.mana.spend(ability.cost)
+		const before = unit.mana.current
+		if (!unit.mana.spend(ability.cost)) return
+		const spent = before - unit.mana.current
+		if (spent <= 0) return
 		game.combatLog.add({
 			timestamp: Date.now(),
 			eventType: 'RESOURCE_SPENT',
 			sourceId: unit.id,
 			sourceName: unit.name,
+			abilityId: ability.id,
+			abilityName: ability.name,
 			castId: ability.castId,
-			value: -ability.cost,
+			value: -spent,
 			extraInfo: 'MANA',
 		})
 	}

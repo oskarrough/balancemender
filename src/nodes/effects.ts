@@ -173,9 +173,9 @@ export class Heal implements Effect {
 /**
  * Not a health hit: drains mana straight off the target's own pool — the White's whole pressure.
  * A unit with no pool (`Tank`, `Wren`) is simply untouched, so this only ever lands on the healer.
- * Reuses the same `RESOURCE_SPENT` event a unit's own cast already logs when it pays for itself
- * (`AbilityUse.commit`), so `manaSpent` in the fight report and `mana/s` in a sweep already count
- * it without a row of their own.
+ * Uses the same `RESOURCE_SPENT` event as a cast cost, but names Hollow and its caster so the
+ * report can separate drain from the healer's own spending. It does not reset the five-second rule:
+ * a lull still pays mana back.
  */
 export class ManaBurn implements Effect {
 	readonly label = 'manaBurn'
@@ -187,7 +187,10 @@ export class ManaBurn implements Effect {
 		if (!target.mana) return
 		const amount = Math.round(landing.resolve(this.coefficient))
 		if (amount <= 0) return
-		target.mana.set(target.mana.current - amount)
+		const before = target.mana.current
+		target.mana.set(before - amount)
+		const burned = before - target.mana.current
+		if (burned <= 0) return
 
 		const {combatLog} = ability.root as GameLoop
 		combatLog.add({
@@ -200,7 +203,7 @@ export class ManaBurn implements Effect {
 			abilityId: ability.id,
 			abilityName: ability.name,
 			castId: ability.castId,
-			value: -amount,
+			value: -burned,
 			extraInfo: 'MANA',
 		})
 	}

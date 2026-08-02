@@ -178,7 +178,8 @@ prose — a buff or a debuff; nothing in the code branches on which.
 
 **Heal-mark** — a `HealMarkGate` on the healer makes heals plant an exclusive `ThreatMark`
 on their living target, including at full health. A mark changes no threat by itself; an authored
-preference such as Sivi's `auraFirst(Brightest, threat)` may seek it directly. See
+preference such as Sivi's `auraFirst(Brightest, threat)` may seek it directly. A move logs both the
+new mark and the previous bearer losing it. See
 [combat.md](./combat.md#threat-is-local-to-each-enemy).
 
 **Barrier** — an aura with a finite pool that absorbs later damage before it reaches the health bar.
@@ -195,7 +196,8 @@ heal that landed on a full bar and did nothing.
 
 **Resource** — a pool with a max and a current: `Health`, `Mana`. **Ratio** is how full, 0 to 1.
 **Five-second rule** — mana only regenerates after five seconds without spending any, so a lull is
-worth something.
+worth something. **Mana burn** — resource pressure that removes mana without touching health;
+The White's `Hollow` is the authored example, and the combat log names both the drain and its caster.
 
 ## Timing
 
@@ -244,7 +246,8 @@ effect's coefficient is template data too, shared by every use, which is what ma
 reach the next use and nothing in flight.
 
 **Bot** — a stand-in for the player, deciding what to cast next: `idle`, `triage`, `renew`, `panic`,
-`shield`, `smite`. Which ability, never which target — that is a **preference**. Bots are also the
+`shield`, `lance`, `nettle` or `steep`. Which ability, never which target — that is a **preference**.
+Bots are also the
 measuring instrument: every win rate a sweep prints is really "with this bot playing", which is why
 they never read the game's own thresholds. `BotDriver` is only the Task that runs one, so a fight can
 go with nobody at the keyboard — the bot decides, the driver casts, through the same `perform()` the
@@ -260,8 +263,9 @@ room; you run a trial of one — 200 seeds is 200 trials of the same room.
 **Outcome** — how a fight ended: `victory` (every enemy dead, even if the healer died on the way),
 `defeat`, or `timeout`.
 
-**Report** — what `analyze()` makes of a combat log: per-unit and per-ability totals, deaths, health
-over time. Pure, so the terminal and the in-game panel agree by construction.
+**Report** — what `analyze()` makes of a combat log: per-unit and per-ability totals, resource flow,
+deaths and health over time. Mana flow separates the healer's costs, enemy drain, gains, net change
+and end pool. Pure, so the terminal and the in-game panel agree by construction.
 
 **Seed** — the number that makes a fight reproducible: same seed, same fight. Not a word for the run
 itself — that is a trial. **Sweep** — every enemy group against every bot over many seeds.

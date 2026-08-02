@@ -50,13 +50,17 @@ seed 1 · triage · victory in 60.0s
   Player         0  0.0  558.6  9.3       65%  257.6     11   55%
   Oak          511  8.5      0  0.0        0%  362.6      0    0%
 
-  ability      casts  hits  total  per s    avg  overheal
-  Mend            11    11   1594   26.6  144.9       65%
-  Savage Bite      0    22    130    2.2    5.9        0%
+  mana       cost  drained  gain  net    end
+  Player      660        0   135 -525  75/600
+
+  ability      casts  hits  total  mana  per s    avg  overheal
+  Mend            11    11   1594   660   26.6  144.9       65%
+  Savage Bite      0    22    130     0    2.2    5.9        0%
 ```
 
 `busy` answers "was the healer out of time, or out of mana?" — at 55% they had nearly half the
-fight spare. `per s` is there because a total says nothing about whether a bleed earns its slot
+fight spare. The mana row separates chosen costs from enemy drain and shows what regeneration
+returned and what remained. `per s` is there because a total says nothing about whether a bleed earns its slot
 next to a bite that swings three times as often. `--repeat` runs n seeds and prints the same fight
 as a distribution: outcomes, durations, and the healer's own throughput kept separate from the
 fight's, since enemies heal too.
@@ -73,12 +77,12 @@ bun run sweep --enemies 'Runt*3; Haruk' --bots triage,renew
 ```
 
 ```
-enemies     bot     win%  ±   hurt%  timeout%  median  hps   aps   overheal%  mana/s  busy%  casts
-Runt*3  idle    0%    14  25%    0%        24.0s   0.0   0.0   0%         0.0     0%     0.0
-Runt*3  triage  90%   19  12%    0%        88.8s   11.0  0.0   25%        9.1     37%    16.0
-Runt*3  shield  90%   19  7%     0%        88.8s   5.5   6.1   35%        8.2     29%    13.6
-Haruk     triage  100%  14  2%     0%        60.0s   14.9  0.0   12%        11.0    40%    10.2
-Haruk     shield  100%  14  0%     0%        60.0s   3.4   12.7  32%        9.1     28%    9.4
+enemies  bot     win%  ±   hurt%  timeout%  median  hps   aps  overheal%  cost/s  drain/s  gain/s  busy%  casts
+Runt*3   idle    0%    14  31%    0%        23.0s   0.0   0.0  0%         0.0     0.0      0.0     0%     0.0
+Runt*3   triage  100%  14  7%     0%        86.4s   12.9  0.0  45%        9.6     0.0      3.1     49%    13.8
+Runt*3   shield  100%  14  7%     0%        88.8s   5.9   6.3  58%        9.2     0.0      3.5     39%    13.4
+Haruk    triage  100%  14  1%     0%        60.0s   15.5  0.0  29%        8.9     0.0      1.8     47%     8.8
+Haruk    shield  100%  14  0%     0%        60.0s   2.6   13.2 67%        9.3     0.0      2.5     31%     9.2
 ```
 
 Read it in this order:

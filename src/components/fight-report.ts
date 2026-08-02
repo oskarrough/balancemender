@@ -11,6 +11,7 @@ import {
 	fightSummary,
 	healthTimeline,
 	historySelect,
+	manaStatsTable,
 	simulationControls,
 	unitStatsTable,
 	worstCasts,
@@ -124,7 +125,8 @@ export class FightReportView extends HTMLElement {
 						live: stored || resultOnly ? null : {fps, gcd: !!game.player?.gcd},
 					})}
 					${healthTimeline({report, cursor, scrubTime: this.scrubTime, onScrub})} ${unitStatsTable(report)}
-					${abilityStatsTable(report)} ${worstCasts(report.worstCasts, completed, (time) => this.scrubTo(time))}
+					${manaStatsTable(report)} ${abilityStatsTable(report)}
+					${worstCasts(report.worstCasts, completed, (time) => this.scrubTo(time))}
 					${viewingHistory || resultOnly
 						? ''
 						: simulationControls({

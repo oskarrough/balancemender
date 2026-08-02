@@ -3,7 +3,7 @@
 Why the combat systems are shaped the way they are — mostly the traps, each of which has cost someone
 an afternoon. [glossary.md](./glossary.md) says what the words mean;
 [architecture.md](./architecture.md) is the map of the codebase. What each dungeon is supposed to
-teach — one pressure apiece, a growing party, one ability per dungeon — is "The journey" in
+teach — one pressure apiece, a growing party and an authored lesson — is "The journey" in
 [universe.md](./universe.md).
 
 ## Using an ability is shared, deciding is not
@@ -17,6 +17,13 @@ Mana, cast time, GCD and cooldown are opt-in data. An ability with a cast time o
 `Unit.currentAbility` slot and follows the cast lifecycle; one with neither runs inside its driver's
 tick, spends no mana and ignores a cast already in progress. That difference is data, not a Spell
 versus Attack branch in the class tree.
+
+**Mana pressure.** A cast cost logs `RESOURCE_SPENT` with the caster as its source. White's `Hollow`
+uses the same event with the healer as source and the enemy as target, so the report can separate
+mana the healer chose to spend from mana an enemy drained. `RESOURCE_GAIN` records only the amount
+that regeneration actually added. The report shows cost, drain, gain, net change and end mana; a
+clamped drain never claims more than the pool held. Hollow does not reset the five-second rule, and
+each room starts a fresh full pool — scarcity is within a fight, not carried across the dungeon.
 
 What an ability does when it lands is an ordered list of effects it declares —
 [`effects.ts`](../src/nodes/effects.ts) holds `Damage`, `Heal` and `ApplyAura`. Nothing overrides the
@@ -73,7 +80,8 @@ mechanic does not pretend one target was three.
 **Heal-mark.** A `HealMarkGate` on the healer makes each heal plant an exclusive
 `ThreatMark` on its living target, even when the target is already at full health. The mark does not
 change threat. Sivi's authored `prefer.auraFirst('Brightest', prefer.threat(sivi))` seeks Brightest
-directly and returns to ordinary threat when it fades; other enemies never read it. See
+directly and returns to ordinary threat when it fades; other enemies never read it. Moving the mark
+logs both its new placement and its previous bearer leaving it, so the redirect is inspectable. See
 [`heal-mark.ts`](../src/nodes/heal-mark.ts).
 
 `prefer.threat(enemy)` picks the highest entry. It keeps the current target until a challenger exceeds
@@ -147,9 +155,9 @@ keyed by their owner rather than undone with subtraction, so one expiring aura r
 contribution even when copies stack or one supersedes another.
 
 Stamina is maximum health, intellect grants 15 maximum mana and 2.5 spell power each, strength grants
-2 attack power, and spirit is mana regenerated per second. The resource pools keep their current
-amount when their maximum rises and clamp only when it falls. Agility deliberately has no derived
-effect yet; dodge and crit are later slices.
+2 attack power, and spirit is mana regenerated per second after the five-second rule. The resource
+pools keep their current amount when their maximum rises and clamp only when it falls. Agility
+deliberately has no derived effect yet; dodge and crit are later slices.
 
 A unit's tunable numbers are its base stats; resolved modifiers belong to the live unit and never
 rewrite its template.

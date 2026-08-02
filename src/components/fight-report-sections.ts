@@ -140,7 +140,7 @@ export function unitStatsTable(report: FightReport) {
 	// than the panel, and most fights have no barrier in them at all.
 	const shielded = report.units.some((unit) => unit.absorbed > 0 || unit.wasted > 0)
 	return html`
-		<table class="FightReport-table" style=${`--columns: ${shielded ? 10 : 8}`}>
+		<table class="FightReport-table" style=${`--columns: ${shielded ? 9 : 7}`}>
 			<thead>
 				<tr>
 					<th>unit</th>
@@ -150,7 +150,6 @@ export function unitStatsTable(report: FightReport) {
 					<th>overheal</th>
 					${shielded ? html`<th>absorb</th>` : ''} ${shielded ? html`<th>wasted</th>` : ''}
 					<th>taken</th>
-					<th>mana</th>
 					<th>busy</th>
 					<th>hurt</th>
 				</tr>
@@ -167,7 +166,6 @@ export function unitStatsTable(report: FightReport) {
 							${shielded ? html`<td>${unit.absorbed}</td>` : ''}
 							${shielded ? html`<td>${percent(unit.wasted, unit.absorbed + unit.wasted)}</td>` : ''}
 							<td>${unit.damageTaken}</td>
-							<td>${unit.manaSpent}</td>
 							<!-- Share of the fight spent committed to a cast or its global cooldown. -->
 							<td>${percent(unit.busyTime, report.duration)}</td>
 							<!-- And the share spent below the injured line, in real trouble. -->
@@ -180,16 +178,52 @@ export function unitStatsTable(report: FightReport) {
 	`
 }
 
+export function manaStatsTable(report: FightReport) {
+	const units = report.units.filter(
+		(unit) => unit.maxMana !== undefined || unit.manaSpent > 0 || unit.manaBurned > 0 || unit.manaGained > 0,
+	)
+	if (!units.length) return ''
+	return html`
+		<table class="FightReport-table" style="--columns: 5">
+			<thead>
+				<tr>
+					<th>mana</th>
+					<th>cost</th>
+					<th>drained</th>
+					<th>gain</th>
+					<th>net</th>
+					<th>end</th>
+				</tr>
+			</thead>
+			<tbody>
+				${units.map(
+					(unit) => html`
+						<tr>
+							<td>${unit.name}</td>
+							<td>${unit.manaSpent}</td>
+							<td>${unit.manaBurned}</td>
+							<td>${unit.manaGained}</td>
+							<td>${unit.manaNet}</td>
+							<td>${unit.endMana === undefined ? '—' : `${unit.endMana}/${unit.maxMana ?? '?'}`}</td>
+						</tr>
+					`,
+				)}
+			</tbody>
+		</table>
+	`
+}
+
 export function abilityStatsTable(report: FightReport) {
 	if (!report.abilities.length) return ''
 	return html`
-		<table class="FightReport-table" style="--columns: 5">
+		<table class="FightReport-table" style="--columns: 6">
 			<thead>
 				<tr>
 					<th>ability</th>
 					<th>casts</th>
 					<th>hits</th>
 					<th>total</th>
+					<th>mana</th>
 					<th>avg</th>
 					<th>overheal</th>
 				</tr>
@@ -202,6 +236,7 @@ export function abilityStatsTable(report: FightReport) {
 							<td>${ability.casts}</td>
 							<td>${ability.hits}</td>
 							<td>${ability.total}</td>
+							<td>${ability.manaSpent}</td>
 							<td>${ability.avg}</td>
 							<td>${percent(ability.overheal, ability.total)}</td>
 						</tr>

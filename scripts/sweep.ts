@@ -109,7 +109,9 @@ interface Row {
 	 */
 	absorbPerSecond: number
 	overhealPercent: number
-	manaPerSecond: number
+	manaCostPerSecond: number
+	manaDrainPerSecond: number
+	manaGainPerSecond: number
 	castsPerFight: number
 	/** Share of the fight the healer spent committed to a cast or its global cooldown. */
 	busyPercent: number
@@ -132,7 +134,9 @@ interface Fight {
 	healing: number
 	overhealing: number
 	absorbed: number
-	mana: number
+	manaCost: number
+	manaDrain: number
+	manaGain: number
 	casts: number
 	busy: number
 	hurt: number
@@ -159,7 +163,9 @@ for (const group of enemyGroups) {
 				healing: healer?.healingDone ?? 0,
 				overhealing: healer?.overhealing ?? 0,
 				absorbed: healer?.absorbed ?? 0,
-				mana: healer?.manaSpent ?? 0,
+				manaCost: healer?.manaSpent ?? 0,
+				manaDrain: healer?.manaBurned ?? 0,
+				manaGain: healer?.manaGained ?? 0,
 				casts: healer?.casts ?? 0,
 				busy: healer?.busyTime ?? 0,
 				// The party's, not the healer's: the question is whether anyone was in danger.
@@ -185,7 +191,9 @@ for (const group of enemyGroups) {
 			hps: seconds ? round(healing / seconds) : 0,
 			absorbPerSecond: seconds ? round(sum((f) => f.absorbed) / seconds) : 0,
 			overhealPercent: landed ? percent(overhealing, landed) : 0,
-			manaPerSecond: seconds ? round(sum((f) => f.mana) / seconds) : 0,
+			manaCostPerSecond: seconds ? round(sum((f) => f.manaCost) / seconds) : 0,
+			manaDrainPerSecond: seconds ? round(sum((f) => f.manaDrain) / seconds) : 0,
+			manaGainPerSecond: seconds ? round(sum((f) => f.manaGain) / seconds) : 0,
 			castsPerFight: round(sum((f) => f.casts) / seeds),
 			busyPercent: totalMs ? percent(busy, totalMs) : 0,
 			hurtPercent: totalMs
@@ -221,7 +229,9 @@ function table(rows: Row[]) {
 		'hps',
 		'aps',
 		'overheal%',
-		'mana/s',
+		'cost/s',
+		'drain/s',
+		'gain/s',
 		'busy%',
 		'casts',
 	]
@@ -236,7 +246,9 @@ function table(rows: Row[]) {
 		row.hps.toFixed(1),
 		row.absorbPerSecond.toFixed(1),
 		`${row.overhealPercent}%`,
-		row.manaPerSecond.toFixed(1),
+		row.manaCostPerSecond.toFixed(1),
+		row.manaDrainPerSecond.toFixed(1),
+		row.manaGainPerSecond.toFixed(1),
 		`${row.busyPercent}%`,
 		row.castsPerFight.toFixed(1),
 	])

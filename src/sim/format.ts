@@ -64,18 +64,39 @@ export function formatFight(result: FightResult, report = analyze(result.events,
 		),
 	)
 
+	const manaUsers = report.units.filter(
+		(unit) => unit.maxMana !== undefined || unit.manaSpent > 0 || unit.manaBurned > 0 || unit.manaGained > 0,
+	)
+	if (manaUsers.length) {
+		lines.push(
+			'',
+			table(
+				['mana', 'cost', 'drained', 'gain', 'net', 'end'],
+				manaUsers.map((unit) => [
+					unit.name,
+					unit.manaSpent,
+					unit.manaBurned,
+					unit.manaGained,
+					unit.manaNet,
+					unit.endMana === undefined ? '—' : `${unit.endMana}/${unit.maxMana ?? '?'}`,
+				]),
+			),
+		)
+	}
+
 	if (report.abilities.length) {
 		lines.push(
 			'',
 			table(
 				// `per s` rather than only a total, because a total says nothing about whether a bleed
 				// is worth its slot next to a bite that swings three times as often.
-				['ability', 'casts', 'hits', 'total', 'per s', 'avg', 'overheal'],
+				['ability', 'casts', 'hits', 'total', 'mana', 'per s', 'avg', 'overheal'],
 				report.abilities.map((s) => [
 					s.name,
 					s.casts,
 					s.hits,
 					s.total,
+					s.manaSpent,
 					perSecond(s.total, report.duration),
 					s.avg,
 					percentOf(s.overheal, s.total),
@@ -112,6 +133,8 @@ export function formatAggregate(results: FightResult[]): string {
 	const victories = outcomes.get('victory') ?? 0
 	const absorbed = avg(healers.map((h) => h?.absorbed ?? 0))
 	const wasted = avg(healers.map((h) => h?.wasted ?? 0))
+	const manaEnd = avg(healers.map((h) => h?.endMana ?? 0))
+	const manaMax = avg(healers.map((h) => h?.maxMana ?? 0))
 
 	const lines = [
 		`${results.length} fights · ${party.join(' + ')} vs ${enemies.join(' + ')} · ${bot}`,
@@ -133,7 +156,11 @@ export function formatAggregate(results: FightResult[]): string {
 		`  healer    ${perSecond(avg(healers.map((h) => h?.healingDone ?? 0)), runtime)} hps  busy ${percentOf(
 			avg(healers.map((h) => h?.busyTime ?? 0)),
 			runtime,
-		)}  mana ${Math.round(avg(healers.map((h) => h?.manaSpent ?? 0)))}`,
+		)}  mana cost ${Math.round(avg(healers.map((h) => h?.manaSpent ?? 0)))}  drain ${Math.round(
+			avg(healers.map((h) => h?.manaBurned ?? 0)),
+		)}  gain ${Math.round(avg(healers.map((h) => h?.manaGained ?? 0)))}  net ${Math.round(
+			avg(healers.map((h) => h?.manaNet ?? 0)),
+		)}  end ${Math.round(manaEnd)}/${Math.round(manaMax)}`,
 	]
 	// Only when a shield was actually cast, the way `deaths` only shows up if there were any —
 	// a healer with no shields would print `0 aps  wasted 0%` on every run otherwise.
