@@ -13,7 +13,7 @@ import {Rng} from '../rng'
 import {perform, type GameAction} from '../actions'
 import {unitsOf, type Outcome} from '../sim/report'
 import {saveFight} from '../fight-history'
-import {recordVictory} from '../journal'
+import {readJournal, recordVictory} from '../journal'
 
 declare global {
 	interface Window {
@@ -153,14 +153,12 @@ export class GameLoop extends Loop {
 				? ({dungeonId: run.dungeon.id, roomId: authoredRoom.id, roomNumber: run.room + 1} satisfies FightLocation)
 				: undefined
 		this.fight = new Fight(this, room)
-		if (this.dungeonRun) {
-			// Dungeon runs start with 2 spells and learn one per room, accumulated so far.
-			const run = this.dungeonRun
-			const granted = run.dungeon.rooms.slice(0, run.room + 1).flatMap((r) => r.grants ?? [])
-			this.player.abilities = Object.fromEntries(granted.map((id) => [id, playerAbilities[id]]))
+		if (run) {
+			const granted = run.dungeon.rooms.slice(0, run.room + 1).flatMap((room) => room.grants ?? [])
+			const abilityIds = [...new Set([...readJournal().learnedAbilities, ...granted])]
+			this.player.abilities = Object.fromEntries(abilityIds.map((id) => [id, playerAbilities[id]]))
 		} else {
-			// Learned spells belong to the run. Walking off the dungeon — into a one-off room, an
-			// arena fight, a fresh boot — hands the whole bar back.
+			// One-off and debug fights keep the full player catalog.
 			this.player.abilities = playerAbilities
 		}
 		this.gameOver = false

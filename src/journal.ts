@@ -1,4 +1,4 @@
-import {abilityRegistry, type AbilityId} from './nodes/registry'
+import {abilityRegistry, type AbilityId, type PlayerAbilityId} from './nodes/registry'
 import {dungeonOrder, dungeonRegistry, type DungeonId} from './nodes/dungeon'
 import type {FightLocation} from './fight-location'
 
@@ -30,7 +30,7 @@ export interface DungeonProgression {
 /** The read model used by UI and gameplay. It contains no persistence internals. */
 export interface JournalView extends Readonly<JournalRecord> {
 	/** Abilities taught by rooms whose victories have been recorded. */
-	readonly abilities: readonly AbilityId[]
+	readonly learnedAbilities: readonly PlayerAbilityId[]
 	/** Fully mended dungeons, derived from completed room IDs. */
 	readonly completedDungeons: readonly DungeonId[]
 	readonly dungeonProgression: readonly DungeonProgression[]
@@ -231,8 +231,8 @@ function deriveProgression(): DungeonProgression[] {
 	return progression
 }
 
-function deriveAbilities(): AbilityId[] {
-	const learned = new Set<AbilityId>()
+function deriveAbilities(): PlayerAbilityId[] {
+	const learned = new Set<PlayerAbilityId>()
 	for (const dungeonId of dungeonOrder) {
 		const completed = new Set(record.completedRooms[dungeonId] ?? [])
 		for (const room of dungeonRegistry[dungeonId].rooms) {
@@ -260,7 +260,7 @@ export function readJournal(): JournalView {
 		name: record.name,
 		abilityBar: [...record.abilityBar],
 		completedRooms,
-		abilities: deriveAbilities(),
+		learnedAbilities: deriveAbilities(),
 		completedDungeons,
 		dungeonProgression,
 		allComplete: completedDungeons.length === dungeonOrder.length,

@@ -67,8 +67,7 @@ export const TheGreen: Dungeon = {
 /**
  * The second dungeon, built one room at a time. The dry country keeps its own animals rather than
  * the Green's wolves at bigger numbers, and its rooms hold more bodies than the Green's ever did —
- * more to keep standing is the difficulty curve here. The full kit from The Green is granted up
- * front because this is a sequel, not another tutorial (#70).
+ * more to keep standing is the difficulty curve here.
  */
 export const TheRust: Dungeon = {
 	id: 'TheRust',
@@ -78,14 +77,14 @@ export const TheRust: Dungeon = {
 		// is a wind-up wide enough to shield through — the whole room, in sim, is the difference
 		// between a healer that pre-shields and one that only reacts. Wren falls in here, at the
 		// waystation, with a sling and a pocketful of riverbed pebbles — the party's second body (#76).
-		// Steep is granted here too, ahead of the full kit, so the trample gives it a first outing
-		// before the hung bell rehearses the cut and Roha makes it necessary (#81, #84).
+		// Steep is the Rust's one new lesson. The trample gives it a first outing before the
+		// hung bell's cut and Roha make it necessary.
 		{
 			id: 'rust-dry-bed',
 			name: 'The dry bed',
 			party: ['Tank', 'Wren'],
 			enemies: ['Bellwether', 'Chafer', 'Chafer', 'Chafer'],
-			grants: ['Mend', 'Lance', 'Renew', 'Patch', 'Nettle', 'Shield', 'Steep'],
+			grants: ['Steep'],
 			scene: 'rust-waystation',
 		},
 		// Five bodies, and the two kites drop on whoever is worst off — a new axis after the Green's
@@ -175,9 +174,10 @@ export const TheGlow: Dungeon = {
 }
 
 /**
- * The fourth dungeon. Where the Glow is visibility, the White is scarcity: mana does not come back
- * the way it did downstream, and the finale is one long fight out of a closing purse (#89). The
- * Glider's `Hollow` drains the healer's own pool directly — no hit, no wound — while the Ringer
+ * The fourth dungeon. Where the Glow is visibility, the White is scarcity: each room starts with
+ * a full pool, but Hollow closes the healer's purse inside the fight, and the finale is one long
+ * answer to that pressure (#89). The Glider's `Hollow` drains the healer's own pool directly — no
+ * hit, no wound — while the Ringer
  * carries the bellwether family's telegraphed weight forward into white stone. Tempo is
  * monumental: few rooms, each an event, per [universe.md](../../docs/universe.md#4-the-white-where-the-river-begins).
  */

@@ -20,7 +20,7 @@ describe('Journal', () => {
 
 		const journal = readJournal()
 		expect(journal.completedRooms.TheGreen).toEqual([room.id])
-		expect(journal.abilities).toEqual(['Mend', 'Lance'])
+		expect(journal.learnedAbilities).toEqual(['Mend', 'Lance'])
 		expect(journal.dungeonProgression[0]).toMatchObject({
 			dungeonId: 'TheGreen',
 			unlocked: true,
