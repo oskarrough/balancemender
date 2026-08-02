@@ -45,6 +45,8 @@ export class Task extends Node implements PromiseLike<void> {
 	private _cycleStartTime = 0
 	private _cycleEndTime = 0
 	private _lastTick = 0
+	private _disconnectVersion = 0
+	private _disconnectRequested = false
 
 	protected begin?(): void
 	protected beforeCycle?(): void
@@ -54,9 +56,26 @@ export class Task extends Node implements PromiseLike<void> {
 	protected shouldTick?(): boolean | void
 	protected shouldEnd?(): boolean | void
 
+	connect(parent: this['parent']) {
+		if (this.mounted) {
+			this.running = false
+			this._disconnectRequested = true
+			this._disconnectVersion++
+		}
+		super.connect(parent)
+	}
+
+	disconnect() {
+		this.running = false
+		this._disconnectRequested = true
+		this._disconnectVersion++
+		super.disconnect()
+	}
+
 	protected mount() {
 		this.running = true
 		this.done = false
+		this._disconnectRequested = false
 
 		this.elapsedTime = 0
 		this._cycleTime = 0
@@ -82,6 +101,7 @@ export class Task extends Node implements PromiseLike<void> {
 	protected destroy() {
 		this.running = false
 		this.done = true
+		this._disconnectRequested = true
 		this.root._kill(this)
 	}
 
@@ -96,7 +116,10 @@ export class Task extends Node implements PromiseLike<void> {
 	}
 
 	run() {
-		if (!this.running || !this.mounted) return
+		if (!this.running || !this.mounted || this._disconnectRequested) return
+		const disconnectVersion = this._disconnectVersion
+		const canContinue = () =>
+			this.mounted && !this._disconnectRequested && this._disconnectVersion === disconnectVersion
 
 		if (!this._firstRun) this.elapsedTime += this.root.frameTime
 		else this._firstRun = false
@@ -107,16 +130,21 @@ export class Task extends Node implements PromiseLike<void> {
 
 		if (this._currentTick === 0) {
 			if (this._cycles === 0) this.begin?.()
+			if (!canContinue()) return
 			this.beforeCycle?.()
+			if (!canContinue()) return
 		}
 
-		if (this.shouldTick?.() ?? true) {
+		const shouldTick = this.shouldTick?.() ?? true
+		if (!canContinue()) return
+		if (shouldTick) {
 			if (this.fps === 0) {
 				// A task with no duration is one instant per cycle, so it is complete the moment it
 				// ticks. Dividing by that zero instead left `progress` NaN on every interval task.
 				this.progress = this.duration === 0 ? 1 : Math.min(this._cycleTime / this.duration, 1)
 				this.deltaTime = this.root.frameTime
 				this.tick?.()
+				if (!canContinue()) return
 				this._currentTick++
 			} else {
 				const ratio = Math.floor(this._cycleTime / this._tickInterval)
@@ -124,18 +152,22 @@ export class Task extends Node implements PromiseLike<void> {
 				const t0 = this.elapsedTime - dueTick * this._tickInterval
 
 				while (this._currentTick < dueTick) {
-					const tick = ++this._currentTick
+					const tick = this._currentTick + 1
 					this.elapsedTime = t0 + tick * this._tickInterval
 					this.deltaTime = this.elapsedTime - this._lastTick
 					this.progress = Math.min(tick / this.ticks, 1)
 					this.tick?.()
+					if (!canContinue()) return
+					this._currentTick = tick
 					this._lastTick = this.elapsedTime
 				}
 			}
 		}
 
+		if (!canContinue()) return
 		if (this.elapsedTime >= this._cycleEndTime) {
 			this.afterCycle?.()
+			if (!canContinue()) return
 
 			this._cycles += 1
 			this._currentTick = 0
@@ -144,7 +176,10 @@ export class Task extends Node implements PromiseLike<void> {
 			this._cycleEndTime = this._cycleStartTime + this.duration
 		}
 
-		if (this.shouldEnd?.() || this._cycles >= this.repeat) {
+		if (!canContinue()) return
+		const shouldEnd = this.shouldEnd?.() ?? false
+		if (!canContinue()) return
+		if (shouldEnd || this._cycles >= this.repeat) {
 			this.disconnect()
 		}
 	}

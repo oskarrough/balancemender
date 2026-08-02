@@ -21,15 +21,24 @@ export class Loop extends Task {
 	maxFrameTime = 100
 
 	private _frame: number | undefined
+	private _frameGeneration = 0
+	private _teardownRequested = false
 
 	constructor() {
 		super()
 	}
 
+	disconnect() {
+		this._teardownRequested = true
+		super.disconnect()
+	}
+
 	protected mount() {
+		this._teardownRequested = false
 		this.time = undefined
 		this.lastTime = undefined
 		this.frameTime = 0
+		this.cancelFrame()
 		this.requestFrame()
 	}
 
@@ -56,11 +65,16 @@ export class Loop extends Task {
 
 	/** Ask for the next frame. Override as a no-op to drive the clock yourself. */
 	protected requestFrame() {
-		this._frame = requestAnimationFrame(this._onFrame)
+		const generation = ++this._frameGeneration
+		this._frame = requestAnimationFrame((time) => this._onFrame(time, generation))
 	}
 
 	protected cancelFrame() {
-		if (this._frame) cancelAnimationFrame(this._frame)
+		this._frameGeneration++
+		if (this._frame !== undefined) {
+			cancelAnimationFrame(this._frame)
+			this._frame = undefined
+		}
 	}
 
 	_register(task: Task) {
@@ -76,8 +90,10 @@ export class Loop extends Task {
 		if (index > -1) this.tasks.splice(index, 1)
 	}
 
-	private _onFrame = (time: number) => {
+	private _onFrame = (time: number, generation: number) => {
+		if (generation !== this._frameGeneration) return
+		this._frame = undefined
 		this.runFrame(time)
-		this.requestFrame()
+		if (this.mounted && !this._teardownRequested) this.requestFrame()
 	}
 }

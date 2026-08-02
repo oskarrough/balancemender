@@ -27,9 +27,9 @@ other school uses spell power. There is one attack power for both melee and rang
 without spawning one.
 
 **Room** — the plan for one fight: who fights, `{party: ['Tank'], enemies: ['Runt']}`, plus how
-the scene is dressed. Every fight is built from a room, even a bare one outside any dungeon — the
-sim's ad-hoc groups included. A request, never a record: who actually fought is the report's
-`units`. Not "stage" or "phase" — those stay free for a boss that fights in several.
+the scene is dressed. Every authored room has a stable **room id**; its name is display text and may
+change without relabelling fight history. Every fight is built from a room, even a bare one outside
+any dungeon — the sim's ad-hoc groups included.
 
 **Fight** — the live thing in the game tree: the party and the enemies built from a room, and the
 clock they share. `FightResult` and `FightReport` are what came of one.

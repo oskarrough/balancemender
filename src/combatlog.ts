@@ -1,4 +1,5 @@
 import Pino from 'pino'
+import type {FightLocation} from './fight-location'
 import type {Condition} from './nodes/types'
 
 // Combat event format inspired by WoW
@@ -101,6 +102,9 @@ export const combatEvents = new EventTarget()
 export class CombatLog {
 	readonly events: CombatLogEvent[] = []
 
+	/** Metadata for this fight, kept on the record rather than copied onto every event. */
+	location?: FightLocation
+
 	/**
 	 * Whether anyone is watching this fight: the panels get told about new events, and the events
 	 * go to the console at info level. A `SimLoop` turns it off — those events belong to a fight
@@ -144,6 +148,7 @@ export class CombatLog {
 	clear() {
 		this.events.length = 0
 		this.castCount = 0
+		this.location = undefined
 	}
 }
 

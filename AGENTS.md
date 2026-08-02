@@ -1,5 +1,7 @@
 This project uses GitHub issues for tasks. Treat this file as a living field guide, not a second source of truth: surface inconsistencies or contradictions explicitly, follow the authoritative reference, and add only durable general guidance or links that prevent the same stumble recurring.
 
+Always run subagents in the background.
+
 `bun run check` typechecks, lints and formats. `bun run test` runs the tests (never `bun test`). Run
 both before committing, not while working. The `main` branch deploys to balancemender.0sk.ar
 

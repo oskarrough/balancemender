@@ -11,7 +11,11 @@ import {playerAbilities} from './nodes/registry'
  */
 
 let game!: GameLoop
-afterEach(() => game.disconnect())
+afterEach(async () => {
+	game.perform({type: 'resetBalance'})
+	game.disconnect()
+	await settle()
+})
 
 describe('perform', () => {
 	it('reports why it refused instead of failing silently', () => {
@@ -39,6 +43,66 @@ describe('perform', () => {
 		})
 	})
 
+	it('accepts each balance surface and refuses unknown or invalid rows', () => {
+		game = new GameLoop({party: [], enemies: []})
+		expect(game.perform({type: 'tune', of: 'ability', name: 'Mend', key: 'cost', value: 61})).toEqual({
+			ok: true,
+			value: 61,
+		})
+		expect(game.perform({type: 'tune', of: 'effect', name: 'Renew.renew', key: 'coefficient', value: 1.1})).toEqual({
+			ok: true,
+			value: 1.1,
+		})
+		expect(game.perform({type: 'tune', of: 'cadence', name: 'NipCadence', key: 'interval', value: 1700})).toEqual({
+			ok: true,
+			value: 1700,
+		})
+		expect(game.perform({type: 'tune', of: 'aura', name: 'Renew', key: 'interval', value: 2100})).toEqual({
+			ok: true,
+			value: 2100,
+		})
+		expect(game.perform({type: 'tune', of: 'rule', name: 'Condition', key: 'injured', value: 30})).toEqual({
+			ok: true,
+			value: 30,
+		})
+
+		expect(
+			game.perform({type: 'tune', of: 'effect', name: 'Missing.damage', key: 'coefficient', value: 1}),
+		).toMatchObject({
+			ok: false,
+			error: 'Unknown effect: Missing.damage',
+		})
+		expect(
+			game.perform({type: 'tune', of: 'cadence', name: 'MissingCadence', key: 'interval', value: 1}),
+		).toMatchObject({
+			ok: false,
+			error: 'Unknown cadence: MissingCadence',
+		})
+		expect(game.perform({type: 'tune', of: 'aura', name: 'MissingAura', key: 'interval', value: 1})).toMatchObject({
+			ok: false,
+			error: 'Unknown aura: MissingAura',
+		})
+		expect(game.perform({type: 'tune', of: 'rule', name: 'MissingRule', key: 'injured', value: 1})).toMatchObject({
+			ok: false,
+			error: 'Unknown rule: MissingRule',
+		})
+
+		expect(
+			game.perform({type: 'tune', of: 'effect', name: 'Renew.renew', key: 'coefficient', value: Infinity}),
+		).toMatchObject({
+			ok: false,
+			error: 'Balance values must be finite, got Infinity',
+		})
+		expect(game.perform({type: 'tune', of: 'aura', name: 'Renew', key: 'interval', value: -1})).toMatchObject({
+			ok: false,
+			error: 'aura values must be at least 0, got -1',
+		})
+		expect(game.perform({type: 'tune', of: 'rule', name: 'Condition', key: 'injured', value: -1})).toMatchObject({
+			ok: false,
+			error: 'rule values must be at least 0, got -1',
+		})
+	})
+
 	it('casts on the target it was given without moving what the player has selected', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: []})
 		const tank = game.party[0]
@@ -51,6 +115,17 @@ describe('perform', () => {
 		// Let the spell finish mounting before tearing the loop down — its global cooldown
 		// mounts in a microtask, and a node that mounts into a disconnected root throws.
 		await settle()
+	})
+
+	it('selects a target and clears the selection', () => {
+		game = new GameLoop({party: [], enemies: ['Runt']})
+		const target = game.enemies[0]
+
+		expect(game.perform({type: 'target', unit: target.id})).toMatchObject({ok: true})
+		expect(game.player.selectedTarget).toBe(target)
+
+		expect(game.perform({type: 'target'})).toMatchObject({ok: true})
+		expect(game.player.selectedTarget).toBeUndefined()
 	})
 
 	it('does not start a cast when the target is bad', () => {
@@ -100,7 +175,7 @@ describe('perform', () => {
 		expect(game.party[0].health.max).toBe(50)
 		expect(game.party[0].health.current).toBe(50)
 
-		game.perform({type: 'resetBalance'})
+		expect(game.perform({type: 'resetBalance'})).toMatchObject({ok: true})
 	})
 
 	it('resets the balance and retunes the units already fighting', () => {
@@ -108,7 +183,7 @@ describe('perform', () => {
 		game.perform({type: 'tune', of: 'unit', name: 'Tank', key: 'stamina', value: 50})
 		expect(game.party[0].health.max).toBe(50)
 
-		game.perform({type: 'resetBalance'})
+		expect(game.perform({type: 'resetBalance'})).toMatchObject({ok: true})
 
 		// The class is back at its default, and so is the unit that copied it.
 		expect(game.party[0].health.max).toBe(300)
@@ -135,16 +210,159 @@ describe('perform', () => {
 		expect(game.party).toHaveLength(1)
 	})
 
+	it('heals every party member to full', () => {
+		game = new GameLoop({party: ['Tank'], enemies: []})
+		for (const member of game.party) member.health.set(1)
+
+		expect(game.perform({type: 'healParty'})).toMatchObject({ok: true})
+		for (const member of game.party) expect(member.health.current).toBe(member.health.max)
+	})
+
+	it('kills units, refuses unknown ids, and respects party god mode', async () => {
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt']})
+		const enemy = game.enemies[0]
+		const player = game.player
+
+		expect(game.perform({type: 'kill', unit: 'nope'})).toMatchObject({
+			ok: false,
+			error: 'No unit with id nope',
+		})
+		expect(game.perform({type: 'kill', unit: enemy.id})).toMatchObject({ok: true})
+		expect(enemy.alive).toBe(false)
+
+		expect(game.perform({type: 'set', key: 'godMode', value: true})).toMatchObject({ok: true})
+		expect(game.perform({type: 'kill', unit: player.id})).toMatchObject({
+			ok: false,
+			error: 'God mode is on — nothing in the party can die',
+		})
+		expect(player.alive).toBe(true)
+		await settle()
+	})
+
+	it('wipes a faction, but refuses to wipe the party in god mode', async () => {
+		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Haruk']})
+		expect(game.perform({type: 'wipe', faction: 'enemy'})).toMatchObject({ok: true})
+		expect(game.enemies.every((unit) => !unit.alive)).toBe(true)
+
+		expect(game.perform({type: 'set', key: 'godMode', value: true})).toMatchObject({ok: true})
+		expect(game.perform({type: 'wipe', faction: 'party'})).toMatchObject({
+			ok: false,
+			error: 'God mode is on — nothing in the party can die',
+		})
+		expect(game.party.every((unit) => unit.alive)).toBe(true)
+		await settle()
+	})
+
 	it('sets globals, with the side effect the panel and the console both expected', () => {
 		game = new GameLoop({party: [], enemies: []})
 		game.player.mana!.set(10)
 
-		game.perform({type: 'set', key: 'infiniteMana', value: true})
+		expect(game.perform({type: 'set', key: 'infiniteMana', value: true})).toEqual({ok: true, value: true})
 		expect(game.infiniteMana).toBe(true)
 		expect(game.player.mana!.current).toBe(game.player.mana!.max)
 
-		game.perform({type: 'set', key: 'gcd', value: 900})
+		expect(game.perform({type: 'set', key: 'gcd', value: 900})).toEqual({ok: true, value: 900})
 		expect(game.gcd).toBe(900)
+
+		expect(game.perform({type: 'set', key: 'godMode', value: true})).toEqual({ok: true, value: true})
+		expect(game.godMode).toBe(true)
+
+		expect(game.perform({type: 'set', key: 'muted', value: false})).toEqual({ok: true, value: false})
+		expect(game.muted).toBe(false)
+		expect(game.audio.muted).toBe(false)
+	})
+
+	it('pauses and resumes, refusing redundant running states and logging both changes', async () => {
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+
+		expect(game.perform({type: 'running', value: false})).toEqual({ok: true, value: false})
+		expect(game.running).toBe(false)
+		expect(game.perform({type: 'running', value: false})).toEqual({ok: false, error: 'Already paused'})
+
+		expect(game.perform({type: 'running', value: true})).toEqual({ok: true, value: true})
+		expect(game.running).toBe(true)
+		expect(game.perform({type: 'running', value: true})).toEqual({ok: false, error: 'Already running'})
+
+		expect(game.combatLog.events.filter((event) => event.eventType.startsWith('GAME_'))).toEqual([
+			expect.objectContaining({eventType: 'GAME_PAUSE'}),
+			expect.objectContaining({eventType: 'GAME_RESUME'}),
+		])
+	})
+})
+
+describe('navigation actions', () => {
+	it('enters a one-off room', async () => {
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+
+		expect(game.perform({type: 'enter', room: {party: ['Tank'], enemies: ['Runt'], name: 'arena'}})).toMatchObject({
+			ok: true,
+		})
+		await settle()
+
+		expect(game.dungeonRun).toBeUndefined()
+		expect(game.fight.room.name).toBe('arena')
+		expect(game.enemies[0].unitId).toBe('Runt')
+	})
+
+	it('starts a known dungeon and refuses an unknown one', async () => {
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+
+		expect(game.perform({type: 'startDungeon', dungeon: 'NoSuchDungeon'})).toEqual({
+			ok: false,
+			error: 'Unknown dungeon: NoSuchDungeon',
+		})
+		expect(game.perform({type: 'startDungeon', dungeon: 'TheGreen'})).toMatchObject({ok: true})
+		await settle()
+
+		expect(game.dungeonRun?.dungeon.id).toBe('TheGreen')
+		expect(game.dungeonRun?.room).toBe(0)
+	})
+
+	it('restarts the current room', async () => {
+		game = new GameLoop({party: [], enemies: ['Runt']})
+		await settle()
+		game.elapsedTime = 5000
+
+		expect(game.perform({type: 'restart'})).toMatchObject({ok: true})
+		await settle()
+
+		expect(game.elapsedTime).toBe(0)
+		expect(game.gameOver).toBe(false)
+		expect(game.outcome).toBeUndefined()
+		expect(game.enemies[0].unitId).toBe('Runt')
+	})
+
+	it('refuses next room until cleared, advances, and refuses past the dungeon finish', async () => {
+		game = new SimLoop({party: [], enemies: []})
+		await settle()
+
+		expect(game.perform({type: 'nextRoom'})).toEqual({ok: false, error: 'Not in a dungeon'})
+		expect(game.perform({type: 'startDungeon', dungeon: 'TheGreen'})).toMatchObject({ok: true})
+		await settle()
+		expect(game.perform({type: 'nextRoom'})).toEqual({ok: false, error: 'The room is not cleared yet'})
+
+		let frame = 1
+		for (let room = 0; room < 4; room++) {
+			expect(game.perform({type: 'running', value: true})).toMatchObject({ok: true})
+			expect(game.perform({type: 'wipe', faction: 'enemy'})).toMatchObject({ok: true})
+			game.runFrame(frame++)
+			await settle()
+			expect(game.gameOver).toBe(true)
+			expect(game.outcome).toBe('victory')
+
+			expect(game.perform({type: 'nextRoom'})).toMatchObject({ok: true})
+			await settle()
+		}
+
+		expect(game.dungeonRun?.room).toBe(4)
+		expect(game.perform({type: 'running', value: true})).toMatchObject({ok: true})
+		expect(game.perform({type: 'wipe', faction: 'enemy'})).toMatchObject({ok: true})
+		game.runFrame(frame)
+		await settle()
+		expect(game.perform({type: 'nextRoom'})).toEqual({ok: false, error: 'The dungeon is finished'})
 	})
 })
 

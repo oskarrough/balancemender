@@ -7,6 +7,11 @@
 	overflow-x: auto;
 }
 
+.FightReport-location {
+	font-weight: 600;
+	line-height: 1.2;
+}
+
 .FightReport-summary {
 	line-height: 1.2;
 	font-variant-numeric: tabular-nums;

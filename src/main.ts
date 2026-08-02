@@ -110,7 +110,9 @@ function main() {
 								onclick=${() => startGame(dungeon.id)}
 							>
 								${dungeon.name}
-								<small>${dungeon.rooms.length} rooms</small>
+								<span class="Splash-dungeonRooms" aria-hidden="true">
+									${dungeon.rooms.map(() => html`<span class="Splash-dungeonRoom"></span>`)}
+								</span>
 							</button>
 						`
 					})}

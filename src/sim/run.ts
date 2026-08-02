@@ -1,9 +1,10 @@
 import {GameLoop} from '../nodes/game-loop'
 import {BotDriver, Bot, BotName} from '../nodes/bot'
 import {setLogLevel, CombatLogEvent} from '../combatlog'
-import {DEMO_ROOM, Room} from '../nodes/fight'
+import {DEMO_ROOM, type RoomInput} from '../nodes/fight'
 import type {Unit} from '../nodes/unit'
 import {unitsOf, type Outcome, type UnitInfo} from './report'
+import type {FightLocation} from '../fight-location'
 
 export {unitsOf, type Outcome, type UnitInfo}
 
@@ -13,7 +14,7 @@ export {unitsOf, type Outcome, type UnitInfo}
  * can be run as written — `runFight({room: TheGreen.rooms[3], bot: 'triage'})`.
  */
 export interface Trial {
-	room?: Room
+	room?: RoomInput
 	/** How the healer plays. See `src/nodes/bot.ts`. */
 	bot?: BotName | Bot
 	/** Fix the dice so the fight replays exactly. `null` for real randomness. */
@@ -30,6 +31,8 @@ export interface FightResult {
 	outcome: Outcome
 	/** Fight time in ms. */
 	duration: number
+	/** Stable dungeon location when this fight was started from a dungeon run. */
+	location?: FightLocation
 	events: CombatLogEvent[]
 	units: UnitInfo[]
 	survivors: {party: number; enemies: number}
@@ -47,7 +50,11 @@ export interface FightResult {
  */
 export async function runFight(trial: Trial = {}): Promise<FightResult> {
 	const {room = DEMO_ROOM, bot = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = trial
-	const lineup: Room = {party: room.party ?? DEMO_ROOM.party, enemies: room.enemies ?? DEMO_ROOM.enemies}
+	const lineup: RoomInput = {
+		...room,
+		party: room.party ?? DEMO_ROOM.party,
+		enemies: room.enemies ?? DEMO_ROOM.enemies,
+	}
 
 	// The one thing still process-wide: a pino level is not fight state. Combat events are already
 	// quiet — `SimLoop` turns its log's `notify` off — so this only silences lifecycle chatter, and
@@ -91,6 +98,7 @@ export async function runFight(trial: Trial = {}): Promise<FightResult> {
 			seed,
 			outcome,
 			duration: Math.round(game.elapsedTime),
+			...(game.combatLog.location ? {location: game.combatLog.location} : {}),
 			events: game.combatLog.events.slice(),
 			units,
 			survivors,
@@ -128,7 +136,7 @@ export class SimLoop extends GameLoop {
 	 */
 	maxFrameTime = Infinity
 
-	constructor(room?: Room, seed: number | null = null) {
+	constructor(room?: RoomInput, seed: number | null = null) {
 		super(room, seed)
 		// Nobody is watching this fight: the live panels must not redraw off its log, and its
 		// thousands of events must not reach the console.

@@ -18,6 +18,16 @@ export function bringToFront(panel) {
 class FloatingView extends HTMLElement {
 	constructor() {
 		super()
+		this._connected = false
+		this._draggable = null
+		this._resizeHandle = null
+		this._resizing = false
+		this._pointerDown = () => bringToFront(this)
+		this._handleResize = this.handleResize.bind(this)
+		this._doubleClick = this.handleDoubleClick.bind(this)
+		this._startResize = this.startResize.bind(this)
+		this._resize = this.resize.bind(this)
+		this._stopResize = this.stopResize.bind(this)
 	}
 
 	static get config() {
@@ -41,12 +51,33 @@ class FloatingView extends HTMLElement {
 	}
 
 	connectedCallback() {
+		if (this._connected) return
+		this._connected = true
 		this.restoreLayout()
-		this.addEventListener('pointerdown', () => bringToFront(this))
+		this.addEventListener('pointerdown', this._pointerDown)
 		this.draggable()
 		this.resizable()
 		this.minimizable()
-		window.addEventListener('resize', this.handleResize.bind(this))
+		window.addEventListener('resize', this._handleResize)
+	}
+
+	disconnectedCallback() {
+		this._connected = false
+		this.removeEventListener('pointerdown', this._pointerDown)
+		this.removeEventListener('dblclick', this._doubleClick)
+		window.removeEventListener('resize', this._handleResize)
+		this.stopResize()
+
+		if (this._resizeHandle) {
+			this._resizeHandle.removeEventListener('mousedown', this._startResize)
+			this._resizeHandle.remove()
+			this._resizeHandle = null
+		}
+
+		if (this._draggable) {
+			this._draggable.kill()
+			this._draggable = null
+		}
 	}
 
 	restoreLayout() {
@@ -69,67 +100,72 @@ class FloatingView extends HTMLElement {
 	}
 
 	draggable() {
-		Draggable.create(this, {
+		if (this._draggable) return
+		this._draggable = Draggable.create(this, {
 			type: 'x,y',
 			trigger: this.querySelector(':scope > header'),
 			zIndexBoost: false,
 			bounds: this.calculateBounds(),
 			inertia: true,
 			onDragEnd: () => this.saveLayout(),
-		})
+		})[0]
 	}
 
 	resizable() {
+		if (this._resizeHandle) return
+
 		// Create and append the resize handle
 		const resizeHandle = document.createElement('div')
 		resizeHandle.className = 'resize-handle'
 		resizeHandle.innerHTML = '⟋'
 		this.appendChild(resizeHandle)
+		this._resizeHandle = resizeHandle
+		resizeHandle.addEventListener('mousedown', this._startResize)
+	}
 
-		let startWidth, startHeight, startX, startY
+	startResize(e) {
+		e.preventDefault()
+		this._resizing = true
+		this._openedOnDrag = false
+		this._startWidth = this.offsetWidth
+		this._startHeight = this.offsetHeight
+		this._startX = e.clientX
+		this._startY = e.clientY
+		document.addEventListener('mousemove', this._resize)
+		document.addEventListener('mouseup', this._stopResize)
+	}
+
+	resize(e) {
+		if (!this._resizing) return
 		const {minWidth, minHeight} = FloatingView.config
-
-		let openedOnDrag = false
-
-		const startResize = (e) => {
-			e.preventDefault()
-			openedOnDrag = false
-			startWidth = this.offsetWidth
-			startHeight = this.offsetHeight
-			startX = e.clientX
-			startY = e.clientY
-			document.addEventListener('mousemove', resize)
-			document.addEventListener('mouseup', stopResize)
+		if (!this._openedOnDrag && this.hasAttribute('minimized')) {
+			this.style.height = `${this._startHeight}px`
+			this.removeAttribute('minimized')
+			this._openedOnDrag = true
 		}
+		const width = Math.max(minWidth, this._startWidth + (e.clientX - this._startX))
+		const height = Math.max(minHeight, this._startHeight + (e.clientY - this._startY))
+		this.style.width = `${width}px`
+		this.style.height = `${height}px`
+	}
 
-		const resize = (e) => {
-			if (!openedOnDrag && this.hasAttribute('minimized')) {
-				this.style.height = `${startHeight}px`
-				this.removeAttribute('minimized')
-				openedOnDrag = true
-			}
-			const width = Math.max(minWidth, startWidth + (e.clientX - startX))
-			const height = Math.max(minHeight, startHeight + (e.clientY - startY))
-			this.style.width = `${width}px`
-			this.style.height = `${height}px`
-		}
-
-		const stopResize = () => {
-			document.removeEventListener('mousemove', resize)
-			document.removeEventListener('mouseup', stopResize)
-			this.saveLayout()
-		}
-
-		resizeHandle.addEventListener('mousedown', startResize)
+	stopResize() {
+		document.removeEventListener('mousemove', this._resize)
+		document.removeEventListener('mouseup', this._stopResize)
+		if (!this._resizing) return
+		this._resizing = false
+		this.saveLayout()
 	}
 
 	minimizable() {
-		this.addEventListener('dblclick', (e) => {
-			if (e.target.closest('header') === this.querySelector(':scope > header')) {
-				e.currentTarget.toggleAttribute('minimized')
-				e.currentTarget.style.height = 'auto'
-			}
-		})
+		this.addEventListener('dblclick', this._doubleClick)
+	}
+
+	handleDoubleClick(e) {
+		if (e.target.closest('header') === this.querySelector(':scope > header')) {
+			e.currentTarget.toggleAttribute('minimized')
+			e.currentTarget.style.height = 'auto'
+		}
 	}
 
 	saveLayout() {
@@ -151,8 +187,7 @@ class FloatingView extends HTMLElement {
 	}
 
 	handleResize() {
-		const draggable = Draggable.get(this)
-		if (draggable) draggable.applyBounds(this.calculateBounds())
+		if (this._draggable) this._draggable.applyBounds(this.calculateBounds())
 	}
 }
 

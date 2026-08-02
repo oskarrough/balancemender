@@ -1,3 +1,4 @@
+import {formatFightLocation} from '../fight-location'
 import {analyze, healerOf, margin, FightReport, Series} from './report'
 import type {FightResult, Outcome} from './run'
 
@@ -26,9 +27,11 @@ export function sparkline(points: number[]) {
 export function formatFight(result: FightResult, report = analyze(result.events, result)): string {
 	const lines: string[] = []
 	const {party, enemies, bot} = lineup(result)
+	const location = formatFightLocation(result.location)
 
 	lines.push(
 		`${party.join(' + ')}  vs  ${enemies.join(' + ')}`,
+		...(location ? [location] : []),
 		`seed ${result.seed} · ${bot} · ${result.outcome} in ${seconds(result.duration)}`,
 		'',
 	)

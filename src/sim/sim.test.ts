@@ -9,6 +9,16 @@ import {formatFight} from './format'
 import {TheRust, TheGreen} from '../nodes/dungeon'
 import type {Room} from '../nodes/fight'
 
+const normalizeEvents = (fight: Awaited<ReturnType<typeof runFight>>) => {
+	const names = new Map(fight.units.map((unit) => [unit.id, unit.name]))
+	return fight.events.map((event) => ({
+		...event,
+		timestamp: 0,
+		sourceId: event.sourceId ? names.get(event.sourceId) : undefined,
+		targetId: event.targetId ? names.get(event.targetId) : undefined,
+	}))
+}
+
 /**
  * These run the actual game — real loop, real spells, real combat log — on a stepped clock.
  * A fight is deterministic per seed, so they are ordinary assertions, not flaky ones.
@@ -28,16 +38,7 @@ describe('running a fight', () => {
 		const a = await runFight({seed: 7})
 		const b = await runFight({seed: 7})
 		expect(b.duration).toBe(a.duration)
-		const replay = (fight: typeof a) => {
-			const names = new Map(fight.units.map((unit) => [unit.id, unit.name]))
-			return fight.events.map((event) => ({
-				...event,
-				timestamp: 0,
-				sourceId: event.sourceId ? names.get(event.sourceId) : undefined,
-				targetId: event.targetId ? names.get(event.targetId) : undefined,
-			}))
-		}
-		expect(replay(b)).toEqual(replay(a))
+		expect(normalizeEvents(b)).toEqual(normalizeEvents(a))
 	})
 
 	it('rolls different dice for a different seed', async () => {
@@ -136,12 +137,15 @@ describe('fights running at the same time', () => {
 		for (const [i, fight] of concurrent.entries()) {
 			// Every event names a unit that was in *this* fight. The old failure was ~75% foreign.
 			const ours = new Set(fight.units.map((unit) => unit.id))
-			const foreign = fight.events.filter((event) => event.sourceId && !ours.has(event.sourceId))
-			expect(foreign).toEqual([])
+			for (const event of fight.events) {
+				if (event.sourceId !== undefined) expect(ours.has(event.sourceId)).toBe(true)
+				if (event.targetId !== undefined) expect(ours.has(event.targetId)).toBe(true)
+			}
 
 			expect(fight.outcome).toBe(sequential[i].outcome)
 			expect(fight.duration).toBe(sequential[i].duration)
 			expect(fight.events.length).toBe(sequential[i].events.length)
+			expect(normalizeEvents(fight)).toEqual(normalizeEvents(sequential[i]))
 		}
 	})
 })

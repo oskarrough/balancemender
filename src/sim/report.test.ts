@@ -93,6 +93,101 @@ describe('analyze', () => {
 		expect(report.units.find((a) => a.name === 'Tank')!.busyTime).toBe(0)
 	})
 
+	it('ignores failed casts instead of counting a success or busy time', () => {
+		const failed = analyze(
+			[
+				event({
+					time: 1000,
+					eventType: 'SPELL_CAST_FAILED',
+					sourceId: 'player',
+					sourceName: 'Player',
+					abilityId: 'Mend',
+					abilityName: 'Mend',
+					busyFor: 1500,
+				}),
+			],
+			{
+				units: [...units, {id: 'player', name: 'Player', maxHealth: 100, faction: 'party'}],
+			},
+		)
+		const player = failed.units.find((a) => a.name === 'Player')!
+
+		expect(player.casts).toBe(0)
+		expect(player.busyTime).toBe(0)
+		expect(failed.abilities).toEqual([])
+	})
+
+	it('counts spent mana without inventing a mana-gained report field', () => {
+		const report = analyze(
+			[
+				event({time: 1000, eventType: 'RESOURCE_GAIN', sourceId: 'player', sourceName: 'Player', value: 30}),
+				event({time: 2000, eventType: 'RESOURCE_SPENT', sourceId: 'player', sourceName: 'Player', value: -12}),
+			],
+			{units},
+		)
+		const player = report.units.find((a) => a.name === 'Player')!
+
+		expect(player.manaSpent).toBe(12)
+		expect(player).not.toHaveProperty('manaGained')
+	})
+
+	it('uses explicit fight boundaries for duration and per-second rates', () => {
+		const report = analyze(
+			[
+				event({time: 100, eventType: 'GAME_PAUSE'}),
+				event({time: 1000, eventType: 'FIGHT_START'}),
+				event({
+					time: 2000,
+					eventType: 'SWING_DAMAGE',
+					sourceId: 'wolf',
+					sourceName: 'Wolf',
+					targetId: 'tank',
+					targetName: 'Tank',
+					value: 100,
+				}),
+				event({
+					time: 3000,
+					eventType: 'SPELL_HEAL',
+					sourceId: 'player',
+					sourceName: 'Player',
+					targetId: 'tank',
+					targetName: 'Tank',
+					value: 40,
+				}),
+				event({time: 5000, eventType: 'FIGHT_END'}),
+				event({time: 9000, eventType: 'GAME_RESUME'}),
+			],
+			{units},
+		)
+
+		expect(report.duration).toBe(4000)
+		expect(report.totals.dps).toBe(25)
+		expect(report.totals.hps).toBe(10)
+	})
+
+	it('preserves a timeout outcome and explicit duration at the end boundary', () => {
+		const report = analyze(
+			[
+				event({time: 0, eventType: 'FIGHT_START'}),
+				event({
+					time: 2000,
+					eventType: 'SWING_DAMAGE',
+					sourceId: 'wolf',
+					sourceName: 'Wolf',
+					targetId: 'tank',
+					targetName: 'Tank',
+					value: 100,
+				}),
+				event({time: 5000, eventType: 'FIGHT_END'}),
+			],
+			{units, outcome: 'timeout', duration: 5000},
+		)
+
+		expect(report.outcome).toBe('timeout')
+		expect(report.duration).toBe(5000)
+		expect(report.totals.dps).toBe(20)
+	})
+
 	it('tracks damage from both sides', () => {
 		const tank = report.units.find((a) => a.name === 'Tank')!
 		expect(tank.damageDone).toBe(50)

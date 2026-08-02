@@ -9,7 +9,14 @@
 	--edge: hsl(30, 10%, 12%);
 
 	position: relative;
+	display: block;
+	margin: 0;
 	padding: 1px;
+	border: 0;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	appearance: none;
 	background: var(--edge);
 	border-radius: 2px;
 	box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.4);
@@ -34,6 +41,17 @@
    when you click it, and it never reaches the seams inside. */
 .Unit.Unit--targeted {
 	outline: 2px solid var(--c-lemon-yellow);
+}
+
+/* Keyboard focus gets its own ring; a selected frame keeps the gold outline and adds the white ring. */
+.Unit:focus-visible {
+	outline: 2px solid var(--c-snow-white);
+	outline-offset: 3px;
+}
+
+.Unit.Unit--targeted:focus-visible {
+	outline-color: var(--c-lemon-yellow);
+	box-shadow: 0 0 0 4px var(--c-snow-white);
 }
 
 /* Only `injured` gets an alarm — health is already a bar, and a frame that reacted at every band

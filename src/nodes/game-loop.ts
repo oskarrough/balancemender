@@ -2,9 +2,10 @@ import {Loop} from '../vroum'
 import {log, logger} from '../utils'
 import type {Player} from './player'
 import {AudioPlayer} from './audio'
-import {Fight, DEMO_ROOM, Room} from './fight'
+import {Fight, DEMO_ROOM, type RoomInput} from './fight'
 import {playerAbilities} from './registry'
 import type {Dungeon} from './dungeon'
+import type {FightLocation} from '../fight-location'
 import type {DevConsole} from '../components/dev-console'
 import {buildGameOver} from '../animations'
 import {CombatLog} from '../combatlog'
@@ -101,7 +102,7 @@ export class GameLoop extends Loop {
 	 * Pass a room to start on something other than the demo fight, and a seed to fix its dice —
 	 * the browser passes neither and plays a random fight, a simulation passes both.
 	 */
-	constructor(room: Room = DEMO_ROOM, seed: number | null = null) {
+	constructor(room: RoomInput = DEMO_ROOM, seed: number | null = null) {
 		super()
 		this.rng = new Rng(seed)
 		this.fight = new Fight(this, room)
@@ -133,12 +134,20 @@ export class GameLoop extends Loop {
 	}
 
 	/** Walk into a room: build its fight and tear down the one you were in. */
-	enter(room: Room) {
+	enter(room: RoomInput) {
 		this.pause()
 		this.fight.disconnect()
 		// The fight clock restarts, so the log has to as well — otherwise the last fight's
 		// damage gets divided by this fight's duration and every rate reads high.
 		this.combatLog.clear()
+		// Capture the run's stable ids and the current 1-based room number before the fight starts.
+		// The room number is intentionally a snapshot: later authored ordering must not relabel history.
+		const run = this.dungeonRun
+		const authoredRoom = run?.dungeon.rooms[run.room]
+		this.combatLog.location =
+			run && authoredRoom
+				? ({dungeonId: run.dungeon.id, roomId: authoredRoom.id, roomNumber: run.room + 1} satisfies FightLocation)
+				: undefined
 		this.fight = new Fight(this, room)
 		if (this.dungeonRun) {
 			// Dungeon runs start with 2 spells and learn one per room, accumulated so far.
@@ -228,6 +237,7 @@ export class GameLoop extends Loop {
 				duration: Math.round(this.elapsedTime),
 				events: this.combatLog.events.slice(),
 				units: unitsOf(this),
+				location: this.combatLog.location,
 			}).catch((err) => logger.error({err}, 'Failed to save fight history'))
 		}
 	}

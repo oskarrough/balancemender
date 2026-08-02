@@ -7,11 +7,15 @@ import type {Unit} from './unit'
 import type {PlayerAbilityId} from './registry'
 
 /**
- * The plan for one fight: who fights, plus how the scene is dressed. Every fight is built from a
- * room, even a bare one outside any dungeon — the sim's ad-hoc groups included. The dungeon just
- * orders rooms — see `src/nodes/dungeon.ts`.
+ * The plan for one authored fight: who fights, plus how the scene is dressed. The id is the
+ * stable key for a room; `name` is display text and may change without changing its history.
+ *
+ * A bare simulation or test can use `RoomInput` when it has no authored dungeon identity.
+ * The dungeon just orders authored rooms — see `src/nodes/dungeon.ts`.
  */
 export interface Room {
+	/** Stable authored key. Never use `name` as the room's identity. */
+	id: string
 	/** Allies besides the player, who is always added. */
 	party?: UnitId[]
 	enemies?: UnitId[]
@@ -21,6 +25,9 @@ export interface Room {
 	/** Spells the player learns on walking in; only dungeon runs read it. */
 	grants?: PlayerAbilityId[]
 }
+
+/** Input accepted for one-off rooms and terminal simulations without dungeon context. */
+export type RoomInput = Omit<Room, 'id'> & {id?: string}
 
 /**
  * A scene is one place painted twice — wide and tall — so a narrow screen gets an authored view
@@ -33,7 +40,7 @@ export function scenePaths(scene: string) {
 }
 
 /** The room a fresh boot starts from. */
-export const DEMO_ROOM: Room = {party: ['Tank'], enemies: ['Runt']}
+export const DEMO_ROOM: Room = {id: 'demo-room', party: ['Tank'], enemies: ['Runt']}
 
 /**
  * Owns the party + enemies, built from a `Room`.
@@ -51,7 +58,7 @@ export class Fight extends Node {
 
 	constructor(
 		public parent: GameLoop,
-		public room: Room = DEMO_ROOM,
+		public room: RoomInput = DEMO_ROOM,
 	) {
 		super(parent)
 		for (const id of room.party ?? []) this.spawn(id)

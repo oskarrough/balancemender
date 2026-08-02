@@ -34,7 +34,9 @@ export class Rng {
 
 	/** A whole number, inclusive of both ends. */
 	int(min: number, max: number) {
-		return Math.floor(this.next() * (max - min + 1) + min)
+		const low = Math.min(min, max)
+		const high = Math.max(min, max)
+		return Math.min(high, Math.floor(this.next() * (high - low + 1) + low))
 	}
 
 	/**
@@ -42,6 +44,9 @@ export class Rng {
 	 * e.g. `naturalize(100, 0.1)` returns a number between 90 and 110.
 	 */
 	naturalize(num = 0, percentage = 0.05) {
-		return this.int(num + num * percentage, num - num * percentage)
+		const bounds = [num - num * percentage, num + num * percentage]
+		const low = Math.ceil(Math.min(...bounds))
+		const high = Math.floor(Math.max(...bounds))
+		return this.int(low, high)
 	}
 }

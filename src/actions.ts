@@ -15,9 +15,9 @@ import type {GameLoop} from './nodes/game-loop'
 import type {Unit} from './nodes/unit'
 import {FACTION, type Faction} from './nodes/types'
 import {STAT_KEYS} from './nodes/stats'
-import type {Room} from './nodes/fight'
+import type {RoomInput} from './nodes/fight'
 // Safe to value-import: dungeon.ts is pure data and imports nothing back from actions.ts or balance.ts.
-import {dungeonRegistry} from './nodes/dungeon'
+import {dungeonRegistry, type DungeonId} from './nodes/dungeon'
 // The registry already reaches actions.ts through the dungeon import above; naming it directly is
 // the spawn boundary, so a console typing an unknown id is refused here instead of throwing below.
 import {unitRegistry, type UnitId} from './nodes/unit-registry'
@@ -59,7 +59,7 @@ export type GameAction =
 	/** Kill everyone on one side, ending the fight the way it would have ended anyway. */
 	| {type: 'wipe'; faction: Faction}
 	/** Walk into a room outside any dungeon — a one-off fight. */
-	| {type: 'enter'; room: Room}
+	| {type: 'enter'; room: RoomInput}
 	/** Start a dungeon from its first room, by dungeon id. */
 	| {type: 'startDungeon'; dungeon: string}
 	/** Move on to the next room of the dungeon you cleared. */
@@ -161,7 +161,7 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			return ok(undefined)
 
 		case 'startDungeon': {
-			const dungeon = dungeonRegistry[action.dungeon]
+			const dungeon = dungeonRegistry[action.dungeon as DungeonId]
 			if (!dungeon) return fail(`Unknown dungeon: ${action.dungeon}`)
 			game.dungeonRun = {dungeon, room: 0, times: []}
 			game.enter(dungeon.rooms[0])

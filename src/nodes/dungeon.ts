@@ -1,8 +1,11 @@
 import type {Room} from './fight'
 
+/** Stable ids for the authored dungeons. Display names are not identity. */
+export type DungeonId = 'TheGreen' | 'TheRust' | 'TheGlow' | 'TheWhite'
+
 /** An ordered sequence of rooms played back to back. */
 export interface Dungeon {
-	id: string
+	id: DungeonId
 	name: string
 	rooms: Room[]
 }
@@ -15,6 +18,7 @@ export const TheGreen: Dungeon = {
 		// Alone, so every point of mana spent healing is one not spent killing: the calm room is
 		// where the slow efficient cast belongs, and the only one quiet enough to learn its sweet spot.
 		{
+			id: 'green-stray-pup',
 			name: 'The stray pup',
 			party: [],
 			enemies: ['Pup'],
@@ -23,6 +27,7 @@ export const TheGreen: Dungeon = {
 		},
 		// The bleed room — a heal-over-time answers a damage-over-time.
 		{
+			id: 'green-first-blood',
 			name: 'First blood',
 			party: ['Tank'],
 			enemies: ['Snapjaw'],
@@ -31,6 +36,7 @@ export const TheGreen: Dungeon = {
 		},
 		// The ambush room — a fast heal answers a burst.
 		{
+			id: 'green-skulker',
 			name: 'The skulker',
 			party: ['Tank'],
 			enemies: ['Runt', 'Skulker'],
@@ -39,6 +45,7 @@ export const TheGreen: Dungeon = {
 		},
 		// Three enemies — the multi-dot room.
 		{
+			id: 'green-howling',
 			name: 'The howling',
 			party: ['Tank'],
 			enemies: ['Denmother', 'Howler', 'Runt'],
@@ -47,6 +54,7 @@ export const TheGreen: Dungeon = {
 		},
 		// The boss kit: pre-shield the telegraphed arrow.
 		{
+			id: 'green-haruk',
 			name: 'Haruk',
 			party: ['Tank'],
 			enemies: ['Haruk'],
@@ -73,6 +81,7 @@ export const TheRust: Dungeon = {
 		// Steep is granted here too, ahead of the full kit, so the trample gives it a first outing
 		// before the hung bell rehearses the cut and Roha makes it necessary (#81, #84).
 		{
+			id: 'rust-dry-bed',
 			name: 'The dry bed',
 			party: ['Tank', 'Wren'],
 			enemies: ['Bellwether', 'Chafer', 'Chafer', 'Chafer'],
@@ -82,6 +91,7 @@ export const TheRust: Dungeon = {
 		// Five bodies, and the two kites drop on whoever is worst off — a new axis after the Green's
 		// healer-hunting: nobody may be left sitting low, the healer least of all.
 		{
+			id: 'rust-long-grass',
 			name: 'The long grass',
 			party: ['Tank', 'Wren'],
 			enemies: ['Chafer', 'Chafer', 'Chafer', 'Kite', 'Kite'],
@@ -91,6 +101,7 @@ export const TheRust: Dungeon = {
 		// cut-cast shape as her Toll, soft enough to survive the first surprise (#84). Timing gets
 		// its own beat; the dry bed kept the trample/shield lesson alone.
 		{
+			id: 'rust-hung-bell',
 			name: 'The hung bell',
 			party: ['Tank', 'Wren'],
 			enemies: ['Wether', 'Chafer', 'Chafer'],
@@ -99,6 +110,7 @@ export const TheRust: Dungeon = {
 		// The bell that has been ringing since the waystation sign, answered at last. She fights
 		// alone: the Rust is a lonely dungeon and this is its one strange thing (#72).
 		{
+			id: 'rust-roha',
 			name: 'Roha',
 			party: ['Tank', 'Wren'],
 			enemies: ['Roha'],
@@ -123,6 +135,7 @@ export const TheGlow: Dungeon = {
 		// Two puffballs, nothing else — Waft's tick lands on the whole party at once, small enough
 		// that even an idle healer walks out unhurt. The room is here to be felt, not survived.
 		{
+			id: 'glow-drowned-trees',
 			name: 'The drowned trees',
 			party: ['Tank', 'Wren'],
 			enemies: ['Muhl', 'Muhl'],
@@ -132,6 +145,7 @@ export const TheGlow: Dungeon = {
 		// holds threat the ordinary way, so healing the wrong body at the wrong moment redirects
 		// them. Idle loses this one outright (0% in a 200-seed sim); triage clears it every time.
 		{
+			id: 'glow-bright-water',
 			name: 'The bright water',
 			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Sivi', 'Sivi', 'Muhl'],
@@ -141,6 +155,7 @@ export const TheGlow: Dungeon = {
 		// room's weight keeps arriving rather than landing all at once. A Sivi keeps the mark lesson
 		// live alongside it.
 		{
+			id: 'glow-sap-shells',
 			name: 'The sap shells',
 			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Grub', 'Grub', 'GrubDeep', 'Sivi'],
@@ -150,6 +165,7 @@ export const TheGlow: Dungeon = {
 		// answer, heavy enough that missing it costs the fight — idle wipes every time, triage clears
 		// clean (200-seed sim). Boss-scale health, like Haruk and Roha before her.
 		{
+			id: 'glow-tender',
 			name: 'The tender',
 			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Orovan'],
@@ -172,6 +188,7 @@ export const TheWhite: Dungeon = {
 		// The first taste of mana that doesn't come back. Both bots clear it every seed — the room
 		// is here to be felt, the way Muhl's Waft was in the Glow.
 		{
+			id: 'white-gliders',
 			name: 'The gliders',
 			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Glider', 'Glider'],
@@ -181,6 +198,7 @@ export const TheWhite: Dungeon = {
 		// Ringers carry the Rust's telegraphed weight; the Glider keeps the pool draining alongside
 		// it. Idle wipes every seed; triage clears it but ends the fight nearly dry.
 		{
+			id: 'white-ringing-shelf',
 			name: 'The ringing shelf',
 			party: ['Tank', 'Wren', 'Clover'],
 			enemies: ['Ringer', 'Ringer', 'Glider'],
@@ -191,6 +209,7 @@ export const TheWhite: Dungeon = {
 		// Ringer supplies the telegraph — idle wipes all but a couple of seeds in a hundred, triage
 		// still clears.
 		{
+			id: 'white-first-water',
 			name: 'The first water',
 			party: ['Tank', 'Wren', 'Clover', 'Gale'],
 			enemies: ['Glider', 'Glider', 'Ringer'],
@@ -199,6 +218,7 @@ export const TheWhite: Dungeon = {
 		// Uvalu alone, one long fight out of a closing purse — the fight is the dungeon. Meant to be
 		// genuinely hard: idle wipes every seed, triage clears roughly eight fights in ten.
 		{
+			id: 'white-source',
 			name: 'The source',
 			party: ['Tank', 'Wren', 'Clover', 'Gale'],
 			enemies: ['Uvalu'],
@@ -208,4 +228,4 @@ export const TheWhite: Dungeon = {
 }
 
 /** Every dungeon, by id. */
-export const dungeonRegistry: Record<string, Dungeon> = {TheGreen, TheRust, TheGlow, TheWhite}
+export const dungeonRegistry: Record<DungeonId, Dungeon> = {TheGreen, TheRust, TheGlow, TheWhite}

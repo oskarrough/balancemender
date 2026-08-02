@@ -1,4 +1,5 @@
 import {html} from 'uhtml'
+import {formatFightLocation} from '../fight-location'
 import type {StoredFightMeta} from '../fight-history'
 import {deathOf, percentOf as percent} from '../sim/format'
 import type {CastStats, FightReport, Series} from '../sim/report'
@@ -31,9 +32,10 @@ export function historySelect({
 function historyOption(fight: StoredFightMeta, selected: string | null) {
 	const date = new Date(fight.timestamp)
 	const when = date.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})
+	const location = formatFightLocation(fight.location)
 	return html`
 		<option value=${fight.id} ?selected=${selected === fight.id}>
-			${fight.outcome} · ${(fight.duration / 1000).toFixed(1)}s · ${when}
+			${location ? `${location} · ` : ''}${fight.outcome} · ${(fight.duration / 1000).toFixed(1)}s · ${when}
 		</option>
 	`
 }
@@ -47,7 +49,9 @@ export function fightSummary({
 	duration: number
 	live: {fps: number; gcd: boolean} | null
 }) {
+	const location = formatFightLocation(report.location)
 	return html`
+		${location ? html`<p class="FightReport-location">${location}</p>` : ''}
 		<p class="FightReport-summary">
 			<strong class="FightReport-stat" data-stat="duration">${(duration / 1000).toFixed(1)}s</strong> ·
 			<span class="FightReport-stat" data-stat="events">${report.events} events</span> ·

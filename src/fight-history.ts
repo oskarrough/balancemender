@@ -1,5 +1,6 @@
 import {createStore} from 'tinybase'
 import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db'
+import type {FightLocation} from './fight-location'
 import type {Outcome, UnitInfo} from './sim/report'
 import {COMBATLOG_SCHEMA, type CombatLogEvent} from './combatlog'
 
@@ -13,6 +14,7 @@ export interface StoredFightMeta {
 	timestamp: number
 	outcome: Outcome
 	duration: number
+	location?: FightLocation
 }
 
 export interface StoredFight extends StoredFightMeta {
@@ -49,10 +51,35 @@ export async function saveFight(f: Omit<StoredFight, 'id' | 'timestamp'>): Promi
 		duration: f.duration,
 		events: JSON.stringify(f.events),
 		units: JSON.stringify(f.units),
+		...(f.location ? {location: JSON.stringify(f.location)} : {}),
 	})
 	evictOldest()
 	await persister.save()
 	notify()
+}
+
+/** Read optional metadata without making pre-location rows invalid. */
+function readLocation(id: string): FightLocation | undefined {
+	const raw = store.getCell(TABLE, id, 'location')
+	if (typeof raw !== 'string') return undefined
+	try {
+		const value: unknown = JSON.parse(raw)
+		if (!value || typeof value !== 'object') return undefined
+		const candidate = value as Record<string, unknown>
+		if (
+			typeof candidate.dungeonId !== 'string' ||
+			typeof candidate.roomId !== 'string' ||
+			typeof candidate.roomNumber !== 'number'
+		)
+			return undefined
+		return {
+			dungeonId: candidate.dungeonId as FightLocation['dungeonId'],
+			roomId: candidate.roomId,
+			roomNumber: candidate.roomNumber,
+		}
+	} catch {
+		return undefined
+	}
 }
 
 /** Keeps only the newest `MAX_FIGHTS` rows. */
@@ -68,12 +95,16 @@ function evictOldest() {
 export function listFights(): StoredFightMeta[] {
 	return store
 		.getRowIds(TABLE)
-		.map((id) => ({
-			id,
-			timestamp: store.getCell(TABLE, id, 'timestamp') as number,
-			outcome: store.getCell(TABLE, id, 'outcome') as Outcome,
-			duration: store.getCell(TABLE, id, 'duration') as number,
-		}))
+		.map((id) => {
+			const location = readLocation(id)
+			return {
+				id,
+				timestamp: store.getCell(TABLE, id, 'timestamp') as number,
+				outcome: store.getCell(TABLE, id, 'outcome') as Outcome,
+				duration: store.getCell(TABLE, id, 'duration') as number,
+				...(location ? {location} : {}),
+			}
+		})
 		.sort((a, b) => b.timestamp - a.timestamp)
 }
 
@@ -96,6 +127,7 @@ export function viewedFight(): StoredFight | undefined {
 
 export function getFight(id: string): StoredFight | undefined {
 	if (!store.hasRow(TABLE, id)) return undefined
+	const location = readLocation(id)
 	return {
 		id,
 		timestamp: store.getCell(TABLE, id, 'timestamp') as number,
@@ -103,5 +135,6 @@ export function getFight(id: string): StoredFight | undefined {
 		duration: store.getCell(TABLE, id, 'duration') as number,
 		events: JSON.parse(store.getCell(TABLE, id, 'events') as string),
 		units: JSON.parse(store.getCell(TABLE, id, 'units') as string),
+		...(location ? {location} : {}),
 	}
 }

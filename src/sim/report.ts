@@ -1,4 +1,5 @@
 import type {CombatLogEvent} from '../combatlog'
+import type {FightLocation} from '../fight-location'
 import type {GameLoop} from '../nodes/game-loop'
 import type {UnitId} from '../nodes/unit-registry'
 import {accumulateEvents, at, isDamage, isHeal} from './report-analysis'
@@ -117,6 +118,8 @@ export interface Death {
 }
 
 export interface FightReport {
+	/** Stable dungeon location, when the fight came from a dungeon run. */
+	location?: FightLocation
 	duration: number
 	events: number
 	outcome?: Outcome
@@ -132,19 +135,28 @@ export interface FightReport {
 export interface AnalyzeOptions {
 	units?: UnitInfo[]
 	outcome?: Outcome
+	/** Stable dungeon location carried alongside the event stream. */
+	location?: FightLocation
 	duration?: number
 	/** Resolution of the health graph. */
 	columns?: number
 }
 
 export function analyze(events: CombatLogEvent[], options: AnalyzeOptions = {}): FightReport {
-	const {units, outcome, columns = 40} = options
+	const {units, outcome, location, columns = 40} = options
 	const sorted = [...events].sort((a, b) => at(a) - at(b))
-	const start = sorted.length ? at(sorted[0]) : 0
-	const duration = options.duration ?? (sorted.length ? at(sorted[sorted.length - 1]) - start : 0)
+	// Events can surround a fight in a live log, so markers—not an unrelated first or last event—
+	// define the clock when they are present. A stored result's explicit duration still wins (most
+	// importantly for a timeout whose final frame was clamped to its deadline).
+	const startEvent = sorted.find((event) => event.eventType === 'FIGHT_START')
+	const endEvent = [...sorted].reverse().find((event) => event.eventType === 'FIGHT_END')
+	const start = startEvent ? at(startEvent) : sorted.length ? at(sorted[0]) : 0
+	const end = endEvent ? at(endEvent) : sorted.length ? at(sorted[sorted.length - 1]) : start
+	const duration = options.duration ?? Math.max(0, end - start)
 	const {totals, ...rows} = accumulateEvents(sorted, {units, start, duration})
 
 	return {
+		...(location ? {location} : {}),
 		duration,
 		events: sorted.length,
 		outcome,

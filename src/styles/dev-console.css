@@ -22,10 +22,6 @@ dev-console {
 		& div:first-child {
 			margin-top: auto;
 		}
-
-		& div:first-line {
-			color: var(--c-emerald-green);
-		}
 	}
 
 	.DevConsole-inputWrapper {

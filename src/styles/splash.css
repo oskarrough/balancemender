@@ -47,15 +47,9 @@
 	backface-visibility: hidden;
 }
 
-.Splash-subtitle {
-	font-style: italic;
-	font-size: clamp(1rem, 2vw, 1.4rem);
-	margin: 1.5rem 0 3rem;
-	color: var(--c-snow-white);
-	opacity: 0;
-}
-
 .Splash-prompt {
+	/* Carries the gap the subtitle used to hold open between title and dungeon buttons. */
+	margin-top: 3rem;
 	color: var(--c-snow-white);
 	opacity: 0;
 }
@@ -97,9 +91,18 @@
 	}
 }
 
-.Splash-dungeon small {
-	font-weight: 400;
-	text-transform: none;
-	letter-spacing: normal;
-	opacity: 0.7;
+.Splash-dungeonRooms {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.Splash-dungeonRoom {
+	display: block;
+	width: 0.4rem;
+	height: 0.4rem;
+	border-radius: 50%;
+	background: currentColor;
 }

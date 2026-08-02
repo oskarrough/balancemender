@@ -24,13 +24,7 @@ export function buildSplashIntro(): gsap.core.Timeline {
 			ease: 'back.out(1.8)',
 		},
 	)
-	tl.fromTo(
-		'.Splash-subtitle',
-		{autoAlpha: 0, y: 20},
-		{autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'},
-		'>-0.25',
-	)
-	tl.fromTo('.Splash-prompt', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'}, '<0.35')
+	tl.fromTo('.Splash-prompt', {autoAlpha: 0, y: 20}, {autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out'}, '>-0.1')
 	return tl
 }
 
@@ -38,7 +32,7 @@ export function buildSplashIntro(): gsap.core.Timeline {
 export function buildSplashOutro(): gsap.core.Timeline {
 	const tl = gsap.timeline()
 	tl.to('.Splash-title', {scale: 1.25, autoAlpha: 0, duration: 0.35, ease: 'power2.in'})
-	tl.to('.Splash-subtitle, .Splash-prompt', {autoAlpha: 0, y: -20, duration: 0.25, ease: 'power2.in'}, '<')
+	tl.to('.Splash-prompt', {autoAlpha: 0, y: -20, duration: 0.25, ease: 'power2.in'}, '<')
 	tl.to('.Splash', {autoAlpha: 0, duration: 0.3, ease: 'power2.in'}, '>-0.1')
 	tl.set('.Splash', {display: 'none'})
 	return tl
@@ -74,7 +68,7 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
 		{scale: 0.9, filter: 'saturate(0.2)', duration: 0.7, ease: 'power3.out'},
 	)
 	tl.fromTo(
-		'.AppChrome-game',
+		'.Enemies, .PartyGroup',
 		{x: 0},
 		{keyframes: {x: [-10, 10, -7, 7, -3, 3, 0]}, duration: 0.5, ease: 'power2.out'},
 		'<',
@@ -91,9 +85,6 @@ export function buildGameOver(_game: GameLoop): gsap.core.Timeline {
 		{autoAlpha: 1, y: 0, duration: 0.35, stagger: 0.08, ease: 'power2.out'},
 		'<0.25',
 	)
-	// The shake leaves a zero-valued transform behind, which creates a stacking context and traps
-	// GameOver below top-level floating views regardless of its own z-index.
-	tl.set('.AppChrome-game', {clearProps: 'transform'})
 	return tl
 }
 
@@ -155,7 +146,7 @@ export function restartDungeon(game: GameLoop): gsap.core.Timeline {
 
 const resetSplashForPreview = () => {
 	gsap.set('.Splash', {clearProps: 'all'})
-	gsap.set('.Splash-bg, .Splash-title, .Splash-titleLine, .Splash-subtitle, .Splash-prompt', {
+	gsap.set('.Splash-bg, .Splash-title, .Splash-titleLine, .Splash-prompt', {
 		clearProps: 'all',
 	})
 }

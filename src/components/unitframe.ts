@@ -35,8 +35,11 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - unit.lastCastTime : 0
 
 	return html`
-		<div
+		<button
+			type="button"
 			class=${`Unit ${isEnemy ? 'Enemy' : 'PartyMember'} ${unit === player ? 'Unit--player' : ''} ${isCurrentTarget ? 'Unit--targeted' : ''} ${unit.alive ? '' : 'Unit--dead'}`}
+			aria-pressed=${isCurrentTarget}
+			aria-label=${displayName}
 			data-unit-id=${id}
 			data-condition=${unit.condition}
 			onclick=${() => (player.root as GameLoop).perform({type: 'target', unit: id})}
@@ -93,6 +96,6 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 			</div>
 
 			<div class="FloatingCombatText"></div>
-		</div>
+		</button>
 	`
 }

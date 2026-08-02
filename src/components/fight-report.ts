@@ -90,8 +90,12 @@ export class FightReportView extends HTMLElement {
 		const stored = resultOnly ? undefined : viewedFight()
 		const viewingHistory = !!stored
 		const report = stored
-			? analyze(stored.events, {units: stored.units, duration: stored.duration})
-			: analyze(game.combatLog.events, {units: unitsOf(game), duration: game.elapsedTime})
+			? analyze(stored.events, {units: stored.units, duration: stored.duration, location: stored.location})
+			: analyze(game.combatLog.events, {
+					units: unitsOf(game),
+					duration: game.elapsedTime,
+					location: game.combatLog.location,
+				})
 		const duration = stored ? stored.duration : game.elapsedTime
 		const fps = game.deltaTime > 0 ? Math.round(1000 / game.deltaTime) : 0
 		// The scrub only exists on a finished fight — a live one grows under the cursor.

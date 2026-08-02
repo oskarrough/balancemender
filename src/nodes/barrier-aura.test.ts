@@ -15,7 +15,7 @@ import {planted} from './effects'
  * anyone could tell it happened at all.
  */
 
-const ROOM: Room = {party: ['Tank'], enemies: ['Runt']}
+const ROOM: Room = {id: 'barrier-test', party: ['Tank'], enemies: ['Runt']}
 
 let game!: GameLoop
 const events = (eventType: string) => game.combatLog.events.filter((event) => event.eventType === eventType)
