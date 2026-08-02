@@ -13,9 +13,10 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const isEnemy = unit.faction === 'enemy'
 	const health = unit.health.current
 	const maxHealth = unit.health.max
-	const isCurrentTarget = player.intendedTarget === unit
+	const isSelectedTarget = player.selectedTarget === unit
+	const isIntendedTarget = player.intendedTarget === unit
 	const displayName = unit.name || unit.constructor.name
-	const target = isEnemy && isCurrentTarget ? unit.targeting?.current('enemy') : undefined
+	const target = isEnemy && isIntendedTarget ? unit.targeting?.current('enemy') : undefined
 	const targetName = target ? target.name || target.constructor.name : undefined
 	const auras: Aura[] = [...unit.auras]
 	// Barriers stack, and the bar cares about the total rather than which spell left it.
@@ -35,15 +36,18 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 	const castElapsed = casting ? (player.root as GameLoop).elapsedTime - unit.lastCastTime : 0
 
 	return html`
-		<button
-			type="button"
-			class=${`Unit ${isEnemy ? 'Enemy' : 'PartyMember'} ${unit === player ? 'Unit--player' : ''} ${isCurrentTarget ? 'Unit--targeted' : ''} ${unit.alive ? '' : 'Unit--dead'}`}
-			aria-pressed=${isCurrentTarget}
-			aria-label=${displayName}
+		<div
+			class=${`Unit ${isEnemy ? 'Enemy' : 'PartyMember'} ${unit === player ? 'Unit--player' : ''} ${isSelectedTarget ? 'Unit--targeted' : ''} ${unit.alive ? '' : 'Unit--dead'}`}
 			data-unit-id=${id}
 			data-condition=${unit.condition}
-			onclick=${() => (player.root as GameLoop).perform({type: 'target', unit: id})}
 		>
+			<button
+				type="button"
+				class="Unit-target"
+				aria-pressed=${isSelectedTarget}
+				aria-label=${displayName}
+				onclick=${() => (player.root as GameLoop).perform({type: 'target', unit: id})}
+			></button>
 			<div class="Unit-row">
 				<figure class="Unit-avatar">${unit.image ? html`<img src=${unit.image} alt=${displayName} />` : null}</figure>
 				<div class="Unit-bars">
@@ -52,9 +56,9 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 							type: 'health',
 							value: health,
 							max: maxHealth,
-							// Only show potential healing on the current target for party members
+							// Preview healing where the current cast would land, even when it is the fallback target.
 							potentialValue:
-								isCurrentTarget && !isEnemy && playerCast
+								isIntendedTarget && !isEnemy && playerCast
 									? playerCast.magnitudes.reduce((total, one) => total + one, 0)
 									: 0,
 							absorbValue: absorb,
@@ -96,6 +100,6 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 			</div>
 
 			<div class="FloatingCombatText"></div>
-		</button>
+		</div>
 	`
 }

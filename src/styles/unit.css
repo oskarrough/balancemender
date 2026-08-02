@@ -27,6 +27,21 @@
 	transition: background 100ms;
 }
 
+/* The native control covers the visual frame without owning its non-phrasing markup. Keeping its
+   focus ring on the button also leaves the frame's selected outline and alarm shadow independent. */
+.Unit-target {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	appearance: none;
+	background: transparent;
+	border-radius: 2px;
+	cursor: pointer;
+}
+
 /* One layout, two palettes. Mirroring the enemy was tried and dropped: it made a hostile unit a
    different instrument, and every overlay drawn from the left edge then pointed the wrong way. */
 .Unit.Enemy {
@@ -43,15 +58,10 @@
 	outline: 2px solid var(--c-lemon-yellow);
 }
 
-/* Keyboard focus gets its own ring; a selected frame keeps the gold outline and adds the white ring. */
-.Unit:focus-visible {
+/* Keyboard focus gets its own ring outside the frame; selection keeps the gold inner outline. */
+.Unit-target:focus-visible {
 	outline: 2px solid var(--c-snow-white);
 	outline-offset: 3px;
-}
-
-.Unit.Unit--targeted:focus-visible {
-	outline-color: var(--c-lemon-yellow);
-	box-shadow: 0 0 0 4px var(--c-snow-white);
 }
 
 /* Only `injured` gets an alarm — health is already a bar, and a frame that reacted at every band

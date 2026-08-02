@@ -62,6 +62,8 @@ class FloatingView extends HTMLElement {
 	}
 
 	disconnectedCallback() {
+		if (!this._connected) return
+		// Mark detached before teardown: killing a Draggable may synchronously dispatch dragend.
 		this._connected = false
 		this.removeEventListener('pointerdown', this._pointerDown)
 		this.removeEventListener('dblclick', this._doubleClick)
@@ -75,8 +77,9 @@ class FloatingView extends HTMLElement {
 		}
 
 		if (this._draggable) {
-			this._draggable.kill()
+			const draggable = this._draggable
 			this._draggable = null
+			draggable.kill()
 		}
 	}
 
@@ -101,14 +104,17 @@ class FloatingView extends HTMLElement {
 
 	draggable() {
 		if (this._draggable) return
-		this._draggable = Draggable.create(this, {
+		const draggable = Draggable.create(this, {
 			type: 'x,y',
 			trigger: this.querySelector(':scope > header'),
 			zIndexBoost: false,
 			bounds: this.calculateBounds(),
 			inertia: true,
-			onDragEnd: () => this.saveLayout(),
+			onDragEnd: () => {
+				if (this._connected && this._draggable === draggable) this.saveLayout()
+			},
 		})[0]
+		this._draggable = draggable
 	}
 
 	resizable() {
@@ -154,7 +160,7 @@ class FloatingView extends HTMLElement {
 		document.removeEventListener('mouseup', this._stopResize)
 		if (!this._resizing) return
 		this._resizing = false
-		this.saveLayout()
+		if (this._connected) this.saveLayout()
 	}
 
 	minimizable() {
@@ -169,6 +175,7 @@ class FloatingView extends HTMLElement {
 	}
 
 	saveLayout() {
+		if (!this._connected) return
 		const viewId = this.id || this.getAttribute('data-view-id')
 		if (!viewId) return
 

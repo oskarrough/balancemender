@@ -8,8 +8,12 @@ export class InputManager {
 
 	private handleKeydown(event: KeyboardEvent) {
 		if (event.code === 'Space' && !event.repeat && !this.game.gameOver) {
-			// Space in a dev panel's input is a space, not a pause.
-			if (document.activeElement instanceof HTMLInputElement) return
+			// Space in a dev panel's input is a space, and on a unit button it is native activation.
+			if (
+				document.activeElement instanceof HTMLInputElement ||
+				(event.target instanceof HTMLButtonElement && event.target.matches('.Unit-target'))
+			)
+				return
 			event.preventDefault() // or the page scrolls
 			this.togglePlayPause()
 		}
