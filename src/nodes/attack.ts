@@ -278,7 +278,7 @@ export class Rile extends Ability {
 export class Brightest extends ThreatMark {
 	static id = 'Brightest'
 	static name = 'Brightest'
-	static description = 'Sivi target this ally directly.'
+	static description = 'Sivi targets this ally directly.'
 	static exclusive = true
 }
 
@@ -286,8 +286,7 @@ export class Brightest extends ThreatMark {
 export class Glow extends HealMarkGate {
 	static id = 'Glow'
 	static name = 'Glow'
-	static description =
-		'Positive heals move Brightest to the living ally they land on, even at full health.'
+	static description = 'Heals move Brightest to the living ally they land on, even at full health.'
 	static lifetime = 9000
 	static mark = Brightest
 }

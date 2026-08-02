@@ -27,6 +27,7 @@ export const prefer: {
 	lowestHealth: Preference
 	healerFirst: Preference
 	tankFirst: Preference
+	auraFirst: (auraId: string, fallback: Preference) => Preference
 	threat: (owner: Unit, mischief?: number) => Preference
 } = {
 	/** Whoever comes first. Stays with them until they die. */
@@ -78,6 +79,18 @@ export const prefer: {
 		prefers: (candidates: Unit[]) => candidates.find((c) => c instanceof Tank) ?? candidates[0],
 		reconsiders: (current: Unit, candidates: Unit[]) =>
 			!(current instanceof Tank) && candidates.some((c) => c instanceof Tank),
+	},
+
+	/** Seeks an eligible unit carrying `auraId`, then delegates to `fallback`. */
+	auraFirst: (auraId: string, fallback: Preference) => {
+		const marked = (candidates: Unit[]) => candidates.find((unit) => [...unit.auras].some((aura) => aura.id === auraId))
+		return {
+			prefers: (candidates: Unit[]) => marked(candidates) ?? fallback.prefers(candidates),
+			reconsiders: (current: Unit, candidates: Unit[]) => {
+				const nextMarked = marked(candidates)
+				return nextMarked ? nextMarked !== current : fallback.reconsiders(current, candidates)
+			},
+		}
 	},
 
 	/**

@@ -2,28 +2,21 @@ import {Aura} from './aura'
 import type {Unit} from './unit'
 
 /**
- * Heal-mark: a gate aura on the healer makes each successful heal plant an exclusive threat-mark on
- * the patient. The mark multiplies threat credited for that ally (damage they deal; heals they
- * receive while the gate is up), so prefer.threat enemies stick to whoever was just healed. The gate
- * itself does not redirect threat — it only enables the plant.
+ * Heal-mark: a gate aura on the healer makes each heal plant an exclusive mark on its
+ * living target. Authored enemies may seek that mark directly; threat remains unchanged.
  */
 
 type MarkClass = typeof ThreatMark
 type GateClass = typeof HealMarkGate
 
-/** While present on a unit, multiplies threat credited for that unit's damage. */
+/** A timed mark that an authored targeting preference may seek directly. */
 export class ThreatMark extends Aura {
 	repeat = 1
 
 	static id = 'ThreatMark'
 	static name = 'Threat mark'
-	/** +500% → 6×. Subclasses tune this; heal credit under a gate reads the same number. */
-	static threatWeight = 6
 	static lifetime = 5000
-	/**
-	 * Fight-wide exclusive: planting on one unit clears every other copy of this id. Off by default
-	 * so a plain lasting weight does not surprise; heal-marks opt in.
-	 */
+	/** Fight-wide exclusive: planting on one unit clears every other copy of this id. */
 	static exclusive = false
 
 	constructor(parent: Unit, caster: Unit, plantedAura?: {castId?: string}) {
@@ -49,10 +42,7 @@ export class ThreatMark extends Aura {
 	}
 }
 
-/**
- * Healer-side gate. While present, successful heals plant `mark` on the patient and credit that
- * heal's threat to them at the mark's `threatWeight`.
- */
+/** Healer-side gate. While present, heals plant `mark` on their living target. */
 export class HealMarkGate extends Aura {
 	repeat = 1
 
@@ -81,26 +71,8 @@ function gateOn(unit: Unit): HealMarkGate | undefined {
 	return undefined
 }
 
-/** Threat weight from a living ThreatMark on this unit (damage path). */
-export function damageThreatWeight(unit: Unit) {
-	for (const aura of unit.auras) {
-		if (aura instanceof ThreatMark) return (aura.constructor as MarkClass).threatWeight
-	}
-	return 1
-}
-
-/**
- * Threat weight for a heal from this caster while a gate is up, else undefined.
- * Used before the mark is planted so the planting heal itself pulls.
- */
-export function healMarkThreatWeight(healer: Unit) {
-	const gate = gateOn(healer)
-	if (!gate) return undefined
-	return ((gate.constructor as GateClass).mark as MarkClass).threatWeight
-}
-
-/** Plant (or move) the gate's mark on the patient. No-op without a gate. */
-export function afterSuccessfulHeal(source: Unit, target: Unit, castId?: string) {
+/** Plant (or move) the gate's mark on the target. No-op without a gate or a living target. */
+export function afterHeal(source: Unit, target: Unit, castId?: string) {
 	const gate = gateOn(source)
 	if (!gate || !target.alive) return
 	const Mark = (gate.constructor as GateClass).mark

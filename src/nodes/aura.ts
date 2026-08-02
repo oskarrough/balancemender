@@ -52,6 +52,8 @@ export class Aura extends Task {
 	 * class object, so `class Shield extends Aura {}` reads back `'Shield'`, never this.
 	 */
 	static name = 'Aura'
+	/** Player-facing effect text for plain auras without a numeric subclass. */
+	static description = ''
 	static maxStacks = 1
 	/**
 	 * What the mechanic is called, for the balance row of an effect that plants it. Defaults to the

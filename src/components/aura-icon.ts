@@ -1,5 +1,5 @@
 import {html} from 'uhtml'
-import type {Aura} from '../nodes/aura'
+import {Aura} from '../nodes/aura'
 import {PeriodicAura} from '../nodes/periodic-aura'
 import {BarrierAura} from '../nodes/barrier-aura'
 import {StatModifierAura} from '../nodes/stat-modifier-aura'
@@ -93,7 +93,8 @@ function effectOf(aura: Aura) {
 		return html`<p class="Tooltip-effect">Absorbs the next ${Math.round(aura.pool)} damage.</p>`
 	if (aura instanceof StatModifierAura)
 		return html`<p class="Tooltip-effect">${aura.modifier > 0 ? '+' : ''}${Math.round(aura.modifier)} ${aura.stat}.</p>`
-	return null
+	const description = (aura.constructor as typeof Aura).description
+	return description ? html`<p class="Tooltip-effect">${description}</p>` : null
 }
 
 /** The same aura the chip draws, in full. Redrawn every frame, so the countdown is the live one. */

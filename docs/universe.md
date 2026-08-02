@@ -97,9 +97,9 @@ already hold mean something different under each one:
    fight has a rhythm you play around instead of a number you outheal. The cut itself is rehearsed
    before she arrives — fair warning, same shape as the Green's rooms that teach a button before
    they ask you to live on it.
-3. **The Glow — you learn you are visible.** The sivi drift toward whoever glows brightest, and
-   that is the healer. Healing draws attention; the threat table stops being the tank's private
-   business.
+3. **The Glow — you learn you are visible.** The sivi drift toward whoever glows brightest.
+   Healing moves that light between allies, drawing the sivi's attention without changing the
+   threat seen by anything else.
 4. **The White — you learn scarcity.** Thin air at a blocked source. Mana does not come back the
    way it did downstream, and the finale is one long fight out of a closing purse.
 

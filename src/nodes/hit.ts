@@ -2,7 +2,7 @@ import type {CombatEventType} from '../combatlog'
 import {fct} from '../components/floating-combat-text'
 import {BarrierAura} from './barrier-aura'
 import type {GameLoop} from './game-loop'
-import {afterSuccessfulHeal} from './heal-mark'
+import {afterHeal} from './heal-mark'
 import type {Unit} from './unit'
 import {generateThreat} from './threat'
 import type {AbilitySchool} from './ability'
@@ -55,8 +55,8 @@ export function applyHit({
 	else target.health.damage(-amount)
 	const landed = Math.abs(target.health.current - before)
 	generateThreat(source, target, landed, incoming > 0, threatMultiplier)
-	// Heal-mark: a heal that moved the bar, while the caster carries a gate, plants its mark.
-	if (incoming > 0 && landed > 0) afterSuccessfulHeal(source, target, castId)
+	// Heal-mark follows the heal, including a full overheal; the gate checks life.
+	if (incoming > 0) afterHeal(source, target, castId)
 
 	// A fully absorbed hit moved nothing, and `-0` floating over the unit would claim otherwise.
 	if (amount !== 0) fct(target.id, amount >= 0 ? `+${amount}` : `-${-amount}`, sweetSpot ? 'sweet-spot' : undefined)

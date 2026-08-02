@@ -75,10 +75,11 @@ ability, because it never changes with who is using it or when. "Fireball target
 `BotDriver` weighing the fight, or a standing rule like "always the most hurt" — never of the unit
 or the ability. One object with two methods that have to agree: `prefers()` picks, `reconsiders()`
 decides whether to look again once it has one — a preference for the most hurt ally that does not
-re-pick heals someone already topped up. The six are `prefer.first`, `prefer.atRandom`,
-`prefer.lowestHealth`, `prefer.tankFirst`, `prefer.healerFirst` and `prefer.threat`. A unit's
-standing drivers share one through `Targeting`, which remembers one pick per `targets` value — so a
-unit that both attacks and heals holds an enemy and an ally at once — and exposes the settled pick
+re-pick heals someone already topped up. The reusable preferences are `prefer.first`,
+`prefer.atRandom`, `prefer.lowestHealth`, `prefer.tankFirst`, `prefer.healerFirst`,
+`prefer.auraFirst` and `prefer.threat`. A unit's standing drivers share one through `Targeting`,
+which remembers one pick per `targets` value — so a unit that both attacks and heals holds an enemy
+and an ally at once — and exposes the settled pick
 read-only through `current()`.
 
 **Threat** — one enemy's numerical attention toward each opposing unit. Actual damage earns threat
@@ -175,9 +176,9 @@ behind report as one ability.
 prose — a buff or a debuff; nothing in the code branches on which.
 `SPELL_AURA_APPLIED` / `REFRESH` / `REMOVED` is how one reaches the combat log.
 
-**Heal-mark** — a `HealMarkGate` on the healer makes successful heals plant an exclusive
-`ThreatMark` on the patient; the mark multiplies threat credited for that ally
-(`ThreatMark.threatWeight`). See
+**Heal-mark** — a `HealMarkGate` on the healer makes heals plant an exclusive `ThreatMark`
+on their living target, including at full health. A mark changes no threat by itself; an authored
+preference such as Sivi's `auraFirst(Brightest, threat)` may seek it directly. See
 [combat.md](./combat.md#threat-is-local-to-each-enemy).
 
 **Barrier** — an aura with a finite pool that absorbs later damage before it reaches the health bar.

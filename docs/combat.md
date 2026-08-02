@@ -70,10 +70,11 @@ a high multiplier; it still earns attention only from the enemy it struck. Holdi
 needs the tank to work across that pack or gain a multi-target threat ability later — the core
 mechanic does not pretend one target was three.
 
-**Heal-mark.** A `HealMarkGate` on the healer makes each successful heal plant an exclusive
-`ThreatMark` on the patient and credit that heal's threat to them at the mark's `threatWeight` (6×
-by default = +500%). The mark then multiplies that ally's damage threat for its lifetime. The gate
-is only the gate; see [`heal-mark.ts`](../src/nodes/heal-mark.ts).
+**Heal-mark.** A `HealMarkGate` on the healer makes each heal plant an exclusive
+`ThreatMark` on its living target, even when the target is already at full health. The mark does not
+change threat. Sivi's authored `prefer.auraFirst('Brightest', prefer.threat(sivi))` seeks Brightest
+directly and returns to ordinary threat when it fades; other enemies never read it. See
+[`heal-mark.ts`](../src/nodes/heal-mark.ts).
 
 `prefer.threat(enemy)` picks the highest entry. It keeps the current target until a challenger exceeds
 it by 10%, and `Targeting.pick()` is still called by a Cadence only when that enemy acts. Dead and
