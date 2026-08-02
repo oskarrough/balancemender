@@ -239,12 +239,13 @@ already running rather than on the next cast.
 
 **Tune** — changing one balance number: `kind:Name.key=value`, e.g. `rule:Condition.injured=30`.
 
-**Statics are the template, instance fields are the state.** A class declares its dials;
-construction copies them and reads the caster's current power into the use's landing. So a retune or
-stat buff reaches the next use, never the one already in flight; cadence timing reaches the next
-driver spawned, never a schedule already running — and patching a prototype does nothing. An
-effect's coefficient is template data too, shared by every use, which is what makes retuning it
-reach the next use and nothing in flight.
+**Templates hold the dials; instance fields hold the state.** Classes are templates for abilities,
+effects, auras and units; keyed entries in `cadenceRegistry` are cadence templates. Construction
+copies their numbers and reads the caster's current power into the use's landing. So a retune or stat
+buff reaches the next use, never the one already in flight; cadence timing reaches the next driver
+spawned, never a schedule already running — and patching a prototype does nothing. An effect's
+coefficient is shared template data too, which is what makes retuning it reach the next use and
+nothing in flight.
 
 **Bot** — a stand-in for the player, deciding what to cast next: `idle`, `triage`, `renew`, `panic`,
 `shield`, `lance`, `nettle` or `steep`. Which ability, never which target — that is a **preference**.

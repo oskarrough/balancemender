@@ -3,7 +3,6 @@ import {
 	applyTunes,
 	balance,
 	balanceCategories,
-	cadenceClasses,
 	parseTune,
 	resetBalance,
 	setBalanceValue,
@@ -12,6 +11,7 @@ import {
 import {GameLoop} from './nodes/game-loop'
 import {Renew} from './nodes/spells'
 import {abilityRegistry} from './nodes/registry'
+import {cadenceRegistry} from './nodes/cadence'
 import {settle} from './test-setup'
 
 describe('parsing a tune', () => {
@@ -97,6 +97,12 @@ describe('applying a tune', () => {
 		resetBalance()
 		expect(balance.cadences.SavageBiteCadence.interval).toBe(bite)
 	})
+
+	it('tunes cadence templates independently', () => {
+		applyTunes(['cadence:HeavyBlowCadence.interval=4321'])
+		expect(cadenceRegistry.HeavyBlowCadence.interval).toBe(4321)
+		expect(cadenceRegistry.GrubWakeCadence.interval).toBe(3800)
+	})
 })
 
 describe('the categories', () => {
@@ -108,7 +114,7 @@ describe('the categories', () => {
 	})
 
 	it('keeps cadence timing separate', () => {
-		expect(Object.keys(cadenceClasses)).toEqual([
+		expect(Object.keys(cadenceRegistry)).toEqual([
 			'NipCadence',
 			'HeavyBlowCadence',
 			'SavageBiteCadence',
@@ -136,7 +142,7 @@ describe('the categories', () => {
 		])
 	})
 
-	it('names a class and snapshot row for every kind', () => {
+	it('names a source and snapshot row for every kind', () => {
 		for (const kind of Object.keys(balanceCategories) as BalanceKind[]) {
 			const {keys, classes, state} = balanceCategories[kind]
 			expect(keys.length, kind).toBeGreaterThan(0)

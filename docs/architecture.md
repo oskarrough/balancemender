@@ -50,9 +50,9 @@ in the union, not a new command plus a panel button plus a test helper. Spawning
 unit that joins a fight goes through `Fight.spawn(unitId)`, so side routing, duplicate
 numbering and unknown-id errors are written once.
 
-`src/balance.ts` snapshots the tunable statics of every ability, effect, cadence, aura and unit and
-writes changes back to the classes; `src/inspectables.ts` is what the Balance Lab lists. The kinds and
-key spellings are in [glossary.md](./glossary.md#tuning-and-measuring).
+`src/balance.ts` snapshots every tunable class and cadence template, then writes changes back to its
+source; `src/inspectables.ts` is what the Balance Lab lists. The kinds and key spellings are in
+[glossary.md](./glossary.md#tuning-and-measuring).
 
 ## The combat log is the interface for analysis
 

@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it} from 'vitest'
 import {settle} from '../test-setup'
 import {SimLoop} from '../sim/run'
-import {Cadence} from './cadence'
+import {Cadence, cadenceRegistry} from './cadence'
 import {GameLoop} from './game-loop'
 import {Haruk, Runt, Denmother} from './enemies'
 import {Lick} from './spells'
@@ -16,16 +16,11 @@ describe('a cadence', () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Denmother']})
 		await settle()
 		const [wolf, denmother] = game.enemies
-		new Cadence(wolf, 'Nip').tick()
+		new Cadence(wolf, cadenceRegistry.NipCadence).tick()
 		expect(events().some((event) => event.abilityId === 'Nip')).toBe(true)
-		new Cadence(denmother, 'Lick').tick()
+		new Cadence(denmother, cadenceRegistry.LickCadence).tick()
 		expect(denmother.currentAbility?.id).toBe('Lick')
 		await settle()
-	})
-
-	it('requires one stable ability id', () => {
-		game = new GameLoop({party: ['Tank'], enemies: []})
-		expect(() => new Cadence(game.player)).toThrow(/needs an ability id/)
 	})
 
 	it('preserves independent attack timings', async () => {
@@ -88,8 +83,8 @@ describe('an enemy cast cadence', () => {
 		wolf.health.set(wolf.health.max / 2)
 		const tankBefore = game.party[0].health.current
 
-		new Cadence(denmother, 'Nip').tick()
-		new Cadence(denmother, 'Lick').tick()
+		new Cadence(denmother, cadenceRegistry.NipCadence).tick()
+		new Cadence(denmother, cadenceRegistry.LickCadence).tick()
 		await settle()
 		denmother.currentAbility?.tick()
 

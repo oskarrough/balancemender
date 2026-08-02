@@ -1,33 +1,41 @@
 import {Task} from '../vroum'
-import {applyStatics, log} from '../utils'
+import {log} from '../utils'
 import {AbilityUse} from './ability-use'
+import type {AbilityId} from './registry'
 import {prefer} from './targeting'
 import {eligible} from './targets'
 import type {Unit} from './unit'
+
+export interface CadenceTemplate {
+	abilityId: AbilityId
+	delay: number
+	interval: number
+	repeat?: number
+	/** Picks afresh each beat instead of using the unit's standing preference. */
+	preference?: 'healerFirst'
+}
 
 /**
  * Uses one unit-owned ability on a fixed schedule. Cadence owns when, and picks who from its
  * unit's standing preference among the units that ability's own rule allows.
  */
 export class Cadence extends Task {
-	abilityId: string
+	abilityId: AbilityId
 	delay = 0
 	interval = 0
 	repeat = Infinity
-
-	static abilityId = ''
-	static delay = 0
-	static interval = 0
-	static repeat = Infinity
+	private preference?: CadenceTemplate['preference']
 
 	constructor(
 		public parent: Unit,
-		abilityId?: string,
+		template: CadenceTemplate,
 	) {
 		super(parent)
-		applyStatics(this, 'delay', 'interval', 'repeat')
-		this.abilityId = abilityId ?? (this.constructor as typeof Cadence).abilityId
-		if (!this.abilityId) throw new Error(`${this.constructor.name} needs an ability id to drive`)
+		this.abilityId = template.abilityId
+		this.delay = template.delay
+		this.interval = template.interval
+		this.repeat = template.repeat ?? Infinity
+		this.preference = template.preference
 	}
 
 	/** Where a unit with real decisions puts them. By default the schedule is the whole decision. */
@@ -48,6 +56,12 @@ export class Cadence extends Task {
 
 		// Ask for an unknown ability once so useAbility's refusal reaches the log.
 		if (!AbilityClass) return this.use()
+
+		if (this.preference) {
+			const target = prefer[this.preference].prefers(eligible(this.parent, AbilityClass.targets))
+			if (target) this.use(target)
+			return
+		}
 
 		const targeting = this.parent.targeting
 
@@ -74,192 +88,74 @@ export class Cadence extends Task {
 	}
 }
 
-export class NipCadence extends Cadence {
-	static abilityId = 'Nip'
-	static delay = 0
-	static interval = 1600
-}
+/** Stable tuning keys mapped to the templates each new Cadence snapshots. */
+export const cadenceRegistry = {
+	NipCadence: {abilityId: 'Nip', delay: 0, interval: 1600},
+	HeavyBlowCadence: {abilityId: 'HeavyBlow', delay: 4000, interval: 3800},
+	SavageBiteCadence: {abilityId: 'SavageBite', delay: 4000, interval: 3800},
 
-export class HeavyBlowCadence extends Cadence {
-	static abilityId = 'HeavyBlow'
-	static delay = 4000
-	static interval = 3800
-}
+	/** Haruk's telegraphed nuke. Every 2s shaved from the interval is one more wind-up to answer per fight. */
+	NastyArrowCadence: {abilityId: 'NastyArrow', delay: 8000, interval: 10000},
+	ShieldBashCadence: {abilityId: 'ShieldBash', delay: 0, interval: 2400},
 
-export class SavageBiteCadence extends Cadence {
-	static abilityId = 'SavageBite'
-	static delay = 4000
-	static interval = 3800
-}
+	/** Wren's steady loose — no wind-up to wait on, so the interval alone is the dps dial. */
+	SlingCadence: {abilityId: 'Sling', delay: 500, interval: 1800},
 
-/** Long enough between leaps that a heal always fits in the gap, and the first one is not a surprise. */
-export class PounceCadence extends Cadence {
-	static abilityId = 'Pounce'
-	static delay = 5000
-	static interval = 4500
-}
+	/** Clover's smoker, kept at the beekeeper's slower tempo — a cloud drifts out, it does not snap. */
+	SmokeCadence: {abilityId: 'Smoke', delay: 1500, interval: 3600},
 
-/** Haruk's telegraphed nuke. The interval is the boss's difficulty dial: every 2s shaved is one more wind-up to answer per fight (playtest wanted him meaner than 12s). */
-export class NastyArrowCadence extends Cadence {
-	static abilityId = 'NastyArrow'
-	static delay = 8000
-	static interval = 10000
-}
+	/** Slow enough that the heal does not stall the fight at exactly nobody winning (#51). */
+	LickCadence: {abilityId: 'Lick', delay: 4000, interval: 16000},
 
-export class ShieldBashCadence extends Cadence {
-	static abilityId = 'ShieldBash'
-	static delay = 0
-	static interval = 2400
-}
+	/** Long enough between leaps that a heal always fits in the gap, and the first one is not a surprise. */
+	PounceCadence: {abilityId: 'Pounce', delay: 5000, interval: 4500},
+	WorryCadence: {abilityId: 'Worry', delay: 3000, interval: 5000},
+	AmbushCadence: {abilityId: 'Ambush', delay: 6000, interval: 8000},
+	RileCadence: {abilityId: 'Rile', delay: 5000, interval: 12000},
 
-/** Wren's steady loose — no wind-up to wait on, so the interval alone is the dps dial. */
-export class SlingCadence extends Cadence {
-	static abilityId = 'Sling'
-	static delay = 500
-	static interval = 1800
-}
+	/** The hung bell rehearses Roha's cut twice, with enough room for both swings to land. */
+	BellSwingCadence: {abilityId: 'BellSwing', delay: 3000, interval: 6000, repeat: 2},
 
-/** Clover's smoker, kept at the beekeeper's slower tempo — a cloud drifts out, it does not snap. */
-export class SmokeCadence extends Cadence {
-	static abilityId = 'Smoke'
-	static delay = 1500
-	static interval = 3600
-}
+	/** Roha's clock: tight enough that repeated Mend casts cannot slip through untouched. */
+	TollCadence: {abilityId: 'Toll', delay: 3000, interval: 5000},
 
-/**
- * Slow on purpose. At 8s this healed for as much as the tank hit for, to the decimal, so the fight
- * stalled at exactly nobody winning (#51). Half as often puts daylight between the two numbers
- * without shaving `Lick` itself, which stays a heal big enough to be worth racing.
- */
-export class LickCadence extends Cadence {
-	static abilityId = 'Lick'
-	static delay = 4000
-	static interval = 16000
-}
+	/** The bellwether's slow beat. Wide enough that a shield is always up in time. */
+	TrampleCadence: {abilityId: 'Trample', delay: 4000, interval: 7000},
 
-export class WorryCadence extends Cadence {
-	static abilityId = 'Worry'
-	static delay = 3000
-	static interval = 5000
-}
+	/** Spore seeks the healer without changing Sivi's standing preference. */
+	SporeCadence: {
+		abilityId: 'Spore',
+		delay: 500,
+		interval: 10000,
+		preference: 'healerFirst',
+	},
 
-export class AmbushCadence extends Cadence {
-	static abilityId = 'Ambush'
-	static delay = 6000
-	static interval = 8000
-}
+	/** The puffball's sigh — slow enough that each tick is a chip, not a wound. */
+	WaftCadence: {abilityId: 'Waft', delay: 2000, interval: 4000},
 
-/** The bellwether's slow beat. Wide enough that a shield is always up in time if the player wants it to be. */
-export class TrampleCadence extends Cadence {
-	static abilityId = 'Trample'
-	static delay = 4000
-	static interval = 7000
-}
+	/** The delay is the whole "joins late" lesson; the sap shell lasts for the same time. */
+	GrubWakeCadence: {abilityId: 'HeavyBlow', delay: 6000, interval: 3800},
 
-/**
- * Roha's whole clock. A toll starts every five seconds: too tight for repeated Mend casts to slip
- * through untouched, while an interrupted Steep still pays during the next wind-up (#81).
- */
-export class TollCadence extends Cadence {
-	static abilityId = 'Toll'
-	static delay = 3000
-	static interval = 5000
-}
+	/** A grub buried deeper in its shell, for a staggered room. */
+	GrubWakeCadenceLate: {abilityId: 'HeavyBlow', delay: 13000, interval: 3800},
 
-/**
- * The hung bell's rehearsal of Roha's cut: same wind-up shape, twice, then done. A six-second gap
- * lets both swings land before the wether falls, and stops before the closer's endless beat (#84).
- */
-export class BellSwingCadence extends Cadence {
-	static abilityId = 'BellSwing'
-	static delay = 3000
-	static interval = 6000
-	static repeat = 2
-}
+	/** The guardian's slow wind-up. Wide enough that a shield or a dodge always fits. */
+	GroundfallCadence: {abilityId: 'Groundfall', delay: 5000, interval: 9000},
 
-export class RileCadence extends Cadence {
-	static abilityId = 'Rile'
-	static delay = 5000
-	static interval = 12000
-}
+	/** Sivi reuses Ambush on a faster beat than Skulker. */
+	SiviAmbushCadence: {abilityId: 'Ambush', delay: 3000, interval: 6000},
 
-/**
- * Spore always wants the healer, while Sivi's standing preference seeks Brightest or falls back to
- * threat. Pick the healer here rather than fighting that preference.
- */
-export class SporeCadence extends Cadence {
-	static abilityId = 'Spore'
-	static delay = 500
-	static interval = 10000
+	/** Hollow seeks the healer without changing its owner's standing preference. */
+	HollowCadence: {
+		abilityId: 'Hollow',
+		delay: 2000,
+		interval: 4000,
+		preference: 'healerFirst',
+	},
 
-	tick() {
-		if (!this.shouldUse()) return
-		const healer = prefer.healerFirst.prefers(eligible(this.parent, 'enemy'))
-		if (!healer) return
-		const result = this.parent.useAbility(this.abilityId, healer)
-		if (!result.ok) log(`cadence:${this.parent.name}:${this.abilityId}:${result.error}`)
-	}
-}
+	/** Gale's road-chip — slower than Wren's, quicker than Clover's. */
+	GaleSlingCadence: {abilityId: 'Sling', delay: 500, interval: 2400},
 
-/** The puffball's sigh — slow enough that each tick is a chip, not a wound. */
-export class WaftCadence extends Cadence {
-	static abilityId = 'Waft'
-	static delay = 2000
-	static interval = 4000
-}
-
-/**
- * Asleep in its sap shell until this fires — the delay is the whole "joins late" lesson, borrowed
- * straight from `Cadence.delay` rather than a new dormant-unit mechanism.
- */
-export class GrubWakeCadence extends HeavyBlowCadence {
-	static delay = 6000
-}
-
-/** A grub buried deeper in its shell — cracks open well after its siblings, for a staggered room. */
-export class GrubWakeCadenceLate extends HeavyBlowCadence {
-	static delay = 13000
-}
-
-/** The guardian's slow wind-up. Wide enough that a shield or a dodge always fits. */
-export class GroundfallCadence extends Cadence {
-	static abilityId = 'Groundfall'
-	static delay = 5000
-	static interval = 9000
-}
-
-/**
- * Sivi's lunge — `Ambush` reused as-is, so the wisp that seeks `Brightest` before ordinary threat
- * hits like Skulker instead of only nipping. Faster than Skulker's own `AmbushCadence`: at 6s it is
- * the room's real threat, and its target is whoever the mark or the threat table points it at,
- * which is the whole "watch who you heal" lesson (200-seed sim with
- * Tank, Wren and Clover: idle loses "The bright water" nearly every seed, triage still clears it).
- */
-export class SiviAmbushCadence extends AmbushCadence {
-	static delay = 3000
-	static interval = 6000
-}
-
-/** Hollow targets the healer without changing its owner's standing preference. */
-export class HollowCadence extends SporeCadence {
-	static abilityId = 'Hollow'
-	static delay = 2000
-	static interval = 4000
-}
-
-/** Gale's steady road-chip — slower than Wren's, quicker than Clover's; a messenger is always moving. */
-export class GaleSlingCadence extends SlingCadence {
-	static delay = 500
-	static interval = 2400
-}
-
-/**
- * The wind's own beat. Faster than the aura it refreshes runs out, so the wind stays up while
- * Gale stands, and a Gale who falls stops the cadence with her — the last planted Wind outlives
- * her by about two beats, then the party walks without it.
- */
-export class GaleWindCadence extends Cadence {
-	static abilityId = 'Wind'
-	static delay = 3000
-	static interval = 6000
-}
+	/** Refreshes Wind while Gale stands; the last planted Wind outlives her by about two beats. */
+	GaleWindCadence: {abilityId: 'Wind', delay: 3000, interval: 6000},
+} satisfies Record<string, CadenceTemplate>

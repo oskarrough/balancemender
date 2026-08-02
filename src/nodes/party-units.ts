@@ -1,6 +1,6 @@
 import {Unit} from './unit'
 import {ShieldBash, Sling, Smoke, Wind} from './attack'
-import {GaleSlingCadence, GaleWindCadence, ShieldBashCadence, SlingCadence, SmokeCadence} from './cadence'
+import {Cadence, cadenceRegistry} from './cadence'
 import {FACTION} from './types'
 import {Targeting, prefer} from './targeting'
 
@@ -13,7 +13,7 @@ export class Tank extends Unit {
 	static faction = FACTION.PARTY
 	abilities = {ShieldBash}
 	targeting = new Targeting(this, prefer.healerFirst)
-	shieldBashCadence = new ShieldBashCadence(this)
+	shieldBashCadence = new Cadence(this, cadenceRegistry.ShieldBashCadence)
 	name = 'Oak'
 	image = '/assets/generated/characters/tank.png'
 }
@@ -28,7 +28,7 @@ export class Wren extends Unit {
 	static faction = FACTION.PARTY
 	abilities = {Sling}
 	targeting = new Targeting(this, prefer.lowestHealth)
-	slingCadence = new SlingCadence(this)
+	slingCadence = new Cadence(this, cadenceRegistry.SlingCadence)
 	name = 'Wren'
 	image = '/assets/generated/characters/wren.png'
 }
@@ -48,7 +48,7 @@ export class Clover extends Unit {
 	static faction = FACTION.PARTY
 	abilities = {Smoke}
 	targeting = new Targeting(this, prefer.lowestHealth)
-	smokeCadence = new SmokeCadence(this)
+	smokeCadence = new Cadence(this, cadenceRegistry.SmokeCadence)
 	name = 'Clover'
 	image = '/assets/generated/characters/clover.png'
 }
@@ -69,8 +69,8 @@ export class Gale extends Unit {
 	static faction = FACTION.PARTY
 	abilities = {Sling, Wind}
 	targeting = new Targeting(this, prefer.lowestHealth)
-	galeSlingCadence = new GaleSlingCadence(this)
-	galeWindCadence = new GaleWindCadence(this)
+	galeSlingCadence = new Cadence(this, cadenceRegistry.GaleSlingCadence)
+	galeWindCadence = new Cadence(this, cadenceRegistry.GaleWindCadence)
 	name = 'Gale'
 	image = '/assets/generated/characters/gale.png'
 }

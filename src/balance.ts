@@ -1,30 +1,5 @@
 import {abilityRegistry} from './nodes/registry'
-import {
-	NastyArrowCadence,
-	HeavyBlowCadence,
-	LickCadence,
-	NipCadence,
-	ShieldBashCadence,
-	SlingCadence,
-	SmokeCadence,
-	SavageBiteCadence,
-	PounceCadence,
-	WorryCadence,
-	AmbushCadence,
-	RileCadence,
-	BellSwingCadence,
-	TollCadence,
-	TrampleCadence,
-	SporeCadence,
-	WaftCadence,
-	GrubWakeCadence,
-	GrubWakeCadenceLate,
-	GroundfallCadence,
-	SiviAmbushCadence,
-	HollowCadence,
-	GaleSlingCadence,
-	GaleWindCadence,
-} from './nodes/cadence'
+import {cadenceRegistry} from './nodes/cadence'
 import {unitRegistry} from './nodes/unit-registry'
 import type {Unit} from './nodes/unit'
 import {CONDITION_THRESHOLDS} from './nodes/types'
@@ -54,7 +29,6 @@ export type RuleKey = (typeof RULE_KEYS)[number]
 
 type NumberDict = Record<string, number>
 type PartialDict = Record<string, number | undefined>
-type CadenceClass = {delay: number; interval: number}
 type UnitClass = Record<UnitKey, number>
 
 /**
@@ -78,33 +52,6 @@ for (const [abilityId, AbilityClass] of Object.entries(abilityRegistry)) {
 		}
 		effectClasses[alias] = effect as unknown as NumberDict
 	}
-}
-
-export const cadenceClasses: Record<string, CadenceClass> = {
-	NipCadence,
-	HeavyBlowCadence,
-	SavageBiteCadence,
-	NastyArrowCadence,
-	ShieldBashCadence,
-	SlingCadence,
-	SmokeCadence,
-	LickCadence,
-	PounceCadence,
-	WorryCadence,
-	AmbushCadence,
-	RileCadence,
-	BellSwingCadence,
-	TollCadence,
-	TrampleCadence,
-	SporeCadence,
-	WaftCadence,
-	GrubWakeCadence,
-	GrubWakeCadenceLate,
-	GroundfallCadence,
-	SiviAmbushCadence,
-	HollowCadence,
-	GaleSlingCadence,
-	GaleWindCadence,
 }
 
 /**
@@ -148,7 +95,7 @@ function snapshot<K extends string>(src: Record<string, NumberDict>, keys: reado
 const defaults = {
 	abilities: snapshot(abilityRegistry as unknown as Record<string, NumberDict>, ABILITY_KEYS),
 	effects: snapshot(effectClasses, EFFECT_KEYS),
-	cadences: snapshot(cadenceClasses as Record<string, NumberDict>, CADENCE_KEYS),
+	cadences: snapshot(cadenceRegistry as unknown as Record<string, NumberDict>, CADENCE_KEYS),
 	auras: snapshot(auraClasses, AURA_KEYS),
 	units: snapshot(unitRegistry as unknown as Record<string, NumberDict>, UNIT_KEYS),
 	rules: snapshot(ruleClasses, RULE_KEYS),
@@ -172,7 +119,12 @@ export const balanceCategories: Record<BalanceKind, BalanceCategory> = {
 		defaults: defaults.abilities,
 	},
 	effect: {keys: EFFECT_KEYS, classes: effectClasses, state: balance.effects, defaults: defaults.effects},
-	cadence: {keys: CADENCE_KEYS, classes: cadenceClasses, state: balance.cadences, defaults: defaults.cadences},
+	cadence: {
+		keys: CADENCE_KEYS,
+		classes: cadenceRegistry as unknown as Record<string, NumberDict>,
+		state: balance.cadences,
+		defaults: defaults.cadences,
+	},
 	aura: {keys: AURA_KEYS, classes: auraClasses, state: balance.auras, defaults: defaults.auras},
 	unit: {
 		keys: UNIT_KEYS,

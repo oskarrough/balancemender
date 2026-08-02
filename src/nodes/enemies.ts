@@ -21,27 +21,7 @@ import {
 	Hollow,
 } from './attack'
 import {Lick} from './spells'
-import {
-	NastyArrowCadence,
-	HeavyBlowCadence,
-	LickCadence,
-	NipCadence,
-	SavageBiteCadence,
-	PounceCadence,
-	WorryCadence,
-	AmbushCadence,
-	RileCadence,
-	BellSwingCadence,
-	TollCadence,
-	TrampleCadence,
-	SporeCadence,
-	WaftCadence,
-	GrubWakeCadence,
-	GrubWakeCadenceLate,
-	GroundfallCadence,
-	SiviAmbushCadence,
-	HollowCadence,
-} from './cadence'
+import {Cadence, cadenceRegistry} from './cadence'
 
 export class Haruk extends Unit {
 	static stamina = 500
@@ -54,8 +34,8 @@ export class Haruk extends Unit {
 	name = 'Haruk'
 	abilities = {HeavyBlow, NastyArrow}
 	targeting = new Targeting(this, prefer.tankFirst)
-	heavyBlowCadence = new HeavyBlowCadence(this)
-	nastyArrowCadence = new NastyArrowCadence(this)
+	heavyBlowCadence = new Cadence(this, cadenceRegistry.HeavyBlowCadence)
+	nastyArrowCadence = new Cadence(this, cadenceRegistry.NastyArrowCadence)
 }
 
 export class Runt extends Unit {
@@ -70,8 +50,8 @@ export class Runt extends Unit {
 	abilities = {SavageBite, Nip}
 	// A fifth of its picks bite someone at random — a wolf, not a soldier (#42).
 	targeting = new Targeting(this, prefer.threat(this, 0.2))
-	savageBiteCadence = new SavageBiteCadence(this)
-	nipCadence = new NipCadence(this)
+	savageBiteCadence = new Cadence(this, cadenceRegistry.SavageBiteCadence)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
 }
 
 /**
@@ -91,8 +71,8 @@ export class Pup extends Unit {
 	abilities = {Nip, Pounce}
 	// A fifth of its picks bite someone at random — a wolf, not a soldier (#42).
 	targeting = new Targeting(this, prefer.threat(this, 0.2))
-	nipCadence = new NipCadence(this)
-	pounceCadence = new PounceCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
+	pounceCadence = new Cadence(this, cadenceRegistry.PounceCadence)
 }
 
 /**
@@ -111,7 +91,7 @@ export class Denmother extends Unit {
 	name = 'Denmother'
 	abilities = {Lick}
 	targeting = new Targeting(this, prefer.lowestHealth)
-	cadence = new LickCadence(this)
+	cadence = new Cadence(this, cadenceRegistry.LickCadence)
 }
 
 /** Its bleed is the point — the tank's bar keeps falling after the hit. */
@@ -126,8 +106,8 @@ export class Snapjaw extends Unit {
 	image = '/assets/generated/characters/runt.png'
 	abilities = {Nip, Worry}
 	targeting = new Targeting(this, prefer.threat(this, 0.2))
-	nipCadence = new NipCadence(this)
-	worryCadence = new WorryCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
+	worryCadence = new Cadence(this, cadenceRegistry.WorryCadence)
 }
 
 /** It hunts whoever heals — the player — past any tank. */
@@ -142,8 +122,8 @@ export class Skulker extends Unit {
 	image = '/assets/generated/characters/runt.png'
 	abilities = {Nip, Ambush}
 	targeting = new Targeting(this, prefer.healerFirst)
-	nipCadence = new NipCadence(this)
-	ambushCadence = new AmbushCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
+	ambushCadence = new Cadence(this, cadenceRegistry.AmbushCadence)
 }
 
 /**
@@ -171,8 +151,8 @@ export class Bellwether extends Unit {
 	name = 'Bellwether'
 	abilities = {HeavyBlow, Trample}
 	targeting = new Targeting(this, prefer.tankFirst)
-	heavyBlowCadence = new HeavyBlowCadence(this)
-	trampleCadence = new TrampleCadence(this)
+	heavyBlowCadence = new Cadence(this, cadenceRegistry.HeavyBlowCadence)
+	trampleCadence = new Cadence(this, cadenceRegistry.TrampleCadence)
 }
 
 /**
@@ -197,8 +177,8 @@ export class Kite extends Unit {
 	name = 'Kite'
 	abilities = {Nip, Ambush}
 	targeting = new Targeting(this, prefer.lowestHealth)
-	nipCadence = new NipCadence(this)
-	ambushCadence = new AmbushCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
+	ambushCadence = new Cadence(this, cadenceRegistry.AmbushCadence)
 }
 
 /**
@@ -221,7 +201,7 @@ export class Chafer extends Unit {
 	name = 'Chafer'
 	abilities = {Nip}
 	targeting = new Targeting(this, prefer.threat(this))
-	nipCadence = new NipCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
 }
 
 /**
@@ -243,8 +223,8 @@ export class Wether extends Unit {
 	name = 'Wether'
 	abilities = {Nip, BellSwing}
 	targeting = new Targeting(this, prefer.tankFirst)
-	nipCadence = new NipCadence(this)
-	bellSwingCadence = new BellSwingCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
+	bellSwingCadence = new Cadence(this, cadenceRegistry.BellSwingCadence)
 }
 
 /**
@@ -272,7 +252,7 @@ export class Roha extends Unit {
 	name = 'Roha'
 	abilities = {Toll}
 	targeting = new Targeting(this, prefer.tankFirst)
-	tollCadence = new TollCadence(this)
+	tollCadence = new Cadence(this, cadenceRegistry.TollCadence)
 }
 
 /** Goads a packmate into a frenzy; the buff is why it dies first or second. */
@@ -287,8 +267,8 @@ export class Howler extends Unit {
 	image = '/assets/generated/characters/runt.png'
 	abilities = {Nip, Rile}
 	targeting = new Targeting(this, prefer.atRandom())
-	nipCadence = new NipCadence(this)
-	rileCadence = new RileCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
+	rileCadence = new Cadence(this, cadenceRegistry.RileCadence)
 }
 
 /**
@@ -311,9 +291,9 @@ export class Sivi extends Unit {
 	image = '/assets/generated/characters/sivi.png'
 	abilities = {Nip, Spore, Ambush}
 	targeting = new Targeting(this, prefer.auraFirst(Brightest.id, prefer.threat(this)))
-	nipCadence = new NipCadence(this)
-	sporeCadence = new SporeCadence(this)
-	ambushCadence = new SiviAmbushCadence(this)
+	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
+	sporeCadence = new Cadence(this, cadenceRegistry.SporeCadence)
+	ambushCadence = new Cadence(this, cadenceRegistry.SiviAmbushCadence)
 }
 
 /**
@@ -333,13 +313,13 @@ export class Muhl extends Unit {
 	abilities = {Waft}
 	// Waft hits the whole party regardless of who this settles on; any living ally keeps the cast valid.
 	targeting = new Targeting(this, prefer.atRandom())
-	waftCadence = new WaftCadence(this)
+	waftCadence = new Cadence(this, cadenceRegistry.WaftCadence)
 }
 
 /**
  * The sap shell itself, as a barrier the grub wears from the first frame: whatever you spend on a
  * sleeping grub goes into the shell, not the animal. It falls away exactly when the grub cracks
- * open, so `lifetime` belongs to the wake cadence and each subclass forwards to its own.
+ * open, so `lifetime` comes from the matching wake cadence template.
  *
  * Without it a shell was only a late cadence — the grub fully targetable from t=0 — so the room's
  * stagger was something the party could skip rather than wait out, and one area ability cleared all
@@ -349,11 +329,11 @@ class SapShell extends BarrierAura {
 	static id = 'SapShell'
 	static name = 'Sap shell'
 	static pool = 40
-	static lifetime = GrubWakeCadence.delay
+	static lifetime = cadenceRegistry.GrubWakeCadence.delay
 }
 
 class SapShellDeep extends SapShell {
-	static lifetime = GrubWakeCadenceLate.delay
+	static lifetime = cadenceRegistry.GrubWakeCadenceLate.delay
 }
 
 export class Grub extends Unit {
@@ -368,14 +348,14 @@ export class Grub extends Unit {
 	image = '/assets/generated/characters/grub.png'
 	abilities = {HeavyBlow}
 	targeting = new Targeting(this, prefer.threat(this))
-	heavyBlowCadence = new GrubWakeCadence(this)
+	heavyBlowCadence = new Cadence(this, cadenceRegistry.GrubWakeCadence)
 	shell = new SapShell(this, this)
 }
 
 /** The same grub, buried deeper in its shell — cracks open only once its siblings already have, for a room where all three do not wake together. */
 export class GrubDeep extends Grub {
 	static wornAuras = [SapShellDeep]
-	heavyBlowCadence = new GrubWakeCadenceLate(this)
+	heavyBlowCadence = new Cadence(this, cadenceRegistry.GrubWakeCadenceLate)
 	shell = new SapShellDeep(this, this)
 }
 
@@ -398,8 +378,8 @@ export class Orovan extends Unit {
 	image = '/assets/generated/characters/orovan.png'
 	abilities = {HeavyBlow, Groundfall}
 	targeting = new Targeting(this, prefer.tankFirst)
-	heavyBlowCadence = new HeavyBlowCadence(this)
-	groundfallCadence = new GroundfallCadence(this)
+	heavyBlowCadence = new Cadence(this, cadenceRegistry.HeavyBlowCadence)
+	groundfallCadence = new Cadence(this, cadenceRegistry.GroundfallCadence)
 }
 
 /**
@@ -423,7 +403,7 @@ export class Glider extends Unit {
 	image = '/assets/generated/characters/glider.png'
 	abilities = {Hollow}
 	targeting = new Targeting(this, prefer.healerFirst)
-	hollowCadence = new HollowCadence(this)
+	hollowCadence = new Cadence(this, cadenceRegistry.HollowCadence)
 }
 
 /**
@@ -445,8 +425,8 @@ export class Ringer extends Unit {
 	image = '/assets/generated/characters/ringer.png'
 	abilities = {HeavyBlow, Trample}
 	targeting = new Targeting(this, prefer.tankFirst)
-	heavyBlowCadence = new HeavyBlowCadence(this)
-	trampleCadence = new TrampleCadence(this)
+	heavyBlowCadence = new Cadence(this, cadenceRegistry.HeavyBlowCadence)
+	trampleCadence = new Cadence(this, cadenceRegistry.TrampleCadence)
 }
 
 /**
@@ -475,7 +455,7 @@ export class Uvalu extends Unit {
 	image = '/assets/generated/characters/uvalu.png'
 	abilities = {HeavyBlow, Groundfall, Hollow}
 	targeting = new Targeting(this, prefer.tankFirst)
-	heavyBlowCadence = new HeavyBlowCadence(this)
-	groundfallCadence = new GroundfallCadence(this)
-	hollowCadence = new HollowCadence(this)
+	heavyBlowCadence = new Cadence(this, cadenceRegistry.HeavyBlowCadence)
+	groundfallCadence = new Cadence(this, cadenceRegistry.GroundfallCadence)
+	hollowCadence = new Cadence(this, cadenceRegistry.HollowCadence)
 }
