@@ -1,15 +1,29 @@
-floating-view {
-	position: absolute;
-	top: 0;
-	left: 0;
-	display: flex;
-	flex-flow: column nowrap;
+:is(floating-view, .Panel) {
 	background: var(--c-snow-white);
 	border: 1px solid;
 	border-bottom-width: 2px;
 	/* border-right-width: 2px; */
 	border-radius: var(--radius);
 	/* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); */
+}
+
+/* Direct child only — panel content may have headers of its own. */
+:is(floating-view, .Panel) > header {
+	display: flex;
+	align-items: center;
+	padding: 0 0.2em;
+	min-height: 1.5rem;
+	background: var(--c-linden-green);
+	border-bottom: 1px solid black;
+	user-select: none;
+}
+
+floating-view {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: flex;
+	flex-flow: column nowrap;
 	min-height: 26px;
 	min-width: 200px;
 	max-width: 100vw;
@@ -17,16 +31,8 @@ floating-view {
 	pointer-events: auto;
 	z-index: 1;
 
-	/* Direct child only — panel content may have headers of its own. */
 	> header {
-		display: flex;
-		align-items: center;
-		padding: 0 0.2em;
-		min-height: 1.5rem;
-		background: var(--c-linden-green);
-		border-bottom: 1px solid black;
 		cursor: grab;
-		user-select: none;
 		&:active {
 			cursor: grabbing;
 		}

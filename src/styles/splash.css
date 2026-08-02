@@ -69,6 +69,16 @@
 	margin: 0 auto;
 }
 
+.Button.Button--custom {
+	min-height: 3rem;
+	background-color: var(--c-french-grey);
+	color: var(--c-black);
+}
+
+.Button.Button--custom:hover {
+	background-color: color-mix(in oklch, var(--c-french-grey), var(--c-black) 20%);
+}
+
 .Button.Splash-dungeon {
 	justify-content: space-between;
 	align-items: baseline;
@@ -83,17 +93,6 @@
 	background-blend-mode: multiply;
 	color: var(--c-snow-white);
 	text-shadow: 0 1px 0.2em rgba(0, 0, 0, 0.9);
-}
-
-.Button.Splash-malleable {
-	min-height: 3rem;
-	background-image: none;
-	background-color: color-mix(in oklch, var(--c-opera), var(--c-black) 50%);
-}
-
-.Button.Splash-malleable span {
-	opacity: 0.5;
-	font-size: var(--text-sm);
 }
 
 .Button.Splash-dungeon:disabled {

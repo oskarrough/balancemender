@@ -38,6 +38,19 @@ export function buildSplashOutro(): gsap.core.Timeline {
 	return tl
 }
 
+/** Crossfade the game back to its already-rendered dungeon list. */
+export function buildLeaveGame(): gsap.core.Timeline {
+	const tl = gsap.timeline()
+	tl.set('.Splash', {display: 'grid'})
+	// Moving the large title during the full-screen fade forces slow repaints, so reset it while hidden.
+	tl.set('.Splash-title', {autoAlpha: 1, scale: 1})
+	tl.set('.Splash-titleLine', {opacity: 1, scale: 1, y: 0, rotation: 0})
+	tl.set('.Splash-prompt', {autoAlpha: 1, y: 0})
+	tl.fromTo('.Splash', {autoAlpha: 0}, {autoAlpha: 1, duration: 0.45, ease: 'power2.inOut'})
+	tl.to('.AppChrome', {autoAlpha: 0, duration: 0.45, ease: 'power2.inOut'}, 0)
+	return tl
+}
+
 /** Full intro: splash outro → game intro, scrubbable as one timeline. */
 export function buildIntro(game: GameLoop): gsap.core.Timeline {
 	const tl = gsap.timeline()
@@ -55,7 +68,7 @@ export function buildStartGame(_game: GameLoop): gsap.core.Timeline {
 	// A percentage rather than a pixel distance, so the bar keeps sliding exactly its own height in from below however tall the icons get.
 	tl.fromTo('.ActionBar', {y: '100%', autoAlpha: 0}, {y: 0, autoAlpha: 1, duration: 0.7}, '<')
 	tl.fromTo('.PartyGroup', {y: 20, autoAlpha: 0}, {y: 0, autoAlpha: 1, duration: 0.5}, '<0.2')
-	tl.fromTo('.Enemies', {x: 100, autoAlpha: 0}, {x: 0, autoAlpha: 1, duration: 1}, '<-0.1')
+	tl.fromTo('.Enemies', {x: 100, autoAlpha: 0}, {x: 0, autoAlpha: 1, duration: 0.92}, '<-0.1')
 	return tl
 }
 

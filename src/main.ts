@@ -2,7 +2,7 @@ import {html, render} from 'uhtml'
 import {GameLoop} from './nodes/game-loop'
 import {UI} from './components/ui'
 import {Menu} from './components/menu'
-import {buildSplashIntro, buildIntro} from './animations'
+import {buildSplashIntro, buildIntro, buildLeaveGame} from './animations'
 import {DevConsole} from './components/dev-console'
 import {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
@@ -45,14 +45,17 @@ async function main() {
 	// Wait for web fonts before animating the splash — otherwise "Rubik 80s Fade" swaps in mid-tween
 	// and re-rasterizes the giant title, which reads as jank no matter what GSAP does.
 	let splashIntro: ReturnType<typeof buildSplashIntro> | null = null
-	if (!skipSplash)
+	let splashActive = !skipSplash
+	if (splashActive)
 		void document.fonts.ready.then(() => {
+			if (!splashActive) return
 			// Small breather so any final layout/paint settles before the title slams in.
 			setTimeout(() => {
-				splashIntro = buildSplashIntro()
+				if (splashActive) splashIntro = buildSplashIntro()
 			}, 100)
 		})
 	const bootGame = (init: (game: GameLoop) => void) => {
+		splashActive = false
 		splashIntro?.kill()
 
 		// Construct the game only now — vroum's Loop schedules `mount()` and starts ticking immediately on construction.
@@ -63,29 +66,45 @@ async function main() {
 		queueMicrotask(() => game.pause())
 		const element = document.querySelector('#game')
 		const menuElement = document.querySelector('#menu')
+		const animDebugger = document.querySelector('animation-debugger') as AnimationDebugger | null
+		const input = new InputManager(game)
+		let intro: ReturnType<typeof buildIntro>
+		let leaving = false
+		const leave = () => {
+			if (leaving) return
+			leaving = true
+			game.pause()
+			game.audio.stop()
+			intro.kill()
+			buildLeaveGame().eventCallback('onComplete', () => {
+				input.destroy()
+				game.draw = undefined
+				game.disconnect()
+				if (window.balancemender === game) delete window.balancemender
+				if (element) render(element, html``)
+				if (menuElement) render(menuElement, html``)
+				animDebugger?.init(null)
+			})
+		}
+
 		// The menu redraws with the game so its Play/Pause toggle tracks state changed elsewhere.
 		game.draw = () => {
 			perf.interval('frame')
 			perf.measure('draw', () => {
 				if (element) perf.measure('draw:ui', () => render(element, UI(game)))
-				if (menuElement) perf.measure('draw:menu', () => render(menuElement, () => Menu(game)))
+				if (menuElement) perf.measure('draw:menu', () => render(menuElement, () => Menu(game, leave)))
 				perf.measure('draw:tooltip', () => drawTooltip(game))
 			})
 		}
 		setupDevTools(game)
-		// @ts-ignore
 		window.balancemender = game
 		// @ts-ignore
 		window.perf = perf
 		if (urlParams.has('muted')) game.muted = true
-
-		const animDebugger = document.querySelector('animation-debugger') as AnimationDebugger | null
 		animDebugger?.init(game)
 
 		game.render()
-		new InputManager(game)
-
-		const intro = buildIntro(game)
+		intro = buildIntro(game)
 		// Malleable is composed while paused. Its visible Play control is the only player input that
 		// starts the clock; ordinary dungeons still begin when their intro completes.
 		if (!game.malleable) intro.eventCallback('onComplete', () => game.play())
@@ -131,13 +150,8 @@ async function main() {
 							</button>
 						`
 					})}
-					<button
-						class="Button Splash-dungeon Splash-malleable"
-						type="button"
-						.disabled=${!malleableUnlocked}
-						onclick=${startMalleable}
-					>
-						Malleable <span>${malleableUnlocked ? 'Compose any room' : 'Mend all four dungeons'}</span>
+					<button class="Button Button--custom" type="button" .disabled=${!malleableUnlocked} onclick=${startMalleable}>
+						Create custom game
 					</button>
 				</div>`,
 		)

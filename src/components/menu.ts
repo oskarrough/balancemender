@@ -3,14 +3,21 @@ import {log} from '../utils'
 import {GameLoop} from '../nodes/game-loop'
 import {restartGame} from '../animations'
 
-/**
- * Which dungeon, how far in, which room. Nothing at all outside a dungeon run.
- * Pager dots flank the pill — cleared rooms filled on the left, upcoming hollow on the
- * right, the pill itself standing in for the current room.
- */
-function DungeonPager(game: GameLoop) {
+/** Current dungeon or room title. Dots show dungeon progress; the custom room gets the same bar without them. */
+function DungeonPager(game: GameLoop, leave: () => void) {
 	const run = game.dungeonRun
-	if (!run) return null
+	if (!run) {
+		if (!game.malleable) return null
+		return html`
+			<nav class="DungeonPager">
+				<button class="Button" type="button" onclick=${leave}>Leave</button>
+				<span class="DungeonPager-pages">
+					<p class="DungeonPager-pill"><span class="DungeonPager-dungeon">Custom Room</span></p>
+				</span>
+			</nav>
+		`
+	}
+
 	const rooms = run.dungeon.rooms
 	const dot = (room: (typeof rooms)[number], cleared: boolean) =>
 		html`<i
@@ -20,7 +27,7 @@ function DungeonPager(game: GameLoop) {
 		></i>`
 	return html`
 		<nav class="DungeonPager">
-			<button class="Button" type="button" onclick=${leaveDungeon}>Leave</button>
+			<button class="Button" type="button" onclick=${leave}>Leave</button>
 			<span class="DungeonPager-pages">
 				<span class="DungeonPager-dots">${rooms.slice(0, run.room).map((room) => dot(room, true))}</span>
 				<p class="DungeonPager-pill">
@@ -34,12 +41,7 @@ function DungeonPager(game: GameLoop) {
 	`
 }
 
-/** Dungeon choice is the app's start state, so leaving is a clean return rather than a half-reset fight. */
-function leaveDungeon() {
-	window.location.assign(window.location.pathname)
-}
-
-export function Menu(game: GameLoop) {
+export function Menu(game: GameLoop, leave: () => void) {
 	// The checkbox reads "Sound", so it is checked when the game is *not* muted.
 	const toggleMuted = (event: Event) => {
 		const checkbox = event.target as HTMLInputElement
@@ -63,7 +65,7 @@ export function Menu(game: GameLoop) {
 		<div class="IngameMenu">
 			<menu>
 				<div class="Menu-dungeon">
-					${DungeonPager(game)}
+					${DungeonPager(game, leave)}
 					<div class="Menu-actions">
 						<button class="Button Menu-running" type="button" onclick=${toggleRunning}>
 							${game.running ? 'Pause' : 'Play'}
