@@ -1,6 +1,7 @@
 {
-	"short_name": "Web Healer",
-	"name": "Web Healer",
+	"short_name": "Balance Mender",
+	"name": "Balance Mender",
+	"description": "A tactical healing game for the web. Heal the people with you, and rebuild any ability, enemy or number you like.",
 	"icons": [],
 	"display": "standalone",
 	"theme_color": "#000000",

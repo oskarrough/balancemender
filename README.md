@@ -1,6 +1,8 @@
 # Balance Mender
 
-A tactical game inspired by healing raids and five-man dungeons back in Azeroth. Who remembers downranking? Keep your party alive, kill the enemies.
+A tactical dungeon game from the mender's side of the fight. The healing is all yours, and so is every number in it.
+
+One world, walked upstream through four colours — the Green, the Rust, the Glow, the White. Nothing you fight is evil; every creature is inflamed by a wound in the land, and a room won is Mended.
 
 The guiding idea: **nothing is planned and everything works**. Balance Mender is a malleable playground where the player sets the rules of play — compose whichever abilities, party and enemies you want, and tune the numbers until the fight feels right. Long term the balance lab grows into the game rather than sitting beside it.
 
