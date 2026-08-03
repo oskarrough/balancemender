@@ -2,14 +2,9 @@ This project uses GitHub issues for tasks. Treat this file as a living field gui
 
 Always run subagents in the background.
 
-`bun run check` typechecks, lints and formats. `bun run test` runs the tests (never `bun test`). Run
-both before committing, not while working. The `main` branch deploys to balancemender.0sk.ar
-
-Tests are vitest in plain node — there is no fake DOM. `src/test-setup.ts` holds what every test
-needs: the `requestAnimationFrame` stub vroum asks for the moment a `Loop` is constructed (it never
-fires, so a constructed game sits still until something steps it), `setLogLevel('silent')` so a failing
-assertion is not buried in pino, and `settle()` for vroum's deferred lifecycle. Call
-`setLogLevel('info')` at the top of a file to watch a fight happen.
+`bun run check` typechecks, lints and formats. `bun run test` runs Vitest in plain Node (never
+`bun test`). Run both before committing, not while working. The `main` branch deploys to
+balancemender.0sk.ar. [docs/simulation.md](./docs/simulation.md) is the testing and simulation guide.
 
 ## Where things are
 
@@ -32,50 +27,15 @@ two classes.
 
 When pinning a design, prefer a one-sentence summary — much easier to communicate that way.
 
-## Answering "what happens if…" questions
+## Testing and balance
 
-Don't guess at balance — run it:
-
-```
-bun run sim --enemies 'Runt*3' --bot triage --repeat 10   # how this fight usually goes
-bun run sweep --seeds 200                                 # the shape of the curve
-bun run bench --room green-howling --seeds 200            # exact room, bots, clean wins, pressure
-```
-
-One seed cannot tell a balanced fight from a lucky roll, and one enemy group cannot tell you the
-shape of the curve. [docs/simulation.md](./docs/simulation.md) has the flags, how to read a sweep
-table, and `--tune` for measuring a candidate number without a source edit to undo.
+One seed cannot establish balance. Use [docs/simulation.md](./docs/simulation.md) to choose between
+tests, `sim`, `bench`, `sweep`, and browser checks; use each command's `--help` for its flags.
 
 ## Working on the UI
 
-Components are tested in the real browser, never in a simulated DOM. `bun run dev`, learn
-`agent-browser --help`, and open `http://localhost:5173/?nosplash` — it skips the splash and intro so
-the fight is running on first paint (`src/main.ts`, also takes `&muted`):
-
-```
-agent-browser batch --bail "open http://localhost:5173/?nosplash" "wait 1000" "screenshot /abs/path.png"
-agent-browser eval 'balancemender.perform({type: "spawn", unit: "Haruk"})'
-```
-
-`window.balancemender` is the running game, so `eval` reaches all of it. A relative screenshot path
-lands in the repo root. To press ability keys mid-fight, `focus .Game` first in the same batch — they
-only land where DOM focus is. Batch `eval` mangles quoted strings, so run `agent-browser eval '…'` as
-its own invocation. A batch step splits on spaces, so `hover .a .b` silently hovers `.a` — use a
-single-token selector. Hovering twice in a row without moving away first fires no second
-`pointerover`, so a hover test starts by hovering something else. The dev panels start minimized —
-`dblclick floating-view>header` opens the first one (Balance Lab).
-
-To reach the game over panel, end the fight on demand — `{type: 'wipe', faction: 'enemy'}` for the
-victory side, `'party'` for defeat. Also two buttons in the Balance Lab.
-
-Tooltips are one element for the whole game (`src/components/tooltip.ts`). An icon claims it with
-`data-tip="kind:id"` and its component registers what that kind draws — never rendered text, so the
-body redraws live with the rest of the UI. Its edge and flip behaviour is easiest to check on a
-throwaway mockup page (below) with anchors parked in all four corners.
-
-To explore a UI direction, build a throwaway `public/*-mockup.html` (gitignored, self-contained,
-loading real assets by URL) with several variants in one file on a keypress switcher, and one of them
-a recreation of the current UI as the control. Screenshot them and compare.
+Components are tested in the real browser, never in a simulated DOM. Follow the browser workflow and
+interaction gotchas in [docs/simulation.md](./docs/simulation.md#test-in-the-browser).
 
 [docs/performance.md](./docs/performance.md) is how we time a frame — `src/perf.ts` is on in the real
 build, and `perf.report()` in the page prints the table. Measure before believing anything is slow.
