@@ -6,11 +6,11 @@ import {buildSplashIntro, buildIntro, buildLeaveGame} from './animations'
 import type {DevConsole} from './components/dev-console'
 import type {AnimationDebugger} from './components/animation-debugger'
 import {InputManager} from './input-manager'
-import {installTooltips, drawTooltip} from './components/tooltip'
+import {installTooltips, drawTooltip, registerTip} from './components/tooltip'
 import * as perf from './perf'
 import {loadFightHistory} from './fight-history'
-import {dungeonOrder, dungeonRegistry} from './nodes/dungeon'
-import {loadJournal, readJournal} from './journal'
+import {dungeonOrder, dungeonRegistry, type DungeonId} from './nodes/dungeon'
+import {loadJournal, readJournal, subscribeJournal} from './journal'
 import {canAccessMalleable} from './access'
 import {scenePaths} from './nodes/fight'
 import './components/dev-console'
@@ -21,6 +21,22 @@ import './components/fight-report'
 import './components/journal-view'
 import './components/color-palette.js'
 import './components/balance-lab'
+
+registerTip('dungeon-lock', (dungeonId) => {
+	const id = dungeonId as DungeonId
+	const index = dungeonOrder.indexOf(id)
+	if (index < 0) return null
+	const requirements = readJournal()
+		.dungeonProgression.slice(0, index)
+		.filter((progress) => !progress.completed)
+		.map((progress) => dungeonRegistry[progress.dungeonId].name)
+	if (!requirements.length) return null
+
+	return html`<article class="Tooltip-body">
+		<h3>${dungeonRegistry[id].name}</h3>
+		<p>Mend ${new Intl.ListFormat('en').format(requirements)} to unlock this dungeon.</p>
+	</article>`
+})
 
 /**
  * Main entry point for the game.
@@ -45,6 +61,7 @@ async function main() {
 	// and re-rasterizes the giant title, which reads as jank no matter what GSAP does.
 	let splashIntro: ReturnType<typeof buildSplashIntro> | null = null
 	let splashActive = !skipSplash
+	let booting = false
 	if (splashActive)
 		void document.fonts.ready.then(() => {
 			if (!splashActive) return
@@ -53,7 +70,9 @@ async function main() {
 				if (splashActive) splashIntro = buildSplashIntro()
 			}, 100)
 		})
-	const bootGame = (init: (game: GameLoop) => void) => {
+	const bootGame = async (init: (game: GameLoop) => void) => {
+		if (booting) return
+		booting = true
 		splashActive = false
 		splashIntro?.kill()
 
@@ -79,6 +98,7 @@ async function main() {
 				input.destroy()
 				game.draw = undefined
 				game.disconnect()
+				booting = false
 				if (window.balancemender === game) delete window.balancemender
 				if (element) render(element, html``)
 				if (menuElement) render(menuElement, html``)
@@ -103,6 +123,9 @@ async function main() {
 		animDebugger?.init(game)
 
 		game.render()
+		// Keep the splash opaque until the selected room painting can take over the frame.
+		const background = element?.querySelector<HTMLImageElement>('.Game-bg img')
+		if (background) await background.decode().catch(() => undefined)
 		intro = buildIntro()
 		// Malleable is composed while paused. Its visible Play control is the only player input that
 		// starts the clock; ordinary dungeons still begin when their intro completes.
@@ -117,19 +140,20 @@ async function main() {
 
 	const startGame = (dungeonId: string) => bootGame((game) => game.perform({type: 'startDungeon', dungeon: dungeonId}))
 	const startMalleable = () => {
-		if (canAccessMalleable(readJournal())) bootGame((game) => game.perform({type: 'enterMalleable'}))
+		if (canAccessMalleable(readJournal())) void bootGame((game) => game.perform({type: 'enterMalleable'}))
 	}
 	// One step: the splash IS the dungeon list. A tap on a dungeon starts the run.
 	const prompt = document.querySelector('.Splash-prompt')
-	const malleableUnlocked = canAccessMalleable(readJournal())
-	if (prompt && !skipSplash)
+	const renderDungeonChoices = () => {
+		if (!prompt || skipSplash) return
+		const journal = readJournal()
 		render(
 			prompt,
 			html`<span class="Splash-dungeonsHeading">Choose your dungeon</span>
 				<div class="Splash-dungeons">
 					${dungeonOrder.map((dungeonId) => {
 						const dungeon = dungeonRegistry[dungeonId]
-						const progression = readJournal().dungeonProgression.find((candidate) => candidate.dungeonId === dungeon.id)
+						const progression = journal.dungeonProgression.find((candidate) => candidate.dungeonId === dungeon.id)
 						const scene = dungeon.rooms[0]?.scene
 						const painting = scene ? scenePaths(scene) : null
 						return html`
@@ -137,6 +161,7 @@ async function main() {
 								class="Button Splash-dungeon"
 								type="button"
 								.disabled=${!progression?.unlocked}
+								data-tip=${progression?.unlocked ? null : `dungeon-lock:${dungeon.id}`}
 								style=${painting
 									? `--dungeon-image: url(${painting.landscape}); --dungeon-image-portrait: url(${painting.portrait})`
 									: ''}
@@ -144,16 +169,29 @@ async function main() {
 							>
 								${dungeon.name}
 								<span class="Splash-dungeonRooms" aria-hidden="true">
-									${dungeon.rooms.map(() => html`<span class="Splash-dungeonRoom"></span>`)}
+									${dungeon.rooms.map(
+										(room) => html`<span
+											class="Splash-dungeonRoom"
+											data-mended=${progression?.completedRoomIds.includes(room.id)}
+										></span>`,
+									)}
 								</span>
 							</button>
 						`
 					})}
-					<button class="Button Button--custom" type="button" .disabled=${!malleableUnlocked} onclick=${startMalleable}>
+					<button
+						class="Button Button--custom"
+						type="button"
+						.disabled=${!canAccessMalleable(journal)}
+						onclick=${startMalleable}
+					>
 						Create custom game
 					</button>
 				</div>`,
 		)
+	}
+	renderDungeonChoices()
+	subscribeJournal(renderDungeonChoices)
 
 	if (debugSplash) {
 		// Hold the splash up and hand it to the animation debugger so we can scrub the intro/outro.
@@ -165,7 +203,7 @@ async function main() {
 	if (skipSplash) {
 		const malleable = urlParams.has('malleable')
 		if (malleable && canAccessMalleable(readJournal())) startMalleable()
-		else startGame('TheGreen')
+		else void startGame('TheGreen')
 	}
 }
 

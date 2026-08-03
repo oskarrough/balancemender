@@ -48,14 +48,14 @@
 
 .Splash-prompt {
 	/* Carries the gap the subtitle used to hold open between title and dungeon buttons. */
-	margin-top: 3rem;
+	margin-top: 5vh;
 	color: var(--c-snow-white);
 	opacity: 0;
 }
 
 .Splash-dungeonsHeading {
 	display: block;
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.8rem;
 }
 
 .Splash-dungeons {
@@ -69,6 +69,7 @@
 
 .Button.Button--custom {
 	min-height: 3rem;
+	padding-inline: 0.6rem;
 	background-color: var(--c-french-grey);
 	color: var(--c-black);
 }
@@ -122,6 +123,10 @@
 	display: block;
 	width: 0.4rem;
 	height: 0.4rem;
+	border: 1px solid currentColor;
 	border-radius: 50%;
+}
+
+.Splash-dungeonRoom[data-mended='true'] {
 	background: currentColor;
 }
