@@ -32,6 +32,9 @@ export function currentGame(): GameLoop | undefined {
 	return window.balancemender instanceof GameLoop ? window.balancemender : undefined
 }
 
+/** Tells UI outside the game render tree which fight is now live. */
+export const gameEvents = new EventTarget()
+
 /**
  * A dungeon being played: which one, which room you are in, and the fight-clock ms of each room
  * already cleared. The room you are in is not in `times` yet — it reads `elapsedTime`.
@@ -172,6 +175,7 @@ export class GameLoop extends Loop {
 		// having happened in this fight's future and never expire.
 		this.lastRefusal = undefined
 		this.gameOverHandled = false
+		if (this.combatLog.notify) gameEvents.dispatchEvent(new CustomEvent('game-enter', {detail: this}))
 		this.render()
 	}
 

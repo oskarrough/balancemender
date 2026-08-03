@@ -62,6 +62,10 @@
 	background: var(--c-black);
 }
 
+.Journal-room[data-state='mended'] .Journal-roomName {
+	text-decoration: line-through;
+}
+
 .Journal-room[data-state='here'] .Journal-dot {
 	background: var(--c-chrome-yellow);
 }

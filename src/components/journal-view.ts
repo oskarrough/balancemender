@@ -1,6 +1,7 @@
 import {html, render} from 'uhtml'
 import {dungeonOrder, dungeonRegistry} from '../nodes/dungeon'
 import {readJournal, subscribeJournal, type DungeonProgression} from '../journal'
+import {currentGame, gameEvents, type GameLoop} from '../nodes/game-loop'
 import './floating-view.js'
 
 /** How far a country reads, in the register the universe allows — no conquest words. */
@@ -16,19 +17,28 @@ function dungeonNote(progress: DungeonProgression) {
  */
 export class JournalView extends HTMLElement {
 	private unsubscribe?: () => void
+	private game?: GameLoop
+	private onGameEnter = (event: Event) => {
+		this.game = (event as CustomEvent<GameLoop>).detail
+		this.render()
+	}
 
 	connectedCallback() {
+		this.game = currentGame()
 		this.unsubscribe = subscribeJournal(() => this.render())
+		gameEvents.addEventListener('game-enter', this.onGameEnter)
 		this.render()
 	}
 
 	disconnectedCallback() {
 		this.unsubscribe?.()
 		this.unsubscribe = undefined
+		gameEvents.removeEventListener('game-enter', this.onGameEnter)
 	}
 
 	render() {
 		const journal = readJournal()
+		const run = this.game?.dungeonRun
 		const tpl = html`
 			<div class="Journal">
 				${dungeonOrder.map((dungeonId) => {
@@ -44,17 +54,15 @@ export class JournalView extends HTMLElement {
 							</header>
 							<ol class="Journal-rooms">
 								${dungeon.rooms.map((room, index) => {
-									// One room is "here": the room this dungeon would start you in.
-									const state = mended.has(room.id)
-										? 'mended'
+									const here = this.game
+										? run?.dungeon.id === dungeonId && index === run.room
 										: progress.unlocked && index === progress.firstUnmendedRoomIndex
-											? 'here'
-											: 'ahead'
+									const state = mended.has(room.id) ? 'mended' : here ? 'here' : 'ahead'
 									return html`
 										<li class="Journal-room" data-state=${state}>
 											<i class="Journal-dot"></i>
 											<span class="Journal-roomName">${room.name ?? room.id}</span>
-											<em class="Journal-note">${state === 'mended' ? 'Mended.' : state === 'here' ? 'here' : ''}</em>
+											<em class="Journal-note">${here ? 'here' : ''}</em>
 										</li>
 									`
 								})}
