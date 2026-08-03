@@ -44,7 +44,7 @@ describe('Lance', () => {
 		})
 	})
 
-	it('lets its landing sound outlive cast cleanup', async () => {
+	it('keeps the generic precast and gives its ranged hit a distinct landing sound', async () => {
 		const sim = new SimLoop({party: [], enemies: ['Runt']})
 		game = sim
 		await settle()
@@ -57,7 +57,9 @@ describe('Lance', () => {
 		sim.runFrame(1500)
 		await settle()
 
-		expect(play).toHaveBeenCalledWith('spell_cast')
+		expect(play).toHaveBeenCalledWith('spell_precast', {loop: true, owner: expect.any(Lance)})
+		expect(play).toHaveBeenCalledWith('combat_arrow')
+		expect(play).not.toHaveBeenCalledWith('spell_cast')
 	})
 
 	it('refuses ally targets', () => {

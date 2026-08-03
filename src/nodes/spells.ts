@@ -52,6 +52,7 @@ export class Lance extends Ability {
 	static castTime = 1500
 	static cooldown = 0
 	static gcd = true
+	static sound = 'combat_arrow'
 	static effects = [new Damage(0.2)]
 }
 
