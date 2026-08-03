@@ -136,9 +136,11 @@ export function formatAggregate(results: FightResult[]): string {
 	const wasted = avg(healers.map((h) => h?.wasted ?? 0))
 	const manaEnd = avg(healers.map((h) => h?.endMana ?? 0))
 	const manaMax = avg(healers.map((h) => h?.maxMana ?? 0))
+	const location = formatFightLocation(results[0].location)
 
 	const lines = [
 		`${results.length} fights · ${party.join(' + ')} vs ${enemies.join(' + ')} · ${bot}`,
+		...(location ? [`  ${location}`] : []),
 		'',
 		'  ' +
 			OUTCOMES.map(

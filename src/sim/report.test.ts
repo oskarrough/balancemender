@@ -93,6 +93,64 @@ describe('analyze', () => {
 		expect(report.units.find((a) => a.name === 'Tank')!.busyTime).toBe(0)
 	})
 
+	it('clips a final cast to the time left in the fight', () => {
+		const clipped = analyze(
+			[
+				event({time: 0, eventType: 'FIGHT_START'}),
+				event({
+					time: 500,
+					eventType: 'SPELL_CAST_START',
+					sourceId: 'player',
+					sourceName: 'Player',
+					abilityId: 'Mend',
+					abilityName: 'Mend',
+					busyFor: 1500,
+				}),
+			],
+			{duration: 1000},
+		)
+
+		expect(clipped.units.find((unit) => unit.name === 'Player')?.busyTime).toBe(500)
+	})
+
+	it('ends busy time when a cast is interrupted', () => {
+		const interrupted = analyze(
+			[
+				event({time: 0, eventType: 'FIGHT_START'}),
+				event({
+					time: 500,
+					eventType: 'SPELL_CAST_START',
+					sourceId: 'player',
+					sourceName: 'Player',
+					abilityId: 'Mend',
+					abilityName: 'Mend',
+					castId: 'Mend#1',
+					busyFor: 3000,
+				}),
+				event({
+					time: 1000,
+					eventType: 'SPELL_CAST_INTERRUPTED',
+					sourceId: 'player',
+					sourceName: 'Player',
+					abilityId: 'Mend',
+					abilityName: 'Mend',
+					castId: 'Mend#1',
+				}),
+			],
+			{duration: 5000},
+		)
+
+		expect(interrupted.units.find((unit) => unit.name === 'Player')?.busyTime).toBe(500)
+	})
+
+	it('counts hits taken separately from hits dealt', () => {
+		const tank = report.units.find((unit) => unit.name === 'Tank')!
+		const wolf = report.units.find((unit) => unit.name === 'Wolf')!
+
+		expect(tank.hitsTaken).toBe(1)
+		expect(wolf.hitsTaken).toBe(1)
+	})
+
 	it('ignores failed casts instead of counting a success or busy time', () => {
 		const failed = analyze(
 			[
@@ -325,6 +383,27 @@ describe('absorption', () => {
 
 		expect(report.units.find((a) => a.name === 'Player')!.absorbed).toBe(25)
 		expect(report.units.find((a) => a.name === 'Tank')!.absorbed).toBe(0)
+	})
+
+	it('counts a fully absorbed attack as targeting pressure', () => {
+		const report = analyze(
+			[
+				shield({eventType: 'SPELL_ABSORBED', value: 25}),
+				event({
+					eventType: 'SWING_DAMAGE',
+					sourceId: 'wolf',
+					sourceName: 'Wolf',
+					targetId: 'tank',
+					targetName: 'Tank',
+					value: 0,
+				}),
+			],
+			{units},
+		)
+		const tank = report.units.find((unit) => unit.name === 'Tank')!
+
+		expect(tank.hitsTaken).toBe(1)
+		expect(tank.damageTaken).toBe(0)
 	})
 
 	// A recast wastes the remainder as surely as a shield that timed out, so the refresh carries it

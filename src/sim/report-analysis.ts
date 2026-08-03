@@ -23,12 +23,19 @@ interface AnalysisSummary {
 	totals: {damage: number; healing: number; overhealing: number; dps: number; hps: number}
 }
 
+interface BusyWindow {
+	start: number
+	end: number
+	castId?: string
+}
+
 /** Reduce the combat log into report rows, then finish their presentation values. */
 export function accumulateEvents(events: CombatLogEvent[], options: AccumulateOptions): AnalysisSummary {
 	const units = new Map<string, UnitStats>()
 	const abilities = new Map<string, AbilityStats>()
 	const casts = new Map<string, CastStats>()
 	const deaths: Death[] = []
+	const busy = new Map<UnitStats, BusyWindow[]>()
 	const source = (event: CombatLogEvent) => unit(units, event.sourceId, event.sourceName)
 	const target = (event: CombatLogEvent) => unit(units, event.targetId, event.targetName)
 	/** When each unit currently below the injured line dropped there. Empty means nobody is. */
@@ -48,7 +55,9 @@ export function accumulateEvents(events: CombatLogEvent[], options: AccumulateOp
 			const attacker = source(event)
 			attacker.damageDone += value
 			attacker.hits++
-			target(event).damageTaken += value
+			const defender = target(event)
+			defender.damageTaken += value
+			defender.hitsTaken++
 			ability(abilities, event.abilityId, event.abilityName, value, 0)
 		} else if (isHeal(event.eventType)) {
 			const healer = source(event)
@@ -67,8 +76,16 @@ export function accumulateEvents(events: CombatLogEvent[], options: AccumulateOp
 			if (event.wasted) source(event).wasted += event.wasted
 		} else if (event.eventType === 'SPELL_CAST_START') {
 			// Counted at the start, not the success: an interrupted cast still cost the caster the
-			// time it spent casting.
-			source(event).busyTime += event.busyFor ?? 0
+			// time it spent casting. Keep the promised window until interrupts, deaths and the fight
+			// boundary can clip it below.
+			const stats = source(event)
+			const windows = busy.get(stats) ?? []
+			windows.push({start: at(event), end: at(event) + (event.busyFor ?? 0), castId: event.castId})
+			busy.set(stats, windows)
+		} else if (event.eventType === 'SPELL_CAST_INTERRUPTED') {
+			const windows = busy.get(source(event))
+			const window = windows?.findLast((candidate) => !event.castId || candidate.castId === event.castId)
+			if (window) window.end = Math.min(window.end, at(event))
 		} else if (event.eventType === 'SPELL_CAST_SUCCESS') {
 			source(event).casts++
 			const stats = ability(abilities, event.abilityId, event.abilityName, 0, 0)
@@ -104,6 +121,13 @@ export function accumulateEvents(events: CombatLogEvent[], options: AccumulateOp
 	// Units spawn at full health, so anyone still injured at the last event has been since their
 	// last crossing. The fight's end closes the interval.
 	for (const [stats, since] of injuredSince) stats.injuredTime += options.start + options.duration - since
+	const fightEnd = options.start + options.duration
+	for (const [stats, windows] of busy) {
+		const unitEnd = stats.deathTime === undefined ? fightEnd : options.start + stats.deathTime
+		stats.busyTime = sum(windows, (window) =>
+			Math.max(0, Math.min(window.end, unitEnd) - Math.max(window.start, options.start)),
+		)
+	}
 
 	return finalize(units, abilities, casts, deaths, options)
 }
@@ -197,6 +221,7 @@ function unit(units: Map<string, UnitStats>, id?: string, name = 'unknown') {
 			name,
 			damageDone: 0,
 			damageTaken: 0,
+			hitsTaken: 0,
 			healingDone: 0,
 			overhealing: 0,
 			healingTaken: 0,

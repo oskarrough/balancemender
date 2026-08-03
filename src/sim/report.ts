@@ -45,6 +45,8 @@ export interface UnitStats {
 	faction?: string
 	damageDone: number
 	damageTaken: number
+	/** Damage events that landed on this unit. */
+	hitsTaken: number
 	healingDone: number
 	/** Healing that landed on a full health bar and did nothing. */
 	overhealing: number

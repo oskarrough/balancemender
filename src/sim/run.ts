@@ -5,6 +5,7 @@ import {DEMO_ROOM, type RoomInput} from '../nodes/fight'
 import type {Unit} from '../nodes/unit'
 import {unitsOf, type Outcome, type UnitInfo} from './report'
 import type {FightLocation} from '../fight-location'
+import {playerAbilities, type PlayerAbilityId} from '../nodes/registry'
 
 export {unitsOf, type Outcome, type UnitInfo}
 
@@ -15,6 +16,10 @@ export {unitsOf, type Outcome, type UnitInfo}
  */
 export interface Trial {
 	room?: RoomInput
+	/** Limit the player to the kit an authored room has granted so far. */
+	abilities?: readonly PlayerAbilityId[]
+	/** Stable authored location when this trial came from a dungeon room. */
+	location?: FightLocation
 	/** How the healer plays. See `src/nodes/bot.ts`. */
 	bot?: BotName | Bot
 	/** Fix the dice so the fight replays exactly. `null` for real randomness. */
@@ -49,7 +54,7 @@ export interface FightResult {
  * anyone and two of these can run at once — see [#67](https://github.com/oskarrough/balancemender/issues/67).
  */
 export async function runFight(trial: Trial = {}): Promise<FightResult> {
-	const {room = DEMO_ROOM, bot = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = trial
+	const {room = DEMO_ROOM, abilities, location, bot = 'triage', seed = 1, maxDuration = 120_000, fps = 60} = trial
 	const lineup: RoomInput = {
 		...room,
 		party: room.party ?? DEMO_ROOM.party,
@@ -64,6 +69,8 @@ export async function runFight(trial: Trial = {}): Promise<FightResult> {
 	try {
 		game = new SimLoop(lineup, seed)
 		await flush() // vroum mounts nodes in a microtask
+		if (abilities) game.player.abilities = Object.fromEntries(abilities.map((id) => [id, playerAbilities[id]]))
+		game.combatLog.location = location
 
 		new BotDriver(game.player, bot)
 		await flush()

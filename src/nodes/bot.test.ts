@@ -40,6 +40,18 @@ describe('direct-healing bots', () => {
 		game.player.mana.set(Mend.cost)
 		expect(panic(game.player)).toMatchObject({ability: 'Mend', target: tank})
 	})
+
+	it('falls back to abilities the current room has granted', () => {
+		game = new GameLoop({party: ['Tank'], enemies: []})
+		const tank = game.party[0]
+		game.player.abilities = {Mend}
+		tank.health.set(tank.health.max * 0.3)
+
+		expect(triage(game.player)).toMatchObject({ability: 'Mend', target: tank})
+		expect(panic(game.player)).toMatchObject({ability: 'Mend', target: tank})
+		expect(renewBot(game.player)).toMatchObject({ability: 'Mend', target: tank})
+		expect(shieldBot(game.player)).toMatchObject({ability: 'Mend', target: tank})
+	})
 })
 
 describe('shield bot', () => {

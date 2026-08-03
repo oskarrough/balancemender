@@ -2,7 +2,7 @@ import {Task} from '../vroum'
 import type {Unit} from './unit'
 import type {Player} from './player'
 import {Tank} from './party-units'
-import {playerAbilities, type PlayerAbilityId} from './registry'
+import type {PlayerAbilityId} from './registry'
 import {AbilityUse} from './ability-use'
 import type {GameLoop} from './game-loop'
 
@@ -51,8 +51,10 @@ export type Bot = (player: Player) => Decision | undefined
  * The same question the action bar asks, so a bot cannot decide to cast something the game would
  * refuse. Comparing `cost` to mana here instead would drift the moment spells grow cooldowns.
  */
-const castable = (player: Player, ability: PlayerAbilityId, target: Unit) =>
-	!AbilityUse.whyNotUse(player, playerAbilities[ability], target)
+const castable = (player: Player, ability: PlayerAbilityId, target: Unit) => {
+	const AbilityClass = player.abilities[ability]
+	return AbilityClass ? !AbilityUse.whyNotUse(player, AbilityClass, target) : false
+}
 const hasAura = (target: Unit, id: string) => [...target.auras].some((aura) => aura.id === id)
 
 /** Whoever is closest to death, ties broken by lowest absolute health. Never a corpse. */

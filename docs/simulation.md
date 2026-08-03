@@ -17,12 +17,13 @@ That is why the terminal and the in-game Fight report agree: one analysis, one e
 ## From the terminal
 
 ```
-bun run sim                                        # the demo fight
-bun run sim --enemies 'Runt*3' --bot panic     # three wolves, a bad healer
-bun run sim --repeat 20                            # 20 seeds, summarised
+bun run sim                                          # the demo fight
+bun run sim --enemies 'Runt*3' --bot panic           # three wolves, a bad healer
+bun run sim --repeat 20                              # 20 seeds, summarised
 bun run sim --repeat 20 --tune 'ability:Mend.cost=40'
-bun run sim --json > fight.json                    # every event, for your own analysis
-bun run sim --party= --enemies Pup             # no tank — the dungeon's first room
+bun run sim --room green-howling --bot triage        # an authored dungeon room
+bun run sim --json > fight.json                      # every event, for your own analysis
+bun run sim --party= --enemies Pup                   # an invented fight with no tank
 ```
 
 `--help` lists the flags for both commands. **Redirect `--json`, never pipe it** — a fight's events
@@ -32,10 +33,13 @@ run to hundreds of kilobytes and a pipe truncates mid-object, which reads as a b
 party from `dungeon.ts` — `--party 'Tank,Wren,Clover'` for the late dungeons. A 2-body run of a
 3-body room reports catastrophe that is not there.
 
-**An empty party needs `--party=`, glued together.** `--party ''` exits with "argument is
-ambiguous" — `parseArgs` cannot tell an empty value from a missing one. It is the only way to
-simulate room one, where the player is alone. `sweep` has no `--party` at all and always brings the
-tank, so a solo room belongs to `sim` or to `runFight({room})` directly.
+**Prefer `--room` when judging a dungeon room.** It resolves the exact enemies, party, and abilities
+available at that point in progression, including grants from earlier dungeons. `--party` and
+`--enemies` remain useful for invented compositions, but cannot reproduce progression on their own.
+
+**An ad-hoc empty party needs `--party=`, glued together.** `--party ''` exits with "argument is
+ambiguous" — `parseArgs` cannot tell an empty value from a missing one. For the authored solo opener,
+use `--room green-stray-pup` instead.
 
 One fight prints health over time, per-unit and per-ability totals, and deaths:
 
@@ -104,6 +108,27 @@ Read it in this order:
 The curve is quadratic on purpose — the tank kills enemies one at a time, so each one added both
 raises incoming damage and lengthens the fight. It used to be inverted, three wolves unwinnable
 while the boss was free, which is what a sweep is for finding (#40).
+
+## Benchmarking one authored room
+
+`bench` compares play styles and candidate balance numbers without printing hundreds of individual
+fight reports:
+
+```sh
+bun run bench --room green-howling --bots idle,triage,renew,panic --seeds 200
+bun run bench --room green-howling --seeds 200 \
+  --variant 'harder=effect:Rile.frenzy.coefficient=0.2'
+bun run bench --room green-howling --seeds 200 --json > benchmark.json
+```
+
+Every run includes the baseline. Repeat `--variant 'name=tune,tune'` to compare candidates against
+the same seeds; JSON contains only the compact summaries, not combat events.
+
+The outcome table distinguishes ordinary wins from **clean wins** where the whole party survives,
+and calls out wins that arrive after the player falls. The pressure table shows who receives the
+enemy hits and damage, plus survival by party member. Together those columns reveal a room that wins
+at the intended rate while barely attacking the tank. `busy%` counts actual casting time only:
+interrupted casts and casts still in progress at death or fight end are clipped to their real span.
 
 ## From the browser, and from a test
 
@@ -192,9 +217,11 @@ Nothing has to be remembered here: the tests run in plain node, so a bad import 
 | `src/sim/run.ts`    | runs the real loop on a stepped clock, returns the log     |
 | `src/sim/report.ts` | pure analysis of a combat log, including health over time  |
 | `src/sim/format.ts` | plain-text reports                                         |
+| `src/sim/room.ts`   | authored room ids, exact lineups, and progression grants   |
 | `src/nodes/bot.ts`  | the bots, and the `BotDriver` that runs one                |
 | `scripts/sim.ts`    | one fight, or n seeds of it                                |
 | `scripts/sweep.ts`  | every enemy group × every bot, over many seeds             |
+| `scripts/bench.ts`  | one authored room × bots × candidate variants              |
 | `scripts/cli.ts`    | numbers and one-line exits, over `node:util`'s `parseArgs` |
 
 `src/rng.ts` is why any of it repeats: `new GameLoop(room, seed)` gives that fight an `Rng` of its

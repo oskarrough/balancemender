@@ -18,6 +18,7 @@ import {
 	bots,
 	applyTunes,
 	formatTune,
+	authoredRoom,
 	type FightResult,
 } from '../src/sim'
 import {bail, attempt, num} from './cli'
@@ -26,6 +27,7 @@ const {values: args} = attempt(() =>
 	parseArgs({
 		args: Bun.argv.slice(2),
 		options: {
+			room: {type: 'string'},
 			party: {type: 'string'},
 			enemies: {type: 'string'},
 			bot: {type: 'string'},
@@ -44,6 +46,7 @@ if (args.help) {
 		`
 bun run sim [options]
 
+  --room     <id>      exact authored room, including its party and granted abilities
   --party    <units>   allies besides you, comma separated (default Tank)
   --enemies  <units>   enemies, comma separated, "Name*3" to repeat (default Runt)
   --bot      <name>    how the healer plays: ${Object.keys(bots).join(', ')} (default triage)
@@ -65,16 +68,24 @@ bun run sim [options]
 const tuned = attempt(() => applyTunes(args.tune ?? []).map(formatTune))
 
 // parseUnits validates against the unit registry and throws with the list of known units.
-const trial = attempt(() => ({
-	room: {
-		// `--party=` is a real answer — the player alone — so only an absent flag takes the default.
-		party: args.party !== undefined ? parseUnits(args.party) : undefined,
-		enemies: args.enemies ? parseUnits(args.enemies) : undefined,
-	},
-	bot: (args.bot ?? 'triage') as keyof typeof bots,
-	seed: num('seed', args.seed, 1),
-	maxDuration: num('duration', args.duration, 120) * 1000,
-}))
+const trial = attempt(() => {
+	if (args.room && (args.party !== undefined || args.enemies !== undefined)) {
+		throw new Error('--room cannot be combined with --party or --enemies')
+	}
+	const scenario = args.room ? authoredRoom(args.room).trial : undefined
+	return {
+		...(scenario ?? {
+			room: {
+				// `--party=` is a real answer — the player alone — so only an absent flag takes the default.
+				party: args.party !== undefined ? parseUnits(args.party) : undefined,
+				enemies: args.enemies ? parseUnits(args.enemies) : undefined,
+			},
+		}),
+		bot: (args.bot ?? 'triage') as keyof typeof bots,
+		seed: num('seed', args.seed, 1),
+		maxDuration: num('duration', args.duration, 120) * 1000,
+	}
+})
 
 if (!(trial.bot in bots)) {
 	bail(`Unknown bot "${trial.bot}". Known: ${Object.keys(bots).join(', ')}`)

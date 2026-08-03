@@ -38,7 +38,8 @@ Don't guess at balance — run it:
 
 ```
 bun run sim --enemies 'Runt*3' --bot triage --repeat 10   # how this fight usually goes
-bun run sweep --seeds 200                                     # the shape of the curve
+bun run sweep --seeds 200                                 # the shape of the curve
+bun run bench --room green-howling --seeds 200            # exact room, bots, clean wins, pressure
 ```
 
 One seed cannot tell a balanced fight from a lucky roll, and one enemy group cannot tell you the
