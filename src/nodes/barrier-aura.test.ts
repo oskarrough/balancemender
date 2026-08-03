@@ -88,6 +88,16 @@ describe('absorbing', () => {
 		expect([...game.party[0].auras]).toHaveLength(0)
 	})
 
+	it('drops an empty barrier when a hit reaches it', async () => {
+		await start()
+		new BarrierAura(game.party[0], game.player, planted(0))
+		await settle()
+
+		bite(game.party[0], 20)
+
+		expect([...game.party[0].auras]).toHaveLength(0)
+	})
+
 	it('walks barriers oldest first', async () => {
 		await start()
 		// Two casters, or the second would supersede the first rather than join it — see `stackKey`.

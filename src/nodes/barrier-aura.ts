@@ -56,7 +56,10 @@ export class BarrierAura extends Aura {
 	 */
 	absorb(damage: number): number {
 		const absorbed = Math.min(this.pool, damage)
-		if (absorbed <= 0) return 0
+		if (absorbed <= 0) {
+			if (this.pool <= 0) this.spend()
+			return 0
+		}
 		this.pool -= absorbed
 
 		const {combatLog} = this.root as GameLoop
@@ -78,14 +81,16 @@ export class BarrierAura extends Aura {
 		// An empty barrier is a spent one. It leaves `auras` here rather than on the microtask
 		// `disconnect()` defers to, so a second hit in the same tick — and the unit frame — never
 		// walk a barrier with nothing left in it. Same reason `supersede()` does it by hand.
-		if (this.pool <= 0) {
-			log('aura:spent', this.name)
-			this.parent.auras.delete(this)
-			this.pause()
-			this.disconnect()
-		}
+		if (this.pool <= 0) this.spend()
 
 		return absorbed
+	}
+
+	private spend() {
+		log('aura:spent', this.name)
+		this.parent.auras.delete(this)
+		this.pause()
+		this.disconnect()
 	}
 
 	/** Unspent absorption is this spell's overheal. See `wasted` in combatlog.ts. */
