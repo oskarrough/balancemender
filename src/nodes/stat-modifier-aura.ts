@@ -24,13 +24,9 @@ export class StatModifierAura extends Aura {
 	 * the stat it adds. A class default stands in for one constructed without a landing behind it.
 	 */
 	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
-		super(parent, caster)
+		super(parent, caster, planted)
 		applyStatics(this, 'stat', 'modifier')
-		if (planted) {
-			this.modifier = planted.magnitude
-			this.castId = planted.castId
-		}
-		this.delay = (this.constructor as typeof StatModifierAura).lifetime
+		if (planted) this.modifier = planted.magnitude
 	}
 
 	mount() {

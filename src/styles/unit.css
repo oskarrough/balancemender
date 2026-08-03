@@ -207,7 +207,7 @@
 .Bar-regen {
 	margin-left: 0.2rem;
 	font-style: normal;
-	opacity: 0.8;
+	opacity: 0.4;
 	transition: opacity 200ms;
 }
 

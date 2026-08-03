@@ -1,6 +1,7 @@
 import {abilityRegistry, type AbilityId, type PlayerAbilityId} from './nodes/registry'
 import {dungeonOrder, dungeonRegistry, type DungeonId} from './nodes/dungeon'
 import type {FightLocation} from './fight-location'
+import {serialQueue} from './utils'
 
 /** The schema version stored in the player's one Journal record. */
 export const JOURNAL_SCHEMA_VERSION = 1
@@ -60,7 +61,8 @@ function storage(): JournalStorage {
 const journalEvents = new EventTarget()
 let record = emptyRecord()
 let loaded = false
-let operations = Promise.resolve()
+/** Serializes read/modify/write operations so two victories cannot overwrite one another. */
+const enqueue = serialQueue()
 
 function emptyRecord(): JournalRecord {
 	return {
@@ -119,16 +121,6 @@ function persist() {
 
 function notify() {
 	journalEvents.dispatchEvent(new Event('change'))
-}
-
-/** Serialize read/modify/write operations so two victories cannot overwrite one another. */
-function enqueue<T>(operation: () => T | PromiseLike<T>): Promise<T> {
-	const result = operations.then(operation)
-	operations = result.then(
-		() => undefined,
-		() => undefined,
-	)
-	return result
 }
 
 /** Load the Journal explicitly before rendering progression-dependent UI. */

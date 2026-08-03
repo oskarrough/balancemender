@@ -3,6 +3,7 @@ import {createIndexedDbPersister} from 'tinybase/persisters/persister-indexed-db
 import {COMBATLOG_SCHEMA, type CombatLogEvent} from './combatlog'
 import type {FightLocation} from './fight-location'
 import type {Outcome, UnitInfo} from './sim/report'
+import {serialQueue} from './utils'
 
 const DB_NAME = 'balancemender-fight-history-v1'
 const TABLE = 'fights'
@@ -47,17 +48,8 @@ const persister = createIndexedDbPersister(store, DB_NAME, undefined, (error) =>
 
 let status: FightHistoryView['status'] = 'loading'
 let selection: FightSelection = {status: 'live'}
-let operations = Promise.resolve()
-
-/** Keep persistence mutations ordered and the queue usable after a failure. */
-function enqueue<T>(operation: () => T | PromiseLike<T>): Promise<T> {
-	const result = operations.then(operation)
-	operations = result.then(
-		() => undefined,
-		() => undefined,
-	)
-	return result
-}
+/** Keeps persistence mutations ordered so two writes cannot overwrite one another. */
+const enqueue = serialQueue()
 
 /** Fires when loading, rows, or the shared panel selection changes. */
 export const fightHistoryEvents = new EventTarget()

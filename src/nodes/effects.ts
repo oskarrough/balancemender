@@ -126,15 +126,20 @@ function rollDamage(landing: Landing, coefficient: number) {
 	return (landing.ability.root as GameLoop).rng.int(min, max)
 }
 
-/** Damage rolled around what this landing resolves to, and the flinch that sells it. */
+/** One rolled hit of `coefficient` size on the landing's target, and the flinch that sells it. */
+function damageHit(landing: Landing, coefficient: number) {
+	hit(landing, -rollDamage(landing, coefficient), landing.ability.eventType)
+	shake(landing.target)
+}
+
+/** Damage rolled around what this landing resolves to. */
 export class Damage implements Effect {
 	readonly label = 'damage'
 
 	constructor(public coefficient: number) {}
 
 	apply(landing: Landing) {
-		hit(landing, -rollDamage(landing, this.coefficient), landing.ability.eventType)
-		shake(landing.target)
+		damageHit(landing, this.coefficient)
 	}
 }
 
@@ -151,9 +156,7 @@ export class AoeDamage implements Effect {
 
 	apply(landing: Landing) {
 		for (const target of eligible(landing.caster, landing.ability.targets)) {
-			const perTarget = new Landing(landing.ability, target, landing.power, landing.bonus)
-			hit(perTarget, -rollDamage(perTarget, this.coefficient), perTarget.ability.eventType)
-			shake(target)
+			damageHit(new Landing(landing.ability, target, landing.power, landing.bonus), this.coefficient)
 		}
 	}
 }
@@ -249,19 +252,13 @@ export class AoeAura implements Effect {
 		readonly auraClass: AuraClass,
 		public coefficient: number,
 	) {
-		this.label = (auraClass.mechanic ?? auraClass.id).toLowerCase()
+		this.label = auraLabel(auraClass)
 	}
 
 	apply(landing: Landing) {
-		const {ability} = landing
-		for (const target of eligible(landing.caster, ability.targets)) {
+		for (const target of eligible(landing.caster, landing.ability.targets)) {
 			if (target === landing.caster) continue
-			const magnitude = landing.resolve(this.coefficient)
-			new this.auraClass(
-				target,
-				ability.parent,
-				planted(magnitude, ability.threatMultiplier, ability.school, ability.castId),
-			)
+			plantOn(this.auraClass, landing, this.coefficient, target)
 		}
 	}
 }
@@ -275,22 +272,28 @@ export class ApplyAura implements Effect {
 		readonly auraClass: AuraClass,
 		public coefficient: number,
 	) {
-		// Declared data, not the class name: a minified build keeps these and loses the name.
-		this.label = (auraClass.mechanic ?? auraClass.id).toLowerCase()
+		this.label = auraLabel(auraClass)
 	}
 
 	apply(landing: Landing) {
-		const {target, ability} = landing
 		// An earlier effect in the same list may have killed the target, and death has already
 		// cancelled its auras. Do not plant one on a corpse afterwards.
-		if (!target.alive) return
-		const magnitude = landing.resolve(this.coefficient)
-		new this.auraClass(
-			target,
-			ability.parent,
-			planted(magnitude, ability.threatMultiplier, ability.school, ability.castId),
-		)
+		if (!landing.target.alive) return
+		plantOn(this.auraClass, landing, this.coefficient, landing.target)
 	}
+}
+
+/** Declared data, not the class name: a minified build keeps these and loses the name. */
+const auraLabel = (auraClass: AuraClass) => (auraClass.mechanic ?? auraClass.id).toLowerCase()
+
+/** Plant `auraClass` on one target, sized by what `coefficient` claims of the landing. */
+function plantOn(auraClass: AuraClass, landing: Landing, coefficient: number, target: Unit) {
+	const {ability} = landing
+	new auraClass(
+		target,
+		ability.parent,
+		planted(landing.resolve(coefficient), ability.threatMultiplier, ability.school, ability.castId),
+	)
 }
 
 /** A pixel or two either way, for the flinch below. `Math.random`, never the fight's dice: a

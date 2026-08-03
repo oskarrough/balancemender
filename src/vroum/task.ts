@@ -12,15 +12,7 @@ export class Task extends Node implements PromiseLike<void> {
 	static PLAY = 'play-task' as const
 	static PAUSE = 'pause-task' as const
 
-	static compare(this: void, a: Task, b: Task) {
-		const prioA = a.priority || Number.MAX_SAFE_INTEGER
-		const prioB = b.priority || Number.MAX_SAFE_INTEGER
-		return prioA !== prioB ? prioA - prioB : a.elapsedTime - b.elapsedTime
-	}
-
 	declare root: Loop
-
-	priority = 0
 
 	delay = 0
 	interval = 0

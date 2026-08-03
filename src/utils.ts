@@ -36,6 +36,19 @@ export function applyStatics<T extends object, K extends keyof T>(instance: T, .
 	}
 }
 
+/** A one-at-a-time queue: each operation waits for the last, and a failure does not jam it. */
+export function serialQueue() {
+	let last: Promise<unknown> = Promise.resolve()
+	return function enqueue<T>(operation: () => T | PromiseLike<T>): Promise<T> {
+		const result = last.then(operation)
+		last = result.then(
+			() => undefined,
+			() => undefined,
+		)
+		return result
+	}
+}
+
 /** Seconds into the fight, written the way the fight report writes them — `12.4s`. */
 export function formatFightTime(ms: number): string {
 	return `${(ms / 1000).toFixed(1)}s`

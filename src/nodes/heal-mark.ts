@@ -19,12 +19,6 @@ export class ThreatMark extends Aura {
 	/** Fight-wide exclusive: planting on one unit clears every other copy of this id. */
 	static exclusive = false
 
-	constructor(parent: Unit, caster: Unit, plantedAura?: {castId?: string}) {
-		super(parent, caster)
-		if (plantedAura) this.castId = plantedAura.castId
-		this.delay = (this.constructor as MarkClass).lifetime
-	}
-
 	get stackKey() {
 		return this.id
 	}
@@ -51,12 +45,6 @@ export class HealMarkGate extends Aura {
 	static lifetime = 9000
 	/** Which exclusive mark this gate plants. Subclasses must set their own. */
 	static mark: MarkClass = ThreatMark
-
-	constructor(parent: Unit, caster: Unit, plantedAura?: {castId?: string}) {
-		super(parent, caster)
-		if (plantedAura) this.castId = plantedAura.castId
-		this.delay = (this.constructor as GateClass).lifetime
-	}
 
 	/** One gate of this id on the healer, whoever applied it. */
 	get stackKey() {

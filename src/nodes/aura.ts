@@ -35,7 +35,7 @@ export class Aura extends Task {
 
 	casterName = ''
 	casterId = ''
-	/** The ability use that planted this aura, when one did — set from `PlantedAura` by subclasses. */
+	/** The ability use that planted this aura, when one did — read off `PlantedAura` below. */
 	castId?: string
 
 	/** Replaced by a fresh copy rather than run out. See `supersede`. */
@@ -61,16 +61,26 @@ export class Aura extends Task {
 	 * `ShieldBarrier` inherits `barrier` while its cast and absorbs report together as Shield.
 	 */
 	declare static mechanic?: string
+	/**
+	 * How long the aura sits on its unit, in ms, for the kinds that expire on a clock — a barrier,
+	 * a mark. Mirrored onto `Task.delay` at construction, the way `Ability.castTime` is. A periodic
+	 * aura leaves it unset: its span is already `interval × repeat`.
+	 */
+	declare static lifetime?: number
 
 	/** `parent` is the unit it lands on; `caster` is who to credit it to. */
 	constructor(
 		public parent: Unit,
 		public caster: Unit,
+		planted?: {castId?: string},
 	) {
 		super(parent)
 		applyStatics(this, 'id', 'name', 'maxStacks')
 		this.casterName = caster.name
 		this.casterId = caster.id
+		this.castId = planted?.castId
+		const {lifetime} = this.constructor as typeof Aura
+		if (lifetime !== undefined) this.delay = lifetime
 	}
 
 	/**

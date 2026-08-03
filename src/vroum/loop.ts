@@ -79,10 +79,6 @@ export class Loop extends Task {
 
 	_register(task: Task) {
 		this.tasks.push(task)
-
-		if (task.priority > 0) {
-			this.tasks.sort(Task.compare)
-		}
 	}
 
 	_kill(task: Task) {

@@ -45,13 +45,9 @@ export class BarrierAura extends Aura {
 	 * default is the whole of its pool, and `AURA_KEYS` carries it as a real dial.
 	 */
 	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
-		super(parent, caster)
+		super(parent, caster, planted)
 		applyStatics(this, 'pool')
-		if (planted) {
-			this.pool = planted.magnitude
-			this.castId = planted.castId
-		}
-		this.delay = (this.constructor as typeof BarrierAura).lifetime
+		if (planted) this.pool = planted.magnitude
 	}
 
 	/**

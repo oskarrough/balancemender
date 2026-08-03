@@ -51,7 +51,7 @@ export class PeriodicAura extends Aura {
 	 * a class default only stands in for an aura constructed without one.
 	 */
 	constructor(parent: Unit, caster: Unit, planted?: PlantedAura) {
-		super(parent, caster)
+		super(parent, caster, planted)
 		applyStatics(this, 'total', 'harms', 'interval', 'repeat')
 		this.delay = this.interval
 		// Apply separately so the default follows a subclass interval while an explicit zero wins.
@@ -60,7 +60,6 @@ export class PeriodicAura extends Aura {
 			this.total = planted.magnitude
 			this.threatMultiplier = planted.threatMultiplier
 			this.school = planted.school
-			this.castId = planted.castId
 		}
 	}
 

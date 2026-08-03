@@ -2,13 +2,6 @@ body {
 	overflow: hidden;
 }
 
-.AppChrome-splash {
-	position: fixed;
-	left: 0;
-	right: 0;
-	z-index: -1;
-}
-
 .IngameMenu {
 	position: fixed;
 	top: 0.4rem;
@@ -49,16 +42,6 @@ body {
 	& .VolumeControl input[type='range'] {
 		width: 6rem;
 	}
-}
-
-.AppChrome-splashImage {
-	display: block;
-	margin: auto;
-	width: 600px;
-	max-width: 100%;
-	height: auto;
-	margin-top: 5vh;
-	margin-bottom: 4vh;
 }
 
 #game,
@@ -221,28 +204,6 @@ body {
 	display: flex;
 	justify-content: center;
 	gap: 0px;
-}
-
-.Combatlog {
-	margin-left: auto;
-	width: 30rem;
-	max-width: 95%;
-	height: 240px;
-	position: fixed;
-	right: 0;
-	bottom: 8rem;
-	padding: 1rem 0 1rem 1rem;
-	transition: transform 600ms var(--easing);
-}
-
-.Combatlog:not(.sticky) {
-	transform: translate3d(85%, 0, 0);
-}
-
-.Combatlog:hover {
-	transition-duration: 150ms;
-	transform: translate3d(0rem, 0, 0);
-	transition-delay: 0ms;
 }
 
 /* Spans its unit frame, so the numbers inside are placed relative to that unit */
