@@ -22,7 +22,7 @@ const GAME_OVER_COPY: Record<
 	NonNullable<GameLoop['outcome']>,
 	{headline: string; blurb: (seconds: number) => string}
 > = {
-	victory: {headline: 'Mended.', blurb: (s) => `Cleared in ${s}s.`},
+	victory: {headline: 'Mended…', blurb: (s) => `Cleared in ${s}s.`},
 	defeat: {headline: 'The party falls', blurb: (s) => `You lasted ${s}s.`},
 	timeout: {headline: "Time's Up", blurb: (s) => `You held out the full ${s}s.`},
 }
@@ -35,19 +35,23 @@ function GameOver(game: GameLoop) {
 	const outcome = game.outcome ?? 'defeat'
 	const run = game.dungeonRun
 	const copy = GAME_OVER_COPY[outcome]
-	let headline = copy.headline
-	let blurb = copy.blurb(roundOne(game.elapsedTime / 1000))
+	const seconds = roundOne(game.elapsedTime / 1000)
+	const headline = copy.headline
+	let blurb = copy.blurb(seconds)
 	let label = 'Play Again'
 	let onclick = () => restartGame(game)
 
 	if (run && outcome === 'victory') {
-		if (run.room + 1 < run.dungeon.rooms.length) {
-			label = `Next: ${run.dungeon.rooms[run.room + 1]?.name}`
+		const roomNumber = run.room + 1
+		const rooms = run.dungeon.rooms
+		const room = rooms[run.room]
+		if (roomNumber < rooms.length) {
+			blurb = `Room ${roomNumber} of ${rooms.length} — ${room?.name ?? room?.id}, in ${run.dungeon.name}. Completed in ${seconds}s.`
+			label = `Next: ${rooms[roomNumber]?.name}`
 			onclick = () => nextRoom(game)
 		} else {
 			const total = run.times.reduce((sum, time) => sum + time, 0) + game.elapsedTime
-			headline = 'Dungeon cleared!'
-			blurb = `${run.dungeon.name} cleared in ${roundOne(total / 1000)}s.`
+			blurb = `The whole dungeon is complete — ${run.dungeon.name}, all ${rooms.length} rooms — in ${roundOne(total / 1000)}s.`
 			label = 'Play Again'
 			onclick = () => restartDungeon(game)
 		}
