@@ -60,7 +60,7 @@ export class Runt extends Unit {
  * arrives through `Pounce`, where the player can see it coming and answer it.
  */
 export class Pup extends Unit {
-	static stamina = 150
+	static stamina = 135
 	static intellect = 0
 	static strength = 6
 	static agility = 20
@@ -266,7 +266,7 @@ export class Howler extends Unit {
 	name = 'Howler'
 	image = '/assets/generated/characters/runt.png'
 	abilities = {Nip, Rile}
-	targeting = new Targeting(this, prefer.atRandom())
+	targeting = new Targeting(this, prefer.threat(this, 0.2))
 	nipCadence = new Cadence(this, cadenceRegistry.NipCadence)
 	rileCadence = new Cadence(this, cadenceRegistry.RileCadence)
 }

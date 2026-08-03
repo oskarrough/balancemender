@@ -54,6 +54,24 @@ describe('a cadence', () => {
 })
 
 describe('an enemy cast cadence', () => {
+	it('lets the howler rile every packmate but itself', async () => {
+		game = new GameLoop({party: ['Tank'], enemies: ['Denmother', 'Howler', 'Runt']})
+		await settle()
+		const [denmother, howler, wolf] = game.enemies
+		const before = game.enemies.map((enemy) => enemy.stats.strength)
+
+		const use = howler.useAbility('Rile', denmother)
+		expect(use.ok).toBe(true)
+		if (!use.ok) return
+		await settle()
+		use.value.tick()
+		await settle()
+
+		expect(denmother.stats.strength).toBeGreaterThan(before[0])
+		expect(howler.stats.strength).toBe(before[1])
+		expect(wolf.stats.strength).toBeGreaterThan(before[2])
+	})
+
 	it('mends the ally that needs it most', async () => {
 		game = new GameLoop({party: ['Tank'], enemies: ['Runt', 'Denmother']})
 		const [wolf, denmother] = game.enemies

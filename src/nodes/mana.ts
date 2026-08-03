@@ -57,9 +57,13 @@ export class ManaRegen extends Task {
 	}
 
 	shouldTick(): boolean {
+		return this.wait === 0 && this.parent.current < this.parent.max
+	}
+
+	/** Milliseconds until mana can start coming back. */
+	get wait(): number {
 		const gameLoop = this.root as GameLoop
-		const timeSinceCast = gameLoop.elapsedTime - this.parent.lastCastTime
-		return timeSinceCast >= this.fiveSecondRule && this.parent.current < this.parent.max
+		return Math.max(0, this.fiveSecondRule - (gameLoop.elapsedTime - this.parent.lastCastTime))
 	}
 
 	tick() {

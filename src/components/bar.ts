@@ -13,8 +13,8 @@ interface MeterProps {
 	ability?: Ability
 	/** The last stretch of a cast bar a sweet-spot tap must land in, in ms (#33). */
 	sweetSpotWindow?: number
-	/** Mana per second, and whether the five-second rule is currently letting it through. */
-	regen?: {rate: number; active: boolean}
+	/** Mana per second, whether it is flowing, and the five-second-rule wait. */
+	regen?: {rate: number; active: boolean; wait: number}
 }
 
 export function Meter({
@@ -52,6 +52,7 @@ export function Meter({
 	if (regen?.active) potentialValue = regen.rate
 
 	const label = type === 'cast' ? `${(value / 1000).toFixed(1)}s` : `${Math.round(value)}/${max}`
+	const regenLabel = regen ? `+${regen.rate}/s${regen.wait > 0 ? ` in ${Math.ceil(regen.wait / 1000)}s` : ''}` : ''
 
 	return html` <div class="Bar" data-type=${type}>
 		<div class="Bar-value" style=${`width: ${percent}%`}></div>
@@ -68,6 +69,6 @@ export function Meter({
 		${sweetSpotWindow
 			? html`<div class="Bar-sweetSpot" style=${`width: ${toPercent(sweetSpotWindow, max)}%`}></div>`
 			: null}
-		<span>${label}${regen ? html`<i class="Bar-regen" data-active=${regen.active}>+${regen.rate}</i>` : null}</span>
+		<span>${label}${regen ? html`<i class="Bar-regen" data-active=${regen.active}>${regenLabel}</i>` : null}</span>
 	</div>`
 }

@@ -22,8 +22,10 @@ describe('mana regeneration', () => {
 
 		game.elapsedTime = 4999
 		expect(mana.regen.shouldTick()).toBe(false)
+		expect(mana.regen.wait).toBe(1)
 		game.elapsedTime = 5000
 		expect(mana.regen.shouldTick()).toBe(true)
+		expect(mana.regen.wait).toBe(0)
 
 		mana.regen.tick()
 		expect(mana.current).toBe(100 + Player.spirit)

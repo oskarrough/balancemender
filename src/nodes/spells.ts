@@ -191,5 +191,5 @@ export class Lick extends Ability {
 	static castTime = 2500
 	static cooldown = 0
 	static gcd = true
-	static effects = [new Heal(1.6)]
+	static effects = [new Heal(1.2)]
 }

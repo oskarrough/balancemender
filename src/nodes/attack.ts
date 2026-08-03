@@ -263,7 +263,7 @@ export class Frenzy extends StatModifierAura {
 	static lifetime = 8000
 }
 
-/** A howl that hands a packmate Frenzy instead of hitting anything itself. */
+/** A howl that hands the rest of the pack Frenzy instead of hitting anything itself. */
 export class Rile extends Ability {
 	static id = 'Rile'
 	static name = 'Rile'
@@ -271,7 +271,7 @@ export class Rile extends Ability {
 	static school = 'holy' as const
 	static targets = 'ally' as const
 	static castTime = 2500
-	static effects = [new ApplyAura(Frenzy, 0.12)]
+	static effects = [new AoeAura(Frenzy, 0.16)]
 }
 
 /** Exclusive mark that makes Sivi target this ally directly. */

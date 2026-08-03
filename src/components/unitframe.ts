@@ -74,10 +74,15 @@ export function UnitFrame(unit: Unit, playerCast: Ability | undefined, player: P
 								type: 'mana',
 								value: unit.mana.current,
 								max: unit.mana.max,
-								/* Only your own pool carries its numbers and its rate. On anyone else mana is
-								   context, and `shouldTick` is the five-second rule itself rather than a copy of it. */
+								/* Only your spent pool shows regen. `wait` comes from the rule, not UI state. */
 								regen:
-									unit === player ? {rate: unit.mana.regen.regenRate, active: unit.mana.regen.shouldTick()} : undefined,
+									unit === player && unit.mana.current < unit.mana.max
+										? {
+												rate: unit.mana.regen.regenRate,
+												active: unit.mana.regen.shouldTick(),
+												wait: unit.mana.regen.wait,
+											}
+										: undefined,
 							})
 						: null}
 				</div>
