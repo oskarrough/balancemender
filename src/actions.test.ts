@@ -6,7 +6,7 @@ import {playerAbilities} from './nodes/registry'
 import {dungeonRegistry} from './nodes/dungeon'
 import type {RoomInput} from './nodes/fight'
 import {loadCustomRoom, saveCustomRoom} from './custom-room'
-import {clearJournal, readJournal, setAbilityBar} from './journal'
+import {clearJournal, readJournal, recordVictory, setAbilityBar} from './journal'
 
 /**
  * `game.perform()` is the only way anything changes a fight, so these assertions cover the
@@ -502,6 +502,23 @@ describe('navigation actions', () => {
 
 		expect(game.dungeonRun?.dungeon.id).toBe('TheGreen')
 		expect(game.dungeonRun?.room).toBe(0)
+	})
+
+	it('restarts a dungeon from room one without clearing mended rooms', async () => {
+		const [mended] = dungeonRegistry.TheGreen.rooms
+		await recordVictory({dungeonId: 'TheGreen', roomId: mended.id})
+		game = new GameLoop({party: [], enemies: []})
+		await settle()
+		expect(game.perform({type: 'startDungeon', dungeon: 'TheGreen'})).toMatchObject({ok: true})
+		expect(game.dungeonRun?.room).toBe(1)
+		game.dungeonRun?.times.push(1200)
+
+		expect(game.perform({type: 'restartDungeon'})).toMatchObject({ok: true})
+		await settle()
+
+		expect(game.dungeonRun?.room).toBe(0)
+		expect(game.dungeonRun?.times).toEqual([])
+		expect(readJournal().completedRooms.TheGreen).toEqual([mended.id])
 	})
 
 	it('restarts the current room', async () => {

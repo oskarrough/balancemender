@@ -77,8 +77,10 @@ export type GameAction =
 	| {type: 'abilityRemove'; ability: string}
 	/** Swap an ability with its neighbor on the Journal-owned action bar. */
 	| {type: 'abilityMove'; ability: string; direction: -1 | 1}
-	/** Start a dungeon from its first room, by dungeon id. */
+	/** Start or resume a dungeon from its first unmended room, by dungeon id. */
 	| {type: 'startDungeon'; dungeon: string}
+	/** Abandon the active run and start its dungeon again from room one. */
+	| {type: 'restartDungeon'}
 	/** Move on to the next room of the dungeon you cleared. */
 	| {type: 'nextRoom'}
 	/** Replay the fight you are in. */
@@ -253,6 +255,15 @@ export function perform(game: GameLoop, action: GameAction): ActionResult<unknow
 			game.dungeonRun = {dungeon, room, times: []}
 			game.enter(dungeon.rooms[room])
 			return ok(dungeon)
+		}
+
+		case 'restartDungeon': {
+			const run = game.dungeonRun
+			if (!run) return fail('Not in a dungeon')
+			run.room = 0
+			run.times = []
+			game.enter(run.dungeon.rooms[0])
+			return ok(undefined)
 		}
 
 		case 'nextRoom': {

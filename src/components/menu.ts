@@ -1,7 +1,8 @@
 import {html} from 'uhtml'
 import {log} from '../utils'
 import {GameLoop} from '../nodes/game-loop'
-import {restartGame} from '../animations'
+import {restartDungeon, restartGame} from '../animations'
+import {resetDefaultLayout} from './floating-view.js'
 
 /** Current dungeon or room title. Dots show dungeon progress; the custom room gets the same bar without them. */
 function DungeonPager(game: GameLoop, leave: () => void) {
@@ -27,7 +28,7 @@ function DungeonPager(game: GameLoop, leave: () => void) {
 		></i>`
 	return html`
 		<nav class="DungeonPager">
-			<button class="Button" type="button" onclick=${leave}>Leave</button>
+			<button class="Button" type="button" onclick=${leave}>Leave & resume later</button>
 			<span class="DungeonPager-pages">
 				<span class="DungeonPager-dots">${rooms.slice(0, run.room).map((room) => dot(room, true))}</span>
 				<p class="DungeonPager-pill">
@@ -70,9 +71,15 @@ export function Menu(game: GameLoop, leave: () => void) {
 						<button class="Button Menu-running" type="button" onclick=${toggleRunning}>
 							${game.running ? 'Pause' : 'Play'}
 						</button>
-						<button class="Button" type="button" onclick=${() => restartGame(game)}>Reset</button>
+						<button class="Button" type="button" onclick=${() => restartGame(game)}>Restart room</button>
+						${game.dungeonRun
+							? html`<button class="Button" type="button" onclick=${() => restartDungeon(game)}>
+									Restart dungeon
+								</button>`
+							: null}
 					</div>
 				</div>
+				<button class="Button" type="button" onclick=${resetDefaultLayout}>Tidy Panels</button>
 				<label class="Button SoundToggle"
 					><input type="checkbox" onchange=${toggleMuted} ?checked=${!game.muted} /> Sound
 				</label>

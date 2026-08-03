@@ -215,24 +215,22 @@ const LAYOUT = {
 /**
  * Position panels that the user has never moved.
  *
- * On a wide screen the game owns the center column (party frames, cast bar, action bar), so panels
- * dock into rails down the left and right edges. Narrow screens have no room beside the column, so
- * everything collapses to title bars in one rail stacked up from above the action bar — the empty
- * strip there is the only space that doesn't cover the frames you need to click.
+ * On a wide screen the Journal stays at the top right while the other panels stack up the left edge
+ * from above the action bar. Narrow screens have no room beside the game column, so every panel
+ * shares that left stack.
  *
  * Panels with a saved layout are left alone; this only decides where things land on a fresh visit
  * or after a resize you haven't customised.
  */
 export function applyDefaultLayout() {
 	const wide = window.innerWidth >= LAYOUT.narrow
-	const railY = {left: LAYOUT.railTop, right: LAYOUT.railTop}
+	let rightY = LAYOUT.railTop
 	// A rail may not grow into the game column, so panels never cover the party frames.
 	const maxWidth = wide
 		? (window.innerWidth - LAYOUT.gameColumn) / 2 - LAYOUT.gap * 2
 		: window.innerWidth - LAYOUT.gap * 2
 
-	// Narrow screens stack upward from just above the action bar instead of down from the top.
-	let narrowY = window.innerHeight - LAYOUT.actionBar
+	let leftY = window.innerHeight - LAYOUT.actionBar
 
 	for (const view of document.querySelectorAll('floating-view')) {
 		const viewId = view.id || view.getAttribute('data-view-id')
@@ -245,18 +243,30 @@ export function applyDefaultLayout() {
 			view.style.height = 'auto'
 		}
 
-		const width = Math.max(FloatingView.config.minWidth, Math.min(view.offsetWidth, maxWidth))
+		// The collapsed title bar has its own compact width; measure the panel open so expanding it
+		// still reveals the content at its intended width.
+		const minimized = view.hasAttribute('minimized')
+		if (minimized) view.removeAttribute('minimized')
+		const openWidth = view.offsetWidth
+		if (minimized) view.setAttribute('minimized', '')
+		const width = Math.max(FloatingView.config.minWidth, Math.min(openWidth, maxWidth))
 		const x = rail === 'right' ? window.innerWidth - width - LAYOUT.gap : LAYOUT.gap
 		let y
-		if (wide) {
-			y = railY[rail]
-			railY[rail] += view.offsetHeight + LAYOUT.gap
+		if (rail === 'right') {
+			y = rightY
+			rightY += view.offsetHeight + LAYOUT.gap
 		} else {
-			narrowY -= view.offsetHeight + LAYOUT.gap
-			y = Math.max(LAYOUT.railTop, narrowY)
+			leftY -= view.offsetHeight + LAYOUT.gap
+			y = Math.max(LAYOUT.railTop, leftY)
 		}
 		gsap.set(view, {x, y, width})
 	}
+}
+
+/** Forget every saved panel position and put the current views back on their default rails. */
+export function resetDefaultLayout() {
+	store.delTable('floating-views')
+	applyDefaultLayout()
 }
 
 window.addEventListener('resize', applyDefaultLayout)

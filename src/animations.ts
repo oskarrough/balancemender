@@ -151,10 +151,7 @@ export function nextRoom(game: GameLoop): gsap.core.Timeline {
 
 /** Back to the first room of the same dungeon, with a fresh clock. */
 export function restartDungeon(game: GameLoop): gsap.core.Timeline {
-	return toFreshFight(game, () => {
-		const dungeon = game.dungeonRun?.dungeon.id
-		if (dungeon) game.perform({type: 'startDungeon', dungeon})
-	})
+	return toFreshFight(game, () => game.perform({type: 'restartDungeon'}))
 }
 
 const resetSplashForPreview = () => {

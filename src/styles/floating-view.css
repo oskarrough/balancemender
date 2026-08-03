@@ -48,6 +48,10 @@ floating-view[minimized] :is(main, footer) {
 	display: none;
 }
 
+floating-view[minimized] {
+	width: 12.5rem !important;
+}
+
 /* Until the element upgrades, every panel sits at 0,0 — applyDefaultLayout() runs in the same
    task as the upgrade, so hiding until then costs no time. `visibility`, not `display`: that
    layout pass measures offsetWidth/offsetHeight. */
