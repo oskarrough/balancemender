@@ -17,7 +17,7 @@ as few round-trips as possible.
 4. **Silence is an answer.** If it is covered, add nothing. One message, one reply — never an
    acknowledgement followed by the real answer.
 5. **Tiebreak:** taste is Sorrel's — naming, look, feel. Everything else is Kumbel's, including
-   *is this a good idea at all*.
+   _is this a good idea at all_.
 
 ## How a wish becomes a change
 

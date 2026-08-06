@@ -35,4 +35,4 @@ then follow its candidate → review → approval contract. Read, as relevant:
 - **Issues are drafts.** This is alpha software — prefer the clean design over an issue's
   sketch, and say so openly. Write issue titles out in full, never a bare number.
 - **Say names aloud.** The old tongue's sound rules live in universe.md — test every new
-  name against them and against other units and abilities 
+  name against them and against other units and abilities
